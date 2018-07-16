@@ -16,9 +16,7 @@ axios.interceptors.request.use(
       } else {
         config.data += ("&#TOKEN#=" + store.state.token);
       }
-
-
-
+      //config.withCredentials = true;
       //console.log(config)
     }
     return config;

@@ -11,7 +11,7 @@
         </div>
         <div class="collapse show" id="collapsePenetrate">
           <div v-for="data in penetrateLib" @click="toggleState(data.name)">
-            <a class="sidebar-link" href="#" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</a>
+            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
           </div>
         </div>
         <!--各工位测试结果-->
@@ -21,7 +21,7 @@
         </div>
         <div class="collapse" id="collapseTestResult">
           <div v-for="data in testResultLib" @click="toggleState(data.name)">
-            <a class="sidebar-link" href="#" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</a>
+            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
         </div>
@@ -32,7 +32,7 @@
         </div>
         <div class="collapse" id="collapseBindResult">
           <div v-for="data in bindResultLib" @click="toggleState(data.name)">
-            <a class="sidebar-link" href="#" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</a>
+            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
         </div>
@@ -43,7 +43,7 @@
         </div>
         <div class="collapse" id="collapseCartonResult">
           <div v-for="data in cartonResultLib" @click="toggleState(data.name)">
-            <a class="sidebar-link" href="#" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</a>
+            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
         </div>
@@ -54,7 +54,7 @@
         </div>
         <div class="collapse" id="operationRecord">
           <div v-for="data in operationRecord" @click="toggleState(data.name)">
-            <a class="sidebar-link" href="#" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</a>
+            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
         </div>

@@ -20,13 +20,13 @@
         <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
       </div>
       <div class="form-group row align-items-end">
-        <a href="#" class="btn btn-secondary ml-3 mr-4" @click="initForm('order_manage')">清空条件</a>
+        <div class="btn btn-secondary ml-3 mr-4" @click="initForm('order_manage')">清空条件</div>
       </div>
       <div class="form-group row align-items-end">
-        <a href="#" class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</a>
+        <div class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</div>
       </div>
       <div class="form-group row align-items-end">
-        <a href="#" class="btn btn-primary ml-3 mr-4" @click="addOrder">新增</a>
+        <div class="btn btn-primary ml-3 mr-4" @click="addOrder">新增</div>
       </div>
     </div>
   </div>

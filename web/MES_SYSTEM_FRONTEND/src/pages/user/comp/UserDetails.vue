@@ -51,6 +51,13 @@
     watch: {
       $route: function (val) {
         this.thisFetch(val.query)
+      },
+      query: {
+        handler(query) {
+          this.setLoading(true);
+          this.dataFilter(query);
+        },
+        deep: true
       }
     },
     methods: {
@@ -93,6 +100,17 @@
         } else {
           this.setLoading(false)
         }
+      },
+      dataFilter: function () {
+        let options = {
+          url: userQueryUrl,
+          data: {
+            table: 'Gps_User'
+          }
+        };
+        options.data.pageNo = this.query.offset / this.query.limit + 1;
+        options.data.pageSize = this.query.limit;
+        this.fetchData(options);
       }
     }
   }

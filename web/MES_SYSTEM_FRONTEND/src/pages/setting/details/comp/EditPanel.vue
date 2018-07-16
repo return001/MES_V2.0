@@ -260,7 +260,18 @@
             "field": "Remark5",
             "value": '',
             "notNull": false
-          }]
+          }, {"field": 'JST_template', "title": 'JST模板', "value": '', "notNull": false},
+          {"field": 'CHT_template1', "title": 'CHT模板1', "value": '', "notNull": false},
+          {"field": 'CHT_template2', "title": 'CHT模板2', "value": '', "notNull": false},
+          {"field": 'BAT_prefix', "title": 'BAT前缀', "value": '', "notNull": false},
+          {"field": 'BAT_digits', "title": 'BAT位数', "value": '', "notNull": false},
+          {"field": 'SIM_prefix', "title": 'SIM前缀', "value": '', "notNull": false},
+          {"field": 'SIM_digits', "title": 'SIM位数', "value": '', "notNull": false},
+          {"field": 'VIP_prefix', "title": 'VIP前缀', "value": '', "notNull": false},
+          {"field": 'VIP_digits', "title": 'VIP位数', "value": '', "notNull": false},
+          {"field": 'ICCID_prefix', "title": 'ICCID前缀', "value": '', "notNull": false},
+          {"field": 'ICCID_digits', "title": 'ICCID位数', "value": '', "notNull": false},
+          {"field": 'IMEIPrints', "title": 'IMEI打印', "value": '', "notNull": false},]
       }
     },
     mounted: function () {
@@ -283,14 +294,14 @@
         for (let i = 4; i < this.formData.length; i++) {
           if (this.formData[i].notNull === true) {
             if (_.trim(this.formData[i].value) !== "") {
-              tempData[this.toLower(this.formData[i].field)] = _.trim(this.formData[i].value);
+              tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
             } else {
               alert("存在不能为空数据");
               return
             }
           }
           else {
-            tempData[this.toLower(this.formData[i].field)] = _.trim(this.formData[i].value);
+            tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
           }
         }
         switch (tempData['iMEIRel']) {
@@ -339,14 +350,14 @@
         for (let i = 4; i < this.formData.length; i++) {
           if (this.formData[i].notNull === true) {
             if (_.trim(this.formData[i].value) !== "") {
-              tempData[this.toLower(this.formData[i].field)] = _.trim(this.formData[i].value);
+              tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
             } else {
               alert("存在不能为空数据");
               return
             }
           }
           else if (_.trim(this.formData[i].value) !== "") {
-            tempData[this.toLower(this.formData[i].field)] = _.trim(this.formData[i].value);
+            tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
           }
         }
         switch (tempData['iMEIRel']) {
@@ -399,8 +410,17 @@
           }
         }
       },
-      toLower: function (str) {
-        return str.replace(/( |^)[A-Z]/g, (L) => L.toLowerCase());
+      formatCase: function (str) {
+        if (str.indexOf('_') > -1) {
+          let string = str.toLowerCase();
+          let strArray = string.split('_');
+          for (let i = 1; i < strArray.length; i++) {
+            strArray[i] = strArray[i].replace(/( |^)[a-z]/g, (L) => L.toUpperCase());
+          }
+          return strArray.join('');
+        } else {
+          return str.replace(/( |^)[A-Z]/g, (L) => L.toLowerCase());
+        }
       }
     }
   }
@@ -408,11 +428,12 @@
 
 <style scoped>
   .edit-panel-container {
-    position: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+    position: absolute;
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*justify-content: center;*/
+    /*height: 100%;*/
+    margin-bottom: 20px;
     width: 100%;
     left: 0;
     top: 0;
@@ -422,8 +443,8 @@
 
   .edit-panel {
     background: #ffffff;
-    min-height: 50%;
-    width: 80%;
+    height: 100%;
+    width: 100%;
     z-index: 102;
     border-radius: 10px;
     box-shadow: 3px 3px 20px 1px #bbb;

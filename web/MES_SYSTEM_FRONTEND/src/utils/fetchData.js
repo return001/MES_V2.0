@@ -5,6 +5,7 @@ export const axiosFetch = (opt) =>{
     method: 'post',
     url: opt.url,
     timeout: 40000,
+    //withCredentials: true,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
     },

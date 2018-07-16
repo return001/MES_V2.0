@@ -61,9 +61,44 @@ const ROUTER_CONFIG = {
       {field: 'Remark2', title: '备注2', colStyle: {'width': '100px'}, notNull: false},
       {field: 'Remark3', title: '备注3', colStyle: {'width': '100px'}, notNull: false},
       {field: 'Remark4', title: '备注4', colStyle: {'width': '100px'}, notNull: false},
-      {field: 'Remark5', title: '备注5', colStyle: {'width': '100px'}, notNull: false}
+      {field: 'Remark5', title: '备注5', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'JST_template', title: 'JST模板', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'CHT_template1', title: 'CHT模板1', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'CHT_template2', title: 'CHT模板2', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'BAT_prefix', title: 'BAT前缀', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'BAT_digits', title: 'BAT位数', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'SIM_prefix', title: 'SIM前缀', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'SIM_digits', title: 'SIM位数', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'VIP_prefix', title: 'VIP前缀', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'VIP_digits', title: 'VIP位数', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'ICCID_prefix', title: 'ICCID前缀', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'ICCID_digits', title: 'ICCID位数', colStyle: {'width': '100px'}, notNull: false},
+      {field: 'IMEIPrints', title: 'IMEI打印', colStyle: {'width': '100px'}, notNull: false},
+
     ]
   },
 
 
 }
+/*
+* [TACInfo] varchar(50) NOT NULL ,
+[CompanyName] varchar(50) NULL ,
+[Remark1] varchar(50) NULL ,
+[Remark2] varchar(50) NULL ,
+[Remark3] varchar(50) NULL ,
+[Remark4] varchar(50) NULL ,
+[Remark5] varchar(50) NULL ,
+[Status] int NOT NULL ,
+[_MASK_FROM_V2] timestamp NOT NULL ,
+[JST_template] varchar(255) NULL ,
+[CHT_template1] varchar(255) NULL ,
+[CHT_template2] varchar(255) NULL ,
+[BAT_prefix] varchar(50) NULL ,
+[BAT_digits] varchar(50) NULL ,
+[SIM_prefix] varchar(50) NULL ,
+[SIM_digits] varchar(50) NULL ,
+[VIP_prefix] varchar(50) NULL ,
+[VIP_digits] varchar(50) NULL ,
+[ICCID_prefix] varchar(50) NULL ,
+[ICCID_digits] varchar(50) NULL ,
+[IMEIPrints] varchar(255) NULL */
