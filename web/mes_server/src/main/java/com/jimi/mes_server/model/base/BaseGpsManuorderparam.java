@@ -405,4 +405,40 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getStr("IMEIPrints");
 	}
 
+	public M setMacPrefix(java.lang.String macPrefix) {
+		set("MAC_prefix", macPrefix);
+		return (M)this;
+	}
+	
+	public java.lang.String getMacPrefix() {
+		return getStr("MAC_prefix");
+	}
+
+	public M setMacDigits(java.lang.String macDigits) {
+		set("MAC_digits", macDigits);
+		return (M)this;
+	}
+	
+	public java.lang.String getMacDigits() {
+		return getStr("MAC_digits");
+	}
+
+	public M setEquipmentPrefix(java.lang.String equipmentPrefix) {
+		set("Equipment_prefix", equipmentPrefix);
+		return (M)this;
+	}
+	
+	public java.lang.String getEquipmentPrefix() {
+		return getStr("Equipment_prefix");
+	}
+
+	public M setEquipmentDigits(java.lang.String equipmentDigits) {
+		set("Equipment_digits", equipmentDigits);
+		return (M)this;
+	}
+	
+	public java.lang.String getEquipmentDigits() {
+		return getStr("Equipment_digits");
+	}
+
 }
