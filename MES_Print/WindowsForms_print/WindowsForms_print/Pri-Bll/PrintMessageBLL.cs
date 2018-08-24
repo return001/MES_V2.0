@@ -10,8 +10,9 @@ namespace Print.Message.Bll
 {
     public class PrintMessageBLL
     {
+        PrintMessageDAL PMD = new PrintMessageDAL();
+
         public bool InsertPrintMessageBLL(List<PrintMessage> list) {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.InsertPrintMessageDAL(list) > 0)
             {
                 return true;
@@ -23,8 +24,139 @@ namespace Print.Message.Bll
 
         public bool CheckCHOrJSIMEIBLL(string IMEInumber, int PrintType)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.CheckCHOrJSIMEIDAL(IMEInumber,PrintType) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_SIM_ICCIDBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string ICCID, string SN)
+        {
+            if (PMD.UpdateSN_SIM_ICCIDDAL(IMEI, CHPrintTime, lj1, lj2, SIM, ICCID, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_VIPBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP, string SN)
+        {
+            if (PMD.UpdateSN_VIPDAL(IMEI, CHPrintTime, lj1, lj2, VIP, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_SIM_VIP_ICCIDBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string ICCID, string SN)
+        {
+            if (PMD.UpdateSN_SIM_VIP_ICCIDDAL(IMEI, CHPrintTime, lj1, lj2, SIM, VIP,ICCID, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_SIM_VIP_BAT_ICCIDBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string BAT, string ICCID, string SN)
+        {
+            if (PMD.UpdateSN_SIM_VIP_BAT_ICCIDDAL(IMEI, CHPrintTime, lj1, lj2, SIM, VIP, BAT, ICCID, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string BAT, string ICCID, string MAC, string SN)
+        {
+            if (PMD.UpdateSN_SIM_VIP_BAT_ICCID_MACDAL(IMEI, CHPrintTime, lj1, lj2, SIM, VIP, BAT, ICCID,MAC, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string BAT, string ICCID, string MAC,string Equipment, string SN)
+        {
+            if (PMD.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentDAL(IMEI, CHPrintTime, lj1, lj2, SIM, VIP, BAT, ICCID, MAC,Equipment, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateVIPBLL(string IMEI, string VIP)
+        {
+            if (PMD.UpdateVIPDAL(IMEI,VIP) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSimVipIccidBLL(string IMEI, string SIM, string VIP, string ICCID)
+        {
+            if (PMD.UpdateSimVipIccidDAL(IMEI, SIM, VIP, ICCID) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateVipAndBatBLL(string IMEI, string SIM, string VIP, string BAT, string ICCID)
+        {
+            if (PMD.UpdateVipAndBatDAL(IMEI, SIM, VIP, BAT, ICCID) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateVipAndBatAndMacBLL(string IMEI, string SIM, string VIP, string BAT, string ICCID,string MAC)
+        {
+            if (PMD.UpdateVipAndBatAndMacDAL(IMEI, SIM, VIP, BAT, ICCID,MAC) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateVipAndBatAndMacAndEquBLL(string IMEI, string SIM, string VIP, string BAT, string ICCID, string MAC, string Equipment)
+        {
+            if (PMD.UpdateVipAndBatAndMacAndEquDAL(IMEI, SIM, VIP, BAT, ICCID, MAC,Equipment) > 0)
             {
                 return true;
             }
@@ -36,7 +168,6 @@ namespace Print.Message.Bll
 
         public bool CheckReCHOrJSIMEIBLL(string IMEInumber, int PrintType)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.CheckReCHOrJSIMEIDAL(IMEInumber, PrintType) > 0)
             {
                 return true;
@@ -49,8 +180,19 @@ namespace Print.Message.Bll
 
         public bool CheckIMEIBLL(string IMEInumber)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.CheckIMEIDAL(IMEInumber) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckSNBLL(string SNnumber)
+        {
+            if (PMD.CheckSNDAL(SNnumber) > 0)
             {
                 return true;
             }
@@ -62,7 +204,6 @@ namespace Print.Message.Bll
 
         public bool CheckSIMBLL(string SIM)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.CheckSIMDAL(SIM) > 0)
             {
                 return true;
@@ -75,7 +216,6 @@ namespace Print.Message.Bll
 
         public bool CheckVIPBLL(string VIP)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.CheckVIPDAL(VIP) > 0)
             {
                 return true;
@@ -86,14 +226,60 @@ namespace Print.Message.Bll
             }
         }
 
+        public bool CheckBATBLL(string BAT)
+        {
+            if (PMD.CheckBATDAL(BAT) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckICCIDBLL(string ICCID)
+        {
+            if (PMD.CheckICCIDDAL(ICCID) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckMACBLL(string MAC)
+        {
+            if (PMD.CheckMACDAL(MAC) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckEquipmentBLL(string Equipment)
+        {
+            if (PMD.CheckEquipmentDAL(Equipment) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public List<PrintMessage> SelectSnByIMEIBLL(string IMEInumber) {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             return PMD.SelectSnByIMEIDAL(IMEInumber);
         }
 
         public bool UpdateRePrintBLL(string IMEInumber,string RePrintTime,int PrintType,string lj,string lj1)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PrintType == 1)
             {
                 if (PMD.SelectJS_RePrintNumByIMEIDAL(IMEInumber) == 0)
@@ -146,59 +332,28 @@ namespace Print.Message.Bll
             }
         }
 
-        //public bool UpdateRePrintByljBLL(string IMEInumber, string RePrintTime, int PrintType,string path)
-        //{
-        //    PrintMessageDAL PMD = new PrintMessageDAL();
-        //    if (PMD.SelectRePrintNumByIMEIAndPathDAL(IMEInumber,path) == 0)
-        //    {
-        //        if (PMD.UpdateRePrintByljDAL(IMEInumber, RePrintTime, PrintType,path) > 0)
-        //        {
-        //            return true;
-        //        }
-        //        else
-        //        {
-        //            return false;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (PMD.UpdateReEndPrintByljDAL(IMEInumber, RePrintTime, PrintType,path) > 0)
-        //        {
-        //            return true;
-        //        }
-        //        else
-        //        {
-        //            return false;
-        //        }
-        //    }
-        //}
-
         public List<PrintMessage> SelectAllReJSTBLL()
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             return PMD.SelectAllReJSTDAL();
         }
+
         public List<PrintMessage> SelectAllReCHTBLL()
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             return PMD.SelectAllReCHTDAL();
         }
 
         public List<PrintMessage> SelectReMesByZhiDanOrIMEIBLL(string InputNum)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             return PMD.SelectReMesByZhiDanOrIMEIDAL(InputNum);
         }
 
         public List<PrintMessage> SelectPrintMesBySNOrIMEIBLL(string conditions)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             return PMD.SelectPrintMesBySNOrIMEIDAL(conditions);
         }
 
         public bool DeletePrintMessageBLL(int ID,string field)
         {
-            PrintMessageDAL PMD = new PrintMessageDAL();
             if (PMD.DeletePrintMessageDAL(ID,field) > 0)
             {
                 return true;
@@ -209,12 +364,20 @@ namespace Print.Message.Bll
             }
         }
 
-        //public List<PrintMessage> SelectPrintMesByIdBLL(string id)
-        //{
-        //    PrintMessageDAL PMD = new PrintMessageDAL();
-        //    return PMD.SelectPrintMesByIdDAL(id);
-        //}
+        public List<PrintMessage> SelectPrintMesByZhiDanBLL(string ZhiDan)
+        {
+            return PMD.SelectPrintMesByZhiDanDAL(ZhiDan);
+        }
 
+        public string SelectPresentImeiByZhidanBLL(string ZhiDan)
+        {
+            return PMD.SelectPresentImeiByZhidanDAL(ZhiDan);
+        }
+
+        public string SelectPresentSnByZhidanBLL(string ZhiDan)
+        {
+            return PMD.SelectPresentSNByZhidanDAL(ZhiDan);
+        }
 
     }
 }

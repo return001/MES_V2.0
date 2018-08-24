@@ -12,9 +12,9 @@ namespace Print.Message.Bll
 {
     class InputExcelBLL
     {
-        public DataSet GetExcelDatatable(string fileUrl) {
-            const string cmdText = "Provider=Microsoft.Ace.OleDb.12.0;Data Source={0};Extended Properties='Excel 12.0; HDR=Yes; IMEX=1'";
-            //DataTable dt = null;
+        public DataTable GetExcelDatatable(string fileUrl) {
+            const string cmdText = "Provider=Microsoft.Ace.OleDb.12.0;Data Source={0};Extended Properties='Excel 12.0; HDR=NO; IMEX=1'";
+            DataTable dt = null;
             string strconn = string.Format(cmdText, fileUrl);
             OleDbConnection conn = new OleDbConnection(strconn);
             try
@@ -32,8 +32,8 @@ namespace Print.Message.Bll
                 OleDbDataAdapter da = new OleDbDataAdapter(StrSql, conn);
                 DataSet ds = new DataSet();
                 da.Fill(ds);
-                //dt = ds.Tables[0];
-                return ds;
+                dt = ds.Tables[0];
+                return dt;
             }
             catch (Exception e)
             {

@@ -15,12 +15,16 @@ namespace WindowsForms_print
 
     public partial class CheckRePrint : Form
     {
+
         PrintMessageBLL PMB = new PrintMessageBLL();
         List<PrintMessage> list = new List<PrintMessage>();
 
         public CheckRePrint()
         {
             InitializeComponent();
+            int wid = Screen.PrimaryScreen.WorkingArea.Width;
+            this.Width = wid;
+            this.dataGridView1.Width = wid;
             this.InputToCheck.Text = "请输入制单号或IMEI号查询";
         }
 
@@ -55,7 +59,7 @@ namespace WindowsForms_print
             list = PMB.SelectAllReCHTBLL();
             if (list.Count == 0)
             {
-                MessageBox.Show("没有重打记录！");
+                MessageBox.Show("没有重打记录");
             }
             else
             {
@@ -78,7 +82,7 @@ namespace WindowsForms_print
         {
             if (this.InputToCheck.Text == "" || this.InputToCheck.Text == "请输入制单号或IMEI号查询")
             {
-                MessageBox.Show("请输入制单号或IMEI号！");
+                MessageBox.Show("请输入制单号或IMEI号");
                 this.InputToCheck.Text = "请输入制单号或IMEI号查询";
             }
             else {
@@ -88,6 +92,7 @@ namespace WindowsForms_print
                 {
                     MessageBox.Show("没有重打记录");
                     this.InputToCheck.Clear();
+                    this.InputToCheck.Text = "请输入制单号或IMEI号查询";
                 }
                 else
                 {
@@ -104,6 +109,6 @@ namespace WindowsForms_print
                 }
             }   
         }
-        
+
     }
 }

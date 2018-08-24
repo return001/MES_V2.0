@@ -14,6 +14,8 @@ namespace Print.Message.Dal
     {
         private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
 
+
+
         //插入打印数据到ManuPrintParam表
         public int InsertPrintMessageDAL(List<PrintMessage> list) {
             SqlConnection conn1 = new SqlConnection(conStr);
@@ -28,11 +30,387 @@ namespace Print.Message.Dal
                 if (list[i - 1].BAT == "0") { bat = ""; } else { bat = list[i - 1].BAT; }
                 string CH_PrintTime = list[i-1].CH_PrintTime==""? "NULL": "'"+list[i - 1].CH_PrintTime+"'";
                 string JS_PrintTime = list[i - 1].JS_PrintTime == "" ? "NULL" : "'" + list[i - 1].JS_PrintTime + "'";
-                command.CommandText = "INSERT INTO dbo.Gps_ManuPrintParam(ZhiDan,IMEI,IMEIStart,IMEIEnd,SN,IMEIRel,SIM,VIP,BAT,SoftModel,Version,Remark,JS_PrintTime,JS_TemplatePath,JS_ReprintNum,JS_ReFirstPrintTime,JS_ReEndPrintTime,UserName,CH_PrintTime,CH_TemplatePath1,CH_TemplatePath2,CH_ReprintNum,CH_ReFirstPrintTime,CH_ReEndPrintTime) VALUES('" + list[i-1].Zhidan + "','" + list[i - 1].IMEI + "','" + list[i - 1].IMEIStart + "','" + list[i - 1].IMEIEnd + "','" + list[i - 1].SN + "','"+list[i-1].IMEIRel+"','"+sim+"','"+vip+"','"+bat+"','"+list[i-1].SoftModel+"','"+list[i-1].Version+"','"+list[i-1].Remark+"',"+JS_PrintTime + ",'"+list[i-1].JS_TemplatePath + "','0',NULL,NULL,'',"+CH_PrintTime+",'"+list[i-1].CH_TemplatePath1+"','"+list[i-1].CH_TemplatePath2+"','0',NULL,NULL)";
+                command.CommandText = "INSERT INTO dbo.Gps_ManuPrintParam(ZhiDan,IMEI,IMEIStart,IMEIEnd,SN,IMEIRel,SIM,VIP,BAT,SoftModel,Version,Remark,JS_PrintTime,JS_TemplatePath,JS_ReprintNum,JS_ReFirstPrintTime,JS_ReEndPrintTime,UserName,CH_PrintTime,CH_TemplatePath1,CH_TemplatePath2,CH_ReprintNum,CH_ReFirstPrintTime,CH_ReEndPrintTime,ICCID,MAC,Equipment) VALUES('" + list[i-1].Zhidan + "','" + list[i - 1].IMEI + "','" + list[i - 1].IMEIStart + "','" + list[i - 1].IMEIEnd + "','" + list[i - 1].SN + "','"+list[i-1].IMEIRel+"','"+sim+"','"+vip+"','"+bat+"','"+list[i-1].SoftModel+"','"+list[i-1].Version+"','"+list[i-1].Remark+"',"+JS_PrintTime + ",'"+list[i-1].JS_TemplatePath + "','0',NULL,NULL,'',"+CH_PrintTime+",'"+list[i-1].CH_TemplatePath1+"','"+list[i-1].CH_TemplatePath2+"','0',NULL,NULL,'"+list[i-1].ICCID+"','"+list[i-1].MAC+"','"+list[i-1].Equipment+"')";
             }
             int httpstr = command.ExecuteNonQuery();
-            conn1.Close();
             return httpstr;
+        }
+
+        //更新彩盒关联打印信息(SIM+ICCID+SN)
+        public int UpdateSN_SIM_ICCIDDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string ICCID, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='" + SIM + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+            return command.ExecuteNonQuery();
+        }
+
+        //更新彩盒关联打印信息(VIP+SN)
+        public int UpdateSN_VIPDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',VIP='" + VIP + "' WHERE IMEI='" + IMEI + "'";
+            return command.ExecuteNonQuery();
+        }
+
+        //更新彩盒关联打印信息(VIP(SIM/ICCID)+SN)
+        public int UpdateSN_SIM_VIP_ICCIDDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string ICCID, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            if (SIM == "")
+            {
+                command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',VIP='" + VIP + "' WHERE IMEI='" + IMEI + "'";
+            }
+            else
+            {
+                command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='" + SIM + "',VIP='" + VIP + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+            }
+            return command.ExecuteNonQuery();
+        }
+
+        //更新彩盒关联打印信息(BAT(VIP/SIM/ICCID)+SN)
+        public int UpdateSN_SIM_VIP_BAT_ICCIDDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, String BAT, string ICCID, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            if (SIM == "")
+            {
+                if (VIP == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',BAT='" + BAT + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',VIP='" + VIP + "',BAT='" + BAT + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='" + SIM + "',BAT='" + BAT + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='" + SIM + "',VIP='" + VIP + "',BAT='" + BAT + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+                }
+                
+            }
+            return command.ExecuteNonQuery();
+        }
+
+        //更新彩盒关联打印信息(MAC(VIP/BAT/SIM/ICCID)+SN)
+        public int UpdateSN_SIM_VIP_BAT_ICCID_MACDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, String BAT, string ICCID, String MAC, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            if (SIM == "")
+            {
+                if (VIP != "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',  BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP != "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "',  VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "',  VIP ='" + VIP + "', ICCID='" + ICCID + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',  BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            return command.ExecuteNonQuery();
+        }
+
+        //更新彩盒关联打印信息(MAC(VIP/BAT/SIM/ICCID)+SN)
+        public int UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, String BAT, string ICCID, String MAC,string Equipment, string SN)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            if (SIM == "")
+            {
+                if (VIP != "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', BAT ='" + BAT + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', BAT ='" + BAT + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', VIP ='" + VIP + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',  BAT ='" + BAT + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',  BAT ='" + BAT + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', MAC='" + MAC + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP != "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', VIP ='" + VIP + "', MAC='" + MAC + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', VIP ='" + VIP + "', ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "',  BAT ='" + BAT + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "',  BAT ='" + BAT + "',MAC='" + MAC + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "',ICCID='" + ICCID + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  SN='" + SN + "', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "', SIM ='" + SIM + "', MAC='" + MAC + "', ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            return command.ExecuteNonQuery();
+        }
+
+        //更新VIP字段
+        public int UpdateVIPDAL(string IMEI, string VIP)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  VIP ='" + VIP + "' WHERE IMEI='" + IMEI + "'";
+            return command.ExecuteNonQuery();
+        }
+
+        //更新Sim、Vip、Iccid字段
+        public int UpdateSimVipIccidDAL(string IMEI, string SIM, string VIP, string ICCID)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  VIP ='" + VIP + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+            return command.ExecuteNonQuery();
+        }
+
+        //更新Sim、Vip、Bat、Iccid字段
+        public int UpdateVipAndBatDAL(string IMEI, string SIM, string VIP, string BAT, string ICCID)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            if (SIM == "")
+            {
+                if (VIP != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', BAT ='" + BAT + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET BAT ='" + BAT + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', BAT ='" + BAT + "',ICCID='" + ICCID + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            
+            return command.ExecuteNonQuery();
+        }
+
+        //更新Sim、Vip、Bat、Iccid,MAC字段
+        public int UpdateVipAndBatAndMacDAL(string IMEI, string SIM, string VIP, string BAT, string ICCID,string MAC)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            if (SIM == "")
+            {
+                if (VIP != "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP != "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  VIP ='" + VIP + "', ICCID='" + ICCID + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  BAT ='" + BAT + "',MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', MAC='" + MAC + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            return command.ExecuteNonQuery();
+        }
+
+        //更新Sim、Vip、Bat、Iccid,MAC,Equipment字段
+        public int UpdateVipAndBatAndMacAndEquDAL(string IMEI, string SIM, string VIP, string BAT, string ICCID, string MAC,string Equipment)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            if (SIM == "")
+            {
+                if (VIP != "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', BAT ='" + BAT + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', BAT ='" + BAT + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET VIP ='" + VIP + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  BAT ='" + BAT + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET  BAT ='" + BAT + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET MAC='" + MAC + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+            else
+            {
+                if (VIP != "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',MAC='" + MAC + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', VIP ='" + VIP + "', BAT ='" + BAT + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', VIP ='" + VIP + "', MAC='" + MAC + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP != "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', VIP ='" + VIP + "', ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  BAT ='" + BAT + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT != "" && MAC != "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',  BAT ='" + BAT + "',MAC='" + MAC + "',ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else if (VIP == "" && BAT == "" && MAC == "")
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "',ICCID='" + ICCID + "', Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SIM ='" + SIM + "', MAC='" + MAC + "', ICCID='" + ICCID + "',Equipment='" + Equipment + "' WHERE IMEI='" + IMEI + "'";
+                }
+            }
+
+            return command.ExecuteNonQuery();
         }
 
         //检查IMEI号是否存在，存在返回1，否则返回0
@@ -92,6 +470,21 @@ namespace Print.Message.Dal
             return 0;
         }
 
+        //检查SN号是否存在，存在返回1，否则返回0
+        public int CheckSNDAL(string SNnumber)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE SN='" + SNnumber + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
         //检查SIM号是否存在，存在返回1，否则返回0
         public int CheckSIMDAL(string SIM)
         {
@@ -122,6 +515,66 @@ namespace Print.Message.Dal
             return 0;
         }
 
+        //检查BAT号是否存在，存在返回1，否则返回0
+        public int CheckBATDAL(string BAT)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE BAT='" + BAT + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        //检查ICCID号是否存在，存在返回1，否则返回0
+        public int CheckICCIDDAL(string ICCID)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE ICCID='" + ICCID + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        //检查MAC号是否存在，存在返回1，否则返回0
+        public int CheckMACDAL(string MAC)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE MAC='" + MAC + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        //检查Equipment号是否存在，存在返回1，否则返回0
+        public int CheckEquipmentDAL(string Equipment)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE Equipment='" + Equipment + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
         //根据IMEI号获取sn号进行重打
         public List<PrintMessage> SelectSnByIMEIDAL(string IMEInumber)
         {
@@ -140,7 +593,10 @@ namespace Print.Message.Dal
                     VIP = dr.IsDBNull(8) ? "" : dr.GetString(8),
                     BAT = dr.IsDBNull(9) ? "" : dr.GetString(9),
                     SoftModel = dr.GetString(10),
-                    Remark = dr.IsDBNull(12) ? "" : dr.GetString(12)
+                    Remark = dr.IsDBNull(12) ? "" : dr.GetString(12),
+                    ICCID = dr.IsDBNull(25) ? "" : dr.GetString(25),
+                    MAC = dr.IsDBNull(26) ? "" : dr.GetString(26),
+                    Equipment = dr.IsDBNull(27) ? "" : dr.GetString(27)
                 });
             }
             return pm;
@@ -174,22 +630,6 @@ namespace Print.Message.Dal
             while (dr.Read())
             {
                 RePrintNum = dr.GetInt32(22);
-            }
-            return RePrintNum;
-        }
-
-        //根据IMEI号和路径获取重打次数
-        public int SelectRePrintNumByIMEIAndPathDAL(string IMEInumber,string path)
-        {
-            SqlConnection conn1 = new SqlConnection(conStr);
-            conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "select  * FROM dbo.Gps_ManuPrintParam WHERE (IMEI='" + IMEInumber + "' AND TemplatePath = '"+path+"')";
-            SqlDataReader dr = command.ExecuteReader();
-            int RePrintNum = 0;
-            while (dr.Read())
-            {
-                RePrintNum = dr.GetInt32(15);
             }
             return RePrintNum;
         }
@@ -251,7 +691,7 @@ namespace Print.Message.Dal
                     IMEI = dr.GetString(2),
                     SN = dr.GetString(5),
                     SoftModel = dr.IsDBNull(10) ? "" : dr.GetString(10),
-                    JS_PrintTime = dr.GetDateTime(13).ToString(),
+                    JS_PrintTime = dr.GetString(13),
                     JS_TemplatePath = dr.GetString(14),
                     JS_RePrintNum = dr.GetInt32(15),
                     JS_ReFirstPrintTime = dr.IsDBNull(16) ? "" : dr.GetDateTime(16).ToString(),
@@ -278,7 +718,7 @@ namespace Print.Message.Dal
                     IMEI = dr.GetString(2),
                     SN = dr.GetString(5),
                     SoftModel = dr.IsDBNull(10) ? "" : dr.GetString(10),
-                    CH_PrintTime = dr.IsDBNull(19) ? "" : dr.GetDateTime(19).ToString(),
+                    CH_PrintTime = dr.IsDBNull(19) ? "" : dr.GetString(19),
                     CH_TemplatePath1 = dr.IsDBNull(20) ? "" : dr.GetString(20),
                     CH_TemplatePath2 = dr.IsDBNull(21) ? "" : dr.GetString(21),
                     CH_RePrintNum = dr.GetInt32(22).ToString(),
@@ -306,12 +746,12 @@ namespace Print.Message.Dal
                     IMEI = dr.GetString(2),
                     SN = dr.IsDBNull(5) ? "" : dr.GetString(5),
                     SoftModel = dr.IsDBNull(10) ? "" : dr.GetString(10),
-                    JS_PrintTime = dr.IsDBNull(13) ? "" : dr.GetDateTime(13).ToString(),
+                    JS_PrintTime = dr.IsDBNull(13) ? "" : dr.GetString(13),
                     JS_TemplatePath = dr.IsDBNull(14) ? "" : dr.GetString(14),
                     JS_RePrintNum = dr.GetInt32(15),
                     JS_ReFirstPrintTime = dr.IsDBNull(16) ? "" : dr.GetDateTime(16).ToString(),
                     JS_ReEndPrintTime = dr.IsDBNull(17) ? "" : dr.GetDateTime(17).ToString(),
-                    CH_PrintTime = dr.IsDBNull(19) ? "" : dr.GetDateTime(19).ToString(),
+                    CH_PrintTime = dr.IsDBNull(19) ? "" : dr.GetString(19),
                     CH_TemplatePath1 = dr.IsDBNull(20) ? "" : dr.GetString(20),
                     CH_TemplatePath2 = dr.IsDBNull(21) ? "" : dr.GetString(21),
                     CH_RePrintNum = dr.GetInt32(22).ToString(),
@@ -329,7 +769,7 @@ namespace Print.Message.Dal
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE ((IMEI='" + conditions + "' OR SN='" + conditions + "')AND JS_PrintTime != '')";
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE (IMEI='" + conditions + "' OR SN='" + conditions + "')";
             SqlDataReader dr = command.ExecuteReader();
             while (dr.Read())
             {
@@ -344,8 +784,11 @@ namespace Print.Message.Dal
                     VIP = dr.IsDBNull(8) ? "" : dr.GetString(8),
                     BAT = dr.IsDBNull(9) ? "" : dr.GetString(9),
                     SoftModel = dr.IsDBNull(10) ? "" : dr.GetString(10),
-                    JS_PrintTime = dr.GetDateTime(13).ToString(),
-                    JS_TemplatePath = dr.GetString(14)
+                    JS_PrintTime = dr.IsDBNull(13) ? "" : dr.GetString(13),
+                    JS_TemplatePath = dr.IsDBNull(14) ? "" : dr.GetString(14),
+                    ICCID = dr.IsDBNull(25) ? "" : dr.GetString(25),
+                    MAC = dr.IsDBNull(26) ? "" : dr.GetString(26),
+                    Equipment = dr.IsDBNull(27) ? "" : dr.GetString(27)
                 });
             }
             return pm;
@@ -359,38 +802,69 @@ namespace Print.Message.Dal
             SqlCommand command = conn1.CreateCommand();
             command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET "+field+" ='' WHERE ID='" + id + "'";
             int httpstr = command.ExecuteNonQuery();
-            conn1.Close();
             return httpstr;
         }
 
-        //public List<PrintMessage> SelectPrintMesByIdDAL(string id)
-        //{
-        //    List<PrintMessage> pm = new List<PrintMessage>();
-        //    SqlConnection conn1 = new SqlConnection(conStr);
-        //    conn1.Open();
-        //    SqlCommand command = conn1.CreateCommand();
-        //    command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE ((IMEI='"+id+"')AND PrintType=1)";
-        //    SqlDataReader dr = command.ExecuteReader();
-        //    while (dr.Read())
-        //    {
-        //        pm.Add(new PrintMessage()
-        //        {
-        //            ID = dr.GetInt32(0),
-        //            Zhidan = dr.IsDBNull(1) ? "" : dr.GetString(1),
-        //            IMEI = dr.GetString(2),
-        //            SN1 = dr.IsDBNull(3) ? "" : dr.GetString(3),
-        //            SN2 = dr.GetString(4),
-        //            FirstPrintTime = dr.GetDateTime(5).ToString(),
-        //            RePrintNum = dr.GetInt32(6),
-        //            RePrintTime = dr.GetDateTime(7).ToString(),
-        //            PrintType = dr.GetInt32(8),
-        //            SoftModel = dr.IsDBNull(9) ? "" : dr.GetString(9),
-        //            SNFromCustomer = dr.IsDBNull(10) ? "" : dr.GetString(10),
-        //            RePrintEndTime = dr.IsDBNull(11) ? "" : dr.GetDateTime(11).ToString()
-        //        });
-        //    }
-        //    return pm;
-        //}
+        
+        //根据制单号获取首次选择信息
+        public List<PrintMessage> SelectPrintMesByZhiDanDAL(string ZhiDan)
+        {
+            List<PrintMessage> pm = new List<PrintMessage>();
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT TOP 1 * FROM dbo.Gps_ManuPrintParam WHERE ZhiDan='" + ZhiDan + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                pm.Add(new PrintMessage()
+                {
+                    SN = dr.IsDBNull(5) ? "" : dr.GetString(5),
+                    SIM = dr.IsDBNull(7) ? "" : dr.GetString(7),
+                    VIP = dr.IsDBNull(8) ? "" : dr.GetString(8),
+                    BAT = dr.IsDBNull(9) ? "" : dr.GetString(9),
+                    ICCID = dr.IsDBNull(25) ? "" : dr.GetString(25),
+                    MAC = dr.IsDBNull(26) ? "" : dr.GetString(26),
+                    Equipment = dr.IsDBNull(27) ? "" : dr.GetString(27)
+                });
+            }
+            return pm;
+
+        }
+
+        //根据制单号获取imei实现断电保护IMEI当前号
+        public string SelectPresentImeiByZhidanDAL(string ZhiDan)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            string PresentImei = "";
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT top 1 *FROM [GPSTest].[dbo].[Gps_ManuPrintParam]  WHERE ZhiDan ='"+ZhiDan+ "' ORDER BY IMEI  DESC";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                PresentImei = dr.GetString(2);
+            }
+            return PresentImei;
+
+        }
+
+        //根据制单号获取sn实现断电保护sn当前号
+        public string SelectPresentSNByZhidanDAL(string ZhiDan)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            string Presentsn = "";
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT top 1 *FROM [GPSTest].[dbo].[Gps_ManuPrintParam]  WHERE ZhiDan ='" + ZhiDan + "' ORDER BY IMEI  DESC";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                Presentsn = dr.GetString(5);
+            }
+            return Presentsn;
+
+        }
 
     }
 }

@@ -83,5 +83,14 @@ namespace Print_Message
         //彩盒末次重打时间
         public string CH_ReEndPrintTime { get; set; }
 
+        //7SIM号
+        public string ICCID { get; set; }
+
+        //7SIM号
+        public string MAC { get; set; }
+
+        //7SIM号
+        public string Equipment { get; set; }
+        
     }
 }

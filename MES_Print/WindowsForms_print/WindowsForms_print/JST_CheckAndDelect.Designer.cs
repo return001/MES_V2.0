@@ -51,6 +51,9 @@
             this.SIM = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.VIP = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.BAT = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ICCID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MAC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Equipment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.IEMIRel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.PrintTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.SoftModel = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -82,8 +85,8 @@
             // 
             this.splitContainer1.Panel2.BackColor = System.Drawing.Color.White;
             this.splitContainer1.Panel2.Controls.Add(this.dataGridView1);
-            this.splitContainer1.Size = new System.Drawing.Size(1372, 705);
-            this.splitContainer1.SplitterDistance = 99;
+            this.splitContainer1.Size = new System.Drawing.Size(1398, 833);
+            this.splitContainer1.SplitterDistance = 115;
             this.splitContainer1.TabIndex = 0;
             // 
             // JST_DY
@@ -151,6 +154,9 @@
             this.SIM,
             this.VIP,
             this.BAT,
+            this.ICCID,
+            this.MAC,
+            this.Equipment,
             this.IEMIRel,
             this.PrintTime,
             this.SoftModel,
@@ -163,7 +169,7 @@
             dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle8;
-            this.dataGridView1.Location = new System.Drawing.Point(3, 3);
+            this.dataGridView1.Location = new System.Drawing.Point(0, 3);
             this.dataGridView1.Name = "dataGridView1";
             dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
@@ -175,7 +181,7 @@
             this.dataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dataGridView1.RowHeadersWidth = 20;
             this.dataGridView1.RowTemplate.Height = 27;
-            this.dataGridView1.Size = new System.Drawing.Size(1366, 599);
+            this.dataGridView1.Size = new System.Drawing.Size(1395, 708);
             this.dataGridView1.TabIndex = 0;
             // 
             // ID
@@ -225,6 +231,21 @@
             this.BAT.HeaderText = "BAT";
             this.BAT.Name = "BAT";
             // 
+            // ICCID
+            // 
+            this.ICCID.HeaderText = "ICCID";
+            this.ICCID.Name = "ICCID";
+            // 
+            // MAC
+            // 
+            this.MAC.HeaderText = "MAC";
+            this.MAC.Name = "MAC";
+            // 
+            // Equipment
+            // 
+            this.Equipment.HeaderText = "Equipment";
+            this.Equipment.Name = "Equipment";
+            // 
             // IEMIRel
             // 
             this.IEMIRel.HeaderText = "绑定关系";
@@ -256,7 +277,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1372, 705);
+            this.ClientSize = new System.Drawing.Size(1398, 833);
             this.Controls.Add(this.splitContainer1);
             this.Name = "JST_CheckAndDelect";
             this.Text = "机身贴查询与删除";
@@ -277,6 +298,8 @@
         private System.Windows.Forms.Button JST_check;
         private System.Windows.Forms.TextBox SnOrImei;
         private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.ComboBox JST_ID;
+        private System.Windows.Forms.ComboBox JST_DY;
         private System.Windows.Forms.DataGridViewTextBoxColumn ID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ZhiDan;
         private System.Windows.Forms.DataGridViewTextBoxColumn IMEI;
@@ -284,11 +307,12 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn SIM;
         private System.Windows.Forms.DataGridViewTextBoxColumn VIP;
         private System.Windows.Forms.DataGridViewTextBoxColumn BAT;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ICCID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn MAC;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Equipment;
         private System.Windows.Forms.DataGridViewTextBoxColumn IEMIRel;
         private System.Windows.Forms.DataGridViewTextBoxColumn PrintTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn SoftModel;
         private System.Windows.Forms.DataGridViewTextBoxColumn TemplatePath;
-        private System.Windows.Forms.ComboBox JST_ID;
-        private System.Windows.Forms.ComboBox JST_DY;
     }
 }

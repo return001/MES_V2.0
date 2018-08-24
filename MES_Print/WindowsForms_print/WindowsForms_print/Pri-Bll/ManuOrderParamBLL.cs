@@ -16,17 +16,13 @@ namespace ManuOrder.Param.BLL
             return MOPD.SelectZhidanNumDAL();
         }
 
-        public List<Gps_ManuOrderParam> SelectZhidanNumBylikeBLL(string likeword)
-        {
-            return MOPD.SelectZhidanNumBylikeDAL(likeword);
-        }
-
         public List<Gps_ManuOrderParam> selectManuOrderParamByzhidanBLL(string ZhidanNum) {
             return MOPD.selectManuOrderParamByzhidanDAL(ZhidanNum);
         }
 
-        public bool UpdateSNnumberBLL(string ZhiDanNum, string SN1, string SN2, string SN3, string VIP1, string VIP2,long imeiPrints) {
-            if (MOPD.UpdateSNnumberDAL(ZhiDanNum,SN1,SN2,SN3,VIP1,VIP2,imeiPrints)> 0)
+        public bool CheckZhiDanBLL(string ZhiDan)
+        {
+            if (MOPD.CheckZhiDanDAL(ZhiDan) > 0)
             {
                 return true;
             }
@@ -36,9 +32,8 @@ namespace ManuOrder.Param.BLL
             }
         }
 
-        public bool UpdateSN3numberBLL(string ZhiDanNum, string SN1, string SN2, string SN3,string VIP1,string VIP2)
-        {
-            if (MOPD.UpdateSN3numberDAL(ZhiDanNum, SN1,SN2, SN3,VIP1, VIP2) > 0)
+        public bool UpdateSNnumberBLL(string ZhiDanNum, string SN2, long imeiPrints) {
+            if (MOPD.UpdateSNnumberDAL(ZhiDanNum,SN2,imeiPrints)> 0)
             {
                 return true;
             }
@@ -48,9 +43,9 @@ namespace ManuOrder.Param.BLL
             }
         }
 
-        public bool UpdateCHmesBLL(string IMEI, string CHPrintTime,string lj1,string lj2)
+        public bool UpdateSNAddOneBLL(string ZhiDanNum,string SN2)
         {
-            if (MOPD.UpdateCHmesDAL(IMEI, CHPrintTime, lj1, lj2) > 0)
+            if (MOPD.UpdateSNAddOneDAL(ZhiDanNum,SN2) > 0)
             {
                 return true;
             }
@@ -60,9 +55,9 @@ namespace ManuOrder.Param.BLL
             }
         }
 
-        public bool UpdateCHSIMBLL(string IMEI, string CHPrintTime, string lj1, string lj2 ,string SIM)
+        public bool UpdateCHmesBLL(string IMEI, string CHPrintTime,string lj1,string lj2,string SN)
         {
-            if (MOPD.UpdateCHSIMDAL(IMEI, CHPrintTime, lj1, lj2,SIM) > 0)
+            if (MOPD.UpdateCHmesDAL(IMEI, CHPrintTime, lj1, lj2,SN) > 0)
             {
                 return true;
             }
@@ -72,21 +67,9 @@ namespace ManuOrder.Param.BLL
             }
         }
 
-        public bool UpdateCHVIPBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP)
+        public bool UpdateCHAssociatedBLL(string IMEI, string CHPrintTime, string lj1, string lj2 ,string SIM,string VIP,string BAT,string ICCID,string MAC,string Equipment,string SN)
         {
-            if (MOPD.UpdateCHVIPDAL(IMEI, CHPrintTime, lj1, lj2, VIP) > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool UpdateCHVIPAndSimBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP,string SIM)
-        {
-            if (MOPD.UpdateCHVIPAndSimDAL(IMEI, CHPrintTime, lj1, lj2, VIP,SIM) > 0)
+            if (MOPD.UpdateCHAssociatedDAL(IMEI, CHPrintTime, lj1, lj2,SIM,VIP,BAT,ICCID,MAC,Equipment,SN) > 0)
             {
                 return true;
             }
@@ -111,6 +94,11 @@ namespace ManuOrder.Param.BLL
         public void UpdateStatusByZhiDanBLL(string ZhiDanNum)
         {
             MOPD.UpdateStatusByZhiDanDAL(ZhiDanNum);
+        }
+
+        public int UpdateInlineByZhiDanBLL(string ZhiDanNum,string SN1,string SN2,string ProductData, string SIM1,string SIM2,string SIM_dig,string SIM_pre,string VIP1, string VIP2, string VIP_dig,string VIP_pre,string BAT1,string BAT2,string BAT_dig,string BAT_pre,string ICCID_dig,string ICCID_pre, string MAC_dig, string MAC_pre, string Equipment_dig, string Equipment_pre)
+        {
+           return MOPD.UpdateInlineByZhiDanDAL(ZhiDanNum,SN1,SN2,ProductData,SIM1,SIM2,SIM_dig,SIM_pre,VIP1,VIP2,VIP_dig,VIP_pre,BAT1,BAT2,BAT_dig,BAT_pre, ICCID_dig, ICCID_pre, MAC_dig, MAC_pre, Equipment_dig, Equipment_pre);
         }
 
 
