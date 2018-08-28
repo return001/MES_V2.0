@@ -100,11 +100,14 @@ void CAutoCombox::AutoMatchAndSel()
 	}
 
 	// 保存edit控件的状态
-	CString strText;			//取得输入字符串
+	CString strText,strText1,strText2;			//取得输入字符串
 	int nStart = 0, nEnd = 0;	//取得光标位置
 	m_pEdit->GetWindowText(strText);
+	m_pEdit->GetWindowText(strText1);
+	m_pEdit->GetWindowText(strText2);
 	m_pEdit->GetSel(nStart, nEnd);
-
+	strText1.MakeUpper();
+	strText2.MakeLower();
 	//清空CComboBox里面的数据
 	CComboBox::ResetContent();
 
@@ -117,14 +120,16 @@ void CAutoCombox::AutoMatchAndSel()
 		for (int nIndex = 0; nIndex<m_strArr.GetSize(); ++nIndex)
 		{
 			int nFrom = m_strArr[nIndex].Find(strText);
+			int nFrom1 = m_strArr[nIndex].Find(strText1);
+			int nFrom2 = m_strArr[nIndex].Find(strText2);
 			char kk = m_strArr[nIndex].GetAt(0);
 			char jj = strText.GetAt(0);
 			BOOL flag = FALSE;
-			if (kk == jj)
+			if (kk == jj || (kk >= 'a'&&kk<='z' &&jj>='A'&&jj <= 'Z' && (jj + 32 == kk)) || (kk >= 'A'&&kk<='Z' &&jj>='a'&&jj <= 'z' && (jj - 32 == kk)))
 			{
 				flag = TRUE;
 			}
-			if (nFrom != -1 && flag == TRUE)//能匹配
+			if ((nFrom != -1 && flag == TRUE) || (nFrom1 != -1 && flag == TRUE) || (nFrom2 != -1 && flag == TRUE))//能匹配
 			{
 				int n = CComboBox::AddString(m_strArr[nIndex]);
 

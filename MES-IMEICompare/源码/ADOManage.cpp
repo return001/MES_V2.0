@@ -137,7 +137,7 @@ _RecordsetPtr ADOManage::GetRst()
 }
 
 //根据其它号段寻找IMEI
-int ADOManage::CpImeiByNo(CString noname,CString no)
+int ADOManage::CpImeiByNo(CString noname,CString no,CString strzhidan)
 {
 	//初始化Recordset指针
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
@@ -147,7 +147,7 @@ int ADOManage::CpImeiByNo(CString noname,CString no)
 	CString strSql;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [")+noname+_T("] =") + _T("'") + no + _T("'");
+	strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [") + noname + _T("] =") + _T("'") + no + _T("'") + _T("AND ZhiDan='") + strzhidan + _T("'");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//代表不存在此号段
@@ -247,7 +247,7 @@ int ADOManage::InsertCorrectImei(CString zhidan, CString imei1, CString imei2, C
 	//如果对比成功那就更新一下数据，Affectline是insert操作返回的影响行数，如果为0代表插入失败，也就是说之前已经插入过这条数据
 	if (result=="1"&&Affectline.vt == 0)
 	{
-		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET CPRESULT = '1',IMEI2='") + imei2 + _T("',SECTIONNO1='") + no1 + _T("',SECTIONNO2 ='") + no2 + _T("',CPTYPE ='") + notype+_T("', RECPTIME='") + GetTime() + _T("' where[IMEI1] = '") + imei1 + _T("'") + _T("AND[ZhiDan] = '") + zhidan + _T("'");
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET CPRESULT = '1',ZhiDan = '")+ zhidan+ _T("',IMEI2='") + imei2 + _T("',SECTIONNO1='") + no1 + _T("',SECTIONNO2 ='") + no2 + _T("',CPTYPE ='") + notype+_T("', RECPTIME='") + GetTime() + _T("' where[IMEI1] = '") + imei1 + _T("'") ;
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 	}
 
@@ -291,7 +291,7 @@ _RecordsetPtr ADOManage::GetOrderNumber()
 {
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
 	//初始化Recordset指针
-	CString strSql = _T("SELECT [ZhiDan] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam]");
+	CString strSql = _T("SELECT [ZhiDan] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE Status='0' OR Status='1' order by ZhiDan" );
 	//CString strSql = _T("SELECT [ZhiDan] FROM [") + m_Seconddbname + _T("].[dbo].[orderld]");
 
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句

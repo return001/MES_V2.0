@@ -110,7 +110,7 @@ void CDBconfig::OnEnKillfocusServeripEdit()
 	}
 	else
 	{
-		::MessageBox(NULL, _T("IP输入错误，请根据192.168.1.1这种(x.x.x.x)格式输入!且确保每个值在0~255之间！"), _T("错误信息"), NULL);
+		MessageBox(_T("IP输入错误，请根据192.168.1.1这种(x.x.x.x)格式输入!且确保每个值在0~255之间！"), _T("错误信息"), NULL);
 		SetDlgItemText(IDC_SERVERIP_EDIT, m_serveripEdit);
 	}
 }
@@ -188,5 +188,6 @@ void CDBconfig::OnBnClickedOk()
 
 	catch (_com_error &e)
 	{
+		AfxMessageBox(e.Description());
 	}
 }

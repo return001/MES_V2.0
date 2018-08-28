@@ -68,6 +68,7 @@ public:
 	CString strno1,strno2;//存放其它扫描类型的值，比如选中SN时，里面放着的就是SN号
 	CString strzhidan;//存放当前选中的制单号
 	int chjudgeflag;//彩盒复选框的标志
+	CString strimeistart, strimeiend;
 
 
 	//数据库操作函数
@@ -79,6 +80,7 @@ public:
 	int GetLocalHostIPName(CString &sLocalName, CString &sIpAddress);//获取IP地址
 	afx_msg void OnBnClickedOk();
 	void readimei();
+	BOOL judgeimeirang(CString str, CString strimeistart, CString strimeiend);
 
 	//以下是控件按钮消息函数
 

@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCP2CP", "MFCP2CP.vcxproj", "{A9CC8593-4844-4A9F-A4BB-4371940E5330}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFC1LD", "..\MFC1LD\MFC1LD.vcxproj", "{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -20,13 +18,8 @@ Global
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Debug|x64.ActiveCfg = Debug|Win32
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|Win32.ActiveCfg = Release|Win32
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|Win32.Build.0 = Release|Win32
+		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|Win32.Deploy.0 = Release|Win32
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|x64.ActiveCfg = Release|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Debug|Win32.Build.0 = Debug|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Debug|x64.ActiveCfg = Debug|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Release|Win32.ActiveCfg = Release|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Release|Win32.Build.0 = Release|Win32
-		{36A4E0A2-644B-4FC5-A8BB-9B83C12E09EE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

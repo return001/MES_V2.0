@@ -23,7 +23,7 @@ public:
 
 
 
-	int CpImeiByNo(CString noname, CString no);//根据其它号段寻找IMEI
+	int CpImeiByNo(CString noname, CString no, CString strzhidan);//根据其它号段寻找IMEI
 	int CpCaiheByImei(CString imei);//根据IMEI寻找彩盒时间
 	int InsertCorrectImei(CString zhidan, CString imei1, CString imei2, CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入正确数据到表中
 	int InsertWrongImei(CString zhidan, CString imei1, CString imei2, CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入错误数据到表中
