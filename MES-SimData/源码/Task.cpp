@@ -3,6 +3,7 @@
 #include "MFCP3SIMPORTDlg.h"
 
 //全局变量
+bool s_bSingleExit;//主控线程
 bool s_bExit;//主控线程
 //串口单文件下载
 bool m_TreadPort1SINGLEDownloadWrite1 = true;

@@ -63,6 +63,7 @@
 #define PORT4_READ4_THREAD   23057
 
 /** 主线程退出标志变量 */
+extern bool s_bSingleExit;
 extern bool s_bExit;
 //串口单文件下载
 extern bool m_TreadPort1SINGLEDownloadWrite1;
