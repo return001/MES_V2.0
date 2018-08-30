@@ -25,12 +25,12 @@ public class OrderService extends SelectService{
 	}
 	
 	
-	public boolean create(GpsManuorderparam order) {	    
-	    order.setStatus(0);
-	    Record orderInDb = Db.findFirst("select * from Gps_ManuOrderParam where ZhiDan = ?", order.getZhiDan());
-        if(orderInDb != null) {
-            throw new ParameterException("only create the order one time");
-        }	    
+	public boolean create(GpsManuorderparam order) {	    		
+	    Record orderInDb = Db.findFirst("select * from Gps_ManuOrderParam where ZhiDan = ? and Status != 3", order.getZhiDan());
+        if(orderInDb != null) {        	
+        		throw new ParameterException("only create the order one time");        	          
+        }
+        order.setStatus(0);
 		return order.save();
 	}
 	
