@@ -205,6 +205,7 @@ public:
 
 	int SimDataSingleNoIsExitFun(CString strfile);
 	int SimDataNoIsExitFun(CString strfile);
+
 	//串口1的
 	int SimDataLastStationFun1();
 	int SimDataIsExitFun1();
@@ -212,13 +213,22 @@ public:
 	void SimDataErrorInsertFun1();
 
 	//串口2的
-
+	int SimDataLastStationFun2();
+	int SimDataIsExitFun2();
+	void SimDataOkInsertFun2();
+	void SimDataErrorInsertFun2();
 
 	//串口3的
-
+	int SimDataLastStationFun3();
+	int SimDataIsExitFun3();
+	void SimDataOkInsertFun3();
+	void SimDataErrorInsertFun3();
 
 	//串口4的
-
+	int SimDataLastStationFun4();
+	int SimDataIsExitFun4();
+	void SimDataOkInsertFun4();
+	void SimDataErrorInsertFun4();
 
 	//其它函数
 	void Delay(int time);

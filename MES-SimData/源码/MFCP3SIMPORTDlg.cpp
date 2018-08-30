@@ -45,6 +45,7 @@ volatile BOOL m_Port1SINGLEDownloadRead1;
 volatile BOOL m_Port1SINGLEDownloadRead2;
 volatile BOOL m_Port1SINGLEDownloadReadEnd2;
 volatile BOOL m_Port1SINGLEDownloadRead3;
+volatile BOOL m_Port1SINGLEDownloadReadEnd3;
 volatile BOOL m_Port1SINGLEDownloadRead4;
 
 //串口1下载
@@ -56,6 +57,7 @@ volatile BOOL m_Port1DownloadRead1;
 volatile BOOL m_Port1DownloadRead2;
 volatile BOOL m_Port1DownloadReadEnd2;
 volatile BOOL m_Port1DownloadRead3;
+volatile BOOL m_Port1DownloadReadEnd3;
 volatile BOOL m_Port1DownloadRead4;
 volatile BOOL m_Port1DownloadControl;
 
@@ -68,6 +70,7 @@ volatile BOOL m_Port2DownloadRead1;
 volatile BOOL m_Port2DownloadRead2;
 volatile BOOL m_Port2DownloadReadEnd2;
 volatile BOOL m_Port2DownloadRead3;
+volatile BOOL m_Port2DownloadReadEnd3;
 volatile BOOL m_Port2DownloadRead4;
 volatile BOOL m_Port2DownloadControl;
 
@@ -80,6 +83,7 @@ volatile BOOL m_Port3DownloadRead1;
 volatile BOOL m_Port3DownloadRead2;
 volatile BOOL m_Port3DownloadReadEnd2;
 volatile BOOL m_Port3DownloadRead3;
+volatile BOOL m_Port3DownloadReadEnd3;
 volatile BOOL m_Port3DownloadRead4;
 volatile BOOL m_Port3DownloadControl;
 
@@ -92,6 +96,7 @@ volatile BOOL m_Port4DownloadRead1;
 volatile BOOL m_Port4DownloadRead2;
 volatile BOOL m_Port4DownloadReadEnd2;
 volatile BOOL m_Port4DownloadRead3;
+volatile BOOL m_Port4DownloadReadEnd3;
 volatile BOOL m_Port4DownloadRead4;
 volatile BOOL m_Port4DownloadControl;
 
@@ -753,6 +758,8 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload1Button()
 			m_Port1DownloadControl = FALSE;
 			simstart1flag = 0;
 			SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
+			SetPort1EditEmpty();
+			StrFolder[0] = L"";
 		}
 	}
 }
@@ -879,6 +886,8 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload2Button()
 		m_Port2DownloadControl = FALSE;
 		simstart2flag = 0;
 		SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"开始下载");
+		SetPort2EditEmpty();
+		StrFolder[1] = L"";
 	}
 }
 
@@ -1003,6 +1012,8 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload3Button()
 		m_Port3DownloadControl = FALSE;
 		simstart3flag = 0;
 		SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"开始下载");
+		SetPort3EditEmpty();
+		StrFolder[2] = L"";
 	}
 }
 
@@ -1086,6 +1097,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 		SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"连接");
 		GetDlgItem(IDC_STARTDOWNLOAD4_BUTTON)->EnableWindow(FALSE);
 		GetDlgItem(IDC_PORTLIST4_COMBO)->EnableWindow(TRUE);
+
 		if (simconnect1flag == 0 && simconnect2flag == 0 && simconnect3flag == 0)
 		{
 			PortSetOtherWindowTrue();
@@ -1127,6 +1139,8 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload4Button()
 		m_Port4DownloadControl = FALSE;
 		simstart4flag = 0;
 		SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"开始下载");
+		SetPort4EditEmpty();
+		StrFolder[3] = L"";
 	}
 }
 
@@ -1397,11 +1411,11 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 
-	int findfileend=1;
+	int findfileend=1,singleflag;
 	DWORD dwTotalSize;//文件总大小
 	CStdioFile ReadFile;
 	//CRC变量
-	CString strCID;
+	CString strCID, strCIDfile;
 	int crc16, strCIDcount;
 
 	if (dlg->initconfigflag == 1)
@@ -1446,7 +1460,24 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 				}
 				if (finder.IsDirectory())//是文件夹
 				{
-					strFolderFile = strFolderpath + finder.GetFileName() + L"\\assets.der";//文件夹名称
+					strCIDfile = finder.GetFileName();
+					strFolderFile = strFolderpath + strCIDfile + L"\\assets.der";//文件夹名称
+					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+					
+					ADOManage adosinglesimdatamanage;
+					adosinglesimdatamanage.ConnSQL();
+					singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);
+					adosinglesimdatamanage.CloseAll();
+
+					if (singleflag == 0)
+					{
+						bFind = TRUE;
+						MoveFile(strFolderpath + strCIDfile + "\\", strOKFolderpath + strCIDfile + "\\");//然后粘到下好的OK文件夹路径后面
+						strFolderFile = L"";
+						finder.Close();
+						continue;
+					}
+                    
 				}
 				if (StrFolder[0] == strFolderFile)
 				{
@@ -1911,10 +1942,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 						findcount2 = strcount.Find(L"\r\n");
 						strcount = strcount.Left(findcount2);
 						strcounttemp = strcount;
-						if (strcount != ""&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
 							Sleep(50);
 						}
 						else
@@ -1986,10 +2017,11 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
 
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Downloading, NULL);
-	PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	while ((dwRead = ReadFile1.Read(pBuf, dwStep)) > 0)
 	{
+		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		//文件分割发送
 		strdatano.Format(L"%d", intdatano);
 		char *buf1 = new char[2 * (dwRead + 1)];
@@ -2018,7 +2050,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-        Sleep(400);
+        Sleep(500);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -2045,8 +2077,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
-			m_Port1SINGLEDownloadWrite3 = FALSE;
-			m_Port1SINGLEDownloadRead3 = FALSE;
+			dlg->SingleDownloadClosePort1Thread();
+			dlg->SingleDownloadRestPort1Thread();
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -2079,7 +2111,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 	//其余变量
 	CString strread;
 
-	m_Port1SINGLEDownloadRead3 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+	m_Port1SINGLEDownloadRead3 = TRUE;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+	m_Port1SINGLEDownloadReadEnd3 = TRUE;
 
 	do
 	{
@@ -2093,12 +2126,12 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 					if (strread.Find(L"OK") >= 0)
 					{
 						//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
-						//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+						//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
 					}
 					if (strread.Find(L"Error") >= 0)
 					{
 						::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
-						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
+						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_ErrorInsert, NULL);
 						m_Port1SINGLEDownloadWrite3 = FALSE;
 						m_Port1SINGLEDownloadRead3 = FALSE;
 						dlg->SingleDownloadRestPort1Thread();
@@ -2116,6 +2149,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1SINGLEDownloadRead3);
+	if (m_Port1SINGLEDownloadReadEnd3 == FALSE)
+	{
+		return;
+	}
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -2201,7 +2238,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead4Port1Thread(LPVOID lpParam)
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
-				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
 			}
 			m_Port1SINGLEDownloadRead4 = FALSE;
 			m_Port1SINGLEDownloadWrite4 = FALSE;
@@ -2244,6 +2281,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadClosePort1Thread()
 	m_Port1SINGLEDownloadRead2 = FALSE;
 	m_Port1SINGLEDownloadReadEnd2 = FALSE;
 	m_Port1SINGLEDownloadRead3 = FALSE;
+	m_Port1SINGLEDownloadReadEnd3 = FALSE;
 	m_Port1SINGLEDownloadRead4 = FALSE;
 }
 
@@ -2337,7 +2375,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Connected, NULL);
-	PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//串口变量
 	DWORD dwBytesWrite;
@@ -2352,6 +2390,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 	//连接上了就开始读它的RID和IMEI，如果连续发送五条命令都没反应，那就返回Test那里重新检测设备
 	for (int i = 0; i < 2; i++)
 	{
+		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		int count = 0;
 		if (i == 0)
 		{
@@ -2452,10 +2491,10 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 						findcount2 = strcount.Find(L"\r\n");
 						strcount = strcount.Left(findcount2);
 						strcounttemp = strcount;
-						if (strcount != ""&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
-							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
 							Sleep(50);
 						}
 						else
@@ -2524,11 +2563,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 	ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
 
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Downloading, NULL);
-	PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//这个While循环是用来发送文件数据的
 	while ((dwRead = ReadFile1.Read(pBuf, dwStep)) > 0)
 	{
+		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		//文件分割发送
 		strdatano.Format(L"%d", intdatano);
 		char *buf1 = new char[2 * (dwRead + 1)];
@@ -2557,7 +2597,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(400);
+		Sleep(500);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -2568,7 +2608,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		dlg->DownloadRestPort1Thread();
 		return;
 	}
-	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//下面开始发送结束语句
 	strcommand = L"AT^GT_CM=SOFTSIM_DATA,END," + dlg->strport1crc16 + L"\r\n";
@@ -2581,13 +2621,13 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
+		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
-			m_Port1DownloadWrite3 = FALSE;
-			m_Port1DownloadRead3 = FALSE;
-
+			dlg->DownloadClosePort1Thread();
+			dlg->DownloadRestPort1Thread();
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -2619,9 +2659,9 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 
 	//其余变量
 	CString strread;
-
+	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	m_Port1DownloadRead3 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
-
+	m_Port1DownloadReadEnd3 = TRUE;
 	do
 	{
 		Sleep(1020);
@@ -2633,17 +2673,17 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 			{
 				if (strread.Find(L"OK") >= 0)
 				{
-					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
 				}
 				else if (strread.Find(L"Error") >= 0)
 				{
 					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
 					m_Port1DownloadWrite3 = FALSE;
 					m_Port1DownloadRead3 = FALSE;
 					dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort1Thread();
 					return;
-					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
 				}
 				m_Port1DownloadRead3 = FALSE;
 				m_Port1DownloadWrite3 = FALSE;
@@ -2656,10 +2696,15 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1DownloadRead3);
+
+	if (m_Port1DownloadReadEnd3 == FALSE)
+	{
+		return;
+	}
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-	//dlg->DownloadRestPort1Thread();
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Write4, NULL);
+	//dlg->DownloadRestPort1Thread();
 }
 
 //串口1的写老化命令的写线程
@@ -2740,14 +2785,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
-				strfolderpath = StrFolder[0];//路径先复制到一个临时变量
-				strfolderpath = strfolderpath.Left(strfolderpath.GetLength() - 10);//将末尾的证书文件路径切掉
-				strfoldercut = strfolderpath.Right(13);//然后将种子文件夹名称切割出来
-				MoveFile(strfolderpath, strOKFolderpath + strfoldercut);//然后粘到下好的OK文件夹路径后面
-				StrFolder[0] = L"";
-				dlg->SetPort1EditEmpty();
-				//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
 			}
 			m_Port1DownloadRead4 = FALSE;
 			m_Port1DownloadWrite4 = FALSE;
@@ -2789,6 +2827,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort1Thread()
 	m_Port1DownloadRead2 = FALSE;
 	m_Port1DownloadReadEnd2 = FALSE;
 	m_Port1DownloadRead3 = FALSE;
+	m_Port1DownloadReadEnd3 = FALSE;
 	m_Port1DownloadRead4 = FALSE;
 }
 
@@ -2995,10 +3034,10 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 						findcount2 = strcount.Find(L"\r\n");
 						strcount = strcount.Left(findcount2);
 						strcounttemp = strcount;
-						if (strcount != ""&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, strcount);
-							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
 							Sleep(50);
 						}
 						else 
@@ -3067,11 +3106,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 	ClearCommError(dlg->port2handler, &dwErrorFlags, &ComStat);
 
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Downloading, NULL);
-	PurgeComm(port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//这个While循环是用来发送文件数据的
 	while ((dwRead = ReadFile2.Read(pBuf, dwStep)) > 0)
 	{
+		PurgeComm(port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		//文件分割发送
 		strdatano.Format(L"%d", intdatano);
 		char *buf1 = new char[2 * (dwRead + 1)];
@@ -3100,7 +3140,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(400);
+		Sleep(500);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -3128,8 +3168,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Fail, NULL);
-			m_Port2DownloadWrite3 = FALSE;
-			m_Port2DownloadRead3 = FALSE;
+			dlg->DownloadClosePort2Thread();
+			dlg->DownloadRestPort2Thread();
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -3163,6 +3203,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 	CString strread, strfolderpath, strfoldercut;
 
 	m_Port2DownloadRead3 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+	m_Port2DownloadReadEnd3 = TRUE;
 
 	do
 	{
@@ -3180,12 +3221,12 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 				else if (strread.Find(L"Error") >= 0)
 				{
 					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Fail, NULL);
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
 					m_Port2DownloadWrite3 = FALSE;
 					m_Port2DownloadRead3 = FALSE;
 					dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort2Thread();
 					return;
-					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
 				}
 				m_Port2DownloadRead3 = FALSE;
 				m_Port2DownloadWrite3 = FALSE;
@@ -3198,6 +3239,10 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port2DownloadRead3);
+	if (m_Port2DownloadReadEnd3 == FALSE)
+	{
+		return;
+	}
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort2Thread();
@@ -3282,14 +3327,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port2Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Success, NULL);
-				strfolderpath = StrFolder[1];//路径先复制到一个临时变量
-				strfolderpath = strfolderpath.Left(strfolderpath.GetLength() - 10);//将末尾的证书文件路径切掉
-				strfoldercut = strfolderpath.Right(13);//然后将种子文件夹名称切割出来
-				MoveFile(strfolderpath, strOKFolderpath + strfoldercut);//然后粘到下好的OK文件夹路径后面
-				StrFolder[1] = L"";
-				dlg->SetPort2EditEmpty();
-				//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
 			}
 			m_Port2DownloadRead4 = FALSE;
 			m_Port2DownloadWrite4 = FALSE;
@@ -3331,6 +3369,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort2Thread()
 	m_Port2DownloadRead2 = FALSE;
 	m_Port2DownloadReadEnd2 = FALSE;
 	m_Port2DownloadRead3 = FALSE;
+	m_Port2DownloadReadEnd3 = FALSE;
 	m_Port2DownloadRead4 = FALSE;
 }
 
@@ -3537,10 +3576,10 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 						findcount2 = strcount.Find(L"\r\n");
 						strcount = strcount.Left(findcount2);
 						strcounttemp = strcount;
-						if (strcount != ""&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, strcount);
-							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
 							Sleep(50);
 						}
 						else 
@@ -3609,11 +3648,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 	ClearCommError(dlg->port3handler, &dwErrorFlags, &ComStat);
 
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Downloading, NULL);
-	PurgeComm(port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//这个While循环是用来发送文件数据的
 	while ((dwRead = ReadFile3.Read(pBuf, dwStep)) > 0)
 	{
+		PurgeComm(port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		//文件分割发送
 		strdatano.Format(L"%d", intdatano);
 		char *buf1 = new char[2 * (dwRead + 1)];
@@ -3642,7 +3682,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(400);
+		Sleep(500);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -3670,8 +3710,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Fail, NULL);
-			m_Port3DownloadWrite3 = FALSE;
-			m_Port3DownloadRead3 = FALSE;
+			dlg->DownloadClosePort3Thread();
+			dlg->DownloadRestPort3Thread();
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -3704,8 +3744,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 	//其余变量
 	CString strread, strfolderpath, strfoldercut;
 
-	m_Port3DownloadRead3 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
-
+	m_Port3DownloadRead3 = TRUE;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+	m_Port3DownloadReadEnd3 = TRUE;
 	do
 	{
 		Sleep(1020);
@@ -3723,7 +3763,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 				else if (strread.Find(L"Error") >= 0)
 				{
 					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Fail, NULL);
-					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
 					m_Port3DownloadWrite3 = FALSE;
 					m_Port3DownloadRead3 = FALSE;
 					dlg->SetRicheditText(L"收:" + strread, 0);
@@ -3741,6 +3781,10 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port3DownloadRead3);
+	if (m_Port3DownloadReadEnd3 == FALSE)
+	{
+		return;
+	}
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort3Thread();
@@ -3824,14 +3868,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port3Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Success, NULL);
-				strfolderpath = StrFolder[2];//路径先复制到一个临时变量
-				strfolderpath = strfolderpath.Left(strfolderpath.GetLength() - 10);//将末尾的证书文件路径切掉
-				strfoldercut = strfolderpath.Right(13);//然后将种子文件夹名称切割出来
-				MoveFile(strfolderpath, strOKFolderpath + strfoldercut);//然后粘到下好的OK文件夹路径后面
-				StrFolder[2] = L"";
-				dlg->SetPort3EditEmpty();
-				//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_OkInsert, NULL);
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_OkInsert, NULL);
 			}
 			m_Port3DownloadRead4 = FALSE;
 			m_Port3DownloadWrite4 = FALSE;
@@ -3873,6 +3910,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort3Thread()
 	m_Port3DownloadRead2 = FALSE;
 	m_Port3DownloadReadEnd2 = FALSE;
 	m_Port3DownloadRead3 = FALSE;
+	m_Port3DownloadReadEnd3 = FALSE;
 	m_Port3DownloadRead4 = FALSE;
 }
 
@@ -4078,10 +4116,10 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 						strcount = strread.Right(strread.GetLength() - findcount1 - 5);
 						findcount2 = strcount.Find(L"\r\n");
 						strcount = strcount.Left(findcount2);
-						if (strcount != ""&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+						if (strcount != ""&&strcount!="^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, strcount);
-							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
 							Sleep(50);
 						}
 						else 
@@ -4150,11 +4188,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 	ClearCommError(dlg->port4handler, &dwErrorFlags, &ComStat);
 
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Downloading, NULL);
-	PurgeComm(port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	//PurgeComm(port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//这个While循环是用来发送文件数据的
 	while ((dwRead = ReadFile2.Read(pBuf, dwStep)) > 0)
 	{
+		PurgeComm(port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		//文件分割发送
 		strdatano.Format(L"%d", intdatano);
 		char *buf1 = new char[2 * (dwRead + 1)];
@@ -4183,7 +4222,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(400);
+		Sleep(500);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -4211,8 +4250,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Fail, NULL);
-			m_Port4DownloadWrite3 = FALSE;
-			m_Port4DownloadRead3 = FALSE;
+			dlg->DownloadClosePort4Thread();
+			dlg->DownloadRestPort4Thread();
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -4245,8 +4284,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 	//其余变量
 	CString strread, strfolderpath, strfoldercut;
 
-	m_Port4DownloadRead3 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
-
+	m_Port4DownloadRead3 = TRUE;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+	m_Port4DownloadReadEnd3 = TRUE;
 	do
 	{
 		Sleep(1020);
@@ -4264,12 +4303,12 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 				else if (strread.Find(L"Error") >= 0)
 				{
 					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Fail, NULL);
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
 					m_Port4DownloadWrite3 = FALSE;
 					m_Port4DownloadRead3 = FALSE;
 					dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort4Thread();
 					return;
-					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
 				}
 				m_Port4DownloadRead3 = FALSE;
 				m_Port4DownloadWrite3 = FALSE;
@@ -4282,6 +4321,10 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port4DownloadRead3);
+	if (m_Port4DownloadReadEnd3 == FALSE)
+	{
+		return;
+	}
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort4Thread();
@@ -4365,14 +4408,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Success, NULL);
-				strfolderpath = StrFolder[3];//路径先复制到一个临时变量
-				strfolderpath = strfolderpath.Left(strfolderpath.GetLength() - 10);//将末尾的证书文件路径切掉
-				strfoldercut = strfolderpath.Right(13);//然后将种子文件夹名称切割出来
-				MoveFile(strfolderpath, strOKFolderpath + strfoldercut);//然后粘到下好的OK文件夹路径后面
-				StrFolder[3] = L"";
-				dlg->SetPort4EditEmpty();
-				//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
 			}
 			m_Port4DownloadRead4 = FALSE;
 			m_Port4DownloadWrite4 = FALSE;
@@ -4414,6 +4450,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort4Thread()
 	m_Port4DownloadRead2 = FALSE;
 	m_Port4DownloadReadEnd2 = FALSE;
 	m_Port4DownloadRead3 = FALSE;
+	m_Port4DownloadReadEnd3 = FALSE;
 	m_Port4DownloadRead4 = FALSE;
 }
 
@@ -4485,7 +4522,12 @@ void CMFCP3SIMPORTDlg::OnBnClickedDbconfigButton()
 afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lParam)
 {
 	CString strSingleFile, strSingleFileTempPath, strSingleFilecut;
-	int singleflag, port1flag;
+	CString strport1folderpath, strport1foldercut;
+	CString strport2folderpath, strport2foldercut;
+	CString strport3folderpath, strport3foldercut;
+	CString strport4folderpath, strport4foldercut;
+
+	int singleflag, port1flag, port2flag, port3flag, port4flag;
 
 	switch (wParam)
 	{
@@ -4510,21 +4552,32 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			}
 		}
 		break;
-	case DataInsert_Port1_LastStation:
+	case DataInsert_SinglePort_LastStation:
 		SimDataLastStationFun1();
 		break;
-	case DataInsert_Port1_IsExit:
+	case DataInsert_SinglePort_IsExit:
+		singleflag = SimDataLastStationFun1();
+		if (singleflag == 0)
+		{
+			m_Port1SINGLEDownloadWrite2 = FALSE;
+			m_Port1SINGLEDownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+			SingleDownloadClosePort1Thread();
+			SingleDownloadRestPort1Thread();
+			return 0;
+		}
 		port1flag = SimDataIsExitFun1();
-		if (port1flag == 0)
+		if (singleflag == 0)
 		{
 			m_Port1SINGLEDownloadWrite2 = FALSE;
 			m_Port1SINGLEDownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT1HINT_STATIC,L"工位已测");
 			SingleDownloadClosePort1Thread();
 			SingleDownloadRestPort1Thread();
+			return 0;
 		}
 		break;
-	case DataInsert_Port1_OkInsert:
+	case DataInsert_SinglePort_OkInsert:
 		strSingleFileTempPath = strSingleFilePath.Left(strSingleFilePath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strSingleFilecut = strSingleFileTempPath.Right(13);//然后将种子文件夹名称切割出来
 		MoveFile(strSingleFileTempPath, strOKFolderpath + strSingleFilecut);//然后粘到下好的OK文件夹路径后面
@@ -4540,9 +4593,160 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			OnBnClickedStartdownload1Button();
 		}
 		break;
+	case DataInsert_SinglePort_ErrorInsert:
+		SimDataErrorInsertFun1();
+		break;
+
+	//多文件下载
+		//串口1
+	case DataInsert_Port1_IsExit:
+		port1flag = SimDataLastStationFun1();
+		if (port1flag == 0)
+		{
+			m_Port1DownloadWrite2 = FALSE;
+			m_Port1DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+			DownloadClosePort1Thread();
+			DownloadRestPort1Thread();
+			return 0;
+		}
+		port1flag = SimDataIsExitFun1();
+		if (port1flag == 0)
+		{
+			m_Port1DownloadWrite2 = FALSE;
+			m_Port1DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+			DownloadClosePort1Thread();
+			DownloadRestPort1Thread();
+			return 0;
+		}
+		break;
+	case DataInsert_Port1_OkInsert:
+		strport1folderpath = StrFolder[0];//路径先复制到一个临时变量
+		strport1folderpath = strport1folderpath.Left(strport1folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+		strport1foldercut = strport1folderpath.Right(13);//然后将种子文件夹名称切割出来
+		SimDataOkInsertFun1();
+		MoveFile(strport1folderpath, strOKFolderpath + strport1foldercut);//然后粘到下好的OK文件夹路径后面
+		StrFolder[0] = L"";
+		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
+		SetPort1EditEmpty();
+		break;
 	case DataInsert_Port1_ErrorInsert:
 		SimDataErrorInsertFun1();
 		break;
+
+		//串口2
+	case DataInsert_Port2_IsExit:
+		port2flag = SimDataLastStationFun2();
+		if (port2flag == 0)
+		{
+			m_Port2DownloadWrite2 = FALSE;
+			m_Port2DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+			DownloadClosePort2Thread();
+			DownloadRestPort2Thread();
+			return 0;
+		}
+		port2flag = SimDataIsExitFun2();
+		if (port2flag == 0)
+		{
+			m_Port2DownloadWrite2 = FALSE;
+			m_Port2DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+			DownloadClosePort2Thread();
+			DownloadRestPort2Thread();
+			return 0;
+		}
+		break;
+	case DataInsert_Port2_OkInsert:
+		strport2folderpath = StrFolder[1];//路径先复制到一个临时变量
+		strport2folderpath = strport2folderpath.Left(strport2folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+		strport2foldercut = strport2folderpath.Right(13);//然后将种子文件夹名称切割出来
+		SimDataOkInsertFun2();
+		MoveFile(strport2folderpath, strOKFolderpath + strport2foldercut);//然后粘到下好的OK文件夹路径后面
+		StrFolder[1] = L"";
+		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Success, NULL);
+		SetPort2EditEmpty();
+		break;
+	case DataInsert_Port2_ErrorInsert:
+		SimDataErrorInsertFun2();
+		break;
+
+		//串口3
+	case DataInsert_Port3_IsExit:
+		port3flag = SimDataLastStationFun3();
+		if (port3flag == 0)
+		{
+			m_Port3DownloadWrite2 = FALSE;
+			m_Port3DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+			DownloadClosePort3Thread();
+			DownloadRestPort3Thread();
+			return 0;
+		}
+		port3flag = SimDataIsExitFun3();
+		if (port3flag == 0)
+		{
+			m_Port3DownloadWrite2 = FALSE;
+			m_Port3DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
+			DownloadClosePort3Thread();
+			DownloadRestPort3Thread();
+			return 0;
+		}
+		break;
+	case DataInsert_Port3_OkInsert:
+		strport3folderpath = StrFolder[2];//路径先复制到一个临时变量
+		strport3folderpath = strport3folderpath.Left(strport3folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+		strport3foldercut = strport3folderpath.Right(13);//然后将种子文件夹名称切割出来
+		SimDataOkInsertFun3();
+		MoveFile(strport3folderpath, strOKFolderpath + strport3foldercut);//然后粘到下好的OK文件夹路径后面
+		StrFolder[2] = L"";
+		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Success, NULL);
+		SetPort3EditEmpty();
+		break;
+	case DataInsert_Port3_ErrorInsert:
+		SimDataErrorInsertFun3();
+		break;
+
+		//串口4
+	case DataInsert_Port4_IsExit:
+		port4flag = SimDataLastStationFun4();
+		if (port4flag == 0)
+		{
+			m_Port4DownloadWrite2 = FALSE;
+			m_Port4DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+			DownloadClosePort4Thread();
+			DownloadRestPort4Thread();
+			return 0;
+		}
+		port4flag = SimDataIsExitFun4();
+		if (port4flag == 0)
+		{
+			m_Port4DownloadWrite2 = FALSE;
+			m_Port4DownloadReadEnd2 = FALSE;
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+			DownloadClosePort4Thread();
+			DownloadRestPort4Thread();
+			return 0;
+		}
+		break;
+	case DataInsert_Port4_OkInsert:
+		strport4folderpath = StrFolder[3];//路径先复制到一个临时变量
+		strport4folderpath = strport4folderpath.Left(strport4folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+		strport4foldercut = strport4folderpath.Right(13);//然后将种子文件夹名称切割出来
+		SimDataOkInsertFun4();
+		MoveFile(strport4folderpath, strOKFolderpath + strport4foldercut);//然后粘到下好的OK文件夹路径后面
+		StrFolder[3] = L"";
+		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Success, NULL);
+		SetPort4EditEmpty();
+		break;
+	case DataInsert_Port4_ErrorInsert:
+		SimDataErrorInsertFun4();
+		break;
+
+
 	default:
 		break;
 	}
@@ -4574,8 +4778,9 @@ int CMFCP3SIMPORTDlg::SimDataNoIsExitFun(CString strfile)
 	return 0;
 }
 
+
 //串口1的数据库函数
-//判断串口1的机器上个工位
+//判断串口1的机器上个工位（也就是耦合位）
 int CMFCP3SIMPORTDlg::SimDataLastStationFun1()
 {
 	int flag;
@@ -4638,6 +4843,204 @@ void CMFCP3SIMPORTDlg::SimDataErrorInsertFun1()
 	adoport1manage2.SimDataErrorInsertSql(m_pcipEdit, strport1RID, strport1IMEI, L"NULL");
 
 	adoport1manage2.CloseAll();
+}
+
+//串口2的数据库函数
+//判断串口2的机器上个工位（也就是耦合位）
+int CMFCP3SIMPORTDlg::SimDataLastStationFun2()
+{
+	int flag;
+	CString strport2IMEI;
+	ADOManage adoport2manage4;
+	adoport2manage4.ConnSQL();
+
+	GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
+
+	flag = adoport2manage4.SimDataLastStationSql(strport2IMEI);
+
+	adoport2manage4.CloseAll();
+	return flag;
+}
+
+//判断机器是否烧成功过
+int CMFCP3SIMPORTDlg::SimDataIsExitFun2()
+{
+	int flag;
+	CString strport2RID, strport2IMEI;
+	ADOManage adoport2manage4;
+	adoport2manage4.ConnSQL();
+
+	GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
+	GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
+
+	flag = adoport2manage4.SimDataIsExitSql(strport2RID, strport2IMEI);
+
+	adoport2manage4.CloseAll();
+	return flag;
+}
+
+//SIMOK时插入数据
+void CMFCP3SIMPORTDlg::SimDataOkInsertFun2()
+{
+	CString strport2RID, strport2CID, strport2IMEI, strport2ICCID;
+	ADOManage adoport2manage4;
+	adoport2manage4.ConnSQL();
+
+	GetDlgItemText(IDC_PORT2CID_EDIT, strport2CID);
+	GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
+	GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
+	GetDlgItemText(IDC_PORT2ICCID_EDIT, strport2ICCID);
+
+	adoport2manage4.SimDataOkInsertSql(m_pcipEdit, strport2RID, strport2IMEI, strport2CID, strport2ICCID, L"NULL");
+
+	adoport2manage4.CloseAll();
+}
+
+//SIMERROE插入数据
+void CMFCP3SIMPORTDlg::SimDataErrorInsertFun2()
+{
+	CString strport2RID, strport2IMEI;
+	ADOManage adoport2manage4;
+	adoport2manage4.ConnSQL();
+
+	GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
+	GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
+
+	adoport2manage4.SimDataErrorInsertSql(m_pcipEdit, strport2RID, strport2IMEI, L"NULL");
+
+	adoport2manage4.CloseAll();
+}
+
+//串口3的数据库函数
+//判断串口3的机器上个工位（也就是耦合位）
+int CMFCP3SIMPORTDlg::SimDataLastStationFun3()
+{
+	int flag;
+	CString strport3IMEI;
+	ADOManage adoport3manage5;
+	adoport3manage5.ConnSQL();
+
+	GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
+
+	flag = adoport3manage5.SimDataLastStationSql(strport3IMEI);
+
+	adoport3manage5.CloseAll();
+	return flag;
+}
+
+//判断机器是否烧成功过
+int CMFCP3SIMPORTDlg::SimDataIsExitFun3()
+{
+	int flag;
+	CString strport3RID, strport3IMEI;
+	ADOManage adoport3manage5;
+	adoport3manage5.ConnSQL();
+
+	GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
+	GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
+
+	flag = adoport3manage5.SimDataIsExitSql(strport3RID, strport3IMEI);
+
+	adoport3manage5.CloseAll();
+	return flag;
+}
+
+//SIMOK时插入数据
+void CMFCP3SIMPORTDlg::SimDataOkInsertFun3()
+{
+	CString strport3RID, strport3CID, strport3IMEI, strport3ICCID;
+	ADOManage adoport3manage5;
+	adoport3manage5.ConnSQL();
+
+	GetDlgItemText(IDC_PORT3CID_EDIT, strport3CID);
+	GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
+	GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
+	GetDlgItemText(IDC_PORT3ICCID_EDIT, strport3ICCID);
+
+	adoport3manage5.SimDataOkInsertSql(m_pcipEdit, strport3RID, strport3IMEI, strport3CID, strport3ICCID, L"NULL");
+
+	adoport3manage5.CloseAll();
+}
+
+//SIMERROE插入数据
+void CMFCP3SIMPORTDlg::SimDataErrorInsertFun3()
+{
+	CString strport3RID, strport3IMEI;
+	ADOManage adoport3manage5;
+	adoport3manage5.ConnSQL();
+
+	GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
+	GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
+
+	adoport3manage5.SimDataErrorInsertSql(m_pcipEdit, strport3RID, strport3IMEI, L"NULL");
+
+	adoport3manage5.CloseAll();
+}
+
+//串口4的数据库函数
+//判断串口4的机器上个工位（也就是耦合位）
+int CMFCP3SIMPORTDlg::SimDataLastStationFun4()
+{
+	int flag;
+	CString strport4IMEI;
+	ADOManage adoport4manage6;
+	adoport4manage6.ConnSQL();
+
+	GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
+
+	flag = adoport4manage6.SimDataLastStationSql(strport4IMEI);
+
+	adoport4manage6.CloseAll();
+	return flag;
+}
+
+//判断机器是否烧成功过
+int CMFCP3SIMPORTDlg::SimDataIsExitFun4()
+{
+	int flag;
+	CString strport4RID, strport4IMEI;
+	ADOManage adoport4manage6;
+	adoport4manage6.ConnSQL();
+
+	GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
+	GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
+
+	flag = adoport4manage6.SimDataIsExitSql(strport4RID, strport4IMEI);
+
+	adoport4manage6.CloseAll();
+	return flag;
+}
+
+//SIMOK时插入数据
+void CMFCP3SIMPORTDlg::SimDataOkInsertFun4()
+{
+	CString strport4RID, strport4CID, strport4IMEI, strport4ICCID;
+	ADOManage adoport4manage6;
+	adoport4manage6.ConnSQL();
+
+	GetDlgItemText(IDC_PORT4CID_EDIT, strport4CID);
+	GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
+	GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
+	GetDlgItemText(IDC_PORT4ICCID_EDIT, strport4ICCID);
+
+	adoport4manage6.SimDataOkInsertSql(m_pcipEdit, strport4RID, strport4IMEI, strport4CID, strport4ICCID, L"NULL");
+
+	adoport4manage6.CloseAll();
+}
+
+//SIMERROE插入数据
+void CMFCP3SIMPORTDlg::SimDataErrorInsertFun4()
+{
+	CString strport4RID, strport4IMEI;
+	ADOManage adoport4manage6;
+	adoport4manage6.ConnSQL();
+
+	GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
+	GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
+
+	adoport4manage6.SimDataErrorInsertSql(m_pcipEdit, strport4RID, strport4IMEI, L"NULL");
+
+	adoport4manage6.CloseAll();
 }
 
 
@@ -4708,7 +5111,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_PORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
-		if (str1 == "失败" || str1 == "工位已测")
+		if (str1 == "失败" || str1 == "工位已测" ||str1=="耦合漏测")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
@@ -4727,7 +5130,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT2HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT2HINT_STATIC, str2);
-		if (str2 == "失败" || str2 == "工位已测")
+		if (str2 == "失败" || str2 == "工位已测" || str2 =="耦合漏测")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
@@ -4746,7 +5149,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT3HINT_STATIC)
 	{ 
 		GetDlgItemText(IDC_PORT3HINT_STATIC, str3);
-		if (str3 == "失败" || str3 == "工位已测")
+		if (str3 == "失败" || str3 == "工位已测" || str3 == "耦合漏测")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
@@ -4762,10 +5165,10 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			pDC->SelectObject(&staticHint3font);
 		}
 	}
-	else if (pWnd->GetDlgCtrlID() == IDC_PORT3HINT_STATIC)
+	else if (pWnd->GetDlgCtrlID() == IDC_PORT4HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT4HINT_STATIC, str4);
-		if (str4 == "失败" || str4 == "工位已测")
+		if (str4 == "失败" || str4 == "工位已测" || str4 == "耦合漏测")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
@@ -4810,6 +5213,9 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	case Main_Hint1_Fail:
 		SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败");
 		break;
+	case Main_Hint1_CoupleFail:
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+		break;
 
 	//串口2提示结果
 	case Main_Hint2_Ready:
@@ -4830,6 +5236,10 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	case Main_Hint2_Fail:
 		SetDlgItemText(IDC_PORT2HINT_STATIC, L"失败");
 		break;
+	case Main_Hint2_CoupleFail:
+		SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+		break;
+
 
 	//串口3提示结果
 	case Main_Hint3_Ready:
@@ -4850,6 +5260,10 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	case Main_Hint3_Fail:
 		SetDlgItemText(IDC_PORT3HINT_STATIC, L"失败");
 		break;
+	case Main_Hint3_CoupleFail:
+		SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+		break;
+
 
 	//串口4提示结果
 	case Main_Hint4_Ready:
@@ -4870,6 +5284,10 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	case Main_Hint4_Fail:
 		SetDlgItemText(IDC_PORT4HINT_STATIC, L"失败");
 		break;
+	case Main_Hint4_CoupleFail:
+		SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+		break;
+
 
 	default:
 		break;

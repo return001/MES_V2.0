@@ -302,7 +302,7 @@ int ADOManage::SimDataLastStationSql(CString IMEI)
 	CString strSql;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI],[CoupleResult] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_TestResult] WHERE [IMEI] ='") + IMEI + _T("',AND CoupleResult = '1'");
+	strSql = _T("SELECT [IMEI],[CoupleResult] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_TestResult] WHERE [IMEI] ='") + IMEI + _T("'AND CoupleResult = '1'");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查不到就返回0表示失败
