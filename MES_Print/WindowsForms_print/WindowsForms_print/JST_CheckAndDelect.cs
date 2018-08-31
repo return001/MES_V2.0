@@ -150,7 +150,7 @@ namespace WindowsForms_print
                     list = PMB.SelectPrintMesBySNOrIMEIBLL(this.SnOrImei.Text);
                     foreach (PrintMessage a in list)
                     {
-                        this.dataGridView1.Rows.Add(a.ID, a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.IMEIRel, a.JS_PrintTime, a.SoftModel, a.JS_TemplatePath);
+                        this.dataGridView1.Rows.Add(a.ID, a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.ICCID, a.MAC, a.Equipment, a.IMEIRel, a.JS_PrintTime, a.SoftModel, a.JS_TemplatePath);
                     }
                     MessageBox.Show("删除成功");
                 }

@@ -190,6 +190,11 @@ namespace Print.Message.Bll
             }
         }
 
+        public List<PrintMessage> CheckRangeIMEIBLL(string StarIMEI,string EndIMEI)
+        {
+            return PMD.CheckRangeIMEIDAL(StarIMEI,EndIMEI);
+        }
+
         public bool CheckSNBLL(string SNnumber)
         {
             if (PMD.CheckSNDAL(SNnumber) > 0)

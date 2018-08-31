@@ -308,11 +308,10 @@ namespace WindowsForms_print
                 if (strExtension != ".btw")
                 {
                     player.Play();
-                    this.reminder.Text = "请选择btw文件";
+                    this.reminder.AppendText("请选择btw文件\r\n");
                 }
                 else {
                     this.Select_Template1.Text = path;
-                    this.reminder.Text = "";
                 }
             }
 
@@ -417,13 +416,12 @@ namespace WindowsForms_print
                     Messages messages;
                     int waitout = 10000;
                     btFormat.Print("标签打印软件", waitout, out messages);
-                    this.reminder.Text = "";
                     Form1.Log("调试打印了机身贴IMEI号为" + this.IMEI_num1.Text + "的制单", null);
                 }
                 else
                 {
                     player1.Play();
-                    this.reminder.Text = "请先选择模板";
+                    this.reminder.AppendText("请先选择模板\r\n");
                 }
             }
             catch (Exception ex)
@@ -513,7 +511,7 @@ namespace WindowsForms_print
                         if (int.Parse(this.PrintNum.Text) < 0)
                         {
                             player.Play();
-                            this.reminder.Text = "超出范围";
+                            this.reminder.AppendText(this.PrintNum.Text + "超出范围\r\n");
                             this.PrintNum.Clear();
                             this.PrintNum.Focus();
                             return;
@@ -521,7 +519,7 @@ namespace WindowsForms_print
                         else if (int.Parse(this.PrintNum.Text) > between)
                         {
                             player.Play();
-                            this.reminder.Text = "超出范围";
+                            this.reminder.AppendText(this.PrintNum.Text + "超出范围\r\n");
                             this.PrintNum.Clear();
                             this.PrintNum.Focus();
                             return;
@@ -530,13 +528,13 @@ namespace WindowsForms_print
                     else if (this.PrintNum.Text == "")
                     {
                         player.Play();
-                        this.reminder.Text = "请输入数字";
+                        this.reminder.AppendText("请输入数字\r\n");
                         return;
                     }
                     else
                     {
                         player.Play();
-                        this.reminder.Text = "请输入数字";
+                        this.reminder.AppendText("请输入数字\r\n");
                         this.PrintNum.Clear();
                         this.PrintNum.Focus();
                         return;
@@ -545,7 +543,7 @@ namespace WindowsForms_print
                 else
                 {
                     player2.Play();
-                    this.reminder.Text = "请先选择制单";
+                    this.reminder.AppendText("请先选择制单\r\n");
                     this.PrintNum.Clear();
                     this.PrintNum.Focus();
                     return;
@@ -577,48 +575,52 @@ namespace WindowsForms_print
                                         imei_begin = long.Parse(this.IMEI_num1.Text);
                                     }
                                     sn_aft = SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s);
+                                    imei15 = getimei15(imei_begin.ToString());
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString() + getimei15((imei_begin + int.Parse(this.PrintNum.Text)).ToString());
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString() + imei15, EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI.Substring(0, 14) + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
                                     for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
                                     {
                                         imei15 = getimei15(imei_begin.ToString());
                                         btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
-                                        if (!PMB.CheckIMEIBLL(imei_begin.ToString() + imei15))
+                                        //记录打印信息日志
+                                        ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                        list.Add(new PrintMessage()
                                         {
-                                            //记录打印信息日志
-                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = imei_begin.ToString() + imei15,
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = "",
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = "",
-                                                VIP = "",
-                                                BAT = "",
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = ProductTime,
-                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                CH_PrintTime = "",
-                                                CH_TemplatePath1 = null,
-                                                CH_TemplatePath2 = null,
-                                                ICCID = "",
-                                                MAC = "",
-                                                Equipment = ""
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
-                                                imei_begin++;
-                                            }
-                                        }
-                                        else
+                                            Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                            IMEI = imei_begin.ToString() + imei15,
+                                            IMEIStart = this.IMEI_num1.Text.Trim(),
+                                            IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                            SN = "",
+                                            IMEIRel = this.IMEIRel.Text.Trim(),
+                                            SIM = "",
+                                            VIP = "",
+                                            BAT = "",
+                                            SoftModel = this.SoftModel.Text.Trim(),
+                                            Version = this.SoftwareVersion.Text.Trim(),
+                                            Remark = this.Remake.Text.Trim(),
+                                            JS_PrintTime = ProductTime,
+                                            JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                            CH_PrintTime = "",
+                                            CH_TemplatePath1 = null,
+                                            CH_TemplatePath2 = null,
+                                            ICCID = "",
+                                            MAC = "",
+                                            Equipment = ""
+                                        });
+                                        if (PMB.InsertPrintMessageBLL(list))
                                         {
-                                            player.Play();
-                                            this.reminder.Text = imei_begin.ToString() + "重号";
+                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                            Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                             imei_begin++;
                                         }
                                     }
@@ -642,6 +644,19 @@ namespace WindowsForms_print
                                     {
                                         imei_begin = long.Parse(this.IMEI_num1.Text);
                                     }
+                                    imei15 = getimei15(imei_begin.ToString());
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString() + getimei15((imei_begin + int.Parse(this.PrintNum.Text)).ToString());
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString() + imei15, EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI.Substring(0, 14) + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
                                     if (this.SN1_num.Text != "")
                                     {
                                         sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
@@ -653,7 +668,137 @@ namespace WindowsForms_print
                                             {
                                                 imei15 = getimei15(imei_begin.ToString());
                                                 btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
-                                                if (!PMB.CheckIMEIBLL(imei_begin.ToString() + imei15))
+                                                btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
+                                                //记录打印信息日志
+                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                                list.Add(new PrintMessage()
+                                                {
+                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                    IMEI = imei_begin.ToString() + imei15,
+                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                    SN = sn_bef + sn_aft,
+                                                    IMEIRel = this.IMEIRel.Text.Trim(),
+                                                    SIM = "",
+                                                    VIP = "",
+                                                    BAT = "",
+                                                    SoftModel = this.SoftModel.Text.Trim(),
+                                                    Version = this.SoftwareVersion.Text.Trim(),
+                                                    Remark = this.Remake.Text.Trim(),
+                                                    JS_PrintTime = ProductTime,
+                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                    CH_PrintTime = "",
+                                                    CH_TemplatePath1 = null,
+                                                    CH_TemplatePath2 = null,
+                                                    ICCID = "",
+                                                    MAC = "",
+                                                    Equipment = ""
+                                                });
+                                                if (PMB.InsertPrintMessageBLL(list))
+                                                {
+                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                    imei_begin++;
+                                                    sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
+                                                }
+                                            }
+                                            else
+                                            {
+                                                player.Play();
+                                                this.reminder.AppendText("SN号不足");
+                                                return;
+                                            }
+                                        }
+                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, sn_aft, imei_begin))
+                                        {
+                                            this.SN1_num.Text = sn_bef + sn_aft;
+                                            this.IMEI_Present.Text = imei_begin.ToString();
+                                            this.PrintNum.Clear();
+                                            this.PrintNum.Focus();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
+                                        {
+                                            imei15 = getimei15(imei_begin.ToString());
+                                            btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
+                                            btFormat.SubStrings["SN"].Value = "";
+                                            //记录打印信息日志
+                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                            list.Add(new PrintMessage()
+                                            {
+                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                IMEI = imei_begin.ToString() + imei15,
+                                                IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                SN = "",
+                                                IMEIRel = this.IMEIRel.Text.Trim(),
+                                                SIM = "",
+                                                VIP = "",
+                                                BAT = "",
+                                                SoftModel = this.SoftModel.Text.Trim(),
+                                                Version = this.SoftwareVersion.Text.Trim(),
+                                                Remark = this.Remake.Text.Trim(),
+                                                JS_PrintTime = ProductTime,
+                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                CH_PrintTime = "",
+                                                CH_TemplatePath1 = null,
+                                                CH_TemplatePath2 = null
+                                            });
+                                            if (PMB.InsertPrintMessageBLL(list))
+                                            {
+                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                imei_begin++;
+                                            }
+                                        }
+                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, "", imei_begin))
+                                        {
+                                            this.IMEI_Present.Text = imei_begin.ToString();
+                                            this.PrintNum.Clear();
+                                            this.PrintNum.Focus();
+                                        }
+                                    }
+                                }
+                                break;
+                            case 1:
+                                {
+                                    long imei_begin;
+                                    string imei15, sn_bef, sn_aft, sn_laf;
+                                    if (this.IMEI_Present.Text != "")
+                                    {
+                                        imei_begin = long.Parse(this.IMEI_Present.Text);
+                                    }
+                                    else
+                                    {
+                                        imei_begin = long.Parse(this.IMEI_num1.Text);
+                                    }
+                                    imei15 = getimei15(imei_begin.ToString());
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString() + getimei15((imei_begin + int.Parse(this.PrintNum.Text)).ToString());
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString() + imei15, EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI.Substring(0, 14) + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
+                                    if (this.SN1_num.Text != "")
+                                    {
+                                        sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                        sn_aft = this.SN1_num.Text.Remove(0, this.SN1_num.Text.Length - s);
+                                        sn_laf = this.SN2_num.Text.Remove(0, this.SN2_num.Text.Length - s);
+                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
+                                        {
+                                            if (int.Parse(sn_aft) < int.Parse(sn_laf))
+                                            {
+                                                imei15 = getimei15(imei_begin.ToString());
+                                                btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
+                                                if (!PMB.CheckSNBLL(sn_bef + sn_aft))
                                                 {
                                                     btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
                                                     //记录打印信息日志
@@ -691,14 +836,15 @@ namespace WindowsForms_print
                                                 }
                                                 else
                                                 {
-                                                    player.Play();
-                                                    this.reminder.Text = imei_begin.ToString() + "重号";
-                                                    imei_begin++;
+                                                    //player.Play();
+                                                    sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
+                                                    i--;
                                                 }
                                             }
                                             else
                                             {
                                                 player.Play();
+                                                this.reminder.AppendText("SN号不足");
                                                 return;
                                             }
                                         }
@@ -717,184 +863,32 @@ namespace WindowsForms_print
                                             imei15 = getimei15(imei_begin.ToString());
                                             btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
                                             btFormat.SubStrings["SN"].Value = "";
-                                            if (!PMB.CheckIMEIBLL(imei_begin.ToString() + imei15))
+                                            //记录打印信息日志
+                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                            list.Add(new PrintMessage()
                                             {
-                                                //记录打印信息日志
-                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                list.Add(new PrintMessage()
-                                                {
-                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                    IMEI = imei_begin.ToString() + imei15,
-                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                    SN = "",
-                                                    IMEIRel = this.IMEIRel.Text.Trim(),
-                                                    SIM = "",
-                                                    VIP = "",
-                                                    BAT = "",
-                                                    SoftModel = this.SoftModel.Text.Trim(),
-                                                    Version = this.SoftwareVersion.Text.Trim(),
-                                                    Remark = this.Remake.Text.Trim(),
-                                                    JS_PrintTime = ProductTime,
-                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                    CH_PrintTime = "",
-                                                    CH_TemplatePath1 = null,
-                                                    CH_TemplatePath2 = null
-                                                });
-                                                if (PMB.InsertPrintMessageBLL(list))
-                                                {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
+                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                IMEI = imei_begin.ToString() + imei15,
+                                                IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                SN = "",
+                                                IMEIRel = this.IMEIRel.Text.Trim(),
+                                                SIM = "",
+                                                VIP = "",
+                                                BAT = "",
+                                                SoftModel = this.SoftModel.Text.Trim(),
+                                                Version = this.SoftwareVersion.Text.Trim(),
+                                                Remark = this.Remake.Text.Trim(),
+                                                JS_PrintTime = ProductTime,
+                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                CH_PrintTime = "",
+                                                CH_TemplatePath1 = null,
+                                                CH_TemplatePath2 = null
+                                            });
+                                            if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                this.reminder.Text = imei_begin.ToString() + "重号";
-                                                player.Play();
-                                            }
-                                        }
-                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, "", imei_begin))
-                                        {
-                                            this.IMEI_Present.Text = imei_begin.ToString();
-                                            this.PrintNum.Clear();
-                                            this.PrintNum.Focus();
-                                        }
-                                    }
-                                }
-                                break;
-                            case 1:
-                                {
-                                    long imei_begin;
-                                    string imei15, sn_bef, sn_aft, sn_laf;
-                                    if (this.IMEI_Present.Text != "")
-                                    {
-                                        imei_begin = long.Parse(this.IMEI_Present.Text);
-                                    }
-                                    else
-                                    {
-                                        imei_begin = long.Parse(this.IMEI_num1.Text);
-                                    }
-                                    if (this.SN1_num.Text != "")
-                                    {
-                                        sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                        sn_aft = this.SN1_num.Text.Remove(0, this.SN1_num.Text.Length - s);
-                                        sn_laf = this.SN2_num.Text.Remove(0, this.SN2_num.Text.Length - s);
-                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
-                                        {
-                                            if (int.Parse(sn_aft) < int.Parse(sn_laf))
-                                            {
-                                                imei15 = getimei15(imei_begin.ToString());
-                                                btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
-                                                if (!PMB.CheckIMEIBLL(imei_begin.ToString() + imei15))
-                                                {
-                                                    if (!PMB.CheckSNBLL(sn_bef + sn_aft))
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
-                                                        //记录打印信息日志
-                                                        ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                        list.Add(new PrintMessage()
-                                                        {
-                                                            Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                            IMEI = imei_begin.ToString() + imei15,
-                                                            IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                            IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                            SN = sn_bef + sn_aft,
-                                                            IMEIRel = this.IMEIRel.Text.Trim(),
-                                                            SIM = "",
-                                                            VIP = "",
-                                                            BAT = "",
-                                                            SoftModel = this.SoftModel.Text.Trim(),
-                                                            Version = this.SoftwareVersion.Text.Trim(),
-                                                            Remark = this.Remake.Text.Trim(),
-                                                            JS_PrintTime = ProductTime,
-                                                            JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                            CH_PrintTime = "",
-                                                            CH_TemplatePath1 = null,
-                                                            CH_TemplatePath2 = null,
-                                                            ICCID = "",
-                                                            MAC = "",
-                                                            Equipment = ""
-                                                        });
-                                                        if (PMB.InsertPrintMessageBLL(list))
-                                                        {
-                                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                            Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
-                                                            imei_begin++;
-                                                            sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //player.Play();
-                                                        sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
-                                                        i--;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    player.Play();
-                                                    this.reminder.Text = imei_begin.ToString() + "重号";
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                player.Play();
-                                                this.reminder.Text = "SN号不足";
-                                                return;
-                                            }
-                                        }
-                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, sn_aft, imei_begin))
-                                        {
-                                            this.SN1_num.Text = sn_bef + sn_aft;
-                                            this.IMEI_Present.Text = imei_begin.ToString();
-                                            this.PrintNum.Clear();
-                                            this.PrintNum.Focus();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
-                                        {
-                                            imei15 = getimei15(imei_begin.ToString());
-                                            btFormat.SubStrings["IMEI"].Value = imei_begin.ToString() + imei15;
-                                            btFormat.SubStrings["SN"].Value = "";
-                                            if (!PMB.CheckIMEIBLL(imei_begin.ToString() + imei15))
-                                            {
-                                                //记录打印信息日志
-                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                list.Add(new PrintMessage()
-                                                {
-                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                    IMEI = imei_begin.ToString() + imei15,
-                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                    SN = "",
-                                                    IMEIRel = this.IMEIRel.Text.Trim(),
-                                                    SIM = "",
-                                                    VIP = "",
-                                                    BAT = "",
-                                                    SoftModel = this.SoftModel.Text.Trim(),
-                                                    Version = this.SoftwareVersion.Text.Trim(),
-                                                    Remark = this.Remake.Text.Trim(),
-                                                    JS_PrintTime = ProductTime,
-                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                    CH_PrintTime = "",
-                                                    CH_TemplatePath1 = null,
-                                                    CH_TemplatePath2 = null
-                                                });
-                                                if (PMB.InsertPrintMessageBLL(list))
-                                                {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                player.Play();
-                                                this.reminder.Text = imei_begin.ToString() + "重号";
+                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -919,6 +913,18 @@ namespace WindowsForms_print
                                     {
                                         imei_begin = long.Parse(this.IMEI_num1.Text);
                                     }
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString();
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString(), EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
                                     if (this.SN1_num.Text != "")
                                     {
                                         sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
@@ -929,7 +935,134 @@ namespace WindowsForms_print
                                             if (int.Parse(sn_aft) < int.Parse(sn_laf))
                                             {
                                                 btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
-                                                if (!PMB.CheckIMEIBLL(imei_begin.ToString()))
+                                                btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
+                                                //记录打印信息日志
+                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                                list.Add(new PrintMessage()
+                                                {
+                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                    IMEI = imei_begin.ToString(),
+                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                    SN = sn_bef + sn_aft,
+                                                    IMEIRel = this.IMEIRel.Text.Trim(),
+                                                    SIM = "",
+                                                    VIP = "",
+                                                    BAT = "",
+                                                    SoftModel = this.SoftModel.Text.Trim(),
+                                                    Version = this.SoftwareVersion.Text.Trim(),
+                                                    Remark = this.Remake.Text.Trim(),
+                                                    JS_PrintTime = ProductTime,
+                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                    CH_PrintTime = "",
+                                                    CH_TemplatePath1 = null,
+                                                    CH_TemplatePath2 = null,
+                                                    ICCID = "",
+                                                    MAC = "",
+                                                    Equipment = ""
+                                                });
+                                                if (PMB.InsertPrintMessageBLL(list))
+                                                {
+                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                    imei_begin++;
+                                                    sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
+                                                }
+                                            }
+                                            else
+                                            {
+                                                player.Play();
+                                                this.reminder.AppendText("SN号不足");
+                                                return;
+                                            }
+                                        }
+                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, sn_aft, imei_begin))
+                                        {
+                                            this.SN1_num.Text = sn_bef + sn_aft;
+                                            this.IMEI_Present.Text = imei_begin.ToString();
+                                            this.PrintNum.Clear();
+                                            this.PrintNum.Focus();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
+                                        {
+                                            btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
+                                            btFormat.SubStrings["SN"].Value = "";
+                                            //记录打印信息日志
+                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                            list.Add(new PrintMessage()
+                                            {
+                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                IMEI = imei_begin.ToString(),
+                                                IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                SN = "",
+                                                IMEIRel = this.IMEIRel.Text.Trim(),
+                                                SIM = "",
+                                                VIP = "",
+                                                BAT = "",
+                                                SoftModel = this.SoftModel.Text.Trim(),
+                                                Version = this.SoftwareVersion.Text.Trim(),
+                                                Remark = this.Remake.Text.Trim(),
+                                                JS_PrintTime = ProductTime,
+                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                CH_PrintTime = "",
+                                                CH_TemplatePath1 = null,
+                                                CH_TemplatePath2 = null
+                                            });
+                                            if (PMB.InsertPrintMessageBLL(list))
+                                            {
+                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                imei_begin++;
+                                            }
+                                        }
+                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, "", imei_begin))
+                                        {
+                                            this.IMEI_Present.Text = imei_begin.ToString();
+                                            this.PrintNum.Clear();
+                                            this.PrintNum.Focus();
+                                        }
+                                    }
+                                }
+                                break;
+                            case 3:
+                                {
+                                    long imei_begin;
+                                    string sn_bef, sn_aft, sn_laf;
+                                    if (this.IMEI_Present.Text != "")
+                                    {
+                                        imei_begin = long.Parse(this.IMEI_Present.Text);
+                                    }
+                                    else
+                                    {
+                                        imei_begin = long.Parse(this.IMEI_num1.Text);
+                                    }
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString();
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString(), EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
+                                    if (this.SN1_num.Text != "")
+                                    {
+                                        sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                        sn_aft = this.SN1_num.Text.Remove(0, this.SN1_num.Text.Length - s);
+                                        sn_laf = this.SN2_num.Text.Remove(0, this.SN2_num.Text.Length - s);
+                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
+                                        {
+                                            if (int.Parse(sn_aft) < int.Parse(sn_laf))
+                                            {
+                                                btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
+                                                if (!PMB.CheckSNBLL(sn_bef + sn_aft))
                                                 {
                                                     btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
                                                     //记录打印信息日志
@@ -967,15 +1100,15 @@ namespace WindowsForms_print
                                                 }
                                                 else
                                                 {
-                                                    player.Play();
-                                                    this.reminder.Text = imei_begin.ToString() + "重号";
-                                                    imei_begin++;
+                                                    //player.Play();
+                                                    sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
+                                                    i--;
                                                 }
                                             }
                                             else
                                             {
                                                 player.Play();
-                                                this.reminder.Text = "SN号不足";
+                                                this.reminder.AppendText("SN号不足");
                                                 return;
                                             }
                                         }
@@ -993,183 +1126,32 @@ namespace WindowsForms_print
                                         {
                                             btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
                                             btFormat.SubStrings["SN"].Value = "";
-                                            if (!PMB.CheckIMEIBLL(imei_begin.ToString()))
+                                            //记录打印信息日志
+                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                            list.Add(new PrintMessage()
                                             {
-                                                //记录打印信息日志
-                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                list.Add(new PrintMessage()
-                                                {
-                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                    IMEI = imei_begin.ToString(),
-                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                    SN = "",
-                                                    IMEIRel = this.IMEIRel.Text.Trim(),
-                                                    SIM = "",
-                                                    VIP = "",
-                                                    BAT = "",
-                                                    SoftModel = this.SoftModel.Text.Trim(),
-                                                    Version = this.SoftwareVersion.Text.Trim(),
-                                                    Remark = this.Remake.Text.Trim(),
-                                                    JS_PrintTime = ProductTime,
-                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                    CH_PrintTime = "",
-                                                    CH_TemplatePath1 = null,
-                                                    CH_TemplatePath2 = null
-                                                });
-                                                if (PMB.InsertPrintMessageBLL(list))
-                                                {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
+                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                                IMEI = imei_begin.ToString(),
+                                                IMEIStart = this.IMEI_num1.Text.Trim(),
+                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                                SN = "",
+                                                IMEIRel = this.IMEIRel.Text.Trim(),
+                                                SIM = "",
+                                                VIP = "",
+                                                BAT = "",
+                                                SoftModel = this.SoftModel.Text.Trim(),
+                                                Version = this.SoftwareVersion.Text.Trim(),
+                                                Remark = this.Remake.Text.Trim(),
+                                                JS_PrintTime = ProductTime,
+                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                                CH_PrintTime = "",
+                                                CH_TemplatePath1 = null,
+                                                CH_TemplatePath2 = null
+                                            });
+                                            if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                player.Play();
-                                                this.reminder.Text = imei_begin.ToString() + "重号";
-                                                imei_begin++;
-                                            }
-                                        }
-                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, "", imei_begin))
-                                        {
-                                            this.IMEI_Present.Text = imei_begin.ToString();
-                                            this.PrintNum.Clear();
-                                            this.PrintNum.Focus();
-                                        }
-                                    }
-                                }
-                                break;
-                            case 3:
-                                {
-                                    long imei_begin;
-                                    string sn_bef, sn_aft, sn_laf;
-                                    if (this.IMEI_Present.Text != "")
-                                    {
-                                        imei_begin = long.Parse(this.IMEI_Present.Text);
-                                    }
-                                    else
-                                    {
-                                        imei_begin = long.Parse(this.IMEI_num1.Text);
-                                    }
-                                    if (this.SN1_num.Text != "")
-                                    {
-                                        sn_bef = this.SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                        sn_aft = this.SN1_num.Text.Remove(0, this.SN1_num.Text.Length - s);
-                                        sn_laf = this.SN2_num.Text.Remove(0, this.SN2_num.Text.Length - s);
-                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
-                                        {
-                                            if (int.Parse(sn_aft) < int.Parse(sn_laf))
-                                            {
-                                                btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
-                                                if (!PMB.CheckIMEIBLL(imei_begin.ToString()))
-                                                {
-                                                    if (!PMB.CheckSNBLL(sn_bef + sn_aft))
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = sn_bef + sn_aft;
-                                                        //记录打印信息日志
-                                                        ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                        list.Add(new PrintMessage()
-                                                        {
-                                                            Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                            IMEI = imei_begin.ToString(),
-                                                            IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                            IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                            SN = sn_bef + sn_aft,
-                                                            IMEIRel = this.IMEIRel.Text.Trim(),
-                                                            SIM = "",
-                                                            VIP = "",
-                                                            BAT = "",
-                                                            SoftModel = this.SoftModel.Text.Trim(),
-                                                            Version = this.SoftwareVersion.Text.Trim(),
-                                                            Remark = this.Remake.Text.Trim(),
-                                                            JS_PrintTime = ProductTime,
-                                                            JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                            CH_PrintTime = "",
-                                                            CH_TemplatePath1 = null,
-                                                            CH_TemplatePath2 = null,
-                                                            ICCID = "",
-                                                            MAC = "",
-                                                            Equipment = ""
-                                                        });
-                                                        if (PMB.InsertPrintMessageBLL(list))
-                                                        {
-                                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                            Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
-                                                            imei_begin++;
-                                                            sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //player.Play();
-                                                        sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
-                                                        i--;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    player.Play();
-                                                    this.reminder.Text = imei_begin.ToString() + "重号";
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                player.Play();
-                                                this.reminder.Text = "SN号不足";
-                                                return;
-                                            }
-                                        }
-                                        if (MOPB.UpdateSNnumberBLL(this.CB_ZhiDan.Text, sn_aft, imei_begin))
-                                        {
-                                            this.SN1_num.Text = sn_bef + sn_aft;
-                                            this.IMEI_Present.Text = imei_begin.ToString();
-                                            this.PrintNum.Clear();
-                                            this.PrintNum.Focus();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
-                                        {
-                                            btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
-                                            btFormat.SubStrings["SN"].Value = "";
-                                            if (!PMB.CheckIMEIBLL(imei_begin.ToString()))
-                                            {
-                                                //记录打印信息日志
-                                                ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                                list.Add(new PrintMessage()
-                                                {
-                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                    IMEI = imei_begin.ToString(),
-                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                    SN = "",
-                                                    IMEIRel = this.IMEIRel.Text.Trim(),
-                                                    SIM = "",
-                                                    VIP = "",
-                                                    BAT = "",
-                                                    SoftModel = this.SoftModel.Text.Trim(),
-                                                    Version = this.SoftwareVersion.Text.Trim(),
-                                                    Remark = this.Remake.Text.Trim(),
-                                                    JS_PrintTime = ProductTime,
-                                                    JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                    CH_PrintTime = "",
-                                                    CH_TemplatePath1 = null,
-                                                    CH_TemplatePath2 = null
-                                                });
-                                                if (PMB.InsertPrintMessageBLL(list))
-                                                {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
-                                                    imei_begin++;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                player.Play();
-                                                this.reminder.Text = imei_begin.ToString() + "重号";
+                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                                Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -1195,47 +1177,50 @@ namespace WindowsForms_print
                                         imei_begin = long.Parse(this.IMEI_num1.Text);
                                     }
                                     sn_aft = SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s);
+                                    string EndIMEI = (imei_begin + int.Parse(this.PrintNum.Text)).ToString();
+                                    list = PMB.CheckRangeIMEIBLL(imei_begin.ToString(), EndIMEI);
+                                    if (list.Count > 0)
+                                    {
+                                        foreach (PrintMessage a in list)
+                                        {
+                                            this.reminder.AppendText(a.IMEI + "重号\r\n");
+                                        }
+                                        this.PrintNum.Clear();
+                                        this.PrintNum.Focus();
+                                        return;
+                                    }
                                     for (int i = 0; i < int.Parse(this.PrintNum.Text); i++)
                                     {
                                         btFormat.SubStrings["IMEI"].Value = imei_begin.ToString();
-                                        if (!PMB.CheckIMEIBLL(imei_begin.ToString()))
+                                        //记录打印信息日志
+                                        ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
+                                        list.Add(new PrintMessage()
                                         {
-                                            //记录打印信息日志
-                                            ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = imei_begin.ToString(),
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = "",
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = "",
-                                                VIP = "",
-                                                BAT = "",
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = ProductTime,
-                                                JS_TemplatePath = this.Select_Template1.Text.Trim(),
-                                                CH_PrintTime = "",
-                                                CH_TemplatePath1 = null,
-                                                CH_TemplatePath2 = null,
-                                                ICCID = "",
-                                                MAC = "",
-                                                Equipment = ""
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
-                                                imei_begin++;
-                                            }
-                                        }
-                                        else
+                                            Zhidan = this.CB_ZhiDan.Text.Trim(),
+                                            IMEI = imei_begin.ToString(),
+                                            IMEIStart = this.IMEI_num1.Text.Trim(),
+                                            IMEIEnd = this.IMEI_num2.Text.Trim(),
+                                            SN = "",
+                                            IMEIRel = this.IMEIRel.Text.Trim(),
+                                            SIM = "",
+                                            VIP = "",
+                                            BAT = "",
+                                            SoftModel = this.SoftModel.Text.Trim(),
+                                            Version = this.SoftwareVersion.Text.Trim(),
+                                            Remark = this.Remake.Text.Trim(),
+                                            JS_PrintTime = ProductTime,
+                                            JS_TemplatePath = this.Select_Template1.Text.Trim(),
+                                            CH_PrintTime = "",
+                                            CH_TemplatePath1 = null,
+                                            CH_TemplatePath2 = null,
+                                            ICCID = "",
+                                            MAC = "",
+                                            Equipment = ""
+                                        });
+                                        if (PMB.InsertPrintMessageBLL(list))
                                         {
-                                            player.Play();
-                                            this.reminder.Text = imei_begin.ToString() + "重号";
+                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                            Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                             imei_begin++;
                                         }
                                     }
@@ -1252,7 +1237,7 @@ namespace WindowsForms_print
                     else
                     {
                         player1.Play();
-                        this.reminder.Text = "请先选择模板";
+                        this.reminder.AppendText("请先选择模板\r\n");
                         this.PrintNum.Clear();
                         this.PrintNum.Focus();
                     }
@@ -1280,7 +1265,7 @@ namespace WindowsForms_print
                             if (IMEI_Start < long.Parse(this.IMEI_num1.Text))
                             {
                                 player.Play();
-                                this.reminder.Text = "IMEI不在范围内";
+                                this.reminder.AppendText(IMEI_Start+"IMEI不在范围内\r\n");
                                 this.IMEI_Start.Clear();
                                 this.IMEI_Start.Focus();
                                 return;
@@ -1288,7 +1273,7 @@ namespace WindowsForms_print
                             else if (IMEI_Start > long.Parse(this.IMEI_num2.Text))
                             {
                                 player.Play();
-                                this.reminder.Text = "IMEI不在范围内";
+                                this.reminder.AppendText(IMEI_Start + "IMEI不在范围内\r\n");
                                 this.IMEI_Start.Clear();
                                 this.IMEI_Start.Focus();
                                 return;
@@ -1300,7 +1285,7 @@ namespace WindowsForms_print
                                 if (imeiRes != this.IMEI_Start.Text)
                                 {
                                     player3.Play();
-                                    this.reminder.Text = "IMEI校验错误";
+                                    this.reminder.AppendText(this.IMEI_Start.Text + "IMEI校验错误\r\n");
                                     this.IMEI_Start.Clear();
                                     this.IMEI_Start.Focus();
                                     return;
@@ -1310,14 +1295,14 @@ namespace WindowsForms_print
                         else if (this.IMEI_Start.Text == "")
                         {
                             player.Play();
-                            this.reminder.Text = "请输入IMEI";
+                            this.reminder.AppendText("请输入IMEI\r\n");
                             this.IMEI_Start.Focus();
                             return;
                         }
                         else
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.IMEI_Start.Clear();
                             this.IMEI_Start.Focus();
                             return;
@@ -1331,7 +1316,7 @@ namespace WindowsForms_print
                             if (IMEI_Start < long.Parse(this.IMEI_num1.Text))
                             {
                                 player.Play();
-                                this.reminder.Text = "IMEI不在范围内";
+                                this.reminder.AppendText("IMEI不在范围内\r\n");
                                 this.IMEI_Start.Clear();
                                 this.IMEI_Start.Focus();
                                 return;
@@ -1339,7 +1324,7 @@ namespace WindowsForms_print
                             else if (IMEI_Start > long.Parse(this.IMEI_num2.Text))
                             {
                                 player.Play();
-                                this.reminder.Text = "IMEI不在范围内";
+                                this.reminder.AppendText("IMEI不在范围内\r\n");
                                 this.IMEI_Start.Clear();
                                 this.IMEI_Start.Focus();
                                 return;
@@ -1348,14 +1333,14 @@ namespace WindowsForms_print
                         else if (this.IMEI_Start.Text == "")
                         {
                             player.Play();
-                            this.reminder.Text = "请输入IMEI";
+                            this.reminder.AppendText("请输入IMEI\r\n");
                             this.IMEI_Start.Focus();
                             return;
                         }
                         else
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.IMEI_Start.Clear();
                             this.IMEI_Start.Focus();
                             return;
@@ -1364,7 +1349,7 @@ namespace WindowsForms_print
                 }
                 else {
                     player2.Play();
-                    this.reminder.Text = "请选择制单号";
+                    this.reminder.AppendText("请选择制单号\r\n");
                     this.IMEI_Start.Clear();
                     this.IMEI_Start.Focus();
                     return;
@@ -1430,7 +1415,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1545,7 +1530,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1672,7 +1657,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1796,7 +1781,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1923,7 +1908,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1978,7 +1963,7 @@ namespace WindowsForms_print
                                     else
                                     {
                                         player.Play();
-                                        this.reminder.Text = this.IMEI_Start.Text + "重号";
+                                        this.reminder.AppendText(this.IMEI_Start.Text + "重号\r\n");
                                         this.IMEI_Start.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -1989,7 +1974,7 @@ namespace WindowsForms_print
                     else
                     {
                         player1.Play();
-                        this.reminder.Text = "请选择模板";
+                        this.reminder.AppendText("请选择模板\r\n");
                         this.IMEI_Start.Clear();
                         this.IMEI_Start.Focus();
                     }
@@ -2025,7 +2010,7 @@ namespace WindowsForms_print
                             if (this.Re_IMEINum.Text.Length != 15)
                             {
                                 player.Play();
-                                this.reminder.Text = "请输入15位IMEI";
+                                this.reminder.AppendText("请输入15位IMEI\r\n");
                                 this.Re_IMEINum.Clear();
                                 this.Re_IMEINum.Focus();
                                 return;
@@ -2039,7 +2024,7 @@ namespace WindowsForms_print
                                 if (imeiRes != this.Re_IMEINum.Text)
                                 {
                                     player3.Play();
-                                    this.reminder.Text = "校验错误";
+                                    this.reminder.AppendText("校验错误\r\n");
                                     this.Re_IMEINum.Clear();
                                     this.Re_IMEINum.Focus();
                                     return;
@@ -2049,7 +2034,7 @@ namespace WindowsForms_print
                         else
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.Re_IMEINum.Clear();
                             this.Re_IMEINum.Focus();
                             return;
@@ -2058,7 +2043,7 @@ namespace WindowsForms_print
                     else {
                         if (!IsNumeric(this.Re_IMEINum.Text)) {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.Re_IMEINum.Clear();
                             this.Re_IMEINum.Focus();
                             return;
@@ -2068,7 +2053,7 @@ namespace WindowsForms_print
                 else
                 {
                     player.Play();
-                    this.reminder.Text = "请输入重打IMEI";
+                    this.reminder.AppendText("请输入重打IMEI\r\n");
                     this.Re_IMEINum.Focus();
                     return;
                 }
@@ -2107,7 +2092,7 @@ namespace WindowsForms_print
                         else
                         {
                             player.Play();
-                            this.reminder.Text = this.Re_IMEINum.Text + "无记录";
+                            this.reminder.AppendText(this.Re_IMEINum.Text + "无记录\r\n");
                             this.Re_IMEINum.Clear();
                             this.Re_IMEINum.Focus();
                         }
@@ -2115,7 +2100,7 @@ namespace WindowsForms_print
                     else
                     {
                         player1.Play();
-                        this.reminder.Text = "请先选择模板";
+                        this.reminder.AppendText("请先选择模板\r\n");
                         this.Re_IMEINum.Clear();
                         this.Re_IMEINum.Focus();
                     }
@@ -2185,7 +2170,7 @@ namespace WindowsForms_print
                             if (this.ReImeiNum1.Text.Length != 15)
                             {
                                 player.Play();
-                                this.reminder.Text = "请输入15位IMEI";
+                                this.reminder.AppendText("请输入15位IMEI\r\n");
                                 this.ReImeiNum1.Clear();
                                 this.ReImeiNum1.Focus();
                                 return;
@@ -2199,7 +2184,7 @@ namespace WindowsForms_print
                                 if (imeiRes != this.ReImeiNum1.Text)
                                 {
                                     player.Play();
-                                    this.reminder.Text = "IMEI校验错误";
+                                    this.reminder.AppendText("IMEI校验错误\r\n");
                                     this.ReImeiNum1.Clear();
                                     this.ReImeiNum1.Focus();
                                     return;
@@ -2209,7 +2194,7 @@ namespace WindowsForms_print
                         else
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.ReImeiNum1.Clear();
                             this.ReImeiNum1.Focus();
                             return;
@@ -2219,7 +2204,7 @@ namespace WindowsForms_print
                         if (!IsNumeric(this.ReImeiNum1.Text))
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.ReImeiNum1.Clear();
                             this.ReImeiNum1.Focus();
                             return;
@@ -2243,7 +2228,7 @@ namespace WindowsForms_print
                             if (this.ReImeiNum2.Text.Length != 15)
                             {
                                 player.Play();
-                                this.reminder.Text = "请输入15位IMEI";
+                                this.reminder.AppendText("请输入15位IMEI\r\n");
                                 this.ReImeiNum2.Clear();
                                 this.ReImeiNum2.Focus();
                                 return;
@@ -2257,7 +2242,7 @@ namespace WindowsForms_print
                                 if (imeiRes != this.ReImeiNum2.Text)
                                 {
                                     player3.Play();
-                                    this.reminder.Text = "IMEI校验错误";
+                                    this.reminder.AppendText("IMEI校验错误\r\n");
                                     this.ReImeiNum2.Clear();
                                     this.ReImeiNum2.Focus();
                                     return;
@@ -2265,7 +2250,7 @@ namespace WindowsForms_print
                                 else if (long.Parse(imei14) < long.Parse(this.ReImeiNum1.Text.Substring(0, 14)))
                                 {
                                     player.Play();
-                                    this.reminder.Text = "IMEI小于重打起始位";
+                                    this.reminder.AppendText("IMEI小于重打起始位\r\n");
                                     this.ReImeiNum2.Clear();
                                     this.ReImeiNum2.Focus();
                                     return;
@@ -2275,7 +2260,7 @@ namespace WindowsForms_print
                         else
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.ReImeiNum2.Clear();
                             this.ReImeiNum2.Focus();
                             return;
@@ -2285,7 +2270,7 @@ namespace WindowsForms_print
                         if (!IsNumeric(this.ReImeiNum2.Text))
                         {
                             player.Play();
-                            this.reminder.Text = "IMEI格式错误";
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.ReImeiNum2.Clear();
                             this.ReImeiNum2.Focus();
                             return;
@@ -2294,7 +2279,7 @@ namespace WindowsForms_print
                 }
                 else {
                     player.Play();
-                    this.reminder.Text = "请输入重打终止位";
+                    this.reminder.AppendText("请输入重打终止位\r\n");
                     this.ReImeiNum2.Focus();
                     return;
                 }
@@ -2337,7 +2322,7 @@ namespace WindowsForms_print
                                 else
                                 {
                                     player.Play();
-                                    this.reminder.Text = this.Re_IMEINum.Text+"无记录";
+                                    this.reminder.AppendText(this.Re_IMEINum.Text+"无记录\r\n");
                                 }
                             }
                             this.ReImeiNum1.Clear();
@@ -2367,7 +2352,7 @@ namespace WindowsForms_print
                                 else
                                 {
                                     player.Play();
-                                    this.reminder.Text = this.Re_IMEINum.Text + "无记录";
+                                    this.reminder.AppendText(this.Re_IMEINum.Text + "无记录\r\n");
                                 }
                             }
                             this.ReImeiNum1.Clear();
@@ -2378,7 +2363,7 @@ namespace WindowsForms_print
                     else
                     {
                         player1.Play();
-                        this.reminder.Text = "请先选择模板";
+                        this.reminder.AppendText("请先选择模板\r\n");
                         this.ReImeiNum2.Clear();
                         this.ReImeiNum2.Focus();
                     }
@@ -2517,7 +2502,7 @@ namespace WindowsForms_print
                 }
                 else
                 {
-                    this.reminder.Text = "请输入数字";
+                    this.reminder.AppendText("请输入数字\r\n");
                     this.TemplateNum.Clear();
                     this.TemplateNum.Focus();
                 }

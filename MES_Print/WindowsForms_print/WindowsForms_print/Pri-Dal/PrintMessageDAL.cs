@@ -423,7 +423,7 @@ namespace Print.Message.Dal
                 command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE (IMEI='" + IMEInumber + "' AND JS_PrintTime is NULL)";
             }
             else {
-                command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE (IMEI='" + IMEInumber + "' AND CH_PrintTime is NULL)";
+                command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE (IMEI='" + IMEInumber + "' AND (CH_PrintTime is NULL OR CH_PrintTime=''))";
             }
             SqlDataReader dr = command.ExecuteReader();
             while (dr.Read())
@@ -468,6 +468,25 @@ namespace Print.Message.Dal
                 return 1;
             }
             return 0;
+        }
+
+        //范围检查IMEI号是否存在，存在返回IMEI，否则返回0
+        public List<PrintMessage> CheckRangeIMEIDAL(string StarIMEI, string EndIMEI)
+        {
+            List<PrintMessage> pm = new List<PrintMessage>();
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuPrintParam WHERE (IMEI>='"+StarIMEI+"' AND IMEI<='"+EndIMEI+"')";
+            SqlDataReader dr = command.ExecuteReader();
+            while (dr.Read())
+            {
+                pm.Add(new PrintMessage()
+                {
+                    IMEI = dr.GetString(2)
+                });
+            }
+            return pm;
         }
 
         //检查SN号是否存在，存在返回1，否则返回0

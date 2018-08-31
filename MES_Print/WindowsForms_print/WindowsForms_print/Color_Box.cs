@@ -377,6 +377,7 @@ namespace WindowsForms_print
             this.IMEI_Start.Clear();
             this.IMEI_Start.Focus();
             this.Re_IMEINum.Clear();
+            this.ShowSN.Clear();
             this.SIMStart.Clear();
             this.VIPStart.Clear();
             this.BATStart.Clear();
@@ -802,6 +803,22 @@ namespace WindowsForms_print
                 this.Re_IMEINum.Focus();
                 this.Re_Tem1.Visible = true;
                 this.Re_Tem2.Visible = true;
+                if (this.Select_Template1.Text != "")
+                {
+                    this.Re_Tem1.Checked = true;
+                }
+                else
+                {
+                    this.Re_Tem1.Checked = false;
+                }
+                if (this.Select_Template2.Text != "")
+                {
+                    this.Re_Tem2.Checked = true;
+                }
+                else
+                {
+                    this.Re_Tem2.Checked = false;
+                }
                 if (this.choose_sim.Checked == true)
                 {
                     this.choose_sim.Enabled = false;
@@ -1074,14 +1091,14 @@ namespace WindowsForms_print
                         else if (this.IMEI_Start.Text == "")
                         {
                             player.Play();
-                            this.reminder.AppendText("请输入IMEI");
+                            this.reminder.AppendText("请输入IMEI\r\n");
                             this.IMEI_Start.Focus();
                             return;
                         }
                         else
                         {
                             player.Play();
-                            this.reminder.AppendText("IMEI格式错误");
+                            this.reminder.AppendText("IMEI格式错误\r\n");
                             this.IMEI_Start.Clear();
                             this.IMEI_Start.Focus();
                             return;
@@ -3452,7 +3469,7 @@ namespace WindowsForms_print
                                 }
                                 else
                                 {
-                                    this.BATStart.Focus();
+                                    this.VIPStart.Focus();
                                 }
                             }
                             else
@@ -3466,7 +3483,7 @@ namespace WindowsForms_print
                                 }
                                 else
                                 {
-                                    this.BATStart.Focus();
+                                    this.VIPStart.Focus();
                                 }
                             }
                         }
@@ -7197,12 +7214,15 @@ namespace WindowsForms_print
 
         private void Refresh_template_Click(object sender, EventArgs e)
         {
-            string path = this.Select_Template1.Text;
-            string filename = Path.GetFileName(path);
-            if (Select_Template1.Text != AppDomain.CurrentDomain.BaseDirectory + filename)
+            if (this.Select_Template1.Text != "")
             {
-                File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + filename, true);
-                this.Select_Template1.Text = AppDomain.CurrentDomain.BaseDirectory + filename;
+                string path = this.Select_Template1.Text;
+                string filename = Path.GetFileName(path);
+                if (Select_Template1.Text != AppDomain.CurrentDomain.BaseDirectory + filename)
+                {
+                    File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + filename, true);
+                    this.Select_Template1.Text = AppDomain.CurrentDomain.BaseDirectory + filename;
+                }
             }
             if (this.Select_Template2.Text != "")
             {
@@ -7210,7 +7230,7 @@ namespace WindowsForms_print
                 string filename1 = Path.GetFileName(path1);
                 if (this.Select_Template2.Text != AppDomain.CurrentDomain.BaseDirectory + filename1)
                 {
-                    File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + filename1, true);
+                    File.Copy(path1, AppDomain.CurrentDomain.BaseDirectory + filename1, true);
                     this.Select_Template2.Text = AppDomain.CurrentDomain.BaseDirectory + filename1;
                 }
             }

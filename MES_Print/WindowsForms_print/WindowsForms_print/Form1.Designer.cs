@@ -81,7 +81,6 @@
             this.ToUnlock = new System.Windows.Forms.Button();
             this.ToLock = new System.Windows.Forms.Button();
             this.Refresh_zhidan = new System.Windows.Forms.Button();
-            this.reminder = new System.Windows.Forms.Label();
             this.NoSn = new System.Windows.Forms.CheckBox();
             this.Re_Nocheckcode = new System.Windows.Forms.CheckBox();
             this.NoCheckCode = new System.Windows.Forms.CheckBox();
@@ -104,6 +103,7 @@
             this.CheckAndDelete = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.reminder = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabControl2.SuspendLayout();
@@ -546,13 +546,13 @@
             // tabPage4
             // 
             this.tabPage4.BackColor = System.Drawing.Color.Linen;
+            this.tabPage4.Controls.Add(this.reminder);
             this.tabPage4.Controls.Add(this.TemplateNum);
             this.tabPage4.Controls.Add(this.label23);
             this.tabPage4.Controls.Add(this.Refresh_template);
             this.tabPage4.Controls.Add(this.ToUnlock);
             this.tabPage4.Controls.Add(this.ToLock);
             this.tabPage4.Controls.Add(this.Refresh_zhidan);
-            this.tabPage4.Controls.Add(this.reminder);
             this.tabPage4.Controls.Add(this.NoSn);
             this.tabPage4.Controls.Add(this.Re_Nocheckcode);
             this.tabPage4.Controls.Add(this.NoCheckCode);
@@ -613,6 +613,7 @@
             this.tabPage4.Controls.Add(this.label14);
             this.tabPage4.Controls.Add(this.label15);
             this.tabPage4.Controls.Add(this.label19);
+            this.tabPage4.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabPage4.Location = new System.Drawing.Point(104, 4);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -642,7 +643,8 @@
             // 
             // Refresh_template
             // 
-            this.Refresh_template.Location = new System.Drawing.Point(782, 52);
+            this.Refresh_template.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Refresh_template.Location = new System.Drawing.Point(785, 53);
             this.Refresh_template.Name = "Refresh_template";
             this.Refresh_template.Size = new System.Drawing.Size(92, 26);
             this.Refresh_template.TabIndex = 77;
@@ -653,7 +655,8 @@
             // ToUnlock
             // 
             this.ToUnlock.Enabled = false;
-            this.ToUnlock.Location = new System.Drawing.Point(1077, 52);
+            this.ToUnlock.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.ToUnlock.Location = new System.Drawing.Point(1080, 53);
             this.ToUnlock.Name = "ToUnlock";
             this.ToUnlock.Size = new System.Drawing.Size(92, 27);
             this.ToUnlock.TabIndex = 76;
@@ -663,7 +666,8 @@
             // 
             // ToLock
             // 
-            this.ToLock.Location = new System.Drawing.Point(978, 52);
+            this.ToLock.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.ToLock.Location = new System.Drawing.Point(981, 53);
             this.ToLock.Name = "ToLock";
             this.ToLock.Size = new System.Drawing.Size(92, 27);
             this.ToLock.TabIndex = 75;
@@ -673,23 +677,14 @@
             // 
             // Refresh_zhidan
             // 
-            this.Refresh_zhidan.Location = new System.Drawing.Point(586, 53);
+            this.Refresh_zhidan.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Refresh_zhidan.Location = new System.Drawing.Point(589, 54);
             this.Refresh_zhidan.Name = "Refresh_zhidan";
             this.Refresh_zhidan.Size = new System.Drawing.Size(92, 26);
             this.Refresh_zhidan.TabIndex = 74;
             this.Refresh_zhidan.Text = "刷新制单";
             this.Refresh_zhidan.UseVisualStyleBackColor = true;
             this.Refresh_zhidan.Click += new System.EventHandler(this.Refresh_zhidan_Click);
-            // 
-            // reminder
-            // 
-            this.reminder.Font = new System.Drawing.Font("宋体", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.reminder.ForeColor = System.Drawing.Color.Red;
-            this.reminder.Location = new System.Drawing.Point(609, 545);
-            this.reminder.Name = "reminder";
-            this.reminder.Size = new System.Drawing.Size(690, 70);
-            this.reminder.TabIndex = 73;
-            this.reminder.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // NoSn
             // 
@@ -736,7 +731,8 @@
             // 
             // Open_file
             // 
-            this.Open_file.Location = new System.Drawing.Point(684, 52);
+            this.Open_file.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Open_file.Location = new System.Drawing.Point(687, 53);
             this.Open_file.Name = "Open_file";
             this.Open_file.Size = new System.Drawing.Size(92, 26);
             this.Open_file.TabIndex = 68;
@@ -830,7 +826,8 @@
             // 
             // Debug_print
             // 
-            this.Debug_print.Location = new System.Drawing.Point(880, 53);
+            this.Debug_print.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Debug_print.Location = new System.Drawing.Point(883, 54);
             this.Debug_print.Name = "Debug_print";
             this.Debug_print.Size = new System.Drawing.Size(92, 26);
             this.Debug_print.TabIndex = 59;
@@ -841,6 +838,7 @@
             // Printer1
             // 
             this.Printer1.FormattingEnabled = true;
+            this.Printer1.ItemHeight = 15;
             this.Printer1.Location = new System.Drawing.Point(711, 18);
             this.Printer1.Name = "Printer1";
             this.Printer1.Size = new System.Drawing.Size(423, 23);
@@ -912,6 +910,18 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "重打查询";
             // 
+            // reminder
+            // 
+            this.reminder.BackColor = System.Drawing.Color.Linen;
+            this.reminder.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.reminder.ForeColor = System.Drawing.Color.Red;
+            this.reminder.Location = new System.Drawing.Point(716, 535);
+            this.reminder.Multiline = true;
+            this.reminder.Name = "reminder";
+            this.reminder.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.reminder.Size = new System.Drawing.Size(471, 191);
+            this.reminder.TabIndex = 80;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -922,7 +932,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(18, 50);
             this.Name = "Form1";
-            this.Text = "MES打印";
+            this.Text = "MES-Print_1.0.2_201808270900";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
@@ -1003,13 +1013,13 @@
         private System.Windows.Forms.CheckBox SnFromCustomer;
         private System.Windows.Forms.CheckBox Re_Nocheckcode;
         private System.Windows.Forms.CheckBox NoSn;
-        private System.Windows.Forms.Label reminder;
         private System.Windows.Forms.Button Refresh_zhidan;
         public System.Windows.Forms.Button ToUnlock;
         private System.Windows.Forms.Button ToLock;
         private System.Windows.Forms.Button Refresh_template;
         private System.Windows.Forms.TextBox TemplateNum;
         private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox reminder;
     }
 }
 
