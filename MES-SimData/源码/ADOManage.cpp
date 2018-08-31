@@ -238,9 +238,21 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 	int AffectLine = 0;
 	CString strSql;
 
-	//将数据插入表中
-	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI], [CID], [ICCID], [SDOperator], [SDTime], [SDRESULT])values('")
-		+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + SDOperator + _T("', '")  + GetTime() + _T("', '1')");//具体执行的SQL语句
+	//先判断这条数据是不是返工的
+	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 2");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	//如果查得到那就代表这条数据是返工的，那接下来是返工数据更新
+	if (!m_pRecordSet->adoEOF)
+	{
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '1',SDIP = '") + SDIP + _T("',CID='") + CID+_T("',RID='") + RID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',ReSDTime ='") + GetTime() + _T("',ReSDCount=ReSDCount+1 where[RID] = '") + RID + _T("'");
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+		return ;
+	}
+
+	//如果不是返工就将数据插入表中
+	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI], [CID], [ICCID], [SDOperator], [SDTime], [SDRESULT],[ReSDCount])values('")
+		+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + SDOperator + _T("', '")  + GetTime() + _T("', 1,0)");//具体执行的SQL语句
 	try{
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 	}
@@ -248,14 +260,14 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 	{
 	}
 
-	//查找RID是否存在，存在就返回0表示下载过
-	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = '0'");
+	//查找RID是否存在，然后判断标志位是否为0，如果存在表示下载过
+	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 0");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查得到就更新,Affectline是insert操作返回的影响行数，如果为0代表插入失败，也就是说之前已经插入过这条数据但是是失败，现在机子重新下载成功需要更新数据
 	if (!m_pRecordSet->adoEOF&&Affectline.vt == 0)
 	{
-		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '1',SDIP = '") + SDIP + _T("',CID='") + CID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',SDTime ='") + GetTime() + _T("' where[RID] = '") + RID + _T("'");
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = 1,SDIP = '") + SDIP + _T("',CID='") + CID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',SDTime ='") + GetTime() + _T("' where[RID] = '") + RID + _T("'");
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 
 	}
@@ -280,8 +292,8 @@ void ADOManage::SimDataErrorInsertSql(CString SDIP, CString RID, CString IMEI, C
 	if (m_pRecordSet->adoEOF)
 	{
 		//将数据插入表中
-		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI],[SDOperator], [SDTime], [SDRESULT])values('")
-			+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + SDOperator + _T("', '") + GetTime() + _T("', '0')");//具体执行的SQL语句
+		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI],[SDOperator], [SDTime], [SDRESULT],[ReSDCount])values('")
+			+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + SDOperator + _T("', '") + GetTime() + _T("', 0,0)");//具体执行的SQL语句
 		try{
 			m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 		}
@@ -302,7 +314,7 @@ int ADOManage::SimDataLastStationSql(CString IMEI)
 	CString strSql;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI],[CoupleResult] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_TestResult] WHERE [IMEI] ='") + IMEI + _T("'AND CoupleResult = '1'");
+	strSql = _T("SELECT [IMEI],[CoupleResult] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_TestResult] WHERE [IMEI] ='") + IMEI + _T("'AND CoupleResult = 1");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查不到就返回0表示失败
@@ -323,9 +335,8 @@ int ADOManage::SimDataIsExitSql(CString RID,CString IMEI)
 	//参数
 	_variant_t a;
 	CString strSql;
-
 	//查找RID是否存在，存在就返回0表示下载过
-	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = '1'");
+	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 1");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查得到就返回0表示已经下载过
@@ -358,6 +369,51 @@ int ADOManage::SimDataNoIsExitSql(CString CID)
 	}
 
 	return 1;//上面没问题就返回1代表找不到
+}
+
+//返工位处理函数
+int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
+{
+	//初始化Recordset指针
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+
+	//参数
+	_variant_t a;
+	CString strSql,strCID;
+	int flag;
+	//查找RID是否存在
+	strSql = _T("SELECT [RID],[IMEI],[CID],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	//查得到就先将数据转移到SIM数据下载记录表
+	if (!m_pRecordSet->adoEOF)
+	{
+		flag = m_pRecordSet->GetCollect("SDRESULT");
+		if (flag == 1)
+		{
+			strCID = m_pRecordSet->GetCollect("CID");
+
+			//这里需要写移动文件夹的代码
+
+			//然后再将数据插入到另一张表
+			strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[Gps_ManuReSimDataParam] select * from [") + m_Firstdbname + _T("].[dbo].[Gps_ManuSimDataParam] where [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("'");
+			m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+			//然后更新一下原数据
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '2',SDIP = '',CID='',ICCID='',SDOperator ='' where[IMEI] = '") + IMEI + _T("'");
+			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+			return 1;
+		}
+		else if (flag == 2)
+		{
+			return 2;
+		}
+		else if (flag == 0)
+		{
+			return 3;
+		}
+	}
+
+	return 0;//上面有问题就返回0代表这台机器本来就没有数据
 }
 
 

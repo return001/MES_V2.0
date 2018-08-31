@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "Task.h"
 #include "MFCP3SIMPORTDlg.h"
+#include "ReSimDataDownload.h"
 
 //全局变量
-bool s_bSingleExit;//主控线程
-bool s_bExit;//主控线程
+bool s_bSingleExit;//单串口主控线程
+bool s_bExit;//多串口主控线程
+bool s_bReExit;//返工位主控线程
+
 //串口单文件下载
 bool m_TreadPort1SINGLEDownloadWrite1 = true;
 bool m_TreadPort1SINGLEDownloadWrite2 = true;
@@ -55,6 +58,12 @@ bool m_TreadPort4DownloadRead2 = true;
 bool m_TreadPort4DownloadRead3 = true;
 bool m_TreadPort4DownloadRead4 = true;
 
+//返工位串口
+bool m_TreadRePortDownloadWrite1 = true;
+bool m_TreadRePortDownloadWrite2 = true;
+bool m_TreadRePortDownloadRead1 = true;
+bool m_TreadRePortDownloadRead2 = true;
+
 
 CTask::CTask()
 {
@@ -67,10 +76,16 @@ CTask::~CTask()
 void CTask::Run()
 {
 	CMFCP3SIMPORTDlg mainform;
+	CReSimDataDownload reDownloadform;
+	CReSimDataDownload *CReSimDataDownload;
+
 	switch (threadCommand)
 	{
 	case PORT_AUTO_THREAD:
 		mainform.DownloadMainContralThread(AfxGetApp()->GetMainWnd());
+		break;
+	case PORT_REAUTO_THREAD:
+		reDownloadform.ReDownloadMainThread(CReSimDataDownload->m_hWnd);
 		break;
 	//单文件下载
 	case  PORT1_SINGLEWRITE1_THREAD:
@@ -440,6 +455,44 @@ void CTask::Run()
 		{
 			m_TreadPort4DownloadRead4 = false;
 			mainform.DownloadRead4Port4Thread(AfxGetApp()->GetMainWnd());
+		}
+	}
+	break;
+
+	//返工串口
+	case REPORT_WRITE1_THREAD:
+	{
+		if (m_TreadRePortDownloadWrite1)
+		{
+			m_TreadRePortDownloadWrite1 = false;
+			reDownloadform.ReDownloadWrite1PortThread(CReSimDataDownload->m_hWnd);
+		}
+	}
+	break;
+	case REPORT_WRITE2_THREAD:
+	{
+		if (m_TreadRePortDownloadWrite2)
+		{
+			m_TreadRePortDownloadWrite2 = false;
+			reDownloadform.ReDownloadWrite2PortThread(CReSimDataDownload->m_hWnd);
+		}
+	}
+	break;
+	case REPORT_READ1_THREAD:
+	{
+		if (m_TreadRePortDownloadRead1)
+		{
+			m_TreadRePortDownloadRead1 = false;
+			reDownloadform.ReDownloadRead2PortThread(CReSimDataDownload->m_hWnd);
+		}
+	}
+	break;
+	case REPORT_READ2_THREAD:
+	{
+		if (m_TreadRePortDownloadRead2)
+		{
+			m_TreadRePortDownloadRead2 = false;
+			reDownloadform.ReDownloadRead2PortThread(CReSimDataDownload->m_hWnd);
 		}
 	}
 	break;

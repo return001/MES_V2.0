@@ -11,7 +11,7 @@
 #include "Task.h"
 #include "ADOManage.h"
 #include "DBconfig.h"
-#include <shlwapi.h>
+#include "ReSimDataDownload.h"
 
 #pragma comment(lib,"Shlwapi.lib") //判断文件是否存在的库，如果没有这行，会出现link错误
 
@@ -188,6 +188,7 @@ BEGIN_MESSAGE_MAP(CMFCP3SIMPORTDlg, CDialogEx)
 	ON_CBN_DROPDOWN(IDC_PORTLIST2_COMBO, &CMFCP3SIMPORTDlg::OnCbnDropdownPortlist2Combo)
 	ON_CBN_DROPDOWN(IDC_PORTLIST3_COMBO, &CMFCP3SIMPORTDlg::OnCbnDropdownPortlist3Combo)
 	ON_CBN_DROPDOWN(IDC_PORTLIST4_COMBO, &CMFCP3SIMPORTDlg::OnCbnDropdownPortlist4Combo)
+	ON_BN_CLICKED(IDC_OPENREMODLE_BUTTON, &CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton)
 END_MESSAGE_MAP()
 
 
@@ -461,8 +462,9 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafilepathButton()
 	//构造打开文件对话框
 	CFileDialog fileDlg(TRUE, _T("der"), NULL, 0, szFilter, this);
 
-	CString strFilePath;
-
+	CString strFilePath,strdefaultDir = strSingleFilePath.Left(strSingleFilePath.GetLength() - 23);
+	fileDlg.m_ofn.lpstrInitialDir = strdefaultDir;
+	
 	if (IDOK == fileDlg.DoModal())
 	{
 		// 如果点击了文件对话框上的“打开”按钮，则将选择的文件路径显示到编辑框里
@@ -474,6 +476,21 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafilepathButton()
 		WritePrivateProfileString(_T("SimPathName"), _T("simfilepathname"), strFilePath, _T(".\\SystemInfo.ini"));
 	}
 }
+
+
+//返工位的东西
+//开启返工位按钮
+void CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	INT_PTR nRes;             // 用于保存DoModal函数的返回值   
+	CReSimDataDownload resimdatadownload;       // 构造对话框类实例   
+	nRes = resimdatadownload.DoModal();  // 弹出对话框
+
+	if (IDCANCEL == nRes)
+		return;
+}
+
 
 
 //SIM卡数据下载模块函数
@@ -535,7 +552,7 @@ void CMFCP3SIMPORTDlg::FindCommPort(CComboBox *pComboBox, CString &ComNo, int Po
 		if (pComboBox->GetCount() == 0)
 		{
 			pComboBox->ResetContent();
-			SetRicheditText(L"找不到串口！请检测串口设备是否存在问题！", 1);
+			//SetRicheditText(L"找不到串口！请检测串口设备是否存在问题！", 1);
 			//MessageBox(L"找不到串口！请检测串口设备是否存在问题！", L"提示信息", NULL);
 			RegCloseKey(hKey);
 			return;
@@ -583,7 +600,7 @@ HANDLE CMFCP3SIMPORTDlg::InitCom(CString comName)
 	dcb.StopBits = ONESTOPBIT; //1个停止位
 	SetCommState(hCom, &dcb);
 	PurgeComm(hCom, PURGE_TXCLEAR | PURGE_RXCLEAR);
-	SetRicheditText(L"串口初始化成功！", 0);
+	//SetRicheditText(L"串口初始化成功！", 0);
 	return hCom;
 }
 
@@ -1413,7 +1430,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 
 	int findfileend=1,singleflag;
 	DWORD dwTotalSize;//文件总大小
-	CStdioFile ReadFile;
+	CFile ReadFile;
 	//CRC变量
 	CString strCID, strCIDfile;
 	int crc16, strCIDcount;
@@ -1477,6 +1494,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 						finder.Close();
 						continue;
 					}
+					findfileend = 1;
                     
 				}
 				if (StrFolder[0] == strFolderFile)
@@ -1809,7 +1827,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite2Port1Thread(LPVOID lpParam)
 	strCIDcount = 0;
 
 	//先读文件CRC
-	CStdioFile ReadFile;
+	CFile ReadFile;
 	BOOL bOpen = ReadFile.Open(strpath, CFile::modeRead);
 	dwTotalSize = ReadFile.GetLength();//获取文件总长度
 	char *crcBuf = new char[dwTotalSize + 1];
@@ -2003,7 +2021,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	CString strpath;
 	dlg->GetDlgItemText(IDC_SIMDATAFILEPATH_EDIT, strpath);
 
-	CStdioFile ReadFile1;
+	CFile ReadFile1;
 	BOOL bOpen = ReadFile1.Open(strpath, CFile::modeRead);
 	dwTotalSize = ReadFile1.GetLength();//获取文件总长度
 
@@ -2062,7 +2080,6 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		return;
 	}
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-
 	strcommand = L"AT^GT_CM=SOFTSIM_DATA,END," + dlg->strsinglecrc16 + L"\r\n";
 	ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
 
@@ -2073,9 +2090,11 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
+
 		dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
+			PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
 			dlg->SingleDownloadClosePort1Thread();
 			dlg->SingleDownloadRestPort1Thread();
@@ -2117,7 +2136,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 	do
 	{
 		Sleep(1020);
-		bReadStat = ReadFile(dlg->port1handler, str, 100, &readreal, 0);
+		bReadStat = ReadFile(dlg->port1handler, str, 200, &readreal, 0);
 		if (bReadStat)
 		{
 			strread = str;
@@ -2549,7 +2568,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 	int intdatano = 0;//第几条数据
 
 	//文件下载地址
-	CStdioFile ReadFile1;
+	CFile ReadFile1;
 	BOOL bOpen = ReadFile1.Open(StrFolder[0], CFile::modeRead);
 	dwTotalSize = ReadFile1.GetLength();//获取文件总长度
 
@@ -2772,7 +2791,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 	BOOL bReadStat;
 
 	//其余变量
-	CString strread,strfolderpath, strfoldercut;;
+	CString strread,strfolderpath, strfoldercut;
 
 	m_Port1DownloadRead4 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 
@@ -3092,7 +3111,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 	int intdatano = 0;//第几条数据
 
 	//文件下载地址
-	CStdioFile ReadFile2;
+	CFile ReadFile2;
 	BOOL bOpen = ReadFile2.Open(StrFolder[1], CFile::modeRead);
 	dwTotalSize = ReadFile2.GetLength();//获取文件总长度
 
@@ -3634,7 +3653,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 	int intdatano = 0;//第几条数据
 
 	//文件下载地址
-	CStdioFile ReadFile3;
+	CFile ReadFile3;
 	BOOL bOpen = ReadFile3.Open(StrFolder[2], CFile::modeRead);
 	dwTotalSize = ReadFile3.GetLength();//获取文件总长度
 
@@ -4174,7 +4193,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 	int intdatano = 0;//第几条数据
 
 	//文件下载地址
-	CStdioFile ReadFile2;
+	CFile ReadFile2;
 	BOOL bOpen = ReadFile2.Open(StrFolder[3], CFile::modeRead);
 	dwTotalSize = ReadFile2.GetLength();//获取文件总长度
 
@@ -4562,16 +4581,18 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port1SINGLEDownloadWrite2 = FALSE;
 			m_Port1SINGLEDownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+			Sleep(10);
 			SingleDownloadClosePort1Thread();
 			SingleDownloadRestPort1Thread();
 			return 0;
 		}
-		port1flag = SimDataIsExitFun1();
+		singleflag = SimDataIsExitFun1();
 		if (singleflag == 0)
 		{
 			m_Port1SINGLEDownloadWrite2 = FALSE;
 			m_Port1SINGLEDownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT1HINT_STATIC,L"工位已测");
+			Sleep(10);
 			SingleDownloadClosePort1Thread();
 			SingleDownloadRestPort1Thread();
 			return 0;
@@ -4606,6 +4627,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port1DownloadWrite2 = FALSE;
 			m_Port1DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+			Sleep(10);
 			DownloadClosePort1Thread();
 			DownloadRestPort1Thread();
 			return 0;
@@ -4616,6 +4638,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port1DownloadWrite2 = FALSE;
 			m_Port1DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+			Sleep(10);
 			DownloadClosePort1Thread();
 			DownloadRestPort1Thread();
 			return 0;
@@ -4643,6 +4666,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port2DownloadWrite2 = FALSE;
 			m_Port2DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+			Sleep(10);
 			DownloadClosePort2Thread();
 			DownloadRestPort2Thread();
 			return 0;
@@ -4653,6 +4677,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port2DownloadWrite2 = FALSE;
 			m_Port2DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+			Sleep(10);
 			DownloadClosePort2Thread();
 			DownloadRestPort2Thread();
 			return 0;
@@ -4680,6 +4705,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port3DownloadWrite2 = FALSE;
 			m_Port3DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+			Sleep(10);
 			DownloadClosePort3Thread();
 			DownloadRestPort3Thread();
 			return 0;
@@ -4690,6 +4716,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port3DownloadWrite2 = FALSE;
 			m_Port3DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
+			Sleep(10);
 			DownloadClosePort3Thread();
 			DownloadRestPort3Thread();
 			return 0;
@@ -4717,6 +4744,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port4DownloadWrite2 = FALSE;
 			m_Port4DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+			Sleep(10);
 			DownloadClosePort4Thread();
 			DownloadRestPort4Thread();
 			return 0;
@@ -4727,6 +4755,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 			m_Port4DownloadWrite2 = FALSE;
 			m_Port4DownloadReadEnd2 = FALSE;
 			SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+			Sleep(10);
 			DownloadClosePort4Thread();
 			DownloadRestPort4Thread();
 			return 0;
@@ -5111,7 +5140,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_PORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
-		if (str1 == "失败" || str1 == "工位已测" ||str1=="耦合漏测")
+		if (str1 == "失败" || str1 == "工位已测" || str1 == "耦合漏测" || str1 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
@@ -5130,7 +5159,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT2HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT2HINT_STATIC, str2);
-		if (str2 == "失败" || str2 == "工位已测" || str2 =="耦合漏测")
+		if (str2 == "失败" || str2 == "工位已测" || str2 == "耦合漏测" || str2 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
@@ -5149,7 +5178,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT3HINT_STATIC)
 	{ 
 		GetDlgItemText(IDC_PORT3HINT_STATIC, str3);
-		if (str3 == "失败" || str3 == "工位已测" || str3 == "耦合漏测")
+		if (str3 == "失败" || str3 == "工位已测" || str3 == "耦合漏测" || str3 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
@@ -5168,7 +5197,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT4HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT4HINT_STATIC, str4);
-		if (str4 == "失败" || str4 == "工位已测" || str4 == "耦合漏测")
+		if (str4 == "失败" || str4 == "工位已测" || str4 == "耦合漏测" || str4 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
@@ -5321,3 +5350,5 @@ void CMFCP3SIMPORTDlg::OnBnClickedCancel()
 
 	CDialogEx::OnCancel();
 }
+
+

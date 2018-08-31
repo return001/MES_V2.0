@@ -11,6 +11,8 @@
 
 //主控线程
 #define PORT_AUTO_THREAD     23001
+#define PORT_REAUTO_THREAD     23002
+
 //串口单文件下载
 #define PORT1_SINGLEWRITE1_THREAD     23010
 #define PORT1_SINGLEWRITE2_THREAD     23011
@@ -62,7 +64,14 @@
 #define PORT4_WRITE4_THREAD     23056
 #define PORT4_READ4_THREAD   23057
 
+//返工位串口
+#define REPORT_WRITE1_THREAD     23060
+#define REPORT_WRITE2_THREAD     23061
+#define REPORT_READ1_THREAD   23062
+#define REPORT_READ2_THREAD   23063
+
 /** 主线程退出标志变量 */
+extern bool s_bReExit;
 extern bool s_bSingleExit;
 extern bool s_bExit;
 //串口单文件下载
@@ -114,6 +123,13 @@ extern bool m_TreadPort4DownloadRead1;
 extern bool m_TreadPort4DownloadRead2;
 extern bool m_TreadPort4DownloadRead3;
 extern bool m_TreadPort4DownloadRead4;
+
+//返工位串口
+extern bool m_TreadRePortDownloadWrite1;
+extern bool m_TreadRePortDownloadWrite2;
+extern bool m_TreadRePortDownloadRead1;
+extern bool m_TreadRePortDownloadRead2;
+
 
 class CTask  //任务基类
 {

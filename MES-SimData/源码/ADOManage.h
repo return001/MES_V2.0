@@ -46,6 +46,8 @@ public:
 	int SimDataIsExitSql(CString RID,CString IMEI);//查询机子是否存在并且下载成功函数
 	int SimDataNoIsExitSql(CString CID);//查询种子号是否已经下载过函数
 
+	int SimDataReSql(CString RID, CString IMEI,CString strOKpath);//返工位处理函数
+
 	//通用函数
 	CString GetTime();//获取当前系统时间
 	_RecordsetPtr GetRst();//干掉某张表数据用的

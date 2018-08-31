@@ -88,7 +88,6 @@ public:
 	void GetCommPort(CComboBox *pComboBox, CString &ComNo);//获取当前串口号
 	void FindCommPort(CComboBox *pComboBox, CString &ComNo,int PortNO);//从注册表中寻找串口号
 
-
 	CTask ThreadControl;//线程池的东西
 	CThreadPool* m_lpThreadPool;//线程池的东西
 	
@@ -240,5 +239,6 @@ public:
 	CString m_pcipEdit;
 
 	int GetLocalHostIPName(CString &sLocalName, CString &sIpAddress);
+	afx_msg void OnBnClickedOpenremodleButton();
 };
 
