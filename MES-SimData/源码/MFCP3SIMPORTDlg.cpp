@@ -367,6 +367,7 @@ void CMFCP3SIMPORTDlg::Port1SetOtherWindowTrue()
 		GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 		GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 	}
+	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(TRUE);
 	GetDlgItem(IDC_PORTLIST1_COMBO)->EnableWindow(TRUE);
 }
 
@@ -379,6 +380,7 @@ void CMFCP3SIMPORTDlg::Port1SetOtherWindowFalse()
 		GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 		GetDlgItem(IDC_SIMDATAFILEPATH_EDIT)->EnableWindow(FALSE);
 	}
+	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(FALSE);
 	GetDlgItem(IDC_PORTLIST1_COMBO)->EnableWindow(FALSE);
 }
 
@@ -389,6 +391,7 @@ void CMFCP3SIMPORTDlg::PortSetOtherWindowTrue()
 	GetDlgItem(IDC_SIMDATAFOLDERPATH_EDIT)->EnableWindow(TRUE);
 	GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 	GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
+	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(TRUE);
 }
 
 void CMFCP3SIMPORTDlg::PortSetOtherWindowFalse()
@@ -398,6 +401,7 @@ void CMFCP3SIMPORTDlg::PortSetOtherWindowFalse()
 	GetDlgItem(IDC_SIMDATAFOLDERPATH_EDIT)->EnableWindow(FALSE);
 	GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 	GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
+	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(FALSE);
 }
 
 
@@ -484,8 +488,8 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	INT_PTR nRes;             // 用于保存DoModal函数的返回值   
-	CReSimDataDownload resimdatadownload;       // 构造对话框类实例   
-	nRes = resimdatadownload.DoModal();  // 弹出对话框
+	CReSimDataDownload *resimdatadownload = new CReSimDataDownload;       // 构造对话框类实例   
+	nRes = resimdatadownload->DoModal();  // 弹出对话框
 
 	if (IDCANCEL == nRes)
 		return;
@@ -1415,7 +1419,6 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainPortThreadControl(WPARAM wParam, LPARAM lP
 	case MainPort_Port4_Read4:
 		OpenThreadPoolTask(PORT4_READ4_THREAD);
 		break;
-
 	default:
 		break;
 	}
@@ -1481,6 +1484,13 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 					strFolderFile = strFolderpath + strCIDfile + L"\\assets.der";//文件夹名称
 					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
 					
+					if (!PathFileExists(strFolderFile))
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！",L"提示信息",NULL);
+						dlg->OnBnClickedAutomultiplestartButton();
+						return;
+					}
+
 					ADOManage adosinglesimdatamanage;
 					adosinglesimdatamanage.ConnSQL();
 					singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);

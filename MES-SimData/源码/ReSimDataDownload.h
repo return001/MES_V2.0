@@ -2,6 +2,11 @@
 #include "afxwin.h"
 #include "afxcmn.h"
 
+UINT ReDownloadMainThread(LPVOID lpParam);
+
+UINT ReDownloadWirtePortThread(LPVOID lpParam);
+UINT ReDownloadReadPortThread(LPVOID lpParam);
+
 extern CString strFolderpath, strOKFolderpath, strFolderFile,m_resimdatafolderPath;
 extern HWND MainReFormHWND;
 extern HANDLE reporthandler;
@@ -48,7 +53,14 @@ public:
 	//返工位线程
 	afx_msg LRESULT MainRePortThreadControl(WPARAM wParam, LPARAM lParam);
 
-	void ReDownloadMainThread(LPVOID lpParam);
+	CWinThread* DWThread;//下载写线程句柄
+	CWinThread* DRThread;//下载写线程句柄
+	CWinThread* MainThread;//下载主控线程句柄
+
+	int CommandNo;
+	CString CommandWriteUnit(int strcommandNo);
+	CString CommandReadUnit(int strcommandNo);
+
 	void ReDownloadWrite1PortThread(LPVOID lpParam);
 	void ReDownloadWrite2PortThread(LPVOID lpParam);
 	void ReDownloadRead1PortThread(LPVOID lpParam);
@@ -57,15 +69,10 @@ public:
 	void ReDownloadRestPortThread();
 	void ReDownloadClosePortThread();
 
-	CTask ThreadControl;//线程池的东西
-	CThreadPool* m_lpThreadPool;//线程池的东西
+	//CTask ThreadControl;//线程池的东西
+	//CThreadPool* m_lpThreadPool;//线程池的东西
 
-	void OpenThreadPoolTask(int Command);
-
-	//数据库函数
-	int SimDataReFun();
-
-	afx_msg LRESULT MainReDataInsertControl(WPARAM wParam, LPARAM lParam);//数据库消息循环函数
+	//void OpenThreadPoolTask(int Command);
 
 	void SetRicheditText(CString strMsg, int No);
 	CString GetTime();
