@@ -29,7 +29,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -37,15 +37,17 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Seagull.BarTender.Print, Version=10.1.4.1, Culture=neutral, PublicKeyToken=109ff779a1b4cbc7, processorArchitecture=x86">
@@ -56,6 +58,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Speech" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,6 +75,12 @@
     </Compile>
     <Compile Include="CheckRePrint.Designer.cs">
       <DependentUpon>CheckRePrint.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CH_Unlock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CH_Unlock.Designer.cs">
+      <DependentUpon>CH_Unlock.cs</DependentUpon>
     </Compile>
     <Compile Include="Color_Box.cs">
       <SubType>Form</SubType>
@@ -91,14 +100,20 @@
     <Compile Include="JST_CheckAndDelect.Designer.cs">
       <DependentUpon>JST_CheckAndDelect.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pri-Bll\DataRelativeSheetBLL.cs" />
     <Compile Include="Pri-Bll\InputExcelBLL.cs" />
     <Compile Include="Pri-Bll\ManuOrderParamBLL.cs" />
     <Compile Include="Pri-Bll\MsgJudgmentBLL.cs" />
     <Compile Include="Pri-Bll\PrintMessageBLL.cs" />
+    <Compile Include="Pri-Bll\TestResultBLL.cs" />
+    <Compile Include="Pri-Dal\DataRelativeSheet.cs" />
+    <Compile Include="Pri-Dal\DataRelativeSheetDAL.cs" />
     <Compile Include="Pri-Dal\Gps_ManuOrderParam.cs" />
+    <Compile Include="Pri-Dal\Gps_TestResult.cs" />
     <Compile Include="Pri-Dal\ManuOrderParamDAL.cs" />
     <Compile Include="Pri-Dal\PrintMessage.cs" />
     <Compile Include="Pri-Dal\PrintMessageDAL.cs" />
+    <Compile Include="Pri-Dal\TestResultDAL.cs" />
     <Compile Include="PrintFromExcel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,8 +122,17 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="JS_Unlock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="JS_Unlock.Designer.cs">
+      <DependentUpon>JS_Unlock.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="CheckRePrint.resx">
       <DependentUpon>CheckRePrint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CH_Unlock.resx">
+      <DependentUpon>CH_Unlock.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Color_Box.resx">
       <DependentUpon>Color_Box.cs</DependentUpon>
@@ -132,6 +156,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="JS_Unlock.resx">
+      <DependentUpon>JS_Unlock.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

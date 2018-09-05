@@ -14,6 +14,7 @@ namespace ManuOrder.Param.DAL
     {
         private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
 
+
         //返回制单号
         public List<Gps_ManuOrderParam> SelectZhidanNumDAL()
         {
@@ -21,7 +22,7 @@ namespace ManuOrder.Param.DAL
             conn1.Open();
             List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE Status='1' OR Status='0' ORDER BY Status";
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE Status='1' OR Status='0' ORDER BY ZhiDan";
             SqlDataReader dr = command.ExecuteReader();
             while (dr.Read())
             {
@@ -32,24 +33,21 @@ namespace ManuOrder.Param.DAL
             return list;
         }
 
-        //模糊查询返回制单号
-        public List<Gps_ManuOrderParam> SelectZhidanNumBylikeDAL(string likeword)
+        //检查制单号是否存在
+        public int CheckZhiDanDAL(string ZhiDan)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE ZhiDan LIKE '%"+likeword+"'%";
+            command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE ZhiDan='" + ZhiDan + "'";
             SqlDataReader dr = command.ExecuteReader();
             while (dr.Read())
             {
-                list.Add(new Gps_ManuOrderParam()
-                {
-                    ZhiDan = dr.GetString(1)
-                });
+                return 1;
             }
-            return list;
+            return 0;
         }
+
 
         //根据制单号返回该制单相关信息
         public List<Gps_ManuOrderParam> selectManuOrderParamByzhidanDAL(string ZhidanNum)
@@ -98,69 +96,54 @@ namespace ManuOrder.Param.DAL
                     VIP_digits = dr.IsDBNull(40) ? "" : dr.GetString(40),
                     ICCID_prefix = dr.IsDBNull(41) ? "" : dr.GetString(41),
                     ICCID_digits = dr.IsDBNull(42) ? "" : dr.GetString(42),
-                    IMEIPrints = dr.IsDBNull(43) ? "" : dr.GetString(43)
+                    IMEIPrints = dr.IsDBNull(43) ? "" : dr.GetString(43),
+                    MAC_prefix = dr.IsDBNull(44) ? "" : dr.GetString(44),
+                    MAC_digits = dr.IsDBNull(45) ? "" : dr.GetString(45),
+                    Equipment_prefix = dr.IsDBNull(46) ? "" : dr.GetString(46),
+                    Equipment_digits = dr.IsDBNull(47) ? "" : dr.GetString(47)
                 });
             }
             return list;
         }
 
         //根据制单号更新SN2号
-        public int UpdateSNnumberDAL(string ZhiDanNum, string SN1, string SN2, string SN3, string VIP1, string VIP2,long ImeiPrints)
+        public int UpdateSNnumberDAL(string ZhiDanNum, string SN2, long ImeiPrints)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE Gps_ManuOrderParam SET SN1='"+SN1+"',SN2 ='"+SN2+ "',SN3='"+SN3+"',IMEIPrints = '"+ImeiPrints.ToString()+"',VIPStart = '" + VIP1+ "',VIPEnd = '" + VIP2+"' WHERE ZhiDan='"+ZhiDanNum+"'";
+            command.CommandText = "UPDATE Gps_ManuOrderParam SET SN2 ='"+SN2+ "',IMEIPrints = '"+ImeiPrints.ToString()+"' WHERE ZhiDan='"+ZhiDanNum+"'";
             return command.ExecuteNonQuery();
         }
 
-        //根据制单号更新SN3号
-        public int UpdateSN3numberDAL(string ZhiDanNum, string SN1, string SN2, string SN3, string VIP1, string VIP2)
+        //打印时该SN号已存在--SN号++
+        public int UpdateSNAddOneDAL(string ZhiDanNum, string SN2)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE Gps_ManuOrderParam SET SN1='" + SN1 + "', SN2 ='" + SN2 + "', SN3 ='" + SN3 + "',VIPStart = '" + VIP1 + "',VIPEnd = '" + VIP2 + "' WHERE ZhiDan='" + ZhiDanNum + "'";
+            command.CommandText = "UPDATE Gps_ManuOrderParam SET SN2 ='" + SN2 + "'WHERE ZhiDan='" + ZhiDanNum + "'";
             return command.ExecuteNonQuery();
         }
 
         //更新彩盒打印信息
-        public int UpdateCHmesDAL(string IMEI, string CHPrintTime, string lj1, string lj2)
+        public int UpdateCHmesDAL(string IMEI, string CHPrintTime, string lj1, string lj2,String sn)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET CH_PrintTime='" + CHPrintTime + "', CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "' WHERE IMEI='" + IMEI + "'";
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN = '"+sn+"', CH_PrintTime='" + CHPrintTime + "', CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "' WHERE IMEI='" + IMEI + "'";
             return command.ExecuteNonQuery();
         }
 
-        //更新彩盒sim打印信息
-        public int UpdateCHSIMDAL(string IMEI, string CHPrintTime, string lj1, string lj2,string SIM)
+        //更新彩盒关联打印信息
+        public int UpdateCHAssociatedDAL(string IMEI, string CHPrintTime, string lj1, string lj2,string SIM, string VIP, string BAT, string ICCID, string MAC, string Equipment,string SN)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET CH_PrintTime='" + CHPrintTime + "', CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='"+SIM+"' WHERE IMEI='" + IMEI + "'";
-            return command.ExecuteNonQuery();
-        }
-
-        //更新彩盒VIP打印信息
-        public int UpdateCHVIPDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP)
-        {
-            SqlConnection conn1 = new SqlConnection(conStr);
-            conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET CH_PrintTime='" + CHPrintTime + "', CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',VIP='" + VIP + "' WHERE IMEI='" + IMEI + "'";
-            return command.ExecuteNonQuery();
-        }
-
-        //更新彩盒VIP 和 SIM打印信息
-        public int UpdateCHVIPAndSimDAL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP, string SIM)
-        {
-            SqlConnection conn1 = new SqlConnection(conStr);
-            conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET CH_PrintTime='" + CHPrintTime + "', CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',VIP='" + VIP + "',SIM='"+SIM+"' WHERE IMEI='" + IMEI + "'";
+            string CH_PrintTime = CHPrintTime == "" ? "NULL" : "'" + CHPrintTime + "'";
+            command.CommandText = "UPDATE dbo.Gps_ManuPrintParam SET SN='"+SN+"', CH_PrintTime=" + CH_PrintTime + ", CH_TemplatePath1 ='" + lj1 + "', CH_TemplatePath2 ='" + lj2 + "',SIM='"+SIM+"',VIP='"+VIP+ "',BAT='" + BAT + "',ICCID='" + ICCID + "',MAC='" + MAC + "',Equipment='" + Equipment + "'WHERE IMEI='" + IMEI + "'";
             return command.ExecuteNonQuery();
         }
 
@@ -183,5 +166,16 @@ namespace ManuOrder.Param.DAL
             command.CommandText = "UPDATE Gps_ManuOrderParam SET Status = 1 WHERE (ZhiDan='" + ZhiDanNum + "' AND Status=0)";
             return command.ExecuteNonQuery();
         }
+
+        //根据制单号更新数据
+        public int UpdateInlineByZhiDanDAL(string ZhiDanNum,string SN1, string SN2, string ProductData, string SIM1, string SIM2, string SIM_dig, string SIM_pre, string VIP1, string VIP2, string VIP_dig, string VIP_pre, string BAT1, string BAT2, string BAT_dig, string BAT_pre, string ICCID_dig, string ICCID_pre, string MAC_dig, string MAC_pre, string Equipment_dig, string Equipment_pre)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "UPDATE Gps_ManuOrderParam SET SN1='"+SN1+ "',SN2='" + SN2 + "',ProductDate='"+ProductData+"',SIMStart='" + SIM1+ "',SIMEnd='"+SIM2+ "',BATStart='"+BAT1+ "',BATEnd='"+BAT2+ "',VIPStart='"+VIP1+ "',VIPEnd='"+VIP2+ "',BAT_prefix='"+BAT_pre+ "',BAT_digits='"+BAT_dig+ "',SIM_prefix='"+SIM_pre+ "',SIM_digits='"+SIM_dig+ "',VIP_prefix='"+VIP_pre+ "',VIP_digits='"+VIP_dig+ "',ICCID_prefix='" + ICCID_pre + "',ICCID_digits='" + ICCID_dig + "',MAC_prefix='" + MAC_pre + "',MAC_digits='" + MAC_dig + "',Equipment_prefix='" + Equipment_pre + "',Equipment_digits='" + Equipment_dig + "' WHERE (ZhiDan='" + ZhiDanNum + "' AND Status=0)";
+            return command.ExecuteNonQuery();
+        }
+
     }
 }

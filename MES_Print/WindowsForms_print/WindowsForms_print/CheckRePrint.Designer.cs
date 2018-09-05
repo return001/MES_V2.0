@@ -79,10 +79,10 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.BackColor = System.Drawing.Color.White;
+            this.splitContainer1.Panel2.BackColor = System.Drawing.Color.Linen;
             this.splitContainer1.Panel2.Controls.Add(this.dataGridView1);
-            this.splitContainer1.Size = new System.Drawing.Size(1500, 692);
-            this.splitContainer1.SplitterDistance = 83;
+            this.splitContainer1.Size = new System.Drawing.Size(1700, 900);
+            this.splitContainer1.SplitterDistance = 107;
             this.splitContainer1.TabIndex = 0;
             // 
             // CheckByInput
@@ -180,7 +180,7 @@
             this.dataGridView1.RowHeadersWidth = 20;
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridView1.RowTemplate.Height = 30;
-            this.dataGridView1.Size = new System.Drawing.Size(1497, 601);
+            this.dataGridView1.Size = new System.Drawing.Size(1688, 756);
             this.dataGridView1.TabIndex = 0;
             // 
             // ZhiDan
@@ -191,7 +191,7 @@
             this.ZhiDan.HeaderText = "制单号";
             this.ZhiDan.MinimumWidth = 20;
             this.ZhiDan.Name = "ZhiDan";
-            this.ZhiDan.Width = 144;
+            this.ZhiDan.Width = 134;
             // 
             // IMEI
             // 
@@ -227,7 +227,7 @@
             this.RePrintNum.HeaderText = "重打次数";
             this.RePrintNum.MinimumWidth = 20;
             this.RePrintNum.Name = "RePrintNum";
-            this.RePrintNum.Width = 94;
+            this.RePrintNum.Width = 84;
             // 
             // RePrintTime
             // 
@@ -263,14 +263,15 @@
             // 
             this.TemPath2.HeaderText = "模板路径2";
             this.TemPath2.Name = "TemPath2";
-            this.TemPath2.Width = 144;
+            this.TemPath2.Width = 194;
             // 
             // CheckRePrint
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1500, 692);
+            this.ClientSize = new System.Drawing.Size(1700, 900);
             this.Controls.Add(this.splitContainer1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "CheckRePrint";
             this.Text = "重打查询";

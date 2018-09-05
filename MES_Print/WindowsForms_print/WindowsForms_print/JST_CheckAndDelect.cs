@@ -14,17 +14,25 @@ namespace WindowsForms_print
 {
     public partial class JST_CheckAndDelect : Form
     {
+
         PrintMessageBLL PMB = new PrintMessageBLL();
         List<PrintMessage> list = new List<PrintMessage>();
 
         public JST_CheckAndDelect()
         {
             InitializeComponent();
+            int wid = Screen.PrimaryScreen.WorkingArea.Width;
+            this.Width = wid;
+            this.dataGridView1.Width = wid;
             this.SnOrImei.Text = "请输入SN号或IMEI号";
 
             this.JST_DY.Items.Add("SIM");
             this.JST_DY.Items.Add("VIP");
             this.JST_DY.Items.Add("BAT");
+            this.JST_DY.Items.Add("SN");
+            this.JST_DY.Items.Add("ICCID");
+            this.JST_DY.Items.Add("MAC");
+            this.JST_DY.Items.Add("Equipment");
         }
 
         private void SnOrImei_Click(object sender, EventArgs e)
@@ -48,6 +56,9 @@ namespace WindowsForms_print
             {
                 MessageBox.Show("请先输入IMEI号或SN号");
                 this.SnOrImei.Text = "请输入SN号或IMEI号";
+                this.JST_ID.Text = "";
+                this.JST_ID.Items.Clear();
+                this.dataGridView1.Rows.Clear();
             }
             else
             {
@@ -55,14 +66,18 @@ namespace WindowsForms_print
                 list = PMB.SelectPrintMesBySNOrIMEIBLL(this.SnOrImei.Text);
                 if (list.Count == 0)
                 {
-                    MessageBox.Show("查找不到打印记录！");
-                    this.SnOrImei.Clear();
+                    MessageBox.Show("查找不到该打印记录");
+                    this.SnOrImei.Text = "请输入SN号或IMEI号";
+                    this.JST_ID.Text = "";
+                    this.JST_ID.Items.Clear();
+                    this.JST_DY.Text = "";
+                    this.dataGridView1.Rows.Clear();
                 }
                 else
                 {
                     foreach (PrintMessage a in list)
                     {
-                        this.dataGridView1.Rows.Add(a.ID,a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.IMEIRel, a.JS_PrintTime,a.SoftModel, a.JS_TemplatePath);
+                        this.dataGridView1.Rows.Add(a.ID,a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.ICCID,a.MAC,a.Equipment,a.IMEIRel, a.JS_PrintTime,a.SoftModel, a.JS_TemplatePath);
                         this.JST_ID.Text = a.ID.ToString();
                         this.JST_ID.Items.Clear();
                         this.JST_ID.Items.Add(a.ID);
@@ -118,12 +133,14 @@ namespace WindowsForms_print
         {
             if (this.JST_ID.Text=="")
             {
+
                 MessageBox.Show("请先选择ID");
                 this.JST_ID.Focus();
             }
             else
             {
                 if (this.JST_DY.Text == "") {
+
                     MessageBox.Show("请先选择要删除的字段");
                 }
                 else
@@ -133,7 +150,7 @@ namespace WindowsForms_print
                     list = PMB.SelectPrintMesBySNOrIMEIBLL(this.SnOrImei.Text);
                     foreach (PrintMessage a in list)
                     {
-                        this.dataGridView1.Rows.Add(a.ID, a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.IMEIRel, a.JS_PrintTime, a.SoftModel, a.JS_TemplatePath);
+                        this.dataGridView1.Rows.Add(a.ID, a.Zhidan, a.IMEI, a.SN, a.SIM, a.VIP, a.BAT, a.ICCID, a.MAC, a.Equipment, a.IMEIRel, a.JS_PrintTime, a.SoftModel, a.JS_TemplatePath);
                     }
                     MessageBox.Show("删除成功");
                 }

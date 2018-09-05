@@ -115,5 +115,18 @@ namespace Print_Message
 
         //IMEI当前打印位
         public string IMEIPrints { get; set; }
+
+        //蓝牙位数
+        public string MAC_digits { get; set; }
+
+        //蓝牙前缀
+        public string MAC_prefix { get; set; }
+
+        //设备号前缀
+        public string Equipment_prefix { get; set; }
+
+        //设备号位数
+        public string Equipment_digits { get; set; }
+
     }
 }
