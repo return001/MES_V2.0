@@ -59,10 +59,10 @@ bool m_TreadPort4DownloadRead3 = true;
 bool m_TreadPort4DownloadRead4 = true;
 
 //·µ¹¤Î»´®¿Ú
-bool m_TreadRePortDownloadWrite1 = true;
-bool m_TreadRePortDownloadWrite2 = true;
-bool m_TreadRePortDownloadRead1 = true;
-bool m_TreadRePortDownloadRead2 = true;
+//bool m_TreadRePortDownloadWrite1 = true;
+//bool m_TreadRePortDownloadWrite2 = true;
+//bool m_TreadRePortDownloadRead1 = true;
+//bool m_TreadRePortDownloadRead2 = true;
 
 
 CTask::CTask()

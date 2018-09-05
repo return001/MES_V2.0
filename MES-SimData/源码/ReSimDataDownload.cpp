@@ -32,6 +32,7 @@ volatile BOOL m_RePortDownloadRead1;
 volatile BOOL m_RePortDownloadRead2;
 volatile BOOL m_RePortDownloadReadEnd2;
 
+
 IMPLEMENT_DYNAMIC(CReSimDataDownload, CDialogEx)
 
 CReSimDataDownload::CReSimDataDownload(CWnd* pParent /*=NULL*/)
@@ -58,7 +59,7 @@ BEGIN_MESSAGE_MAP(CReSimDataDownload, CDialogEx)
 	ON_BN_CLICKED(IDC_REPORT1CONNECT_BUTTON, &CReSimDataDownload::OnBnClickedReport1connectButton)
 	ON_BN_CLICKED(IDC_RESTART_BUTTON, &CReSimDataDownload::OnBnClickedRestart1Button)
 	ON_BN_CLICKED(IDCANCEL, &CReSimDataDownload::OnBnClickedCancel)
-	ON_MESSAGE(WM_MainRePortThreadControl, &CReSimDataDownload::MainRePortThreadControl)
+	//ON_MESSAGE(WM_MainRePortThreadControl, &CReSimDataDownload::MainRePortThreadControl)
 	ON_CBN_DROPDOWN(IDC_REPORTLIST1_COMBO, &CReSimDataDownload::OnCbnDropdownReportlist1Combo)
 	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
@@ -87,21 +88,12 @@ BOOL CReSimDataDownload::OnInitDialog()
 	//获取日志名字
 	ReLogName = GetLogTime()+L"ReLog";
 
-
-	//MainReFormHWND = FindWindow(NULL, L"返工模式")->m_hWnd;
-
-	////线程池初始化
-	//m_lpThreadPool = NULL;
-	//if (!m_lpThreadPool)
-	//{
-	//	m_lpThreadPool = new CThreadPool();
-	//}
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }
 
-//初始化模块函数
+//以下为初始化模块函数
+
 //点击浏览文件夹按钮
 void CReSimDataDownload::OnBnClickedReopensimdatafolderpathButton()
 {
@@ -137,14 +129,14 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 	// TODO:  在此添加控件通知处理程序代码
 	if (simreconnectflag == 0)
 	{
-		//先获取当前选择的串口号
+	//先获取当前选择的串口号
 	parentdlg->GetCommPort((CComboBox*)GetDlgItem(IDC_REPORTLIST1_COMBO), reComNo);
 
 	//然后再初始化串口号
 	GetDlgItemText(IDC_RESIMDATAFOLDERPATH_EDIT, m_resimdatafolderPath);
-	if (m_resimdatafolderPath == L"")
+	if (m_resimdatafolderPath == L""||m_resimdatafolderPath.Find(L"OK")==-1)
 	{
-		MessageBox(L"请选择SIM卡数据路径！", L"提示信息", NULL);
+		MessageBox(L"请选择已完成的SIM卡数据路径！（即放着已下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
 		return;
 	}
 
@@ -152,6 +144,8 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 
 	if (reporthandler == NULL)
 	{
+		PrintReLog(L"串口初始化失败");
+		MessageBox(L"串口初始化失败",L"提示信息",NULL);
 		return;
 	}
 
@@ -236,24 +230,19 @@ void CReSimDataDownload::SetRePortEditEmpty()
 }
 
 
-//返工位线程
-////开启线程池函数
-//void CReSimDataDownload::OpenThreadPoolTask(int Command)
-//{
-//	CTask* pTask = new CTask;
-//	pTask->SetCommand(Command);
-//	m_lpThreadPool->AddTask(pTask);
-//}
+//以下为返工位模块函数
 
 //文件下载写命令集合,0是TEST指令,1是RID指令,2是IMEI指令,3是开始下载指令,4是下载结束指令
 CString CReSimDataDownload::CommandWriteUnit(int strcommandNo)
 {
-	CString strCommandWrite[5] = {
+	CString strCommandWrite[6] = {
 		L"AT^GT_CM=TEST\r\n", //测试连接命令这个直接用就行
 		L"AT^GT_CM=ID,1\r\n", //读RID的一个命令
-		L"AT^GT_CM=IMEI\r\n", //读IMEI的一个命令
-		L"AT^GT_CM=SOFTSIM_DATA,", //写文件的一个命令，后面还要带（第几个,数据大小,数据）
-		L"AT^GT_CM=SOFTSIM_DATA,END," };//表示文件写完了，后面还要带CRC16进制校验码
+		L"AT^GT_CM=IMEI\r\n",
+		L"AT^GT_CM=SOFTSIM,CLEAN\r\n",
+		L"AT+AGENT=4,FFFFFFFFFFFFFFFFFFFF\r\n",
+		L"AT^GT_CM=aging,off\r\n",
+	};//读IMEI的一个命令
 	return strCommandWrite[strcommandNo];
 }
 
@@ -269,37 +258,15 @@ CString CReSimDataDownload::CommandReadUnit(int strcommandNo)
 	case 2:
 		return L"IMEI:";
 	case 3:
-		return L"";//文件下载是不需要读的，所以没有
+		return L"\r\nOK!";
 	case 4:
-		return L"SoftSim,";//后面要不就是OK!要不就是Error!要在线程读完后才去判断
+		return L"\r\nOK";
+	case 5:
+		return L"\r\nOK";
 	default:
 		break;
 	}
 	return L"";
-}
-
-//线程池的消息循环
-afx_msg LRESULT CReSimDataDownload::MainRePortThreadControl(WPARAM wParam, LPARAM lParam)
-{
-	switch (wParam)
-	{
-		//这里是单文件下载的
-		//一开始先是发送test命令，test命令的写和读同时开
-	case MainPort_RePort_Test:
-		//OpenThreadPoolTask(REPORT_WRITE1_THREAD);
-		//OpenThreadPoolTask(REPORT_READ1_THREAD);
-		break;
-		//然后开始发送RID和IMEI命令，写和读分别开
-	case MainPort_RePort_Write2:
-		//OpenThreadPoolTask(REPORT_WRITE2_THREAD);
-		break;
-	case MainPort_RePort_Read2:
-		//OpenThreadPoolTask(REPORT_READ2_THREAD);
-		break;
-	default:
-		break;
-	}
-	return 0;
 }
 
 //返工位主控线程
@@ -307,6 +274,7 @@ UINT ReDownloadMainThread(LPVOID lpParam)
 {
 	CReSimDataDownload* dlg;
 	dlg = (CReSimDataDownload*)lpParam;
+
 	strReFolderpath = strOKFolderpath.Left(strOKFolderpath.GetLength() - 3) + L"\\";
 	if (!PathIsDirectory(strReFolderpath))
 	{
@@ -315,8 +283,9 @@ UINT ReDownloadMainThread(LPVOID lpParam)
 
 	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
 
-	dlg->DWThread = AfxBeginThread(ReDownloadWirtePortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	dlg->DWThread = AfxBeginThread(ReDownloadWirtePortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);//开启写test线程
 	m_RePortDownloadMain = TRUE;
+	//如果没有被停止，那就一直去开启test线程
 	while (m_RePortDownloadMain)
 	{
 		if (dlg->DWThread == NULL)
@@ -373,7 +342,7 @@ PortTest:
 		if (s_bReExit == TRUE)
 		{
 			dlg->ReDownloadRestPortThread();
-			dlg->ReDownloadClosePortThread();
+			//dlg->ReDownloadClosePortThread();
 			return 0;
 		}
 
@@ -389,8 +358,8 @@ PortTest:
 
 
 	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-	//连接上了就开始读它的RID和IMEI，如果连续发送五条命令都没反应，那就返回Test那里重新检测设备
-	for (int i = 1; i < 3; i++)
+	//连接上了就开始读它的RID和IMEI，如果连续发送三条命令都没反应，那就返回Test那里重新检测设备
+	for (int i = 1; i < 6; i++)
 	{
 		int count = 0;
 		dlg->CommandNo = i;
@@ -415,7 +384,7 @@ PortTest:
 				goto PortTest;
 			}
 			count++;
-			Sleep(700);
+			Sleep(1400);
 		} while (m_RePortDownloadWrite);
 	}
 
@@ -435,7 +404,7 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 	dlg = (CReSimDataDownload*)lpParam;
 
 	//串口变量
-	char str[100];
+	char str[200];
 	memset(str, 0, sizeof(str));
 	DWORD readreal = 0;
 	BOOL bReadStat;
@@ -450,8 +419,8 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(720);
-		bReadStat = ReadFile(reporthandler, str, 100, &readreal, 0);
+		Sleep(400);
+		bReadStat = ReadFile(reporthandler, str, 199, &readreal, 0);
 		if (bReadStat)
 		{
 			strread = str;
@@ -466,7 +435,12 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 					strcount = strcount.Left(findcount2);
 					if (strcount != "")
 					{
+						strcount.Replace(LPCTSTR(" "), LPCTSTR(""));
 						dlg->SetDlgItemText(IDC_REPORT1RID_EDIT, strcount);
+					}
+					else if (strcount == "")
+					{
+						continue;
 					}
 				}
 				//读IMEI
@@ -479,39 +453,50 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 					if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 					{
 						dlg->SetDlgItemText(IDC_REPORT1IMEI_EDIT, strcount);
-						CString strReIMEI, strReRID;
-
-						dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID);
-						dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI);
-
-						ADOManage ReAdomanage;
-						ReAdomanage.ConnSQL();
-						Reflag=ReAdomanage.SimDataReSql(strReRID, strReIMEI, strReOKFolderpath);
-						if (Reflag == 1)
-						{
-							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC,L"返工成功");
-						}
-						else if (Reflag == 2 || Reflag == 3)
-						{
-							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
-						}
-						else if (Reflag == 0)
-						{
-							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无此机记录");
-						}
-						else if (Reflag == 4)
-						{
-							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"数据路径错误");
-						}
-						ReAdomanage.CloseAll();
 						Sleep(50);
 					}
+
 					else
 					{
 						continue;
 					}
 				}
+				else if (dlg->CommandNo == 3)
+				{
+					dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+				}
+				else if (dlg->CommandNo == 5)
+				{
+					CString strReIMEI, strReRID;
 
+					dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID);
+					dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI);
+
+					ADOManage ReAdomanage;
+					ReAdomanage.ConnSQL();
+					Reflag = ReAdomanage.SimDataReSql(strReRID, strReIMEI, strReOKFolderpath);//根据返回值确定是否成功
+					if (Reflag == 1)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工成功");
+						dlg->PrintReLog(L"返工成功");
+					}
+					else if (Reflag == 2 || Reflag == 3)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+						dlg->PrintReLog(L"无需返工");
+					}
+					else if (Reflag == 0)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无此机记录");
+						dlg->PrintReLog(L"无此机记录");
+					}
+					else if (Reflag == 4)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"数据路径错误");
+						dlg->PrintReLog(L"数据路径错误");
+					}
+					ReAdomanage.CloseAll();
+				}
 				m_RePortDownloadRead = FALSE;
 				m_RePortDownloadWrite = FALSE;
 			}
@@ -525,260 +510,6 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 	return 0;
 }
 
-
-
-
-
-
-
-
-//返工位test指令的写线程
-void CReSimDataDownload::ReDownloadWrite1PortThread(LPVOID lpParam)
-{
-	CReSimDataDownload* dlg;
-	dlg = (CReSimDataDownload*)lpParam;
-	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-
-	//串口变量
-	DWORD dwBytesWrite;
-	COMSTAT ComStat;
-	DWORD dwErrorFlags;
-	BOOL bWriteStat;
-
-	//放指令用变量
-	CString strcommand = L"AT^GT_CM=TEST\r\n";
-
-	//一直test，看看串口有没有连接上
-	dlg->SetRePortEditEmpty();
-	dlg->GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
-	m_RePortDownloadWrite1 = TRUE;
-
-	ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
-
-	Sleep(50);
-	do
-	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
-		bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1500);
-
-		if (s_bReExit == TRUE)
-		{
-			dlg->ReDownloadRestPortThread();
-			dlg->ReDownloadClosePortThread();
-			return;
-		}
-	} while (m_RePortDownloadWrite1);
-	return;
-}
-
-//返工位test指令的读线程
-void CReSimDataDownload::ReDownloadWrite2PortThread(LPVOID lpParam)
-{
-	CReSimDataDownload* dlg;
-	dlg = (CReSimDataDownload*)lpParam;
-
-	//串口变量
-	char str[100];
-	memset(str, 0, sizeof(str));
-	DWORD readreal = 0;
-	BOOL bReadStat;
-
-	//其余变量
-	CString strread;
-
-	m_RePortDownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
-
-	do
-	{
-		Sleep(1520);
-		bReadStat = ReadFile(reporthandler, str, 100, &readreal, 0);
-		if (bReadStat)
-		{
-			strread = str;
-			if (strread.Find(L"TEST_OK") >= 0)
-			{
-				m_RePortDownloadRead1 = FALSE;
-				m_RePortDownloadWrite1 = FALSE;
-			}
-		}
-		if (s_bReExit == TRUE)
-		{
-			dlg->ReDownloadRestPortThread();
-			dlg->ReDownloadClosePortThread();
-			return;
-		}
-	} while (m_RePortDownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
-	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-
-	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, MainPort_RePort_Write2, NULL);
-	return;
-}
-
-//返工位读RID和IMEI指令的写线程
-void CReSimDataDownload::ReDownloadRead1PortThread(LPVOID lpParam)
-{
-	CReSimDataDownload* dlg;
-	dlg = (CReSimDataDownload*)lpParam;
-	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, Main_Hint1_Connected, NULL);
-	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-
-	//串口变量
-	DWORD dwBytesWrite;
-	COMSTAT ComStat;
-	DWORD dwErrorFlags;
-	BOOL bWriteStat;
-	DWORD dwTotalSize;//文件总大小
-
-	//放指令用变量
-	CString strcommand;
-	CString strfilewritecommand;
-
-
-	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, MainPort_RePort_Read2, NULL);
-
-	Sleep(100);
-	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-	//连接上了就开始读它的RID和IMEI，如果连续发送五条命令都没反应，那就返回Test那里重新检测设备
-	for (int i = 0; i < 2; i++)
-	{
-		int count = 0;
-		if (i == 0)
-		{
-			strcommand = L"AT^GT_CM=ID,1\r\n";//读RID的一个命令
-		}
-		else if (i == 1)
-		{
-			strcommand = L"AT^GT_CM=IMEI\r\n";//读IMEI的一个命令
-		}
-
-		ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
-
-		//然后同时开启读线程
-		m_RePortDownloadWrite2 = TRUE;
-
-		PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-		do
-		{
-
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
-			bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-
-			if (count == 7)
-			{
-				//::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, Main_Hint1_Fail, NULL);
-				dlg->ReDownloadRestPortThread();
-				dlg->ReDownloadClosePortThread();
-				return;
-			}
-			count++;
-			Sleep(600);
-			if (s_bReExit == TRUE)
-			{
-				dlg->ReDownloadRestPortThread();
-				dlg->ReDownloadClosePortThread();
-				return;
-			}
-		} while (m_RePortDownloadWrite2);
-	}
-	return;
-}
-
-//返工位读RID和IMEI指令的读线程
-void CReSimDataDownload::ReDownloadRead2PortThread(LPVOID lpParam)
-{
-	CReSimDataDownload* dlg;
-	dlg = (CReSimDataDownload*)lpParam;
-	//串口变量
-	char str[100];
-	memset(str, 0, sizeof(str));
-	DWORD readreal = 0;
-	BOOL bReadStat;
-
-	//其余变量
-	CString strread;
-	CString strcount, strcounttemp;//放RID和IMEI用
-	CString strtemp;
-	int findcount1, findcount2;//切割读出来的字符串用
-
-	for (int i = 0; i < 2; i++)
-	{
-		m_RePortDownloadRead2 = TRUE;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
-		m_RePortDownloadReadEnd2 = TRUE;
-		int count = 0;
-		if (i == 0)
-		{
-			strtemp = L"Chip RID:";//读RID的一个命令
-		}
-		else if (i == 1)
-		{
-			strtemp = L"IMEI:";//读IMEI的一个命令
-		}
-		do
-		{
-			Sleep(620);
-			bReadStat = ReadFile(reporthandler, str, 100, &readreal, 0);
-			if (bReadStat)
-			{
-				strread = str;
-				if ((findcount1 = strread.Find(strtemp)) >= 0)
-				{
-					//读RID
-					if (i == 0)
-					{
-						strcount = strread.Right(strread.GetLength() - findcount1 - 9);
-						findcount2 = strcount.Find(L"\r\n");
-						strcount = strcount.Left(findcount2);
-						if (strcount != "")
-						{
-							dlg->SetDlgItemText(IDC_PORT1RID_EDIT, strcount);
-						}
-						else if (strcount == "")
-						{
-							continue;
-						}
-					}
-					//读IMEI
-					else if (i == 1)
-					{
-						strcount = strread.Right(strread.GetLength() - findcount1 - 5);
-						findcount2 = strcount.Find(L"\r\n");
-						strcount = strcount.Left(findcount2);
-						strcounttemp = strcount;
-						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
-						{
-							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
-							//::PostMessage(MainReFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
-							Sleep(50);
-						}
-						else
-						{
-							continue;
-						}
-					}
-					m_RePortDownloadWrite2 = FALSE;
-					m_RePortDownloadRead2 = FALSE;
-				}
-			}
-		} while (m_RePortDownloadRead2);
-		if (m_RePortDownloadReadEnd2 == FALSE)
-		{
-			return;
-		}
-		if (s_bReExit == TRUE)
-		{
-			dlg->ReDownloadRestPortThread();
-			dlg->ReDownloadClosePortThread();
-			return;
-		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
-	}
-	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-
-	return;
-}
-
 //返工位串口重置线程全局变量
 void CReSimDataDownload::ReDownloadRestPortThread()
 {
@@ -790,17 +521,19 @@ void CReSimDataDownload::ReDownloadRestPortThread()
 
 }
 
-//返工位串口关闭线程全局变量
-void CReSimDataDownload::ReDownloadClosePortThread()
-{
-	m_TreadRePortDownloadWrite1 = FALSE;
-	m_TreadRePortDownloadWrite2 = FALSE;
-	m_TreadRePortDownloadRead1 = FALSE;
-	m_TreadRePortDownloadRead2 = FALSE;
-}
+////返工位串口关闭线程全局变量
+//void CReSimDataDownload::ReDownloadClosePortThread()
+//{
+//	m_TreadRePortDownloadWrite1 = FALSE;
+//	m_TreadRePortDownloadWrite2 = FALSE;
+//	m_TreadRePortDownloadRead1 = FALSE;
+//	m_TreadRePortDownloadRead2 = FALSE;
+//}
 
 
 //其它函数
+
+//信息日志函数
 void CReSimDataDownload::SetRicheditText(CString strMsg, int No)
 {
 	m_recurrentinformationRichedit.SetSel(-1, -1);
@@ -917,4 +650,281 @@ void CReSimDataDownload::OnBnClickedCancel()
 		CDialogEx::OnCancel();
 	}
 }
+
+
+
+
+//下面是暂时废弃掉的代码
+
+////线程池的消息循环
+//afx_msg LRESULT CReSimDataDownload::MainRePortThreadControl(WPARAM wParam, LPARAM lParam)
+//{
+//	switch (wParam)
+//	{
+//		//这里是单文件下载的
+//		//一开始先是发送test命令，test命令的写和读同时开
+//	case MainPort_RePort_Test:
+//		//OpenThreadPoolTask(REPORT_WRITE1_THREAD);
+//		//OpenThreadPoolTask(REPORT_READ1_THREAD);
+//		break;
+//		//然后开始发送RID和IMEI命令，写和读分别开
+//	case MainPort_RePort_Write2:
+//		//OpenThreadPoolTask(REPORT_WRITE2_THREAD);
+//		break;
+//	case MainPort_RePort_Read2:
+//		//OpenThreadPoolTask(REPORT_READ2_THREAD);
+//		break;
+//	default:
+//		break;
+//	}
+//	return 0;
+//}
+//
+////返工位test指令的写线程
+//void CReSimDataDownload::ReDownloadWrite1PortThread(LPVOID lpParam)
+//{
+//	CReSimDataDownload* dlg;
+//	dlg = (CReSimDataDownload*)lpParam;
+//	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//
+//	//串口变量
+//	DWORD dwBytesWrite;
+//	COMSTAT ComStat;
+//	DWORD dwErrorFlags;
+//	BOOL bWriteStat;
+//
+//	//放指令用变量
+//	CString strcommand = L"AT^GT_CM=TEST\r\n";
+//
+//	//一直test，看看串口有没有连接上
+//	dlg->SetRePortEditEmpty();
+//	dlg->GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
+//	m_RePortDownloadWrite1 = TRUE;
+//
+//	ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
+//
+//	Sleep(50);
+//	do
+//	{
+//		dlg->SetRicheditText(L"发:" + strcommand, 0);
+//		bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+//		Sleep(1500);
+//
+//		if (s_bReExit == TRUE)
+//		{
+//			dlg->ReDownloadRestPortThread();
+//			dlg->ReDownloadClosePortThread();
+//			return;
+//		}
+//	} while (m_RePortDownloadWrite1);
+//	return;
+//}
+//
+////返工位test指令的读线程
+//void CReSimDataDownload::ReDownloadWrite2PortThread(LPVOID lpParam)
+//{
+//	CReSimDataDownload* dlg;
+//	dlg = (CReSimDataDownload*)lpParam;
+//
+//	//串口变量
+//	char str[100];
+//	memset(str, 0, sizeof(str));
+//	DWORD readreal = 0;
+//	BOOL bReadStat;
+//
+//	//其余变量
+//	CString strread;
+//
+//	m_RePortDownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+//
+//	do
+//	{
+//		Sleep(1520);
+//		bReadStat = ReadFile(reporthandler, str, 100, &readreal, 0);
+//		if (bReadStat)
+//		{
+//			strread = str;
+//			if (strread.Find(L"TEST_OK") >= 0)
+//			{
+//				m_RePortDownloadRead1 = FALSE;
+//				m_RePortDownloadWrite1 = FALSE;
+//			}
+//		}
+//		if (s_bReExit == TRUE)
+//		{
+//			dlg->ReDownloadRestPortThread();
+//			dlg->ReDownloadClosePortThread();
+//			return;
+//		}
+//	} while (m_RePortDownloadRead1);
+//	dlg->SetRicheditText(L"收:" + strread, 0);
+//	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//
+//	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, MainPort_RePort_Write2, NULL);
+//	return;
+//}
+//
+////返工位读RID和IMEI指令的写线程
+//void CReSimDataDownload::ReDownloadRead1PortThread(LPVOID lpParam)
+//{
+//	CReSimDataDownload* dlg;
+//	dlg = (CReSimDataDownload*)lpParam;
+//	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, Main_Hint1_Connected, NULL);
+//	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//
+//	//串口变量
+//	DWORD dwBytesWrite;
+//	COMSTAT ComStat;
+//	DWORD dwErrorFlags;
+//	BOOL bWriteStat;
+//	DWORD dwTotalSize;//文件总大小
+//
+//	//放指令用变量
+//	CString strcommand;
+//	CString strfilewritecommand;
+//
+//
+//	::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, MainPort_RePort_Read2, NULL);
+//
+//	Sleep(100);
+//	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//	//连接上了就开始读它的RID和IMEI，如果连续发送五条命令都没反应，那就返回Test那里重新检测设备
+//	for (int i = 0; i < 2; i++)
+//	{
+//		int count = 0;
+//		if (i == 0)
+//		{
+//			strcommand = L"AT^GT_CM=ID,1\r\n";//读RID的一个命令
+//		}
+//		else if (i == 1)
+//		{
+//			strcommand = L"AT^GT_CM=IMEI\r\n";//读IMEI的一个命令
+//		}
+//
+//		ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
+//
+//		//然后同时开启读线程
+//		m_RePortDownloadWrite2 = TRUE;
+//
+//		PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//		do
+//		{
+//
+//			dlg->SetRicheditText(L"发:" + strcommand, 0);
+//			bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+//
+//			if (count == 7)
+//			{
+//				//::PostMessage(MainReFormHWND, WM_MainRePortThreadControl, Main_Hint1_Fail, NULL);
+//				dlg->ReDownloadRestPortThread();
+//				dlg->ReDownloadClosePortThread();
+//				return;
+//			}
+//			count++;
+//			Sleep(600);
+//			if (s_bReExit == TRUE)
+//			{
+//				dlg->ReDownloadRestPortThread();
+//				dlg->ReDownloadClosePortThread();
+//				return;
+//			}
+//		} while (m_RePortDownloadWrite2);
+//	}
+//	return;
+//}
+//
+////返工位读RID和IMEI指令的读线程
+//void CReSimDataDownload::ReDownloadRead2PortThread(LPVOID lpParam)
+//{
+//	CReSimDataDownload* dlg;
+//	dlg = (CReSimDataDownload*)lpParam;
+//	//串口变量
+//	char str[100];
+//	memset(str, 0, sizeof(str));
+//	DWORD readreal = 0;
+//	BOOL bReadStat;
+//
+//	//其余变量
+//	CString strread;
+//	CString strcount, strcounttemp;//放RID和IMEI用
+//	CString strtemp;
+//	int findcount1, findcount2;//切割读出来的字符串用
+//
+//	for (int i = 0; i < 2; i++)
+//	{
+//		m_RePortDownloadRead2 = TRUE;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
+//		m_RePortDownloadReadEnd2 = TRUE;
+//		int count = 0;
+//		if (i == 0)
+//		{
+//			strtemp = L"Chip RID:";//读RID的一个命令
+//		}
+//		else if (i == 1)
+//		{
+//			strtemp = L"IMEI:";//读IMEI的一个命令
+//		}
+//		do
+//		{
+//			Sleep(620);
+//			bReadStat = ReadFile(reporthandler, str, 100, &readreal, 0);
+//			if (bReadStat)
+//			{
+//				strread = str;
+//				if ((findcount1 = strread.Find(strtemp)) >= 0)
+//				{
+//					//读RID
+//					if (i == 0)
+//					{
+//						strcount = strread.Right(strread.GetLength() - findcount1 - 9);
+//						findcount2 = strcount.Find(L"\r\n");
+//						strcount = strcount.Left(findcount2);
+//						if (strcount != "")
+//						{
+//							dlg->SetDlgItemText(IDC_PORT1RID_EDIT, strcount);
+//						}
+//						else if (strcount == "")
+//						{
+//							continue;
+//						}
+//					}
+//					//读IMEI
+//					else if (i == 1)
+//					{
+//						strcount = strread.Right(strread.GetLength() - findcount1 - 5);
+//						findcount2 = strcount.Find(L"\r\n");
+//						strcount = strcount.Left(findcount2);
+//						strcounttemp = strcount;
+//						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
+//						{
+//							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
+//							//::PostMessage(MainReFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
+//							Sleep(50);
+//						}
+//						else
+//						{
+//							continue;
+//						}
+//					}
+//					m_RePortDownloadWrite2 = FALSE;
+//					m_RePortDownloadRead2 = FALSE;
+//				}
+//			}
+//		} while (m_RePortDownloadRead2);
+//		if (m_RePortDownloadReadEnd2 == FALSE)
+//		{
+//			return;
+//		}
+//		if (s_bReExit == TRUE)
+//		{
+//			dlg->ReDownloadRestPortThread();
+//			dlg->ReDownloadClosePortThread();
+//			return;
+//		}
+//		dlg->SetRicheditText(L"收:" + strread, 0);
+//	}
+//	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+//
+//	return;
+//}
+
 

@@ -238,19 +238,34 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 	int AffectLine = 0;
 	CString strSql;
 
+
 	//先判断这条数据是不是返工的
 	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 2");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
-	//如果查得到那就代表这条数据是返工的，那接下来是返工数据更新
+	//如果查得到那就代表这条数据是返工的，那接下来是返工数据更新，同时关联表也要更新
 	if (!m_pRecordSet->adoEOF)
 	{
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet]") + _T("SET IMEI3 = '") + CID + _T("',IMEI4='") + ICCID + _T("'where[IMEI1] = '") + IMEI + _T("'");
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+
 		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '1',SDIP = '") + SDIP + _T("',CID='") + CID+_T("',RID='") + RID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',ReSDTime ='") + GetTime() + _T("',ReSDCount=ReSDCount+1 where[RID] = '") + RID + _T("'");
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 		return ;
 	}
 
-	//如果不是返工就将数据插入表中
+	//如果不是返工就将数据插入表中，同时关联表也要插入数据
+	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet](SN, IMEI1, IMEI3, IMEI4, TestTime, _MASK_FROM_V2)values(NULL,'")
+	+ IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + GetTime() + _T("', NULL)");//具体执行的SQL语句
+	try{
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+	}
+	catch (_com_error &e)
+	{
+	}
+
+
+	//如果不是返工就将数据插入表中，同时关联表也要插入数据
 	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI], [CID], [ICCID], [SDOperator], [SDTime], [SDRESULT],[ReSDCount])values('")
 		+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + SDOperator + _T("', '")  + GetTime() + _T("', 1,0)");//具体执行的SQL语句
 	try{
@@ -395,7 +410,8 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 			strCID = m_pRecordSet->GetCollect("CID");
 
 			//这里需要写移动文件夹的代码
-			moveflag=MoveFile(strOKpath + strCID + L"\\", strOKpath.Left(strOKpath.GetLength() - 3) + L"\\" + strCID + L"\\");
+			
+			moveflag = ::MoveFileEx(strOKpath + strCID + L"\\", strOKpath.Left(strOKpath.GetLength() - 3) + L"\\" + strCID + L"\\", MOVEFILE_REPLACE_EXISTING);
 			if (moveflag == FALSE)
 			{
 				return 4;
@@ -406,8 +422,12 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 
 
 			//然后更新一下原数据
-			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '2',SDIP = '',CID='',ICCID='',SDOperator ='' where[IMEI] = '") + IMEI + _T("'");
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = '2',SDIP = NULL,CID=NULL,ICCID=NULL,SDOperator =NULL where[IMEI] = '") + IMEI + _T("'");
 			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet]") + _T("SET IMEI3 = NULL, IMEI4 = NULL where[IMEI1] = '") + IMEI + _T("'");
+			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
 			return 1;
 		}
 		else if (flag == 2)//等于2就表示它已经返工了，现在无须返工
@@ -419,7 +439,6 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 			return 3;
 		}
 
-
 	}
 
 	return 0;//上面有问题就返回0代表这台机器本来就没有数据
@@ -427,7 +446,6 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 
 
 //以下是通用函数
-
 //清除数据库某张表
 _RecordsetPtr ADOManage::GetRst()
 {
