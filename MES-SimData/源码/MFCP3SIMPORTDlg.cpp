@@ -12,6 +12,7 @@
 #include "ADOManage.h"
 #include "DBconfig.h"
 #include "ReSimDataDownload.h"
+#include "Log.h"
 
 #pragma comment(lib,"Shlwapi.lib") //判断文件是否存在的库，如果没有这行，会出现link错误
 
@@ -34,6 +35,11 @@ int simstart1flag = 0;
 int simstart3flag = 0;
 int simstart2flag = 0;
 int simstart4flag = 0;
+CString SinglePortLogName;
+CString Port1LogName;
+CString Port2LogName;
+CString Port3LogName;
+CString Port4LogName;
 
 
 //串口单文件下载
@@ -259,6 +265,13 @@ BOOL CMFCP3SIMPORTDlg::OnInitDialog()
 	}
 
 	MainFormHWND = AfxGetApp()->m_pMainWnd->m_hWnd;
+
+	//日志文件名称初始化
+	SinglePortLogName = GetLogTime() + L"SinglePortLog";
+	Port1LogName = GetLogTime() + L"Port1Log";
+	Port2LogName = GetLogTime() + L"Port2Log";
+	Port3LogName = GetLogTime() + L"Port3Log";
+	Port4LogName = GetLogTime() + L"Port4Log";
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -579,7 +592,7 @@ HANDLE CMFCP3SIMPORTDlg::InitCom(CString comName)
 		NULL);
 	if (hCom == INVALID_HANDLE_VALUE)
 	{
-		SetRicheditText(comName+L"串口初始化失败！", 1);
+		//SetRicheditText(comName+L"串口初始化失败！", 1);
 		//MessageBox(L"串口初始化失败！", L"提示信息", NULL);
 		return NULL;
 	}
@@ -1744,7 +1757,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite1Port1Thread(LPVOID lpParam)
 	Sleep(50);
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand,0);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 
@@ -1795,7 +1809,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead1Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1SINGLEDownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 0);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(FALSE);
 
@@ -1883,8 +1898,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite2Port1Thread(LPVOID lpParam)
 		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 		do
 		{
-
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintLog(L"发:" + strcommand, 0);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 7)
@@ -1973,8 +1988,44 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
-							Sleep(50);
+
+							int singleflag;
+							CString strport1RID, strport1IMEI;
+							ADOManage adoport1manage3;
+							adoport1manage3.ConnSQL();
+
+							dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
+							dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
+
+							singleflag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
+
+							if (singleflag == 0)
+							{
+								m_Port1SINGLEDownloadWrite2 = FALSE;
+								m_Port1SINGLEDownloadRead2 = FALSE;
+								m_Port1SINGLEDownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+								adoport1manage3.CloseAll();
+								Sleep(50);
+								dlg->SingleDownloadClosePort1Thread();
+								dlg->SingleDownloadRestPort1Thread();
+								return ;
+							}
+							singleflag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
+							if (singleflag == 0)
+							{
+								m_Port1SINGLEDownloadWrite2 = FALSE;
+								m_Port1SINGLEDownloadRead2 = FALSE;
+								m_Port1SINGLEDownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+								adoport1manage3.CloseAll();
+								Sleep(50);
+								dlg->SingleDownloadClosePort1Thread();
+								dlg->SingleDownloadRestPort1Thread();
+								return ;
+							}
+							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
+							adoport1manage3.CloseAll();
 						}
 						else
 						{
@@ -1996,7 +2047,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 			dlg->SingleDownloadRestPort1Thread();
 			return;
 		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
+		//dlg->SetRicheditText(L"收:" + strread, 0);
+		dlg->PrintLog(L"收:" + strread, 0);
 	}
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -2070,7 +2122,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		strdata = buf1;
 		strdatalenth.Format(L"%d", dwRead);
 		strfilewritecommand = strcommand + strdatano + L"," + strdatalenth + L"," + strdata + L"\r\n";
-		dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		dlg->PrintLog(L"发:" + strfilewritecommand, 0);
+		//dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
 		dwBytesWrite = strcommand.GetLength();
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strfilewritecommand), strfilewritecommand.GetLength(), &dwBytesWrite, NULL);
 
@@ -2100,8 +2153,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 0);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
@@ -2164,7 +2217,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 						m_Port1SINGLEDownloadWrite3 = FALSE;
 						m_Port1SINGLEDownloadRead3 = FALSE;
 						dlg->SingleDownloadRestPort1Thread();
-						dlg->SetRicheditText(L"收:" + strread, 0);
+						dlg->PrintLog(L"收:" + strread, 0);
+						//dlg->SetRicheditText(L"收:" + strread, 0);
 						return;
 					}
 				m_Port1SINGLEDownloadRead3 = FALSE;
@@ -2182,7 +2236,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 	{
 		return;
 	}
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"发:" + strread, 0);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Single_Write4, NULL);
@@ -2216,7 +2271,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite4Port1Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 0);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
@@ -2279,7 +2335,8 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead4Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1SINGLEDownloadRead4);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	dlg->SingleDownloadRestPort1Thread();
@@ -2342,7 +2399,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port1Thread(LPVOID lpParam)
 	Sleep(50);
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 1);
+		//dlg->SetRicheditText(L"发:" + strcommand, 1);
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 
@@ -2392,7 +2450,8 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1DownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 1);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Write2, NULL);
@@ -2437,7 +2496,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 		::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Read2, NULL);
 		do
 		{
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintLog(L"发:" + strcommand, 1);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 7)
@@ -2523,8 +2583,44 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
-							Sleep(50);
+
+							int port1flag;
+							CString strport1RID, strport1IMEI;
+							ADOManage adoport1manage3;
+							adoport1manage3.ConnSQL();
+							dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
+							dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
+
+							port1flag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
+							if (port1flag == 0)
+							{
+								m_Port1DownloadWrite2 = FALSE;
+								m_Port1DownloadRead2 = FALSE;
+								m_Port1DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+								adoport1manage3.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort1Thread();
+								dlg->DownloadRestPort1Thread();
+								return ;
+							}
+
+							port1flag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
+
+							if (port1flag == 0)
+							{
+								m_Port1DownloadWrite2 = FALSE;
+								m_Port1DownloadRead2 = FALSE;
+								m_Port1DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+								adoport1manage3.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort1Thread();
+								dlg->DownloadRestPort1Thread();
+								return ;
+							}
+							adoport1manage3.CloseAll();
+							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
 						}
 						else
 						{
@@ -2546,7 +2642,8 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 			dlg->DownloadRestPort1Thread();
 			return;
 		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
+		//dlg->SetRicheditText(L"收:" + strread, 0);
+		dlg->PrintLog(L"收:" + strread, 1);
 	}
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -2618,7 +2715,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		strdata = buf1;
 		strdatalenth.Format(L"%d", dwRead);
 		strfilewritecommand = strcommand + strdatano + L"," + strdatalenth + L"," + strdata + L"\r\n";
-		dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		//dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		dlg->PrintLog(L"发:" + strfilewritecommand, 1);
 		dwBytesWrite = strcommand.GetLength();
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strfilewritecommand), strfilewritecommand.GetLength(), &dwBytesWrite, NULL);
 
@@ -2651,7 +2749,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 	do
 	{
 		PurgeComm(port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 1);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
@@ -2710,7 +2809,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
 					m_Port1DownloadWrite3 = FALSE;
 					m_Port1DownloadRead3 = FALSE;
-					dlg->SetRicheditText(L"收:" + strread, 0);
+					dlg->PrintLog(L"收:" + strread, 1);
+					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort1Thread();
 					return;
 				}
@@ -2730,7 +2830,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 	{
 		return;
 	}
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 1);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Write4, NULL);
 	//dlg->DownloadRestPort1Thread();
@@ -2763,7 +2864,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port1Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 1);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
@@ -2826,7 +2928,8 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port1DownloadRead4);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 1);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort1Thread();
 	return;
@@ -2886,7 +2989,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 	Sleep(50);
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 2);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 
@@ -2936,7 +3040,8 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port2Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port2DownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 2);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Write2, NULL);
@@ -2980,7 +3085,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port2Thread(LPVOID lpParam)
 		::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Read2, NULL);
 		do
 		{
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintLog(L"发:" + strcommand, 2);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 7)
@@ -3066,8 +3172,44 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
-							Sleep(50);
+
+							int port2flag;
+							CString strport2RID, strport2IMEI;
+							ADOManage adoport2manage4;
+							adoport2manage4.ConnSQL();
+
+							dlg->GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
+							dlg->GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
+
+							port2flag = adoport2manage4.SimDataLastStationSql(strport2IMEI);
+							if (port2flag == 0)
+							{
+								m_Port2DownloadWrite2 = FALSE;
+								m_Port2DownloadRead2 = FALSE;
+								m_Port2DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+								adoport2manage4.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort2Thread();
+								dlg->DownloadRestPort2Thread();
+								return ;
+							}
+
+							port2flag = adoport2manage4.SimDataIsExitSql(strport2RID, strport2IMEI);
+							if (port2flag == 0)
+							{
+								m_Port2DownloadWrite2 = FALSE;
+								m_Port2DownloadRead2 = FALSE;
+								m_Port2DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+								adoport2manage4.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort2Thread();
+								dlg->DownloadRestPort2Thread();
+								return ;
+							}
+							adoport2manage4.CloseAll();
+							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
 						}
 						else 
 						{
@@ -3089,7 +3231,8 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 			dlg->DownloadRestPort2Thread();
 			return;
 		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
+		dlg->PrintLog(L"收:" + strread, 2);
+		//dlg->SetRicheditText(L"收:" + strread, 0);
 	}
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -3161,7 +3304,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		strdata = buf1;
 		strdatalenth.Format(L"%d", dwRead);
 		strfilewritecommand = strcommand + strdatano + L"," + strdatalenth + L"," + strdata + L"\r\n";
-		dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		dlg->PrintLog(L"发:" + strfilewritecommand, 2);
+		//dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
 		dwBytesWrite = strcommand.GetLength();
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strfilewritecommand), strfilewritecommand.GetLength(), &dwBytesWrite, NULL);
 
@@ -3193,7 +3337,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 2);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Fail, NULL);
@@ -3253,6 +3398,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
 					m_Port2DownloadWrite3 = FALSE;
 					m_Port2DownloadRead3 = FALSE;
+					dlg->PrintLog(L"收:" + strread, 2);
 					dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort2Thread();
 					return;
@@ -3272,7 +3418,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 	{
 		return;
 	}
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 2);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort2Thread();
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Write4, NULL);
@@ -3305,7 +3452,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port2Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 2);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Fail, NULL);
@@ -3368,6 +3516,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port2Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port2DownloadRead4);
+	dlg->PrintLog(L"收:" + strread, 2);
 	dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort2Thread();
@@ -3428,7 +3577,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 	Sleep(50);
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 3);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 
@@ -3478,7 +3628,8 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port3Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port3DownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 3);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Write2, NULL);
@@ -3522,7 +3673,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port3Thread(LPVOID lpParam)
 		::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Read2, NULL);
 		do
 		{
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintLog(L"发:" + strcommand, 3);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 7)
@@ -3608,8 +3760,46 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
-							Sleep(50);
+
+							int port3flag;
+							CString strport3RID, strport3IMEI;
+							ADOManage adoport3manage5;
+							adoport3manage5.ConnSQL();
+
+							dlg->GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
+							dlg->GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
+
+							port3flag = adoport3manage5.SimDataLastStationSql(strport3IMEI);
+
+							if (port3flag == 0)
+							{
+								m_Port3DownloadWrite2 = FALSE;
+								m_Port3DownloadRead2 = FALSE;
+								m_Port3DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+								adoport3manage5.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort3Thread();
+								dlg->DownloadRestPort3Thread();
+								return ;
+							}
+
+							port3flag = adoport3manage5.SimDataIsExitSql(strport3RID, strport3IMEI);
+
+							if (port3flag == 0)
+							{
+								m_Port3DownloadWrite2 = FALSE;
+								m_Port3DownloadRead2 = FALSE;
+								m_Port3DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
+								adoport3manage5.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort3Thread();
+								dlg->DownloadRestPort3Thread();
+								return ;
+							}
+							adoport3manage5.CloseAll();
+							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
 						}
 						else 
 						{
@@ -3631,7 +3821,8 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 			dlg->DownloadRestPort3Thread();
 			return;
 		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
+		dlg->PrintLog(L"收:" + strread, 3);
+		//dlg->SetRicheditText(L"收:" + strread, 0);
 	}
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -3703,7 +3894,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		strdata = buf1;
 		strdatalenth.Format(L"%d", dwRead);
 		strfilewritecommand = strcommand + strdatano + L"," + strdatalenth + L"," + strdata + L"\r\n";
-		dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		dlg->PrintLog(L"发:" + strfilewritecommand, 3);
+		//dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
 		dwBytesWrite = strcommand.GetLength();
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strfilewritecommand), strfilewritecommand.GetLength(), &dwBytesWrite, NULL);
 
@@ -3735,7 +3927,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 3);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Fail, NULL);
@@ -3795,7 +3988,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
 					m_Port3DownloadWrite3 = FALSE;
 					m_Port3DownloadRead3 = FALSE;
-					dlg->SetRicheditText(L"收:" + strread, 0);
+					dlg->PrintLog(L"收:" + strread, 3);
+					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort3Thread();
 					return;
 				}
@@ -3814,7 +4008,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 	{
 		return;
 	}
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 3);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort3Thread();
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Write4, NULL);
@@ -3847,7 +4042,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port3Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 3);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Fail, NULL);
@@ -3909,7 +4105,8 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port3Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port3DownloadRead4);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 3);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort3Thread();
 	return;
@@ -3969,7 +4166,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 	Sleep(50);
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 4);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 
@@ -4019,7 +4217,8 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port4Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port4DownloadRead1);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 4);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Write2, NULL);
@@ -4063,7 +4262,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port4Thread(LPVOID lpParam)
 		::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Read2, NULL);
 		do
 		{
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintLog(L"发:" + strcommand, 4);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 7)
@@ -4148,8 +4348,46 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount!="^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, strcount);
-							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
-							Sleep(50);
+
+							int port4flag;
+							CString strport4RID, strport4IMEI;
+							ADOManage adoport4manage6;
+							adoport4manage6.ConnSQL();
+
+							dlg->GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
+							dlg->GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
+
+							port4flag = adoport4manage6.SimDataLastStationSql(strport4IMEI);
+
+							if (port4flag == 0)
+							{
+								m_Port4DownloadWrite2 = FALSE;
+								m_Port4DownloadRead2 = FALSE;
+								m_Port4DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+								adoport4manage6.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort4Thread();
+								dlg->DownloadRestPort4Thread();
+								return ;
+							}
+
+							port4flag = adoport4manage6.SimDataIsExitSql(strport4RID, strport4IMEI);
+
+							if (port4flag == 0)
+							{
+								m_Port4DownloadWrite2 = FALSE;
+								m_Port4DownloadRead2 = FALSE;
+								m_Port4DownloadReadEnd2 = FALSE;
+								dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+								adoport4manage6.CloseAll();
+								Sleep(50);
+								dlg->DownloadClosePort4Thread();
+								dlg->DownloadRestPort4Thread();
+								return ;
+							}
+							adoport4manage6.CloseAll();
+							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
 						}
 						else 
 						{
@@ -4171,7 +4409,8 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 			dlg->DownloadRestPort4Thread();
 			return;
 		}
-		dlg->SetRicheditText(L"收:" + strread, 0);
+		dlg->PrintLog(L"收:" + strread, 4);
+		//dlg->SetRicheditText(L"收:" + strread, 0);
 	}
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -4243,7 +4482,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		strdata = buf1;
 		strdatalenth.Format(L"%d", dwRead);
 		strfilewritecommand = strcommand + strdatano + L"," + strdatalenth + L"," + strdata + L"\r\n";
-		dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
+		dlg->PrintLog(L"发:" + strfilewritecommand, 4);
+		//dlg->SetRicheditText(L"发:" + strfilewritecommand, 0);
 		dwBytesWrite = strcommand.GetLength();
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strfilewritecommand), strfilewritecommand.GetLength(), &dwBytesWrite, NULL);
 
@@ -4275,7 +4515,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 4);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Fail, NULL);
@@ -4335,7 +4576,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
 					m_Port4DownloadWrite3 = FALSE;
 					m_Port4DownloadRead3 = FALSE;
-					dlg->SetRicheditText(L"收:" + strread, 0);
+					dlg->PrintLog(L"收:" + strread, 4);
+					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort4Thread();
 					return;
 				}
@@ -4354,7 +4596,8 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 	{
 		return;
 	}
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 4);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort4Thread();
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Write4, NULL);
@@ -4387,7 +4630,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port4Thread(LPVOID lpParam)
 	int countend = 0;
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintLog(L"发:" + strcommand, 4);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Fail, NULL);
@@ -4449,7 +4693,8 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 			return;
 		}
 	} while (m_Port4DownloadRead4);
-	dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintLog(L"收:" + strread, 4);
+	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort4Thread();
 	return;
@@ -4531,6 +4776,44 @@ CString CMFCP3SIMPORTDlg::GetTime()
 	strTime.Format(_T("%d/%d/%d %02d:%02d:%02d"), time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
 	return strTime;
 }
+
+//获取日志时间
+CString CMFCP3SIMPORTDlg::GetLogTime()
+{
+	SYSTEMTIME time;
+	CString strTime;
+	GetLocalTime(&time);
+	strTime.Format(_T("%d%02d%02d"), time.wYear, time.wMonth, time.wDay);
+	return strTime;
+}
+
+//日志打印函数
+void CMFCP3SIMPORTDlg::PrintLog(CString strMsg, int No)
+{
+	CLog Relog0,Relog1,Relog2,Relog3,Relog4;//日志文件
+
+	switch (No)
+	{
+	case 0:
+		Relog0.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), SinglePortLogName);
+		break;
+	case 1:
+		Relog1.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), Port1LogName);
+		break;
+	case 2:
+		Relog2.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), Port2LogName);
+		break;
+	case 3:
+		Relog3.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), Port3LogName);
+		break;
+	case 4:
+		Relog4.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), Port4LogName);
+		break;
+	default:
+		break;
+	}
+}
+
 
 
 //数据库模块函数

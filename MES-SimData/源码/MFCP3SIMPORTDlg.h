@@ -21,6 +21,11 @@ extern int simstart1flag;
 extern int simstart3flag;
 extern int simstart2flag;
 extern int simstart4flag;
+extern CString SinglePortLogName;
+extern CString Port1LogName;
+extern CString Port2LogName;
+extern CString Port3LogName;
+extern CString Port4LogName;
 
 // CMFCP3SIMPORTDlg 对话框
 class CMFCP3SIMPORTDlg : public CDialogEx
@@ -193,9 +198,11 @@ public:
 
 	//信息日志模块函数以及变量
 	CRichEditCtrl m_currentinformationRichedit;
+	void PrintLog(CString strMsg,int No);
 
 	void SetRicheditText(CString strMsg, int No);
 	CString GetTime();
+	CString GetLogTime();
 
 	//数据库整合函数以及变量
 	afx_msg void OnBnClickedDbconfigButton();//数据库配置按钮事件

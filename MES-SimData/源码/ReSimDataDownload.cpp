@@ -10,6 +10,7 @@
 #include "ThreadPool.h"
 #include "Task.h"
 #include "ADOManage.h"
+#include "Log.h"
 
 // CReSimDataDownload 对话框
 #define WM_MainRePortThreadControl WM_USER+1310
@@ -19,6 +20,7 @@ HWND MainReFormHWND;//主控线程句柄
 CString reComNo;
 HANDLE reporthandler;
 int simrestratflag = 0;
+CString ReLogName;
 
 volatile BOOL m_RePortDownloadWrite;
 volatile BOOL m_RePortDownloadRead;
@@ -80,9 +82,12 @@ BOOL CReSimDataDownload::OnInitDialog()
 	//初始化字体
 	fontinit();
 
-	SetRicheditText(L"测试", 0);
-
 	GetDlgItem(IDC_RESTART_BUTTON)->EnableWindow(FALSE);
+
+	//获取日志名字
+	ReLogName = GetLogTime()+L"ReLog";
+
+
 	//MainReFormHWND = FindWindow(NULL, L"返工模式")->m_hWnd;
 
 	////线程池初始化
@@ -165,11 +170,12 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 		}
 		if (!parentdlg->CloseCom(reporthandler))
 		{
-			//SetRicheditText(L"关闭串口失败", 1);
+			PrintReLog(L"关闭串口失败");
 			MessageBox(L"关闭串口失败", L"提示信息", NULL);
 			return;
 		}
 
+		PrintReLog(L"关闭串口成功");
 		//SetRicheditText(L"关闭串口成功", 0);
 		GetDlgItem(IDC_RESTART_BUTTON)->EnableWindow(FALSE);
 		simreconnectflag = 0;
@@ -194,8 +200,6 @@ void CReSimDataDownload::OnBnClickedRestart1Button()
 			MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
 			return;
 		}
-
-
 
 		simrestratflag = 1;
 		SetDlgItemText(IDC_RESTART_BUTTON, L"停止返工");
@@ -304,7 +308,6 @@ UINT ReDownloadMainThread(LPVOID lpParam)
 	CReSimDataDownload* dlg;
 	dlg = (CReSimDataDownload*)lpParam;
 	strReFolderpath = strOKFolderpath.Left(strOKFolderpath.GetLength() - 3) + L"\\";
-	dlg->SetRicheditText(L"发:" , 0);
 	if (!PathIsDirectory(strReFolderpath))
 	{
 		::CreateDirectory(strReFolderpath, NULL);//创建目录,已有的话不影响
@@ -363,7 +366,8 @@ PortTest:
 
 	do
 	{
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		dlg->PrintReLog(L"发:" + strcommand);
+		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(1500);
 		if (s_bReExit == TRUE)
@@ -399,12 +403,13 @@ PortTest:
 
 		do
 		{
-			dlg->SetRicheditText(L"发:" + strcommand, 0);
+			dlg->PrintReLog(L"发:" + strcommand);
+			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
 			if (count == 3)
 			{
-				dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"失败");
+				dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工失败");
 				m_RePortDownloadWrite = FALSE;
 				m_RePortDownloadRead = FALSE;
 				goto PortTest;
@@ -512,8 +517,8 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 			}
 		}
 	} while (m_RePortDownloadRead);
-	dlg->SetRicheditText(L"收:" + strread, 0);
-
+	//dlg->SetRicheditText(L"收:" + strread, 0);
+	dlg->PrintReLog(L"收:" + strread);
 
 	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	dlg->DRThread = NULL;
@@ -839,6 +844,23 @@ CString CReSimDataDownload::GetTime()
 	GetLocalTime(&time);
 	strTime.Format(_T("%d/%d/%d %02d:%02d:%02d"), time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
 	return strTime;
+}
+
+//获取日志时间
+CString CReSimDataDownload::GetLogTime()
+{
+	SYSTEMTIME time;
+	CString strTime;
+	GetLocalTime(&time);
+	strTime.Format(_T("%d%02d%02d"), time.wYear, time.wMonth, time.wDay);
+	return strTime;
+}
+
+//日志打印函数
+void CReSimDataDownload::PrintReLog(CString strMsg)
+{
+	CLog Relog;//日志文件
+	Relog.WriteLog(CStringA(L"【"+GetTime() + L"】") + CStringA(strMsg), ReLogName);
 }
 
 //初始化字体

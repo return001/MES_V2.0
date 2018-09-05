@@ -12,6 +12,7 @@ extern HWND MainReFormHWND;
 extern HANDLE reporthandler;
 extern CString reComNo;
 extern int simrestratflag;
+extern CString ReLogName;
 
 // CReSimDataDownload ¶Ô»°¿ò
 
@@ -75,7 +76,9 @@ public:
 	//void OpenThreadPoolTask(int Command);
 
 	void SetRicheditText(CString strMsg, int No);
+	void PrintReLog(CString strMsg);
 	CString GetTime();
+	CString GetLogTime();
 
 	CRichEditCtrl m_recurrentinformationRichedit;
 };
