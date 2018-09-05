@@ -271,7 +271,11 @@
           {"field": 'VIP_digits', "title": 'VIP位数', "value": '', "notNull": false},
           {"field": 'ICCID_prefix', "title": 'ICCID前缀', "value": '', "notNull": false},
           {"field": 'ICCID_digits', "title": 'ICCID位数', "value": '', "notNull": false},
-          {"field": 'IMEIPrints', "title": 'IMEI打印', "value": '', "notNull": false},]
+          {"field": 'IMEIPrints', "title": 'IMEI打印', "value": '', "notNull": false},
+          {"field": 'MAC_prefix', "title": 'MAC前缀', "value": '', "notNull": false},
+          {"field": 'MAC_digits', "title": 'MAC位数', "value": '', "notNull": false},
+          {"field": 'Equipment_prefix', "title": 'Equipment前缀', "value": '', "notNull": false},
+          {"field": 'Equipment_digits', "title": 'Equipment位数', "value": '', "notNull": false},]
       }
     },
     mounted: function () {
@@ -308,7 +312,7 @@
           case '无绑定':
             tempData['iMEIRel'] = 0;
             break;
-          case '与SMI卡绑定':
+          case '与SIM卡绑定':
             tempData['iMEIRel'] = 1;
             break;
           case '与SIM&BAT绑定':
@@ -390,7 +394,11 @@
             this.$router.replace('/_empty');
             this.$router.replace(tempUrl)
           } else if (res.data.result === 412) {
-            alert('请检查格式并重试')
+            alert('请检查格式并重试');
+            this.setEditing(false);
+          } else if (res.data.result === 400) {
+            alert('该制单号已存在');
+            this.setEditing(false);
           } else {
             errHandler(res.data.result)
           }

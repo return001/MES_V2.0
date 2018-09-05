@@ -21,7 +21,7 @@
   }
 
   body {
-    background: url("/static/img/background.png") repeat;
+    background: url("/mes_system/static/img/background.png") repeat;
 
   }
 

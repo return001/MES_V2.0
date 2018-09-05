@@ -6,7 +6,7 @@
 
       <a class="navbar-brand" draggable="false">
         <span>
-          <img src="/static/img/logo.png" class="nav-logo" draggable="false">
+          <img src="/mes_system/static/img/logo.png" class="nav-logo" draggable="false">
         </span>
         智能生产控制系统</a>
     </div>

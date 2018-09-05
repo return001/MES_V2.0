@@ -14,6 +14,7 @@ import UserConfig from '../pages/user/UserConfig'
 Vue.use(Router);
 
 const router = new Router({
+  base: '/mes_system',
   routes: [
     {
       path: '/_empty'

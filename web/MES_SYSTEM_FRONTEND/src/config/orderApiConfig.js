@@ -74,7 +74,10 @@ const ROUTER_CONFIG = {
       {field: 'ICCID_prefix', title: 'ICCID前缀', colStyle: {'width': '100px'}, notNull: false},
       {field: 'ICCID_digits', title: 'ICCID位数', colStyle: {'width': '100px'}, notNull: false},
       {field: 'IMEIPrints', title: 'IMEI打印', colStyle: {'width': '100px'}, notNull: false},
-
+      {field: 'MAC_prefix', title: 'MAC前缀', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'MAC_digits', title: 'MAC位数',colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'Equipment_prefix', title: 'Equipment前缀', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'Equipment_digits', title: 'Equipment位数', colStyle: {'width': '100px'}, value: '', "notNull": false},
     ]
   },
 
