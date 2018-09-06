@@ -7,6 +7,8 @@ UINT ReDownloadMainThread(LPVOID lpParam);//串口主控线程
 UINT ReDownloadWirtePortThread(LPVOID lpParam);//串口写线程
 UINT ReDownloadReadPortThread(LPVOID lpParam);//串口读线程
 
+extern CString LastReRID;
+extern CString LastReIMEI;
 extern CString strFolderpath, strOKFolderpath, strFolderFile,m_resimdatafolderPath;//各种全局路径
 extern HWND MainReFormHWND;//主线程句柄
 extern HANDLE reporthandler;//串口句柄

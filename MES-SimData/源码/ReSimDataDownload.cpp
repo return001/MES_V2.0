@@ -21,6 +21,8 @@ CString reComNo;
 HANDLE reporthandler;
 int simrestratflag = 0;
 CString ReLogName;
+CString LastReRID=L"";
+CString LastReIMEI=L"";
 
 volatile BOOL m_RePortDownloadWrite;
 volatile BOOL m_RePortDownloadRead;
@@ -308,7 +310,7 @@ UINT ReDownloadWirtePortThread(LPVOID lpParam)
 	CReSimDataDownload* dlg;
 	dlg = (CReSimDataDownload*)lpParam;
 
-	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
+	//dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
 
 	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
@@ -354,7 +356,7 @@ PortTest:
 		return 0;
 	}
 
-	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
+	//dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
 
 
 	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
@@ -463,7 +465,14 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 				}
 				else if (dlg->CommandNo == 3)
 				{
-					dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+					CString strReIMEI1, strReRID1;
+
+					dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID1);
+					dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI1);
+					if (LastReRID != strReRID1&&LastReIMEI != strReIMEI1)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+					}
 				}
 				else if (dlg->CommandNo == 5)
 				{
@@ -471,6 +480,7 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 
 					dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID);
 					dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI);
+
 
 					ADOManage ReAdomanage;
 					ReAdomanage.ConnSQL();
@@ -482,7 +492,10 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 					}
 					else if (Reflag == 2 || Reflag == 3)
 					{
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+						if (LastReRID != strReRID&&LastReIMEI != strReIMEI)
+						{
+							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+						}
 						dlg->PrintReLog(L"无需返工");
 					}
 					else if (Reflag == 0)
@@ -495,6 +508,10 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"数据路径错误");
 						dlg->PrintReLog(L"数据路径错误");
 					}
+
+					LastReRID = strReRID;
+					LastReIMEI = strReIMEI;
+
 					ReAdomanage.CloseAll();
 				}
 				m_RePortDownloadRead = FALSE;

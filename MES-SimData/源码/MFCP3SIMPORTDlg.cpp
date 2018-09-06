@@ -13,6 +13,7 @@
 #include "DBconfig.h"
 #include "ReSimDataDownload.h"
 #include "Log.h"
+#include "Manager.h"
 
 #pragma comment(lib,"Shlwapi.lib") //判断文件是否存在的库，如果没有这行，会出现link错误
 
@@ -40,7 +41,14 @@ CString Port1LogName;
 CString Port2LogName;
 CString Port3LogName;
 CString Port4LogName;
-
+CString LastPort1RID = L"";
+CString LastPort1IMEI=L"";
+CString LastPort2RID = L"";
+CString LastPort2IMEI = L"";
+CString LastPort3RID = L"";
+CString LastPort3IMEI = L"";
+CString LastPort4RID = L"";
+CString LastPort4IMEI = L"";
 
 //串口单文件下载
 volatile BOOL m_Port1SINGLEDownloadWrite1;
@@ -501,12 +509,22 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafilepathButton()
 void CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	INT_PTR nRes;             // 用于保存DoModal函数的返回值   
-	CReSimDataDownload *resimdatadownload = new CReSimDataDownload;       // 构造对话框类实例   
-	nRes = resimdatadownload->DoModal();  // 弹出对话框
+	INT_PTR nRes1;             // 用于保存DoModal函数的返回值   
+	CManager *manager = new CManager;       // 构造对话框类实例   
+	nRes1 = manager->DoModal();  // 弹出对话框
 
-	if (IDCANCEL == nRes)
+	if (IDCANCEL == nRes1)
 		return;
+	else if (IDOK == nRes1)
+	{
+		INT_PTR nRes;             // 用于保存DoModal函数的返回值   
+		CReSimDataDownload *resimdatadownload = new CReSimDataDownload;       // 构造对话框类实例   
+		nRes = resimdatadownload->DoModal();  // 弹出对话框
+
+		if (IDCANCEL == nRes)
+			return;
+	}
+
 }
 
 
@@ -2472,7 +2490,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 {
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
-	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Connected, NULL);
+	//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Connected, NULL);
 	//PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//串口变量
@@ -2625,7 +2643,11 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 								m_Port1DownloadRead2 = FALSE;
 								m_Port1DownloadReadEnd2 = FALSE;
 								dlg->PrintLog(L"工位已测", 1);
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+								if (LastPort1RID != strport1RID&&LastPort1IMEI != strport1IMEI)
+								{
+									dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+								}
+								
 								adoport1manage3.CloseAll();
 								Sleep(50);
 								dlg->DownloadClosePort1Thread();
@@ -2633,6 +2655,11 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 								return ;
 							}
 							adoport1manage3.CloseAll();
+
+
+							LastPort1RID = strport1RID;
+							LastPort1IMEI = strport1IMEI;
+
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
 						}
 						else
@@ -3066,7 +3093,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port2Thread(LPVOID lpParam)
 {
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
-	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Connected, NULL);
+	//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Connected, NULL);
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//串口变量
@@ -3218,13 +3245,18 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 								m_Port2DownloadRead2 = FALSE;
 								m_Port2DownloadReadEnd2 = FALSE;
 								dlg->PrintLog(L"工位已测", 2);
-								dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+								if (LastPort2RID != strport2RID&&LastPort2IMEI != strport2IMEI)
+								{
+									dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+								}
 								adoport2manage4.CloseAll();
 								Sleep(50);
 								dlg->DownloadClosePort2Thread();
 								dlg->DownloadRestPort2Thread();
 								return ;
 							}
+							LastPort2RID = strport2RID;
+							LastPort2IMEI = strport2IMEI;
 							adoport2manage4.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
 						}
@@ -3416,7 +3448,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 					m_Port2DownloadWrite3 = FALSE;
 					m_Port2DownloadRead3 = FALSE;
 					dlg->PrintLog(L"收:" + strread, 2);
-					dlg->SetRicheditText(L"收:" + strread, 0);
+					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort2Thread();
 					return;
 				}
@@ -3657,7 +3689,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port3Thread(LPVOID lpParam)
 {
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
-	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Connected, NULL);
+	//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Connected, NULL);
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//串口变量
@@ -3811,13 +3843,18 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 								m_Port3DownloadRead2 = FALSE;
 								m_Port3DownloadReadEnd2 = FALSE;
 								dlg->PrintLog(L"工位已测", 3);
+								if (LastPort3RID != strport3RID&&LastPort3IMEI != strport3IMEI)
+								{
 								dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
+								}
 								adoport3manage5.CloseAll();
 								Sleep(50);
 								dlg->DownloadClosePort3Thread();
 								dlg->DownloadRestPort3Thread();
 								return ;
 							}
+							LastPort3RID = strport3RID;
+							LastPort3IMEI = strport3IMEI;
 							adoport3manage5.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
 						}
@@ -4249,7 +4286,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port4Thread(LPVOID lpParam)
 {
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
-	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Connected, NULL);
+	//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Connected, NULL);
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
 	//串口变量
@@ -4402,13 +4439,18 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 								m_Port4DownloadRead2 = FALSE;
 								m_Port4DownloadReadEnd2 = FALSE;
 								dlg->PrintLog(L"工位已测", 4);
-								dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+								if (LastPort4RID != strport4RID&&LastPort4IMEI != strport4IMEI)
+								{
+									dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+								}
 								adoport4manage6.CloseAll();
 								Sleep(50);
 								dlg->DownloadClosePort4Thread();
 								dlg->DownloadRestPort4Thread();
 								return ;
 							}
+							LastPort4RID = strport4RID;
+							LastPort4IMEI = strport4IMEI;
 							adoport4manage6.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
 						}
