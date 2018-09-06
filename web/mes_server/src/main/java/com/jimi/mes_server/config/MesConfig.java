@@ -15,6 +15,7 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
 import com.jimi.mes_server.controller.OrderController;
+import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
@@ -84,6 +85,7 @@ public class MesConfig extends JFinalConfig {
 		me.add("/report", ReportController.class);
 		me.add("/order", OrderController.class);
 		me.add("/user", UserController.class);
+		me.add("/redTea",RedTeaController.class);
 	}
 	
 	

@@ -31,6 +31,8 @@ public class UserController extends Controller  {
 	
 	
 	public void login(String userName, String password) {
+		
+		System.out.println("a"+userName + password);
 		GpsUser user = userService.login(userName, password);
 		//判断重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);

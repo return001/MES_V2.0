@@ -11,3 +11,5 @@ export const logoutUrl = url + '/mes_server/user/logout';
 export const userUpdateUrl = url + '/mes_server/user/update';
 export const userAddUrl = url + '/mes_server/user/add';
 export const userQueryUrl = url + '/mes_server/user/select';
+
+export const redTeaUrl = url + '/mes_server/redTea/findCId';
