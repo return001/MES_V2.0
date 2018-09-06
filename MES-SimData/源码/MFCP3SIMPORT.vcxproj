@@ -104,6 +104,7 @@
     <ClInclude Include="CRC.h" />
     <ClInclude Include="DBconfig.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="Manager.h" />
     <ClInclude Include="MFCP3SIMPORT.h" />
     <ClInclude Include="MFCP3SIMPORTDlg.h" />
     <ClInclude Include="ReSimDataDownload.h" />
@@ -118,6 +119,7 @@
     <ClCompile Include="ADOManage.cpp" />
     <ClCompile Include="DBconfig.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Manager.cpp" />
     <ClCompile Include="MFCP3SIMPORT.cpp" />
     <ClCompile Include="MFCP3SIMPORTDlg.cpp" />
     <ClCompile Include="ReSimDataDownload.cpp" />

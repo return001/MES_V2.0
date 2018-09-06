@@ -254,14 +254,25 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 		return ;
 	}
 
-	//如果不是返工就将数据插入表中，同时关联表也要插入数据
-	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet](SN, IMEI1, IMEI3, IMEI4, TestTime, _MASK_FROM_V2)values(NULL,'")
-	+ IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + GetTime() + _T("', NULL)");//具体执行的SQL语句
-	try{
-		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
-	}
-	catch (_com_error &e)
+	strSql = _T("SELECT [IMEI1] FROM [") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet] WHERE [IMEI1] = '") + IMEI + _T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	if (m_pRecordSet->adoEOF)
 	{
+		//如果不是返工就将数据插入表中，同时关联表也要插入数据
+		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet](SN, IMEI1, IMEI3, IMEI4, TestTime, _MASK_FROM_V2)values(NULL,'")
+			+ IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + GetTime() + _T("', NULL)");//具体执行的SQL语句
+		try{
+			m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+		}
+		catch (_com_error &e)
+		{
+		}
+	}
+	else if (!m_pRecordSet->adoEOF)
+	{
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet]") + _T("SET IMEI3 = '") + CID + _T("',IMEI4='") + ICCID + _T("'where[IMEI1] = '") + IMEI + _T("'");
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 	}
 
 
