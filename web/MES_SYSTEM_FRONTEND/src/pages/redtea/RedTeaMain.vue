@@ -56,37 +56,41 @@
         let sn = this.sn;
         let imei = this.imei;
         let deviceModel = this.deviceModel
-        let options = {
-          url: redTeaUrl,
-          data:{
-            sn:this.sn,
-            imei:this.imei,
-            deviceModel:this.deviceModel
-          }
-        };
-        let that = this;
-        axiosFetch(options).then(response => {
-          console.log("jksahdcaksjch");
-          if(response.data){
-           let result = response.data.result;
-            if(result === 200){
-              let data = response.data.data;
-              let obj = JSON.parse(data);
-              if(obj.errorMessage !== "成功"){
-                that.cId = "";
-                alert(obj.errorMessage);
-              }else{
-                let cId = obj.data.cid;
-                that.cId = cId
-              }
-            }else{
-              alert("请求失败，请检查参数是否正确");
+        if(sn != "" || imei !="" || deviceModel != ""){
+          let options = {
+            url: redTeaUrl,
+            data:{
+              sn:this.sn,
+              imei:this.imei,
+              deviceModel:this.deviceModel
             }
-          }
-        })
-        .catch(err => {
-          
-        })
+          };
+          let that = this;
+          axiosFetch(options).then(response => {
+            console.log("jksahdcaksjch");
+            if(response.data){
+             let result = response.data.result;
+              if(result === 200){
+                let data = response.data.data;
+                let obj = JSON.parse(data);
+                if(obj.errorMessage !== "成功"){
+                  that.cId = "";
+                  alert(obj.errorMessage);
+                }else{
+                  let cId = obj.data.cid;
+                  that.cId = cId
+                }
+              }else{
+                alert("请求失败，请检查参数是否正确");
+              }
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          })
+        }else{
+          alert("参数不能为空");
+        }
       }
     }
   }
@@ -102,7 +106,7 @@
   .form-area {
     position: relative;
     margin-left: 60px;
-    width: 100%;
+    width: calc(100% - 60px);
     padding: 40px 60px;
   }
 
