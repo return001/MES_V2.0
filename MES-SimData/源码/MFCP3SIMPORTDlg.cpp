@@ -49,8 +49,10 @@ CString LastPort3RID = L"";
 CString LastPort3IMEI = L"";
 CString LastPort4RID = L"";
 CString LastPort4IMEI = L"";
-
+int InteverIMEIRIDTime=2000;//发指令间隔时间
+int InteverIMEIRIDCount = 3;//发指令次数
 //串口单文件下载
+
 volatile BOOL m_Port1SINGLEDownloadWrite1;
 volatile BOOL m_Port1SINGLEDownloadWrite2;
 volatile BOOL m_Port1SINGLEDownloadWrite3;
@@ -113,6 +115,7 @@ volatile BOOL m_Port4DownloadRead3;
 volatile BOOL m_Port4DownloadReadEnd3;
 volatile BOOL m_Port4DownloadRead4;
 volatile BOOL m_Port4DownloadControl;
+
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -1785,7 +1788,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite1Port1Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand,0);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1600);
+		Sleep(2000);
 
 		if (s_bSingleExit == TRUE)
 		{
@@ -1816,7 +1819,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead1Port1Thread(LPVOID lpParam)
 	//dlg->GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
 	do
 	{
-		Sleep(800);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port1handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -1927,7 +1930,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite2Port1Thread(LPVOID lpParam)
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
-			if (count == 6)
+			if (count == InteverIMEIRIDCount)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
 				dlg->SingleDownloadClosePort1Thread();
@@ -1936,7 +1939,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite2Port1Thread(LPVOID lpParam)
 				return;
 			}
 			count++;
-			Sleep(800);
+			Sleep(InteverIMEIRIDTime);
 			if (s_bSingleExit == TRUE)
 			{
 				dlg->SingleDownloadClosePort1Thread();
@@ -2159,7 +2162,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-        Sleep(500);
+        Sleep(650);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -2226,7 +2229,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1250);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port1handler, str, 200, &readreal, 0);
 		if (bReadStat)
 		{
@@ -2303,6 +2306,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite4Port1Thread(LPVOID lpParam)
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
+			//strcommand = L"AT^GT_CM=reset,1\r\n";
+			//ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
+			//bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+			//dlg->PrintLog(L"发:" + strcommand, 0);
 			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
 			m_Port1SINGLEDownloadWrite4 = FALSE;
 			m_Port1SINGLEDownloadRead4 = FALSE;
@@ -2311,7 +2318,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite4Port1Thread(LPVOID lpParam)
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1000);
+		Sleep(2500);
 		countend++;
 		if (s_bSingleExit == TRUE)
 		{
@@ -2322,6 +2329,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite4Port1Thread(LPVOID lpParam)
 	} while (m_Port1SINGLEDownloadWrite4);
 
 	dlg->SingleDownloadRestPort1Thread();
+	//strcommand = L"AT^GT_CM=reset,1\r\n";
+	//ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
+	//bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintLog(L"发:" + strcommand, 0);
 }
 
 //单文件串口1的读老化命令的读线程
@@ -2343,7 +2354,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead4Port1Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1020);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port1handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -2352,12 +2363,18 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead4Port1Thread(LPVOID lpParam)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
+				m_Port1SINGLEDownloadRead4 = FALSE;
+				m_Port1SINGLEDownloadWrite4 = FALSE;
 			}
-			m_Port1SINGLEDownloadRead4 = FALSE;
-			m_Port1SINGLEDownloadWrite4 = FALSE;
+			else
+			{
+				continue;
+			}
+
 		}
 		if (s_bSingleExit == TRUE)
 		{
+			dlg->PrintLog(L"收:" + strread, 0);
 			dlg->SingleDownloadClosePort1Thread();
 			dlg->SingleDownloadRestPort1Thread();
 			return;
@@ -2430,7 +2447,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port1Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 1);
 		//dlg->SetRicheditText(L"发:" + strcommand, 1);
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1600);
+		Sleep(2000);
 
 		if (s_bExit == TRUE||m_Port1DownloadControl == FALSE)
 		{
@@ -2449,7 +2466,7 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port1Thread(LPVOID lpParam)
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 	//串口变量
-	char str[200];
+	char str[100];
 	memset(str, 0, sizeof(str));
 	DWORD readreal = 0;
 	BOOL bReadStat;
@@ -2460,8 +2477,8 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port1Thread(LPVOID lpParam)
 	m_Port1DownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 	do
 	{
-		Sleep(800);
-		bReadStat = ReadFile(dlg->port1handler, str, 199, &readreal, 0);
+		Sleep(300);
+		bReadStat = ReadFile(dlg->port1handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
 			strread = str;
@@ -2528,7 +2545,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
-			if (count == 7)
+			if (count == InteverIMEIRIDCount)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Fail, NULL);
 				dlg->DownloadClosePort1Thread();
@@ -2536,7 +2553,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port1Thread(LPVOID lpParam)
 				return;
 			}
 			count++;
-			Sleep(800);
+			Sleep(InteverIMEIRIDTime);
 			if (s_bExit == TRUE || m_Port1DownloadControl == FALSE)
 			{
 				dlg->DownloadClosePort1Thread();
@@ -2579,7 +2596,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 		}
 		do
 		{
-			Sleep(400);
+			Sleep(200);
 			bReadStat = ReadFile(dlg->port1handler, str, 199, &readreal, 0);
 			if (bReadStat)
 			{
@@ -2764,7 +2781,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(500);
+		Sleep(650);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -2832,7 +2849,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 	m_Port1DownloadReadEnd3 = TRUE;
 	do
 	{
-		Sleep(1250);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port1handler, str, 99, &readreal, 0);
 		if (bReadStat)
 		{
@@ -2917,10 +2934,14 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port1Thread(LPVOID lpParam)
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1000);
+		Sleep(2500);
 		countend++;
 		if (s_bExit == TRUE || m_Port1DownloadControl == FALSE)
 		{
+			//strcommand = L"AT^GT_CM=reset,1\r\n";
+			//ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
+			//bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+			//dlg->PrintLog(L"发:" + strcommand, 1);
 			dlg->DownloadClosePort1Thread();
 			dlg->DownloadRestPort1Thread();
 			return;
@@ -2928,7 +2949,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port1Thread(LPVOID lpParam)
 	} while (m_Port1DownloadWrite4);
 
 	dlg->DownloadRestPort1Thread();
-
+	//strcommand = L"AT^GT_CM=reset,1\r\n";
+	//ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
+	//bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintLog(L"发:" + strcommand, 1);
 }
 
 //串口1的读老化命令的读线程
@@ -2950,7 +2974,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1020);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port1handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -2958,12 +2982,17 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+				m_Port1DownloadRead4 = FALSE;
+				m_Port1DownloadWrite4 = FALSE;
 			}
-			m_Port1DownloadRead4 = FALSE;
-			m_Port1DownloadWrite4 = FALSE;
+			else
+			{
+				continue;
+			}
 		}
 		if (s_bExit == TRUE || m_Port1DownloadControl == FALSE)
 		{
+			dlg->PrintLog(L"收:" + strread, 1);
 			dlg->DownloadClosePort1Thread();
 			dlg->DownloadRestPort1Thread();
 			return;
@@ -3033,7 +3062,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 2);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1600);
+		Sleep(2500);
 
 		if (s_bExit == TRUE || m_Port2DownloadControl == FALSE)
 		{
@@ -3063,7 +3092,7 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port2Thread(LPVOID lpParam)
 	m_Port2DownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 	do
 	{
-		Sleep(800);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port2handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -3130,7 +3159,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port2Thread(LPVOID lpParam)
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
-			if (count == 7)
+			if (count == InteverIMEIRIDCount)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Fail, NULL);
 				dlg->DownloadClosePort2Thread();
@@ -3138,7 +3167,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port2Thread(LPVOID lpParam)
 				return;
 			}
 			count++;
-			Sleep(800);
+			Sleep(InteverIMEIRIDTime);
 			if (s_bExit == TRUE || m_Port2DownloadControl == FALSE)
 			{
 				dlg->DownloadClosePort2Thread();
@@ -3181,7 +3210,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 		}
 		do
 		{
-			Sleep(400);
+			Sleep(300);
 			bReadStat = ReadFile(dlg->port2handler, str, 100, &readreal, 0);
 			if (bReadStat)
 			{
@@ -3362,7 +3391,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(500);
+		Sleep(650);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -3430,7 +3459,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1250);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port2handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -3513,10 +3542,14 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port2Thread(LPVOID lpParam)
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1000);
+		Sleep(2500);
 		countend++;
 		if (s_bExit == TRUE || m_Port2DownloadControl == FALSE)
 		{
+			//strcommand = L"AT^GT_CM=reset,1\r\n";
+			//ClearCommError(dlg->port2handler, &dwErrorFlags, &ComStat);
+			//bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+			//dlg->PrintLog(L"发:" + strcommand, 2);
 			dlg->DownloadClosePort2Thread();
 			dlg->DownloadRestPort2Thread();
 			return;
@@ -3525,6 +3558,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port2Thread(LPVOID lpParam)
 
 	dlg->DownloadRestPort2Thread();
 
+	//strcommand = L"AT^GT_CM=reset,1\r\n";
+	//ClearCommError(dlg->port2handler, &dwErrorFlags, &ComStat);
+	//bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintLog(L"发:" + strcommand, 2);
 }
 
 //串口2的读老化命令的读线程
@@ -3534,7 +3571,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port2Thread(LPVOID lpParam)
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 
 	//串口变量
-	char str[100];
+	char str[200];
 	memset(str, 0, sizeof(str));
 	DWORD readreal = 0;
 	BOOL bReadStat;
@@ -3546,20 +3583,26 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port2Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1020);
-		bReadStat = ReadFile(dlg->port2handler, str, 100, &readreal, 0);
+		Sleep(300);
+		bReadStat = ReadFile(dlg->port2handler, str, 199, &readreal, 0);
 		if (bReadStat)
 		{
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
+
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
+				m_Port2DownloadRead4 = FALSE;
+				m_Port2DownloadWrite4 = FALSE;
 			}
-			m_Port2DownloadRead4 = FALSE;
-			m_Port2DownloadWrite4 = FALSE;
+			else
+			{
+				continue;
+			}
 		}
 		if (s_bExit == TRUE || m_Port2DownloadControl == FALSE)
 		{
+			dlg->PrintLog(L"收:" + strread, 2);
 			dlg->DownloadClosePort2Thread();
 			dlg->DownloadRestPort2Thread();
 			return;
@@ -3629,7 +3672,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 3);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1600);
+		Sleep(2500);
 
 		if (s_bExit == TRUE || m_Port3DownloadControl == FALSE)
 		{
@@ -3659,7 +3702,7 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port3Thread(LPVOID lpParam)
 	m_Port3DownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 	do
 	{
-		Sleep(800);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port3handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -3726,7 +3769,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port3Thread(LPVOID lpParam)
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
-			if (count == 7)
+			if (count == InteverIMEIRIDCount)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Fail, NULL);
 				dlg->DownloadClosePort3Thread();
@@ -3734,7 +3777,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port3Thread(LPVOID lpParam)
 				return;
 			}
 			count++;
-			Sleep(800);
+			Sleep(InteverIMEIRIDTime);
 			if (s_bExit == TRUE || m_Port3DownloadControl == FALSE)
 			{
 				dlg->DownloadClosePort3Thread();
@@ -3777,7 +3820,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 		}
 		do
 		{
-			Sleep(400);
+			Sleep(300);
 			bReadStat = ReadFile(dlg->port3handler, str, 100, &readreal, 0);
 			if (bReadStat)
 			{
@@ -3960,7 +4003,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(500);
+		Sleep(650);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -4027,7 +4070,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 	m_Port3DownloadReadEnd3 = TRUE;
 	do
 	{
-		Sleep(1250);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port3handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -4111,10 +4154,15 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port3Thread(LPVOID lpParam)
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1000);
+		Sleep(2500);
 		countend++;
 		if (s_bExit == TRUE || m_Port3DownloadControl == FALSE)
 		{
+			//strcommand = L"AT^GT_CM=reset,1\r\n";
+			//ClearCommError(dlg->port3handler, &dwErrorFlags, &ComStat);
+			//bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+			//dlg->PrintLog(L"发:" + strcommand, 3);
+
 			dlg->DownloadClosePort3Thread();
 			dlg->DownloadRestPort3Thread();
 			return;
@@ -4122,6 +4170,11 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port3Thread(LPVOID lpParam)
 	} while (m_Port3DownloadWrite4);
 
 	dlg->DownloadRestPort3Thread();
+
+	//strcommand = L"AT^GT_CM=reset,1\r\n";
+	//ClearCommError(dlg->port3handler, &dwErrorFlags, &ComStat);
+	//bWriteStat=WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintLog(L"发:" + strcommand, 3);
 }
 
 //串口3的读老化命令的读线程
@@ -4135,6 +4188,13 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port3Thread(LPVOID lpParam)
 	memset(str, 0, sizeof(str));
 	DWORD readreal = 0;
 	BOOL bReadStat;
+	CString strlog0;
+
+	DWORD dwBytesWritelog;
+	COMSTAT ComStatlog;
+	DWORD dwErrorFlagslog;
+	BOOL bWriteStatlog;
+
 
 	//其余变量
 	CString strread, strfolderpath, strfoldercut;;
@@ -4143,20 +4203,26 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port3Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1020);
+		Sleep(200);
 		bReadStat = ReadFile(dlg->port3handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
 			strread = str;
-			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
+			dlg->PrintLog(L"收:" + strread, 3);
+			if (strread.Find(L"OK") >= 0)
 			{
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_OkInsert, NULL);
+				m_Port3DownloadRead4 = FALSE;
+				m_Port3DownloadWrite4 = FALSE;
 			}
-			m_Port3DownloadRead4 = FALSE;
-			m_Port3DownloadWrite4 = FALSE;
+			else
+			{
+				continue;
+			}
 		}
 		if (s_bExit == TRUE || m_Port3DownloadControl == FALSE)
 		{
+			dlg->PrintLog(L"收:" + strread, 3);
 			dlg->DownloadClosePort3Thread();
 			dlg->DownloadRestPort3Thread();
 			return;
@@ -4226,7 +4292,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 4);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1600);
+		Sleep(2500);
 
 		if (s_bExit == TRUE || m_Port4DownloadControl == FALSE)
 		{
@@ -4256,7 +4322,7 @@ void CMFCP3SIMPORTDlg::DownloadRead1Port4Thread(LPVOID lpParam)
 	m_Port4DownloadRead1 = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 	do
 	{
-		Sleep(800);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port4handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -4323,7 +4389,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port4Thread(LPVOID lpParam)
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 
-			if (count == 7)
+			if (count == InteverIMEIRIDCount)
 			{
 				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Fail, NULL);
 				dlg->DownloadClosePort4Thread();
@@ -4331,7 +4397,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite2Port4Thread(LPVOID lpParam)
 				return;
 			}
 			count++;
-			Sleep(800);
+			Sleep(InteverIMEIRIDTime);
 			if (s_bExit == TRUE || m_Port4DownloadControl == FALSE)
 			{
 				dlg->DownloadClosePort4Thread();
@@ -4374,7 +4440,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 		}
 		do
 		{
-			Sleep(400);
+			Sleep(300);
 			bReadStat = ReadFile(dlg->port4handler, str, 100, &readreal, 0);
 			if (bReadStat)
 			{
@@ -4556,7 +4622,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		memset(pBuf, '\0', dwStep + 1);
 		delete[] buf1;
 		buf1 = NULL;
-		Sleep(500);
+		Sleep(650);
 	}
 	delete[] pBuf;
 	pBuf = NULL;
@@ -4623,7 +4689,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 	m_Port4DownloadReadEnd3 = TRUE;
 	do
 	{
-		Sleep(1250);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port4handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -4707,17 +4773,27 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port4Thread(LPVOID lpParam)
 			return;
 		}
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1000);
+		Sleep(2500);
 		countend++;
 		if (s_bExit == TRUE || m_Port4DownloadControl == FALSE)
 		{
+			//strcommand = L"AT^GT_CM=reset,1\r\n";
+			//ClearCommError(dlg->port4handler, &dwErrorFlags, &ComStat);
+			//bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+			//dlg->PrintLog(L"发:" + strcommand, 4);
+
 			dlg->DownloadClosePort4Thread();
 			dlg->DownloadRestPort4Thread();
 			return;
 		}
 	} while (m_Port4DownloadWrite4);
 
-	//dlg->DownloadRestPort4Thread();
+	dlg->DownloadRestPort4Thread();
+
+	//strcommand = L"AT^GT_CM=reset,1\r\n";
+	//ClearCommError(dlg->port4handler, &dwErrorFlags, &ComStat);
+	//bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintLog(L"发:" + strcommand, 4);
 }
 
 //串口4的读老化命令的读线程
@@ -4739,7 +4815,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(1020);
+		Sleep(300);
 		bReadStat = ReadFile(dlg->port4handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -4747,12 +4823,17 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
+				m_Port4DownloadRead4 = FALSE;
+				m_Port4DownloadWrite4 = FALSE;
 			}
-			m_Port4DownloadRead4 = FALSE;
-			m_Port4DownloadWrite4 = FALSE;
+			else
+			{
+				continue;
+			}
 		}
 		if (s_bExit == TRUE || m_Port4DownloadControl == FALSE)
 		{
+			dlg->PrintLog(L"收:" + strread, 4);
 			dlg->DownloadClosePort4Thread();
 			dlg->DownloadRestPort4Thread();
 			return;
@@ -4959,9 +5040,11 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 	case DataInsert_SinglePort_OkInsert:
 		strSingleFileTempPath = strSingleFilePath.Left(strSingleFilePath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strSingleFilecut = strSingleFileTempPath.Right(13);//然后将种子文件夹名称切割出来
-		MoveFileEx(strSingleFileTempPath, strOKFolderpath + strSingleFilecut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		SimDataOkInsertFun1();
-		SetPort1EditEmpty();
+		Sleep(20);
+		MoveFileEx(strSingleFileTempPath, strOKFolderpath + strSingleFilecut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+		Sleep(20);
+		//SetPort1EditEmpty();
 		OnBnClickedStartdownload1Button();
 		INT_PTR nRes;
 		nRes = MessageBox(_T("是否继续下载？"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
@@ -5007,10 +5090,12 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 		strport1folderpath = strport1folderpath.Left(strport1folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strport1foldercut = strport1folderpath.Right(13);//然后将种子文件夹名称切割出来
 		SimDataOkInsertFun1();
+		Sleep(20);
 		MoveFileEx(strport1folderpath, strOKFolderpath + strport1foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		StrFolder[0] = L"";
+		Sleep(20);
 		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
-		SetPort1EditEmpty();
+		//SetPort1EditEmpty();
 		break;
 	case DataInsert_Port1_ErrorInsert:
 		SimDataErrorInsertFun1();
@@ -5046,10 +5131,12 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 		strport2folderpath = strport2folderpath.Left(strport2folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strport2foldercut = strport2folderpath.Right(13);//然后将种子文件夹名称切割出来
 		SimDataOkInsertFun2();
+		Sleep(20);
 		MoveFileEx(strport2folderpath, strOKFolderpath + strport2foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		StrFolder[1] = L"";
+		Sleep(20);
 		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Success, NULL);
-		SetPort2EditEmpty();
+		//SetPort2EditEmpty();
 		break;
 	case DataInsert_Port2_ErrorInsert:
 		SimDataErrorInsertFun2();
@@ -5085,10 +5172,12 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 		strport3folderpath = strport3folderpath.Left(strport3folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strport3foldercut = strport3folderpath.Right(13);//然后将种子文件夹名称切割出来
 		SimDataOkInsertFun3();
+		Sleep(20);
 		MoveFileEx(strport3folderpath, strOKFolderpath + strport3foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		StrFolder[2] = L"";
+		Sleep(20);
 		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Success, NULL);
-		SetPort3EditEmpty();
+		//SetPort3EditEmpty();
 		break;
 	case DataInsert_Port3_ErrorInsert:
 		SimDataErrorInsertFun3();
@@ -5124,10 +5213,12 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 		strport4folderpath = strport4folderpath.Left(strport4folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strport4foldercut = strport4folderpath.Right(13);//然后将种子文件夹名称切割出来
 		SimDataOkInsertFun4();
+		Sleep(20);
 		MoveFileEx(strport4folderpath, strOKFolderpath + strport4foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		StrFolder[3] = L"";
+		Sleep(20);
 		::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Success, NULL);
-		SetPort4EditEmpty();
+		//SetPort4EditEmpty();
 		break;
 	case DataInsert_Port4_ErrorInsert:
 		SimDataErrorInsertFun4();

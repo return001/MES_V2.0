@@ -171,6 +171,7 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 			return;
 		}
 
+		reporthandler = NULL;
 		PrintReLog(L"关闭串口成功");
 		//SetRicheditText(L"关闭串口成功", 0);
 		GetDlgItem(IDC_RESTART_BUTTON)->EnableWindow(FALSE);
@@ -237,13 +238,14 @@ void CReSimDataDownload::SetRePortEditEmpty()
 //文件下载写命令集合,0是TEST指令,1是RID指令,2是IMEI指令,3是开始下载指令,4是下载结束指令
 CString CReSimDataDownload::CommandWriteUnit(int strcommandNo)
 {
-	CString strCommandWrite[6] = {
+	CString strCommandWrite[7] = {
 		L"AT^GT_CM=TEST\r\n", //测试连接命令这个直接用就行
 		L"AT^GT_CM=ID,1\r\n", //读RID的一个命令
 		L"AT^GT_CM=IMEI\r\n",
 		L"AT^GT_CM=SOFTSIM,CLEAN\r\n",
 		L"AT+AGENT=4,FFFFFFFFFFFFFFFFFFFF\r\n",
 		L"AT^GT_CM=aging,off\r\n",
+		L"AT^GT_CM=reset,1\r\n",
 	};//读IMEI的一个命令
 	return strCommandWrite[strcommandNo];
 }
@@ -340,14 +342,13 @@ PortTest:
 		dlg->PrintReLog(L"发:" + strcommand);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(1500);
 		if (s_bReExit == TRUE)
 		{
 			dlg->ReDownloadRestPortThread();
 			//dlg->ReDownloadClosePortThread();
 			return 0;
 		}
-
+		Sleep(2000);
 	} while (m_RePortDownloadWrite);
 
 	if (m_RePortDownloadMain == FALSE)
@@ -374,6 +375,7 @@ PortTest:
 
 		do
 		{
+
 			dlg->PrintReLog(L"发:" + strcommand);
 			//dlg->SetRicheditText(L"发:" + strcommand, 0);
 			bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
@@ -386,9 +388,15 @@ PortTest:
 				goto PortTest;
 			}
 			count++;
-			Sleep(1400);
+			Sleep(2000);
 		} while (m_RePortDownloadWrite);
 	}
+
+	//发重启指令
+	strcommand = dlg->CommandWriteUnit(6);
+	ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
+	bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	dlg->PrintReLog(L"发:" + strcommand);
 
 	if (m_RePortDownloadMain == FALSE)
 	{
@@ -421,7 +429,7 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(400);
+		Sleep(300);
 		bReadStat = ReadFile(reporthandler, str, 199, &readreal, 0);
 		if (bReadStat)
 		{

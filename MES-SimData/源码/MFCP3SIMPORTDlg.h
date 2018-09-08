@@ -34,6 +34,8 @@ extern CString LastPort3RID;
 extern CString LastPort3IMEI;
 extern CString LastPort4RID;
 extern CString LastPort4IMEI;
+extern int InteverTime;//发指令间隔时间
+extern int InteverCount;//发指令次数
 
 
 // CMFCP3SIMPORTDlg 对话框

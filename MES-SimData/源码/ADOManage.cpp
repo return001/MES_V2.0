@@ -276,7 +276,7 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 	}
 
 
-	//如果不是返工就将数据插入表中，同时关联表也要插入数据
+	//如果不是返工就将数据插入表中
 	strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]([SDIP],[RID],[IMEI], [CID], [ICCID], [SDOperator], [SDTime], [SDRESULT],[ReSDCount])values('")
 		+ SDIP + _T("', '") + RID + _T("', '") + IMEI + _T("', '") + CID + _T("', '") + ICCID + _T("', '") + SDOperator + _T("', '")  + GetTime() + _T("', 1,0)");//具体执行的SQL语句
 	try{
@@ -291,9 +291,9 @@ void ADOManage::SimDataOkInsertSql(CString SDIP, CString RID, CString IMEI, CStr
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查得到就更新,Affectline是insert操作返回的影响行数，如果为0代表插入失败，也就是说之前已经插入过这条数据但是是失败，现在机子重新下载成功需要更新数据
-	if (!m_pRecordSet->adoEOF&&Affectline.vt == 0)
+	if (!m_pRecordSet->adoEOF)
 	{
-		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = 1,SDIP = '") + SDIP + _T("',CID='") + CID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',SDTime ='") + GetTime() + _T("' where[RID] = '") + RID + _T("'");
+		strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET SDRESULT = 1,SDIP = '") + SDIP + _T("',CID='") + CID + _T("',ICCID='") + ICCID + _T("',SDOperator ='") + SDOperator + _T("',SDTime ='") + GetTime() + _T("' where[IMEI] = '") + IMEI + _T("'");
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 
 	}
@@ -422,13 +422,14 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 
 			//这里需要写移动文件夹的代码
 			
-			moveflag = ::MoveFileEx(strOKpath + strCID + L"\\", strOKpath.Left(strOKpath.GetLength() - 3) + L"\\" + strCID + L"\\", MOVEFILE_REPLACE_EXISTING);
+			moveflag = MoveFile(strOKpath + strCID + L"\\", strOKpath.Left(strOKpath.GetLength() - 3) + L"\\" + strCID + L"\\");
 			if (moveflag == FALSE)
 			{
+				MoveFile(strOKpath.Left(strOKpath.GetLength() - 3) + L"\\" + strCID + L"\\",strOKpath + strCID + L"\\");
 				return 4;
 			}
 			//然后再将数据插入到另一张表
-			strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[Gps_ManuReSimDataParam] select * from [") + m_Firstdbname + _T("].[dbo].[Gps_ManuSimDataParam] where [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("'");
+			strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[Gps_ManuReSimDataParam] select [SDIP], [RID], [IMEI], [CID], [ICCID], [SDOperator], [SDTime], [SDRESULT], [ReSDTime], [ReSDCount] from[") + m_Firstdbname + _T("].[dbo].[Gps_ManuSimDataParam] where[RID] = '") + RID + _T("' AND[IMEI] = '") + IMEI + _T("'");
 			m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 
