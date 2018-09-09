@@ -362,7 +362,18 @@ int ADOManage::SimDataIsExitSql(CString RID,CString IMEI)
 	_variant_t a;
 	CString strSql;
 	//查找RID是否存在，存在就返回0表示下载过
-	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 1");
+	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [IMEI] = '") + IMEI + _T("' AND SDRESULT = 1");
+	//strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("' AND SDRESULT = 1");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	//查得到就返回0表示已经下载过
+	if (!m_pRecordSet->adoEOF)
+	{
+		return 0;
+	}
+
+	//查找RID是否存在，存在就返回0表示下载过
+	strSql = _T("SELECT [RID],[IMEI],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID +  _T("' AND SDRESULT = 1");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//查得到就返回0表示已经下载过

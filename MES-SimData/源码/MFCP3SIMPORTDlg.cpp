@@ -1472,7 +1472,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 
-	int findfileend=1,singleflag;
+	int findfileend=1,singleflag,countfileend;
 	DWORD dwTotalSize;//文件总大小
 	CFile ReadFile;
 	//CRC变量
@@ -1616,7 +1616,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 				ReadFile.Close();
 
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Test, NULL);
-				Sleep(1000);
+				Sleep(700);
 			}
 			else if (StrFolder[1] == L""&&simstart2flag == 1 && findfileend == 1)
 			{
@@ -1647,7 +1647,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 				ReadFile.Close();
 
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Test, NULL);
-				Sleep(1000);
+				Sleep(700);
 			}
 			else if (StrFolder[2] == L""&&simstart3flag == 1 && findfileend == 1)
 			{
@@ -1678,7 +1678,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 				crcBuf = NULL;
 				ReadFile.Close();
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Test, NULL);
-				Sleep(1000);
+				Sleep(700);
 			}
 			else if (StrFolder[3] == L""&&simstart4flag == 1 && findfileend == 1)
 			{
@@ -1709,14 +1709,22 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 				crcBuf = NULL;
 				ReadFile.Close();
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Test, NULL);
-				Sleep(1000);
+				Sleep(700);
 			}
-			Sleep(500);
+			Sleep(200);
             
 			bFind = finder.FindFile(strFolderpath + "*.*");
+			
+			countfileend = 0;
 			while (bFind)
 			{
+
 				bFind = finder.FindNextFile();
+				countfileend++;
+				if (countfileend > 6)
+				{
+					break;
+				}
 			if (finder.IsDots())
 			{
 				if (!bFind)
@@ -1735,22 +1743,22 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 			if (StrFolder[0] != L""&& simstart1flag == 1)
 			{
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Test, NULL);
-				Sleep(500);
+				Sleep(200);
 			}
 			if (StrFolder[1] != L""&&simstart2flag == 1)
 			{
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Test, NULL);
-				Sleep(500);
+				Sleep(200);
 			}
 			if (StrFolder[2] != L""&&simstart3flag == 1)
 			{
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Test, NULL);
-				Sleep(500);
+				Sleep(200);
 			}
 			if (StrFolder[3] != L""&&simstart4flag == 1)
 			{
 				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Test, NULL);
-				Sleep(500);
+				Sleep(200);
 			}
 		}
 	}
