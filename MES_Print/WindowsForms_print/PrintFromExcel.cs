@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using ExcelPrint.Param.Bll;
 using System.IO;
 using Print_Message;
+using System.Media;
 
 namespace WindowsForms_print
 {
@@ -19,6 +20,8 @@ namespace WindowsForms_print
         List<ManuExcelPrintParam> mepp = new List<ManuExcelPrintParam>();
         Engine btEngine = new Engine();
         LabelFormatDocument btFormat;
+
+        SoundPlayer player = new SoundPlayer(AppDomain.CurrentDomain.BaseDirectory + "失败.wav");
 
         //打印参数
         int TN=1;
@@ -31,7 +34,6 @@ namespace WindowsForms_print
             InitializeComponent();
             int wid = Screen.PrimaryScreen.WorkingArea.Width;
             this.Width = wid;
-            this.dataGridView1.Width = wid;
         }
 
         static bool IsNumeric(string s)
@@ -71,7 +73,8 @@ namespace WindowsForms_print
                 strExtension = path.Substring(nIndex);
                 if (strExtension != ".btw")
                 {
-                    MessageBox.Show("请选择正确的btw文件！");
+                    player.Play();
+                    this.remined.AppendText("请选择正确的btw文件！\r\n");
                 }
                 else
                 {
@@ -90,13 +93,14 @@ namespace WindowsForms_print
                 string strExtension = path.Substring(path.LastIndexOf('.'));
                 if (strExtension != ".xls" && strExtension != ".xlsx")
                 {
-                    MessageBox.Show("请选择xls文件！");
+                    player.Play();
+                    this.remined.AppendText("请选择xls文件!\r\n");
                 }
                 else
                 {
                     this.dataGridView1.DataSource = "";
                     this.ImportPath.Text = path;
-                    DataTable dt = IEB.GetExcelDatatable(path);
+                    DataTable dt = IEB.GetExcelDatatable(path,strExtension);
                     //DataRow dr2 = dt.Rows[0];
                     //DataTable dd = new DataTable();
                     //dd.Columns.Add(new DataColumn(dr2[0].ToString(), typeof(string)));
@@ -128,7 +132,8 @@ namespace WindowsForms_print
                 }
                 else
                 {
-                    MessageBox.Show("请输入数字\r\n");
+                    player.Play();
+                    this.remined.AppendText("请输入数字\r\n");
                     this.TemplateNum.Text = 1.ToString();
                     this.TemplateNum.Focus();
                 }
@@ -141,7 +146,8 @@ namespace WindowsForms_print
             {
                 if(this.ImportPath.Text == "")
                 {
-                    MessageBox.Show("请先导入Excel");
+                    player.Play();
+                    this.remined.AppendText("请先导入Excel\r\n");
                     this.RowNumber.Clear();
                     this.RowNumber.Focus();
                     return;
@@ -150,7 +156,8 @@ namespace WindowsForms_print
                 {
                     int i = 1;
                     this.dataGridView1.DataSource = "";
-                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text);
+                    string strExtension = this.ImportPath.Text.Substring(this.ImportPath.Text.LastIndexOf('.'));
+                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text,strExtension);
                     DataRow dr2 = dt.Rows[0];
                     DataTable dd = new DataTable();
                     dd.Columns.Add(" ");
@@ -164,7 +171,8 @@ namespace WindowsForms_print
                         DataRow dr3 = dt.Rows[int.Parse(this.RowNumber.Text)];
                         if (dr3[0].ToString() == "")
                         {
-                            MessageBox.Show("您输入的行数大于Excel行数");
+                            player.Play();
+                            this.remined.AppendText("您输入的行数大于Excel行数\r\n");
                             this.RowNumber.Clear();
                             this.RowNumber.Focus();
                             return;
@@ -179,7 +187,8 @@ namespace WindowsForms_print
                             string[] range = this.RowNumber.Text.Split('-');
                             if(int.Parse(range[0])> int.Parse(range[1]))
                             {
-                                MessageBox.Show("起始位不能大于终止位");
+                                player.Play();
+                                this.remined.AppendText("起始位不能大于终止位\r\n");
                                 this.RowNumber.Clear();
                                 this.RowNumber.Focus();
                                 return;
@@ -194,7 +203,8 @@ namespace WindowsForms_print
                         }
                         else
                         {
-                            MessageBox.Show("请请输入'数字-数字'格式");
+                            player.Play();
+                            this.remined.AppendText("请输入'数字-数字'格式\r\n");
                             this.RowNumber.Clear();
                             this.RowNumber.Focus();
                         }
@@ -209,7 +219,8 @@ namespace WindowsForms_print
             {
                 if (IsNumeric(this.RowNumber.Text))
                 {
-                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text);
+                    string strExtension = this.ImportPath.Text.Substring(this.ImportPath.Text.LastIndexOf('.'));
+                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text,strExtension);
                     DataRow dr3 = dt.Rows[int.Parse(this.RowNumber.Text)];
                     if (!MEPPB.CheckIMEIBLL(dr3[0].ToString(), dr3[1].ToString()))
                     {
@@ -245,6 +256,7 @@ namespace WindowsForms_print
                     }
                     else
                     {
+                        player.Play();
                         this.remined.AppendText(dr3[0].ToString()+"或"+ dr3[1].ToString()+"重号\r\n");
                     }
                 }
@@ -255,7 +267,8 @@ namespace WindowsForms_print
                     //指定打印机名称
                     btFormat.PrintSetup.PrinterName = this.Printer.Text;
                     string[] range = this.RowNumber.Text.Split('-');
-                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text);
+                    string strExtension = this.ImportPath.Text.Substring(this.ImportPath.Text.LastIndexOf('.'));
+                    DataTable dt = IEB.GetExcelDatatable(this.ImportPath.Text,strExtension);
                     for (int i = int.Parse(range[0]);i<= int.Parse(range[1]); i++)
                     {
                         DataRow dr3 = dt.Rows[i];
@@ -289,20 +302,24 @@ namespace WindowsForms_print
                         }
                         else
                         {
+                            player.Play();
                             this.remined.AppendText(dr3[0].ToString() + "或" + dr3[1].ToString() + "重号\r\n");
                         }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("请输入正确的行数格式：数字-数字");
+                    player.Play();
+                    this.remined.AppendText("请输入正确的行数格式：数字-数字\r\n");
                     this.RowNumber.Clear();
                     this.RowNumber.Focus();
                     this.dataGridView1.DataSource = "";
                 }
             }
-            else {
-                MessageBox.Show("请先选择模板");
+            else
+            {
+                player.Play();
+                this.remined.AppendText("请先选择模板\r\n");
             }
         }
 
@@ -310,7 +327,8 @@ namespace WindowsForms_print
         {
             if (this.ImportPath.Text == "")
             {
-                MessageBox.Show("请先导入Excel");
+                player.Play();
+               this.remined.AppendText("请先导入Excel\r\n");
             }
             else
             {
@@ -321,7 +339,8 @@ namespace WindowsForms_print
                 }
                 else
                 {
-                    MessageBox.Show("Excel不存在");
+                    player.Play();
+                    this.remined.AppendText("Excel不存在\r\n");
                 }
             }
         }
@@ -335,7 +354,8 @@ namespace WindowsForms_print
                 mepp = MEPPB.SelectByImei1to5BLL(this.WhatToCheck.Text);
                 if (mepp.Count == 0)
                 {
-                    this.remined.AppendText("查找不到关于" + this.WhatToCheck.Text + "的记录");
+                    player.Play();
+                    this.remined.AppendText("查找不到关于" + this.WhatToCheck.Text + "的记录\r\n");
                     this.WhatToCheck.Clear();
                 }
                 else
@@ -356,6 +376,10 @@ namespace WindowsForms_print
                     }
                     dataGridView1.DataSource = dd;
                 }
+            }
+            else
+            {
+                this.dataGridView1.DataSource = "";
             }
         }
     }

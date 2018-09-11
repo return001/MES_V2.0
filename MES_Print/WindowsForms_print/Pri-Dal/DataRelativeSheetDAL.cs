@@ -28,6 +28,7 @@ namespace DataRelative.Param.DAL
             {
                 pm.Add(new DataRelativeSheet()
                 {
+                    SN = dr.IsDBNull(0) ? "" : dr.GetString(0),
                     IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
                     IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
                     IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
@@ -76,6 +77,25 @@ namespace DataRelative.Param.DAL
                 Sn = "";
             }
             return Sn;
+        }
+
+        public string SelectGLBSNByImeiDAL(string IMEI)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            string GLBSn;
+            SqlCommand command = conn1.CreateCommand();
+            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 = '" + IMEI + "'";
+            SqlDataReader dr = command.ExecuteReader();
+            if (dr.Read())
+            {
+                GLBSn = dr.IsDBNull(0) ? "" : dr.GetString(0);
+            }
+            else
+            {
+                GLBSn = "";
+            }
+            return GLBSn;
         }
 
         //检查IMEI号是否存在，存在返回1，否则返回0

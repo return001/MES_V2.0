@@ -27,6 +27,11 @@ namespace DataRelative.Param.BLL
             return DRSD.SelectSNByImeiDAL(IMEI);
         }
 
+        public string SelectGLBSNByImeiBLL(string IMEI)
+        {
+            return DRSD.SelectGLBSNByImeiDAL(IMEI);
+        }
+
         public bool CheckIMEIBLL(string IMEInumber)
         {
             if (DRSD.CheckIMEIDAL(IMEInumber) > 0)

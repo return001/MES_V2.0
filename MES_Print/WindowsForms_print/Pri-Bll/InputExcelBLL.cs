@@ -12,8 +12,20 @@ namespace Print.Message.Bll
 {
     class InputExcelBLL
     {
-        public DataTable GetExcelDatatable(string fileUrl) {
-            const string cmdText = "Provider=Microsoft.Ace.OleDb.12.0;Data Source={0};Extended Properties='Excel 12.0; HDR=NO; IMEX=1'";
+        public DataTable GetExcelDatatable(string fileUrl, string strExtension) {
+            string cmdText = "";
+            if (strExtension == ".xls")
+            {
+                cmdText = "Provider=Microsoft.Ace.OleDb.4.0;Data Source={0};Extended Properties='Excel 8.0; HDR=NO; IMEX=1'";
+            }
+            else if(strExtension == ".xlsx")
+            {
+                cmdText = "Provider=Microsoft.Ace.OleDb.12.0;Data Source={0};Extended Properties='Excel 12.0; HDR=NO; IMEX=1'";
+            }
+            else
+            {
+                cmdText = "Provider=Microsoft.Ace.OleDb.4.0;Data Source={0};Extended Properties='Excel 8.0; HDR=NO; IMEX=1'";
+            }
             DataTable dt = null;
             string strconn = string.Format(cmdText, fileUrl);
             OleDbConnection conn = new OleDbConnection(strconn);

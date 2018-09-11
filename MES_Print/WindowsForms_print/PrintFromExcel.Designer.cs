@@ -35,6 +35,7 @@
             this.RowNumber = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.WhatToCheck = new System.Windows.Forms.TextBox();
             this.OpenExcel = new System.Windows.Forms.Button();
             this.E_Check = new System.Windows.Forms.Button();
             this.TemplateNum = new System.Windows.Forms.TextBox();
@@ -47,7 +48,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.remined = new System.Windows.Forms.TextBox();
-            this.WhatToCheck = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -122,6 +122,13 @@
             this.splitContainer1.Size = new System.Drawing.Size(1671, 673);
             this.splitContainer1.SplitterDistance = 141;
             this.splitContainer1.TabIndex = 4;
+            // 
+            // WhatToCheck
+            // 
+            this.WhatToCheck.Location = new System.Drawing.Point(157, 98);
+            this.WhatToCheck.Name = "WhatToCheck";
+            this.WhatToCheck.Size = new System.Drawing.Size(221, 25);
+            this.WhatToCheck.TabIndex = 15;
             // 
             // OpenExcel
             // 
@@ -215,7 +222,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(97, 15);
             this.label4.TabIndex = 13;
-            this.label4.Text = "请选择查询：";
+            this.label4.Text = "请输入查询：";
             // 
             // dataGridView1
             // 
@@ -262,13 +269,6 @@
             this.remined.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.remined.Size = new System.Drawing.Size(1658, 128);
             this.remined.TabIndex = 5;
-            // 
-            // WhatToCheck
-            // 
-            this.WhatToCheck.Location = new System.Drawing.Point(157, 98);
-            this.WhatToCheck.Name = "WhatToCheck";
-            this.WhatToCheck.Size = new System.Drawing.Size(221, 25);
-            this.WhatToCheck.TabIndex = 15;
             // 
             // PrintFromExcel
             // 

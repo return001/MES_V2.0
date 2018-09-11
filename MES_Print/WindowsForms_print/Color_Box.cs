@@ -115,8 +115,11 @@ namespace WindowsForms_print
 
         //控制线程的变量
         int xc;
+        int xc2 = 0;
+        //记录IMEI等，主要用于双模板线程使用
+        string IMEI,GLBSN,SIM,VIP,BAT,ICCID,MAC,Equipment;
 
-    public Color_Box()
+        public Color_Box()
         {
             InitializeComponent();
             int wid = Screen.PrimaryScreen.WorkingArea.Width;
@@ -545,40 +548,52 @@ namespace WindowsForms_print
                     btFormat.Print("标签打印软件", waitout, out messages);
                     if (dj2 != "")
                     {
-                        btFormat = btEngine.Documents.Open(lj2);
-                        btFormat.PrintSetup.PrinterName = dj2;
-                        //对模板相应字段进行赋值
-                        GetValue("Information", "IMEI", out outString);
-                        btFormat.SubStrings[outString].Value = this.IMEI_num1.Text + imei15;
-                        GetValue("Information", "SN", out outString);
-                        btFormat.SubStrings[outString].Value = this.SN1_num.Text;
-                        GetValue("Information", "型号", out outString);
-                        btFormat.SubStrings[outString].Value = this.SoftModel.Text;
-                        GetValue("Information", "产品编码", out outString);
-                        btFormat.SubStrings[outString].Value = this.ProductNo.Text;
-                        GetValue("Information", "软件版本", out outString);
-                        btFormat.SubStrings[outString].Value = this.SoftwareVersion.Text;
-                        GetValue("Information", "SIM卡号", out outString);
-                        btFormat.SubStrings[outString].Value = this.SIM_num1.Text;
-                        GetValue("Information", "服务卡号", out outString);
-                        btFormat.SubStrings[outString].Value = this.VIP_num1.Text;
-                        GetValue("Information", "电池号", out outString);
-                        btFormat.SubStrings[outString].Value = this.BAT_num1.Text;
-                        GetValue("Information", "备注", out outString);
-                        btFormat.SubStrings[outString].Value = this.Remake.Text;
-                        GetValue("Information", "生产日期", out outString);
-                        btFormat.SubStrings[outString].Value = this.PrintDate.Text;
-                        //打印份数,同序列打印的份数
-                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                        btFormat.Print("标签打印软件", waitout, out messages);
+                        xc = 1;
+                        //调试打印双模板线程
+                        Thread thread = new Thread(new ThreadStart(Thread1));
+                        //启动线程
+                        thread.Start();
                     }
                     Form1.Log("调试打印了机身贴IMEI号为" + this.IMEI_num1.Text + "的制单", null);
                 }
-
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Exception:" + ex.Message);
+            }
+        }
+
+        public void Thread1()
+        {
+            if (xc == 1)
+            {
+                btFormat = btEngine.Documents.Open(lj2);
+                btFormat.PrintSetup.PrinterName = dj2;
+                //对模板相应字段进行赋值
+                GetValue("Information", "IMEI", out outString);
+                btFormat.SubStrings[outString].Value = this.IMEI_num1.Text + getimei15(this.IMEI_num1.Text);
+                GetValue("Information", "SN", out outString);
+                btFormat.SubStrings[outString].Value = this.SN1_num.Text;
+                GetValue("Information", "型号", out outString);
+                btFormat.SubStrings[outString].Value = this.SoftModel.Text;
+                GetValue("Information", "产品编码", out outString);
+                btFormat.SubStrings[outString].Value = this.ProductNo.Text;
+                GetValue("Information", "软件版本", out outString);
+                btFormat.SubStrings[outString].Value = this.SoftwareVersion.Text;
+                GetValue("Information", "SIM卡号", out outString);
+                btFormat.SubStrings[outString].Value = this.SIM_num1.Text;
+                GetValue("Information", "服务卡号", out outString);
+                btFormat.SubStrings[outString].Value = this.VIP_num1.Text;
+                GetValue("Information", "电池号", out outString);
+                btFormat.SubStrings[outString].Value = this.BAT_num1.Text;
+                GetValue("Information", "备注", out outString);
+                btFormat.SubStrings[outString].Value = this.Remake.Text;
+                GetValue("Information", "生产日期", out outString);
+                btFormat.SubStrings[outString].Value = this.PrintDate.Text;
+                //打印份数,同序列打印的份数
+                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
+                btFormat.Print("标签打印软件", waitout, out messages);
+                xc = 0;
             }
         }
 
@@ -963,6 +978,8 @@ namespace WindowsForms_print
                                         btFormat.SubStrings["Equipment"].Value = a.Equipment;
                                         btFormat.SubStrings["SN"].Value = a.SN;
                                     }
+                                    GLBSN = DRSB.SelectGLBSNByImeiBLL(this.Re_IMEINum.Text);
+                                    btFormat.SubStrings["GLB_SN"].Value = GLBSN;
                                     Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
                                     //更新打印信息到数据表
                                     if (PMB.UpdateRePrintBLL(this.Re_IMEINum.Text, RE_PrintTime, 2, this.Select_Template1.Text, this.Select_Template2.Text))
@@ -999,6 +1016,8 @@ namespace WindowsForms_print
                                         btFormat.SubStrings["Equipment"].Value = a.Equipment;
                                         btFormat.SubStrings["SN"].Value = a.SN;
                                     }
+                                    GLBSN = DRSB.SelectGLBSNByImeiBLL(this.Re_IMEINum.Text);
+                                    btFormat.SubStrings["GLB_SN"].Value = GLBSN;
                                     Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
                                     //更新打印信息到数据表
                                     if (PMB.UpdateRePrintBLL(this.Re_IMEINum.Text, RE_PrintTime, 2, this.Select_Template1.Text, this.Select_Template2.Text))
@@ -1321,6 +1340,49 @@ namespace WindowsForms_print
                         }
                         break;
                 }
+                drs = DRSB.SelectByIMEIBLL(this.IMEI_Start.Text);
+                if (drs.Count != 0)
+                {
+                    foreach (DataRelativeSheet a in drs)
+                    {
+                        this.GLB_SN.Text = a.SN;
+                        GLBSN = a.SN;
+                        this.SIMStart.Text = a.IMEI3;
+                        SIM = a.IMEI3;
+                        this.ICCIDStart.Text = a.IMEI4;
+                        ICCID = a.IMEI4;
+                        this.MACStart.Text = a.IMEI6;
+                        MAC = a.IMEI6;
+                        this.EquipmentStart.Text = a.IMEI7;
+                        Equipment = a.IMEI7;
+                        this.VIPStart.Text = a.IMEI8;
+                        VIP = a.IMEI8;
+                        this.BATStart.Text = a.IMEI9;
+                        BAT = a.IMEI9;
+                        if (a.IMEI2 != "")
+                        {
+                            ASS_sn = a.IMEI2;
+                        }
+                        else
+                        {
+                            ASS_sn = this.SN1_num.Text;
+                            Sn_mark = 1;
+                        }
+                    }
+                }
+                else
+                {
+                    Sn_mark = 1;
+                    ASS_sn = this.SN1_num.Text;
+                    GLBSN = "";
+                    SIM = "";
+                    VIP = "";
+                    BAT = "";
+                    ICCID = "";
+                    MAC = "";
+                    Equipment = "";
+                }
+                IMEI = this.IMEI_Start.Text;
                 switch (g)
                 {
                     case 0:
@@ -1330,153 +1392,27 @@ namespace WindowsForms_print
                                 ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
                                 if (!PMB.CheckIMEIBLL(this.IMEI_Start.Text))
                                 {
-                                    drs = DRSB.SelectByIMEIBLL(this.IMEI_Start.Text);
-                                    if (drs.Count != 0)
+                                    lj = this.Select_Template1.Text;
+                                    btFormat = btEngine.Documents.Open(lj);
+                                    //指定打印机名称
+                                    btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                    //打印份数,同序列打印的份数
+                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                    if (this.Select_Template2.Text != "")
                                     {
-                                        foreach (DataRelativeSheet a in drs)
-                                        {
-                                            this.SIMStart.Text = a.IMEI3;
-                                            this.ICCIDStart.Text = a.IMEI4;
-                                            this.MACStart.Text = a.IMEI6;
-                                            this.EquipmentStart.Text = a.IMEI7;
-                                            this.VIPStart.Text = a.IMEI8;
-                                            this.BATStart.Text = a.IMEI9;
-                                            if (a.IMEI2 != "")
-                                            {
-                                                ASS_sn = a.IMEI2;
-                                            }
-                                            else
-                                            {
-                                                ASS_sn = this.SN1_num.Text;
-                                                Sn_mark = 1;
-                                            }
-                                        }
+                                        xc2 = 1;
+                                        //调试打印双模板线程
+                                        Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                        //启动线程
+                                        thread2.Start();
                                     }
-                                    else
-                                    {
-                                        Sn_mark = 1;
-                                    }
-                                    for (int S = 1; S <= 2; S++)
-                                    {
-                                        if (S == 1)
-                                        {
-                                            lj = this.Select_Template1.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                        }
-                                        else
-                                        {
-                                            if (this.Select_Template2.Text == "")
-                                            {
-                                                //记录关联数据信息到关联表
-                                                if (!DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                {
-                                                    drs.Add(new DataRelativeSheet()
-                                                    {
-                                                        IMEI1 = this.IMEI_Start.Text,
-                                                        IMEI2 = ASS_sn,
-                                                        IMEI3 = "",
-                                                        IMEI4 = "",
-                                                        IMEI5 = "",
-                                                        IMEI6 = "",
-                                                        IMEI7 = "",
-                                                        IMEI8 = "",
-                                                        IMEI9 = "",
-                                                        IMEI10 = "",
-                                                        IMEI11 = "",
-                                                        IMEI12 = "",
-                                                        ZhiDan = this.CB_ZhiDan.Text,
-                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                    });
-                                                    DRSB.InsertRelativeSheetBLL(drs);
-                                                }
-                                                //记录打印信息日志
-                                                list.Add(new PrintMessage()
-                                                {
-                                                    Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                    IMEI = this.IMEI_Start.Text.Trim(),
-                                                    IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                    IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                    SN = ASS_sn,
-                                                    IMEIRel = this.IMEIRel.Text.Trim(),
-                                                    SIM = this.SIMStart.Text.Trim(),
-                                                    VIP = this.VIPStart.Text.Trim(),
-                                                    BAT = this.BATStart.Text.Trim(),
-                                                    SoftModel = this.SoftModel.Text.Trim(),
-                                                    Version = this.SoftwareVersion.Text.Trim(),
-                                                    Remark = this.Remake.Text.Trim(),
-                                                    JS_PrintTime = "",
-                                                    JS_TemplatePath = "",
-                                                    CH_PrintTime = ProductTime,
-                                                    CH_TemplatePath1 = this.Select_Template1.Text,
-                                                    CH_TemplatePath2 = this.Select_Template2.Text,
-                                                    ICCID = this.ICCIDStart.Text,
-                                                    MAC = this.MACStart.Text,
-                                                    Equipment = this.EquipmentStart.Text
-                                                });
-                                                if (PMB.InsertPrintMessageBLL(list))
-                                                {
-                                                    if (SN1_num.Text != "" && Sn_mark == 1)
-                                                    {
-                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                        string sn2_suffix = SN2_num.Text.Remove(0, (this.SN2_num.Text.Length) - s);
-                                                        if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                        {
-                                                            this.SN1_num.Text = sn1;
-                                                            this.IMEI_Start.Clear();
-                                                            this.SIMStart.Clear();
-                                                            this.VIPStart.Clear();
-                                                            this.BATStart.Clear();
-                                                            this.ICCIDStart.Clear();
-                                                            this.MACStart.Clear();
-                                                            this.EquipmentStart.Clear();
-                                                            this.ShowSN.Clear();
-                                                            this.IMEI_Start.Focus();
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        Form1.Log("打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                        this.IMEI_Start.Clear();
-                                                        this.SIMStart.Clear();
-                                                        this.VIPStart.Clear();
-                                                        this.BATStart.Clear();
-                                                        this.ICCIDStart.Clear();
-                                                        this.MACStart.Clear();
-                                                        this.EquipmentStart.Clear();
-                                                        this.IMEI_Start.Focus();
-                                                    }
-                                                }
-                                                if (this.updata_inline.Visible == true)
-                                                {
-                                                    MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                    statusChange();
-                                                }
-                                                return;
-                                            }
-                                            else
-                                            {
-                                                lj = this.Select_Template2.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                            }
-                                        }
-                                        //对模板相应字段进行赋值;
-                                        ValuesToTemplate(btFormat);
-                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                        btFormat.SubStrings["SN"].Value = ASS_sn;
-                                        this.ShowSN.Text = ASS_sn;
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                        Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                    }
+                                    //对模板相应字段进行赋值;
+                                    ValuesToTemplate(btFormat);
+                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                    btFormat.SubStrings["SN"].Value = ASS_sn;
+                                    this.ShowSN.Text = ASS_sn;
+                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                     //记录关联数据信息到关联表
                                     if (!DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                     {
@@ -1541,6 +1477,8 @@ namespace WindowsForms_print
                                                 this.ICCIDStart.Clear();
                                                 this.MACStart.Clear();
                                                 this.EquipmentStart.Clear();
+                                                this.ShowSN.Clear();
+                                                this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
                                         }
@@ -1555,6 +1493,7 @@ namespace WindowsForms_print
                                             this.MACStart.Clear();
                                             this.EquipmentStart.Clear();
                                             this.ShowSN.Clear();
+                                            this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
@@ -1566,117 +1505,59 @@ namespace WindowsForms_print
                                 }
                                 else if (PMB.CheckCHOrJSIMEIBLL(this.IMEI_Start.Text, 2))
                                 {
-                                    drs = DRSB.SelectByIMEIBLL(this.IMEI_Start.Text);
-                                    if (drs.Count != 0)
+                                    lj = this.Select_Template1.Text;
+                                    btFormat = btEngine.Documents.Open(lj);
+                                    //指定打印机名称
+                                    btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                    //打印份数,同序列打印的份数
+                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                    //对模板相应字段进行赋值
+                                    ValuesToTemplate(btFormat);
+                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                    list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                    foreach (PrintMessage a in list)
                                     {
-                                        foreach (DataRelativeSheet a in drs)
+                                        if (a.SN != "")
                                         {
-                                            this.SIMStart.Text = a.IMEI3;
-                                            this.ICCIDStart.Text = a.IMEI4;
-                                            this.MACStart.Text = a.IMEI6;
-                                            this.EquipmentStart.Text = a.IMEI7;
-                                            this.VIPStart.Text = a.IMEI8;
-                                            this.BATStart.Text = a.IMEI9;
-                                            if (a.IMEI2 != "")
-                                            {
-                                                ASS_sn = a.IMEI2;
-                                            }
-                                            else
-                                            {
-                                                ASS_sn = this.SN1_num.Text;
-                                                Sn_mark = 1;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Sn_mark = 1;
-                                    }
-                                    for (int S = 1; S <= 2; S++)
-                                    {
-                                        if (S == 1)
-                                        {
-                                            lj = this.Select_Template1.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                            ASS_sn = a.SN;
+                                            btFormat.SubStrings["SN"].Value = a.SN;
+                                            this.ShowSN.Text = a.SN;
+                                            MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
                                         }
                                         else
                                         {
-                                            if (this.Select_Template2.Text == "")
+                                            if (Sn_mark == 0)
                                             {
-                                                this.IMEI_Start.Clear();
-                                                this.SIMStart.Clear();
-                                                this.VIPStart.Clear();
-                                                this.BATStart.Clear();
-                                                this.ICCIDStart.Clear();
-                                                this.MACStart.Clear();
-                                                this.EquipmentStart.Clear();
-                                                this.ShowSN.Clear();
-                                                this.IMEI_Start.Focus();
-                                                if (this.updata_inline.Visible == true)
-                                                {
-                                                    MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                    statusChange();
-                                                }
-                                                return;
+                                                btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                this.ShowSN.Text = ASS_sn;
+                                                MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
                                             }
                                             else
                                             {
-                                                lj = this.Select_Template2.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                            }
-                                        }
-                                        //对模板相应字段进行赋值
-                                        ValuesToTemplate(btFormat);
-                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                        list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                        foreach (PrintMessage a in list)
-                                        {
-                                            if (a.SN != "")
-                                            {
-                                                btFormat.SubStrings["SN"].Value = a.SN;
-                                                this.ShowSN.Text = a.SN;
-                                                if (S == 2 || this.Select_Template2.Text == "")
+                                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                this.ShowSN.Text = this.SN1_num.Text;
+                                                MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
+                                                if (this.SN1_num.Text != "")
                                                 {
-                                                    MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (Sn_mark == 0)
-                                                {
-                                                    btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                    this.ShowSN.Text = ASS_sn;
-                                                    MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
-                                                }
-                                                else
-                                                {
-                                                    btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                    this.ShowSN.Text = this.SN1_num.Text;
-                                                    if (S == 2 || this.Select_Template2.Text == "")
-                                                    {
-                                                        MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
-                                                        if (this.SN1_num.Text != "")
-                                                        {
-                                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                            MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                            this.SN1_num.Text = sn1;
-                                                        }
-                                                    }
+                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                    MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                    this.SN1_num.Text = sn1;
                                                 }
                                             }
                                         }
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
                                     }
+                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    if (this.Select_Template2.Text != "")
+                                    {
+                                        xc2 = 1;
+                                        //调试打印双模板线程
+                                        Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                        //启动线程
+                                        thread2.Start();
+                                    }
+                                    //}
                                     //记录关联数据信息到关联表
                                     if (!DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                     {
@@ -1708,6 +1589,7 @@ namespace WindowsForms_print
                                     this.MACStart.Clear();
                                     this.EquipmentStart.Clear();
                                     this.ShowSN.Clear();
+                                    this.GLB_SN.Clear();
                                     this.IMEI_Start.Focus();
                                     if (this.updata_inline.Visible == true)
                                     {
@@ -3119,6 +3001,26 @@ namespace WindowsForms_print
             }
         }
 
+        public void Thread2()
+        {
+            if (xc2 == 1)
+            {
+                lj = this.Select_Template2.Text;
+                btFormat = btEngine.Documents.Open(lj);
+                //指定打印机名称
+                btFormat.PrintSetup.PrinterName = this.Printer2.Text;
+                //打印份数,同序列打印的份数
+                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
+                //对模板相应字段进行赋值;
+                ValuesToTemplate(btFormat);
+                btFormat.SubStrings["IMEI"].Value = IMEI;
+                btFormat.SubStrings["SN"].Value = ASS_sn;
+                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                xc2 = 0;
+            }
+        }
+
         private void ValuesToTemplate(LabelFormatDocument btFormat)
         {
             GetValue("Information", "型号", out outString);
@@ -3131,12 +3033,13 @@ namespace WindowsForms_print
             //btFormat.SubStrings[outString].Value = this.SoftwareVersion.Text;
             //GetValue("Information", "备注", out outString);
             //btFormat.SubStrings[outString].Value = this.Remake.Text;
-            btFormat.SubStrings["SIM"].Value = this.SIMStart.Text;
-            btFormat.SubStrings["VIP"].Value = this.VIPStart.Text;
-            btFormat.SubStrings["BAT"].Value = this.BATStart.Text;
-            btFormat.SubStrings["ICCID"].Value = this.ICCIDStart.Text;
-            btFormat.SubStrings["MAC"].Value = this.MACStart.Text;
-            btFormat.SubStrings["Equipment"].Value = this.EquipmentStart.Text;
+            btFormat.SubStrings["SIM"].Value = SIM;
+            btFormat.SubStrings["VIP"].Value = VIP;
+            btFormat.SubStrings["BAT"].Value = BAT;
+            btFormat.SubStrings["ICCID"].Value = ICCID;
+            btFormat.SubStrings["MAC"].Value = MAC;
+            btFormat.SubStrings["Equipment"].Value = Equipment;
+            btFormat.SubStrings["GLB_SN"].Value = GLBSN;
         }
 
         private void SIMStart_KeyPress(object sender, KeyPressEventArgs e)
@@ -3186,10 +3089,12 @@ namespace WindowsForms_print
                     }
 
                     this.ICCIDStart.Text = DRSB.SelectIccidBySimBLL(this.SIMStart.Text);
+                    ICCID = this.ICCIDStart.Text;
                     if (DRSB.CheckSIMByIMEIBLL(this.IMEI_Start.Text) == "")
                     {
                         DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                     }
+                    SIM = this.SIMStart.Text;
                     switch (g)
                     {
                         case 1:
@@ -3206,126 +3111,26 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        if (this.Select_Template2.Text != "")
                                         {
-                                            if (S == 1)
-                                            {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                            }
-                                            else
-                                            {
-                                                if (this.Select_Template2.Text == "")
-                                                {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                    {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = "",
-                                                            IMEI9 = "",
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                    //记录打印信息日志
-                                                    list.Add(new PrintMessage()
-                                                    {
-                                                        Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                        IMEI = this.IMEI_Start.Text.Trim(),
-                                                        IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                        IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                        SN = ASS_sn,
-                                                        IMEIRel = this.IMEIRel.Text.Trim(),
-                                                        SIM = this.SIMStart.Text.Trim(),
-                                                        VIP = this.VIPStart.Text.Trim(),
-                                                        BAT = this.BATStart.Text.Trim(),
-                                                        SoftModel = this.SoftModel.Text.Trim(),
-                                                        Version = this.SoftwareVersion.Text.Trim(),
-                                                        Remark = this.Remake.Text.Trim(),
-                                                        JS_PrintTime = "",
-                                                        JS_TemplatePath = "",
-                                                        CH_PrintTime = ProductTime,
-                                                        CH_TemplatePath1 = this.Select_Template1.Text,
-                                                        CH_TemplatePath2 = this.Select_Template2.Text,
-                                                        ICCID = this.ICCIDStart.Text,
-                                                        MAC = this.MACStart.Text,
-                                                        Equipment = this.EquipmentStart.Text
-                                                    });
-                                                    //记录成功后更新订单配置表里的SN号
-                                                    if (PMB.InsertPrintMessageBLL(list))
-                                                    {
-                                                        if (SN1_num.Text != "" && Sn_mark == 1)
-                                                        {
-                                                            Form1.Log("关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                            if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                            {
-                                                                this.SN1_num.Text = sn1;
-                                                                this.IMEI_Start.Clear();
-                                                                this.SIMStart.Clear();
-                                                                this.ICCIDStart.Clear();
-                                                                this.ShowSN.Clear();
-                                                                this.IMEI_Start.Focus();
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            Form1.Log("关联SIM打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                            this.IMEI_Start.Clear();
-                                                            this.SIMStart.Clear();
-                                                            this.ICCIDStart.Clear();
-                                                            this.IMEI_Start.Focus();
-                                                        }
-                                                    }
-                                                    //检查订单状态是否为未开始，是的话更改为进行中
-                                                    if (this.updata_inline.Visible == true)
-                                                    {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    //模板2为空即为单个打印，直接返回
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                            btFormat.SubStrings["SN"].Value = ASS_sn;
-                                            this.ShowSN.Text = ASS_sn;
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        this.ShowSN.Text = ASS_sn;
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                         if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                         {
@@ -3337,7 +3142,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = this.SIMStart.Text,
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -3393,6 +3198,7 @@ namespace WindowsForms_print
                                                     this.SIMStart.Clear();
                                                     this.ICCIDStart.Clear();
                                                     this.ShowSN.Clear();
+                                                    this.GLB_SN.Clear();
                                                     this.IMEI_Start.Focus();
                                                 }
                                             }
@@ -3403,6 +3209,7 @@ namespace WindowsForms_print
                                                 this.SIMStart.Clear();
                                                 this.ICCIDStart.Clear();
                                                 this.ShowSN.Clear();
+                                                this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
                                         }
@@ -3421,115 +3228,57 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                        foreach (PrintMessage a in list)
                                         {
-                                            if (S == 1)
+                                            if (a.SN != "")
                                             {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                                btFormat.SubStrings["SN"].Value = a.SN;
+                                                ASS_sn = a.SN;
+                                                this.ShowSN.Text = a.SN;
+                                                PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, a.SN);
                                             }
                                             else
                                             {
-                                                if (this.Select_Template2.Text == "")
+                                                if (Sn_mark == 1)
                                                 {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                    btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    this.ShowSN.Text = this.SN1_num.Text;
+                                                    PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
+                                                    if (this.SN1_num.Text != "")
                                                     {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = "",
-                                                            IMEI9 = "",
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                    Form1.Log("关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.ICCIDStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                    if (this.updata_inline.Visible == true)
-                                                    {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                            list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                            foreach (PrintMessage a in list)
-                                            {
-                                                if (a.SN != "")
-                                                {
-                                                    btFormat.SubStrings["SN"].Value = a.SN;
-                                                    this.ShowSN.Text = a.SN;
-                                                    if (S == 2 || this.Select_Template2.Text == "")
-                                                    {
-                                                        PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, a.SN);
+                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                        this.SN1_num.Text = sn1;
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    if (Sn_mark == 1)
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                        this.ShowSN.Text = this.SN1_num.Text;
-                                                        if (S == 2 || this.Select_Template2.Text == "")
-                                                        {
-                                                            PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
-                                                            if (this.SN1_num.Text != "")
-                                                            {
-                                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                                this.SN1_num.Text = sn1;
-                                                            }
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                        this.ShowSN.Text = ASS_sn;
-                                                        PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, ASS_sn);
-                                                    }
+                                                    btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                    this.ShowSN.Text = ASS_sn;
+                                                    PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, ASS_sn);
                                                 }
                                             }
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        }
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        if (this.Select_Template2.Text != "")
+                                        {
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                         if (DRSB.CheckSIMBLL(this.SIMStart.Text))
@@ -3542,7 +3291,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = this.SIMStart.Text,
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -3563,6 +3312,7 @@ namespace WindowsForms_print
                                         this.SIMStart.Clear();
                                         this.ICCIDStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                         if (this.updata_inline.Visible == true)
                                         {
@@ -3781,7 +3531,7 @@ namespace WindowsForms_print
                         this.VIPStart.Focus();
                         return;
                     }
-
+                    VIP = this.VIPStart.Text;
                     switch (g)
                     {
                         case 2:
@@ -3797,120 +3547,25 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        this.ShowSN.Text = ASS_sn;
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        if (this.Select_Template2.Text != "")
                                         {
-                                            if (S == 1)
-                                            {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                            }
-                                            else
-                                            {
-                                                if (this.Select_Template2.Text == "")
-                                                {
-                                                    //记录打印信息日志
-                                                    list.Add(new PrintMessage()
-                                                    {
-                                                        Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                        IMEI = this.IMEI_Start.Text.Trim(),
-                                                        IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                        IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                        SN = ASS_sn,
-                                                        IMEIRel = this.IMEIRel.Text.Trim(),
-                                                        SIM = this.SIMStart.Text.Trim(),
-                                                        VIP = this.VIPStart.Text.Trim(),
-                                                        BAT = this.BATStart.Text.Trim(),
-                                                        SoftModel = this.SoftModel.Text.Trim(),
-                                                        Version = this.SoftwareVersion.Text.Trim(),
-                                                        Remark = this.Remake.Text.Trim(),
-                                                        JS_PrintTime = "",
-                                                        JS_TemplatePath = "",
-                                                        CH_PrintTime = ProductTime,
-                                                        CH_TemplatePath1 = this.Select_Template1.Text,
-                                                        CH_TemplatePath2 = this.Select_Template2.Text,
-                                                        ICCID = this.ICCIDStart.Text,
-                                                        MAC = this.MACStart.Text,
-                                                        Equipment = this.EquipmentStart.Text
-                                                    });
-                                                    if (PMB.InsertPrintMessageBLL(list))
-                                                    {
-                                                        if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                        {
-                                                            DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = "",
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = "",
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                        if (SN1_num.Text != "" && Sn_mark == 1)
-                                                        {
-                                                            Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                            if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                            {
-                                                                this.SN1_num.Text = sn1;
-                                                                this.IMEI_Start.Clear();
-                                                                this.VIPStart.Clear();
-                                                                this.ShowSN.Clear();
-                                                                this.IMEI_Start.Focus();
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            Form1.Log("关联VIP打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                            this.IMEI_Start.Clear();
-                                                            this.VIPStart.Clear();
-                                                            this.ShowSN.Clear();
-                                                            this.IMEI_Start.Focus();
-                                                        }
-                                                    }
-                                                    if (this.updata_inline.Visible == true)
-                                                    {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                            btFormat.SubStrings["SN"].Value = ASS_sn;
-                                            this.ShowSN.Text = ASS_sn;
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -3948,7 +3603,7 @@ namespace WindowsForms_print
                                                 drs.Add(new DataRelativeSheet()
                                                 {
                                                     IMEI1 = this.IMEI_Start.Text,
-                                                    IMEI2 = "",
+                                                    IMEI2 = this.ShowSN.Text,
                                                     IMEI3 = "",
                                                     IMEI4 = "",
                                                     IMEI5 = "",
@@ -3976,6 +3631,7 @@ namespace WindowsForms_print
                                                     this.IMEI_Start.Clear();
                                                     this.VIPStart.Clear();
                                                     this.ShowSN.Clear();
+                                                    this.GLB_SN.Clear();
                                                     this.IMEI_Start.Focus();
                                                 }
                                             }
@@ -3985,6 +3641,7 @@ namespace WindowsForms_print
                                                 this.IMEI_Start.Clear();
                                                 this.VIPStart.Clear();
                                                 this.ShowSN.Clear();
+                                                this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
                                         }
@@ -3997,145 +3654,115 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                        foreach (PrintMessage a in list)
                                         {
-                                            if (S == 1)
+                                            if (a.SN != "")
                                             {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                                btFormat.SubStrings["SN"].Value = a.SN;
+                                                this.ShowSN.Text = a.SN;
+                                                if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
+                                                {
+                                                    DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
+                                                }
+                                                else
+                                                {
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
+                                                    {
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = "",
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = "",
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = "",
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
+                                                }
+                                                PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, a.SN);
                                             }
                                             else
                                             {
-                                                if (this.Select_Template2.Text == "")
+                                                if (Sn_mark == 1)
                                                 {
-                                                    Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                    if (this.updata_inline.Visible == true)
+                                                    btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    this.ShowSN.Text = this.SN1_num.Text;
+                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                     {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                            list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                            foreach (PrintMessage a in list)
-                                            {
-                                                if (a.SN != "")
-                                                {
-                                                    btFormat.SubStrings["SN"].Value = a.SN;
-                                                    this.ShowSN.Text = a.SN;
-                                                    if (S == 2 || this.Select_Template2.Text == "")
-                                                    {
-                                                        if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                        {
-                                                            DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = "",
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = "",
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                        PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, a.SN);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (Sn_mark == 1)
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                        this.ShowSN.Text = this.SN1_num.Text;
-                                                        if (S == 2 || this.Select_Template2.Text == "")
-                                                        {
-                                                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                            {
-                                                                DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                            }
-                                                            else
-                                                            {
-                                                                //记录关联数据信息到关联表
-                                                                drs.Add(new DataRelativeSheet()
-                                                                {
-                                                                    IMEI1 = this.IMEI_Start.Text,
-                                                                    IMEI2 = "",
-                                                                    IMEI3 = "",
-                                                                    IMEI4 = "",
-                                                                    IMEI5 = "",
-                                                                    IMEI6 = "",
-                                                                    IMEI7 = "",
-                                                                    IMEI8 = this.VIPStart.Text,
-                                                                    IMEI9 = "",
-                                                                    IMEI10 = "",
-                                                                    IMEI11 = "",
-                                                                    IMEI12 = "",
-                                                                    ZhiDan = this.CB_ZhiDan.Text,
-                                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                                });
-                                                                DRSB.InsertRelativeSheetBLL(drs);
-                                                            }
-                                                            PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, this.SN1_num.Text);
-                                                            if (this.SN1_num.Text != "")
-                                                            {
-                                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                                this.SN1_num.Text = sn1;
-                                                            }
-                                                        }
+                                                        DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                                     }
                                                     else
                                                     {
-                                                        btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                        this.ShowSN.Text = ASS_sn;
-                                                        DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, ASS_sn);
+                                                        //记录关联数据信息到关联表
+                                                        drs.Add(new DataRelativeSheet()
+                                                        {
+                                                            IMEI1 = this.IMEI_Start.Text,
+                                                            IMEI2 = this.ShowSN.Text,
+                                                            IMEI3 = "",
+                                                            IMEI4 = "",
+                                                            IMEI5 = "",
+                                                            IMEI6 = "",
+                                                            IMEI7 = "",
+                                                            IMEI8 = this.VIPStart.Text,
+                                                            IMEI9 = "",
+                                                            IMEI10 = "",
+                                                            IMEI11 = "",
+                                                            IMEI12 = "",
+                                                            ZhiDan = this.CB_ZhiDan.Text,
+                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                        });
+                                                        DRSB.InsertRelativeSheetBLL(drs);
+                                                    }
+                                                    PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, this.SN1_num.Text);
+                                                    if (this.SN1_num.Text != "")
+                                                    {
+                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                        this.SN1_num.Text = sn1;
                                                     }
                                                 }
+                                                else
+                                                {
+                                                    btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                    this.ShowSN.Text = ASS_sn;
+                                                    DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
+                                                    PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, ASS_sn);
+                                                }
                                             }
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        }
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        if (this.Select_Template2.Text != "")
+                                        {
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
                                         Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         this.IMEI_Start.Clear();
                                         this.VIPStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                     //检查订单状态是否为未开始，是的话更改为进行中
@@ -4180,7 +3807,12 @@ namespace WindowsForms_print
                                         PMB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                     }
                                     this.IMEI_Start.Clear();
+                                    this.SIMStart.Clear();
+                                    this.BATStart.Clear();
                                     this.VIPStart.Clear();
+                                    this.MACStart.Clear();
+                                    this.ICCIDStart.Clear();
+                                    this.EquipmentStart.Clear();
                                     this.IMEI_Start.Focus();
                                     if (this.updata_inline.Visible == true)
                                     {
@@ -4203,126 +3835,25 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        this.ShowSN.Text = ASS_sn;
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        if (this.Select_Template2.Text != "")
                                         {
-                                            if (S == 1)
-                                            {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                            }
-                                            else
-                                            {
-                                                if (this.Select_Template2.Text == "")
-                                                {
-                                                    //记录打印信息日志
-                                                    list.Add(new PrintMessage()
-                                                    {
-                                                        Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                        IMEI = this.IMEI_Start.Text.Trim(),
-                                                        IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                        IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                        SN = ASS_sn,
-                                                        IMEIRel = this.IMEIRel.Text.Trim(),
-                                                        SIM = this.SIMStart.Text.Trim(),
-                                                        VIP = this.VIPStart.Text.Trim(),
-                                                        BAT = this.BATStart.Text.Trim(),
-                                                        SoftModel = this.SoftModel.Text.Trim(),
-                                                        Version = this.SoftwareVersion.Text.Trim(),
-                                                        Remark = this.Remake.Text.Trim(),
-                                                        JS_PrintTime = "",
-                                                        JS_TemplatePath = "",
-                                                        CH_PrintTime = ProductTime,
-                                                        CH_TemplatePath1 = this.Select_Template1.Text,
-                                                        CH_TemplatePath2 = this.Select_Template2.Text,
-                                                        ICCID = this.ICCIDStart.Text,
-                                                        MAC = this.MACStart.Text,
-                                                        Equipment = this.EquipmentStart.Text
-                                                    });
-                                                    if (PMB.InsertPrintMessageBLL(list))
-                                                    {
-                                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                        {
-                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                            DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = this.SIMStart.Text,
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = "",
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                        if (SN1_num.Text != "" && Sn_mark == 1)
-                                                        {
-                                                            Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                            if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                            {
-                                                                this.SN1_num.Text = sn1;
-                                                                this.IMEI_Start.Clear();
-                                                                this.SIMStart.Clear();
-                                                                this.VIPStart.Clear();
-                                                                this.ICCIDStart.Clear();
-                                                                this.ShowSN.Clear();
-                                                                this.IMEI_Start.Focus();
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            Form1.Log("关联SIM && VIP打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                            this.IMEI_Start.Clear();
-                                                            this.VIPStart.Clear();
-                                                            this.SIMStart.Clear();
-                                                            this.ICCIDStart.Clear();
-                                                            this.ShowSN.Clear();
-                                                            this.IMEI_Start.Focus();
-                                                        }
-                                                    }
-                                                    if (this.updata_inline.Visible == true)
-                                                    {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                            btFormat.SubStrings["SN"].Value = ASS_sn;
-                                            this.ShowSN.Text = ASS_sn;
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -4362,7 +3893,7 @@ namespace WindowsForms_print
                                                 drs.Add(new DataRelativeSheet()
                                                 {
                                                     IMEI1 = this.IMEI_Start.Text,
-                                                    IMEI2 = "",
+                                                    IMEI2 = this.ShowSN.Text,
                                                     IMEI3 = this.SIMStart.Text,
                                                     IMEI4 = "",
                                                     IMEI5 = "",
@@ -4392,6 +3923,7 @@ namespace WindowsForms_print
                                                     this.VIPStart.Clear();
                                                     this.ICCIDStart.Clear();
                                                     this.ShowSN.Clear();
+                                                    this.GLB_SN.Clear();
                                                     this.IMEI_Start.Focus();
                                                 }
                                             }
@@ -4403,6 +3935,7 @@ namespace WindowsForms_print
                                                 this.VIPStart.Clear();
                                                 this.ICCIDStart.Clear();
                                                 this.ShowSN.Clear();
+                                                this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
                                         }
@@ -4415,145 +3948,114 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        for (int S = 1; S <= 2; S++)
+                                        lj = this.Select_Template1.Text;
+                                        btFormat = btEngine.Documents.Open(lj);
+                                        //指定打印机名称
+                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        //打印份数,同序列打印的份数
+                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        //对模板相应字段进行赋值
+                                        ValuesToTemplate(btFormat);
+                                        btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+
+                                        list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                        foreach (PrintMessage a in list)
                                         {
-                                            if (S == 1)
+                                            if (a.SN != "")
                                             {
-                                                lj = this.Select_Template1.Text;
-                                                btFormat = btEngine.Documents.Open(lj);
-                                                //指定打印机名称
-                                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                                //打印份数,同序列打印的份数
-                                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                                btFormat.SubStrings["SN"].Value = a.SN;
+                                                this.ShowSN.Text = a.SN;
+                                                //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                                if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                {
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
+                                                }
+                                                else
+                                                {
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
+                                                    {
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = this.SIMStart.Text,
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = "",
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = "",
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
+                                                }
+                                                PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, a.SN);
                                             }
                                             else
                                             {
-                                                if (this.Select_Template2.Text == "")
+                                                if (Sn_mark == 1)
                                                 {
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.ICCIDStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                    if (this.updata_inline.Visible == true)
+                                                    btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    this.ShowSN.Text = this.SN1_num.Text;
+                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                     {
-                                                        MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                        statusChange();
-                                                    }
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    lj = this.Select_Template2.Text;
-                                                    btFormat = btEngine.Documents.Open(lj);
-                                                    //指定打印机名称
-                                                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                                    //打印份数,同序列打印的份数
-                                                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                                }
-                                            }
-                                            //对模板相应字段进行赋值
-                                            ValuesToTemplate(btFormat);
-                                            btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                            list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                            foreach (PrintMessage a in list)
-                                            {
-                                                if (a.SN != "")
-                                                {
-                                                    btFormat.SubStrings["SN"].Value = a.SN;
-                                                    this.ShowSN.Text = a.SN;
-                                                    if (S == 2 || this.Select_Template2.Text == "")
-                                                    {
-                                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                        {
-                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                            DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = this.SIMStart.Text,
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = "",
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                        PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, a.SN);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (Sn_mark == 1)
-                                                    {
-                                                        btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                        this.ShowSN.Text = this.SN1_num.Text;
-                                                        if (S == 2 || this.Select_Template2.Text == "")
-                                                        {
-                                                            //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                            {
-                                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                                DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                            }
-                                                            else
-                                                            {
-                                                                //记录关联数据信息到关联表
-                                                                drs.Add(new DataRelativeSheet()
-                                                                {
-                                                                    IMEI1 = this.IMEI_Start.Text,
-                                                                    IMEI2 = "",
-                                                                    IMEI3 = this.SIMStart.Text,
-                                                                    IMEI4 = "",
-                                                                    IMEI5 = "",
-                                                                    IMEI6 = "",
-                                                                    IMEI7 = "",
-                                                                    IMEI8 = this.VIPStart.Text,
-                                                                    IMEI9 = "",
-                                                                    IMEI10 = "",
-                                                                    IMEI11 = "",
-                                                                    IMEI12 = "",
-                                                                    ZhiDan = this.CB_ZhiDan.Text,
-                                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                                });
-                                                                DRSB.InsertRelativeSheetBLL(drs);
-                                                            }
-                                                            PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
-                                                            if (this.SN1_num.Text != "")
-                                                            {
-                                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                                this.SN1_num.Text = sn1;
-                                                            }
-                                                        }
+                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                        DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                                     }
                                                     else
                                                     {
-                                                        btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                        this.ShowSN.Text = ASS_sn;
-                                                        DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                        PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, ASS_sn);
+                                                        //记录关联数据信息到关联表
+                                                        drs.Add(new DataRelativeSheet()
+                                                        {
+                                                            IMEI1 = this.IMEI_Start.Text,
+                                                            IMEI2 = this.ShowSN.Text,
+                                                            IMEI3 = this.SIMStart.Text,
+                                                            IMEI4 = "",
+                                                            IMEI5 = "",
+                                                            IMEI6 = "",
+                                                            IMEI7 = "",
+                                                            IMEI8 = this.VIPStart.Text,
+                                                            IMEI9 = "",
+                                                            IMEI10 = "",
+                                                            IMEI11 = "",
+                                                            IMEI12 = "",
+                                                            ZhiDan = this.CB_ZhiDan.Text,
+                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                        });
+                                                        DRSB.InsertRelativeSheetBLL(drs);
+                                                    }
+                                                    PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
+                                                    if (this.SN1_num.Text != "")
+                                                    {
+                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                        this.SN1_num.Text = sn1;
                                                     }
                                                 }
+                                                else
+                                                {
+                                                    btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                    this.ShowSN.Text = ASS_sn;
+                                                    DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
+                                                    PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, ASS_sn);
+                                                }
                                             }
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        }
+                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        if (this.Select_Template2.Text != "")
+                                        {
+                                            xc2 = 1;
+                                            //双模板线程
+                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                            //启动线程
+                                            thread2.Start();
                                         }
                                         Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         this.IMEI_Start.Clear();
@@ -4561,6 +4063,7 @@ namespace WindowsForms_print
                                         this.VIPStart.Clear();
                                         this.ICCIDStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                     if (this.updata_inline.Visible == true)
@@ -4605,8 +4108,11 @@ namespace WindowsForms_print
                                     }
                                     this.IMEI_Start.Clear();
                                     this.SIMStart.Clear();
+                                    this.BATStart.Clear();
                                     this.VIPStart.Clear();
+                                    this.MACStart.Clear();
                                     this.ICCIDStart.Clear();
+                                    this.EquipmentStart.Clear();
                                     this.IMEI_Start.Focus();
                                     if (this.updata_inline.Visible == true)
                                     {
@@ -4821,7 +4327,7 @@ namespace WindowsForms_print
                         this.BATStart.Focus();
                         return;
                     }
-
+                    BAT = this.BATStart.Text;
                     if (g >= 4 && g <= 7)
                     {
                         if (this.NoPaper.Checked == false)
@@ -4835,158 +4341,25 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                btFormat.SubStrings["SN"].Value = ASS_sn;
+                                this.ShowSN.Text = ASS_sn;
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
                                 {
-                                    if (S == 1)
-                                    {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                    }
-                                    else
-                                    {
-                                        if (this.Select_Template2.Text == "")
-                                        {
-                                            //记录打印信息日志
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = this.IMEI_Start.Text.Trim(),
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = ASS_sn,
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = this.SIMStart.Text.Trim(),
-                                                VIP = this.VIPStart.Text.Trim(),
-                                                BAT = this.BATStart.Text.Trim(),
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = "",
-                                                JS_TemplatePath = "",
-                                                CH_PrintTime = ProductTime,
-                                                CH_TemplatePath1 = this.Select_Template1.Text,
-                                                CH_TemplatePath2 = this.Select_Template2.Text,
-                                                ICCID = this.ICCIDStart.Text,
-                                                MAC = this.MACStart.Text,
-                                                Equipment = this.EquipmentStart.Text
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                if (this.SIMStart.Text == "")
-                                                {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                    {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                if (SN1_num.Text != "" && Sn_mark == 1)
-                                                {
-                                                    Form1.Log("关联BAT打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                    if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                    {
-                                                        this.SN1_num.Text = sn1;
-                                                        this.IMEI_Start.Clear();
-                                                        this.SIMStart.Clear();
-                                                        this.VIPStart.Clear();
-                                                        this.BATStart.Clear();
-                                                        this.ShowSN.Clear();
-                                                        this.IMEI_Start.Focus();
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Form1.Log("关联BAT打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.BATStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                }
-                                            }
-                                            if (this.updata_inline.Visible == true)
-                                            {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                    btFormat.SubStrings["SN"].Value = ASS_sn;
-                                    this.ShowSN.Text = ASS_sn;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -5026,7 +4399,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = "",
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -5057,7 +4430,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = this.SIMStart.Text,
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -5088,6 +4461,7 @@ namespace WindowsForms_print
                                             this.VIPStart.Clear();
                                             this.BATStart.Clear();
                                             this.ShowSN.Clear();
+                                            this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
@@ -5099,6 +4473,7 @@ namespace WindowsForms_print
                                         this.VIPStart.Clear();
                                         this.BATStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                 }
@@ -5111,211 +4486,177 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                foreach (PrintMessage a in list)
                                 {
-                                    if (S == 1)
+                                    if (a.SN != "")
                                     {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        btFormat.SubStrings["SN"].Value = a.SN;
+                                        this.ShowSN.Text = a.SN;
+                                        if (this.SIMStart.Text == "")
+                                        {
+                                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
+                                            {
+                                                DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = "",
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = "",
+                                                    IMEI7 = "",
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = this.SIMStart.Text,
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = "",
+                                                    IMEI7 = "",
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, a.SN);
                                     }
                                     else
                                     {
-                                        if (this.Select_Template2.Text == "")
+                                        if (Sn_mark == 1)
                                         {
-                                            Form1.Log("关联BAT打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                            this.IMEI_Start.Clear();
-                                            this.SIMStart.Clear();
-                                            this.VIPStart.Clear();
-                                            this.BATStart.Clear();
-                                            this.ICCIDStart.Clear();
-                                            this.ShowSN.Clear();
-                                            this.IMEI_Start.Focus();
-                                            if (this.updata_inline.Visible == true)
+                                            btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            this.ShowSN.Text = this.SN1_num.Text;
+                                            if (this.SIMStart.Text == "")
                                             {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                    list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                    foreach (PrintMessage a in list)
-                                    {
-                                        if (a.SN != "")
-                                        {
-                                            btFormat.SubStrings["SN"].Value = a.SN;
-                                            this.ShowSN.Text = a.SN;
-                                            if (S == 2 || this.Select_Template2.Text == "")
-                                            {
-                                                if (this.SIMStart.Text == "")
+                                                if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
+                                                    DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                                 }
                                                 else
                                                 {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
                                                     {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = "",
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, a.SN);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Sn_mark == 1)
-                                            {
-                                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                this.ShowSN.Text = this.SN1_num.Text;
-                                                if (S == 2 || this.Select_Template2.Text == "")
-                                                {
-                                                    if (this.SIMStart.Text == "")
-                                                    {
-                                                        if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                        {
-                                                            DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = "",
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = this.BATStart.Text,
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                        {
-                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                            DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = this.SIMStart.Text,
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = "",
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = this.BATStart.Text,
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                    }
-                                                    PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
-                                                    if (this.SN1_num.Text != "")
-                                                    {
-                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                        this.SN1_num.Text = sn1;
-                                                    }
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = "",
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = "",
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
                                                 }
                                             }
                                             else
                                             {
-                                                btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                this.ShowSN.Text = ASS_sn;
-                                                DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, ASS_sn);
+                                                //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                                if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                {
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
+                                                }
+                                                else
+                                                {
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
+                                                    {
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = this.SIMStart.Text,
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = "",
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
+                                                }
+                                            }
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
+                                            if (this.SN1_num.Text != "")
+                                            {
+                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                this.SN1_num.Text = sn1;
                                             }
                                         }
+                                        else
+                                        {
+                                            btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            this.ShowSN.Text = ASS_sn;
+                                            DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, ASS_sn);
+                                        }
                                     }
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                }
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
+                                {
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 Form1.Log("关联BAT打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
@@ -5324,6 +4665,7 @@ namespace WindowsForms_print
                                 this.BATStart.Clear();
                                 this.ICCIDStart.Clear();
                                 this.ShowSN.Clear();
+                                this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
                             if (this.updata_inline.Visible == true)
@@ -5368,7 +4710,9 @@ namespace WindowsForms_print
                             this.SIMStart.Clear();
                             this.BATStart.Clear();
                             this.VIPStart.Clear();
+                            this.MACStart.Clear();
                             this.ICCIDStart.Clear();
+                            this.EquipmentStart.Clear();
                             this.IMEI_Start.Focus();
                             if (this.updata_inline.Visible == true)
                             {
@@ -5574,6 +4918,7 @@ namespace WindowsForms_print
                         this.ICCIDStart.Focus();
                         return;
                     }
+                    ICCID = this.ICCIDStart.Text;
                     if (g >= 8 && g <= 15)
                     {
                         if (this.NoPaper.Checked == false)
@@ -5581,97 +4926,24 @@ namespace WindowsForms_print
                             ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
                             if (!PMB.CheckIMEIBLL(this.IMEI_Start.Text))
                             {
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
                                 {
-                                    if (S == 1)
-                                    {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                    }
-                                    else
-                                    {
-                                        if (this.Select_Template2.Text == "")
-                                        {
-                                            //记录打印信息日志
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = this.IMEI_Start.Text.Trim(),
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = this.SN1_num.Text,
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = this.SIMStart.Text.Trim(),
-                                                VIP = this.VIPStart.Text.Trim(),
-                                                BAT = this.BATStart.Text.Trim(),
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = "",
-                                                JS_TemplatePath = "",
-                                                CH_PrintTime = ProductTime,
-                                                CH_TemplatePath1 = this.Select_Template1.Text,
-                                                CH_TemplatePath2 = this.Select_Template2.Text,
-                                                ICCID = this.ICCIDStart.Text,
-                                                MAC = this.MACStart.Text,
-                                                Equipment = this.EquipmentStart.Text
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                if (SN1_num.Text != "")
-                                                {
-                                                    Form1.Log("关联ICCID打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                    if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                    {
-                                                        this.SN1_num.Text = sn1;
-                                                        this.IMEI_Start.Clear();
-                                                        this.SIMStart.Clear();
-                                                        this.VIPStart.Clear();
-                                                        this.BATStart.Clear();
-                                                        this.ICCIDStart.Clear();
-                                                        this.IMEI_Start.Focus();
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Form1.Log("关联ICCID打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.BATStart.Clear();
-                                                    this.ICCIDStart.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                }
-                                            }
-                                            if (this.updata_inline.Visible == true)
-                                            {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                    btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -5713,6 +4985,8 @@ namespace WindowsForms_print
                                             this.VIPStart.Clear();
                                             this.BATStart.Clear();
                                             this.ICCIDStart.Clear();
+                                            this.ShowSN.Clear();
+                                            this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
@@ -5724,81 +4998,53 @@ namespace WindowsForms_print
                                         this.VIPStart.Clear();
                                         this.BATStart.Clear();
                                         this.ICCIDStart.Clear();
+                                        this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                 }
                             }
                             else
                             {
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+
+                                list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                foreach (PrintMessage a in list)
                                 {
-                                    if (S == 1)
+                                    if (a.SN != "")
                                     {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                        btFormat.SubStrings["SN"].Value = a.SN;
+                                        MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
                                     }
                                     else
                                     {
-                                        if (this.Select_Template2.Text == "")
+                                        btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                        DRSB.UpdateAssociatedBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
+                                        MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
+                                        if (this.SN1_num.Text != "")
                                         {
-                                            this.IMEI_Start.Clear();
-                                            this.SIMStart.Clear();
-                                            this.VIPStart.Clear();
-                                            this.BATStart.Clear();
-                                            this.ICCIDStart.Clear();
-                                            this.IMEI_Start.Focus();
-                                            if (this.updata_inline.Visible == true)
-                                            {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
+                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                            MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                            this.SN1_num.Text = sn1;
                                         }
                                     }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                    list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                    foreach (PrintMessage a in list)
-                                    {
-                                        if (a.SN != "")
-                                        {
-                                            btFormat.SubStrings["SN"].Value = a.SN;
-                                            if (S == 2 || this.Select_Template2.Text == "")
-                                            {
-                                                DRSB.UpdateAssociatedBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                            if (S == 2 || this.Select_Template2.Text == "")
-                                            {
-                                                DRSB.UpdateAssociatedBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
-                                                if (this.SN1_num.Text != "")
-                                                {
-                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                    MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                    this.SN1_num.Text = sn1;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                }
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
+                                {
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 Form1.Log("关联ICCID打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
@@ -5806,8 +5052,56 @@ namespace WindowsForms_print
                                 this.VIPStart.Clear();
                                 this.BATStart.Clear();
                                 this.ICCIDStart.Clear();
+                                this.ShowSN.Clear();
+                                this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
+                            if (this.updata_inline.Visible == true)
+                            {
+                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
+                                statusChange();
+                            }
+                        }
+                        else
+                        {
+                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
+                            {
+                                DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
+                            }
+                            else
+                            {
+                                //记录关联数据信息到关联表
+                                drs.Add(new DataRelativeSheet()
+                                {
+                                    IMEI1 = this.IMEI_Start.Text,
+                                    IMEI2 = "",
+                                    IMEI3 = this.SIMStart.Text,
+                                    IMEI4 = this.ICCIDStart.Text,
+                                    IMEI5 = "",
+                                    IMEI6 = "",
+                                    IMEI7 = "",
+                                    IMEI8 = this.VIPStart.Text,
+                                    IMEI9 = this.BATStart.Text,
+                                    IMEI10 = "",
+                                    IMEI11 = "",
+                                    IMEI12 = "",
+                                    ZhiDan = this.CB_ZhiDan.Text,
+                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                });
+                                DRSB.InsertRelativeSheetBLL(drs);
+                            }
+                            if (PMB.CheckIMEIBLL(this.IMEI_Start.Text))
+                            {
+                                PMB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text);
+                            }
+                            this.IMEI_Start.Clear();
+                            this.SIMStart.Clear();
+                            this.BATStart.Clear();
+                            this.VIPStart.Clear();
+                            this.MACStart.Clear();
+                            this.ICCIDStart.Clear();
+                            this.EquipmentStart.Clear();
+                            this.IMEI_Start.Focus();
                             if (this.updata_inline.Visible == true)
                             {
                                 MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
@@ -5991,6 +5285,7 @@ namespace WindowsForms_print
                         this.MACStart.Focus();
                         return;
                     }
+                    MAC = this.MACStart.Text;
                     if (g >= 16 && g <= 31)
                     {
                         if (this.NoPaper.Checked == false)
@@ -6004,162 +5299,25 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                btFormat.SubStrings["SN"].Value = ASS_sn;
+                                this.ShowSN.Text = ASS_sn;
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
                                 {
-                                    if (S == 1)
-                                    {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                    }
-                                    else
-                                    {
-                                        if (this.Select_Template2.Text == "")
-                                        {
-                                            //记录打印信息日志
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = this.IMEI_Start.Text.Trim(),
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = ASS_sn,
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = this.SIMStart.Text.Trim(),
-                                                VIP = this.VIPStart.Text.Trim(),
-                                                BAT = this.BATStart.Text.Trim(),
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = "",
-                                                JS_TemplatePath = "",
-                                                CH_PrintTime = ProductTime,
-                                                CH_TemplatePath1 = this.Select_Template1.Text,
-                                                CH_TemplatePath2 = this.Select_Template2.Text,
-                                                ICCID = this.ICCIDStart.Text,
-                                                MAC = this.MACStart.Text,
-                                                Equipment = this.EquipmentStart.Text
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                if (this.SIMStart.Text == "")
-                                                {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                    {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                if (SN1_num.Text != "" && Sn_mark == 1)
-                                                {
-                                                    Form1.Log("关联MAC打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                    if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                    {
-                                                        this.SN1_num.Text = sn1;
-                                                        this.IMEI_Start.Clear();
-                                                        this.SIMStart.Clear();
-                                                        this.VIPStart.Clear();
-                                                        this.BATStart.Clear();
-                                                        this.ICCIDStart.Clear();
-                                                        this.MACStart.Clear();
-                                                        this.ShowSN.Clear();
-                                                        this.IMEI_Start.Focus();
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Form1.Log("关联MAC打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.BATStart.Clear();
-                                                    this.ICCIDStart.Clear();
-                                                    this.MACStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                }
-                                            }
-                                            if (this.updata_inline.Visible == true)
-                                            {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                    btFormat.SubStrings["SN"].Value = ASS_sn;
-                                    this.ShowSN.Text = ASS_sn;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -6199,7 +5357,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = "",
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -6230,7 +5388,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = this.SIMStart.Text,
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -6263,6 +5421,7 @@ namespace WindowsForms_print
                                             this.ICCIDStart.Clear();
                                             this.MACStart.Clear();
                                             this.ShowSN.Clear();
+                                            this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
@@ -6276,6 +5435,7 @@ namespace WindowsForms_print
                                         this.ICCIDStart.Clear();
                                         this.MACStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                 }
@@ -6288,212 +5448,178 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+
+                                list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                foreach (PrintMessage a in list)
                                 {
-                                    if (S == 1)
+                                    if (a.SN != "")
                                     {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        btFormat.SubStrings["SN"].Value = a.SN;
+                                        this.ShowSN.Text = a.SN;
+                                        if (this.SIMStart.Text == "")
+                                        {
+                                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
+                                            {
+                                                DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = "",
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = this.MACStart.Text,
+                                                    IMEI7 = "",
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = this.SIMStart.Text,
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = this.MACStart.Text,
+                                                    IMEI7 = "",
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, a.SN);
                                     }
                                     else
                                     {
-                                        if (this.Select_Template2.Text == "")
+                                        if (Sn_mark == 1)
                                         {
-                                            Form1.Log("关联MAC打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                            this.IMEI_Start.Clear();
-                                            this.SIMStart.Clear();
-                                            this.VIPStart.Clear();
-                                            this.BATStart.Clear();
-                                            this.ICCIDStart.Clear();
-                                            this.MACStart.Clear();
-                                            this.ShowSN.Clear();
-                                            this.IMEI_Start.Focus();
-                                            if (this.updata_inline.Visible == true)
+                                            btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            this.ShowSN.Text = this.SN1_num.Text;
+                                            if (this.SIMStart.Text == "")
                                             {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                    list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                    foreach (PrintMessage a in list)
-                                    {
-                                        if (a.SN != "")
-                                        {
-                                            btFormat.SubStrings["SN"].Value = a.SN;
-                                            this.ShowSN.Text = a.SN;
-                                            if (S == 2 || this.Select_Template2.Text == "")
-                                            {
-                                                if (this.SIMStart.Text == "")
+                                                if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
+                                                    DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
                                                 }
                                                 else
                                                 {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
                                                     {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = "",
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, a.SN);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Sn_mark == 1)
-                                            {
-                                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                this.ShowSN.Text = this.SN1_num.Text;
-                                                if (S == 2 || this.Select_Template2.Text == "")
-                                                {
-                                                    if (this.SIMStart.Text == "")
-                                                    {
-                                                        if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                        {
-                                                            DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = "",
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = this.MACStart.Text,
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = this.BATStart.Text,
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                        {
-                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                            DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                        }
-                                                        else
-                                                        {
-                                                            //记录关联数据信息到关联表
-                                                            drs.Add(new DataRelativeSheet()
-                                                            {
-                                                                IMEI1 = this.IMEI_Start.Text,
-                                                                IMEI2 = "",
-                                                                IMEI3 = this.SIMStart.Text,
-                                                                IMEI4 = "",
-                                                                IMEI5 = "",
-                                                                IMEI6 = this.MACStart.Text,
-                                                                IMEI7 = "",
-                                                                IMEI8 = this.VIPStart.Text,
-                                                                IMEI9 = this.BATStart.Text,
-                                                                IMEI10 = "",
-                                                                IMEI11 = "",
-                                                                IMEI12 = "",
-                                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                            });
-                                                            DRSB.InsertRelativeSheetBLL(drs);
-                                                        }
-                                                    }
-                                                    PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.SN1_num.Text);
-                                                    if (this.SN1_num.Text != "")
-                                                    {
-                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                        this.SN1_num.Text = sn1;
-                                                    }
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = "",
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = this.MACStart.Text,
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
                                                 }
                                             }
                                             else
                                             {
-                                                btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                this.ShowSN.Text = ASS_sn;
-                                                DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, ASS_sn);
+                                                //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                                if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                {
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
+                                                }
+                                                else
+                                                {
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
+                                                    {
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = this.SIMStart.Text,
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = this.MACStart.Text,
+                                                        IMEI7 = "",
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
+                                                }
+                                            }
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.SN1_num.Text);
+                                            if (this.SN1_num.Text != "")
+                                            {
+                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                this.SN1_num.Text = sn1;
                                             }
                                         }
+                                        else
+                                        {
+                                            btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            this.ShowSN.Text = ASS_sn;
+                                            DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, ASS_sn);
+                                        }
                                     }
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                }
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
+                                {
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 Form1.Log("关联MAC打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
@@ -6503,6 +5629,7 @@ namespace WindowsForms_print
                                 this.ICCIDStart.Clear();
                                 this.MACStart.Clear();
                                 this.ShowSN.Clear();
+                                this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
                             if (this.updata_inline.Visible == true)
@@ -6549,6 +5676,7 @@ namespace WindowsForms_print
                             this.VIPStart.Clear();
                             this.ICCIDStart.Clear();
                             this.MACStart.Clear();
+                            this.EquipmentStart.Clear();
                             this.IMEI_Start.Focus();
                             if (this.updata_inline.Visible == true)
                             {
@@ -6691,6 +5819,7 @@ namespace WindowsForms_print
                         this.EquipmentStart.Focus();
                         return;
                     }
+                    Equipment = this.EquipmentStart.Text;
                     if (g >= 32 && g <= 63)
                     {
                         if (this.NoPaper.Checked == false)
@@ -6704,164 +5833,25 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                btFormat.SubStrings["SN"].Value = ASS_sn;
+                                this.ShowSN.Text = ASS_sn;
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
                                 {
-                                    if (S == 1)
-                                    {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                    }
-                                    else
-                                    {
-                                        if (this.Select_Template2.Text == "")
-                                        {
-                                            //记录打印信息日志
-                                            list.Add(new PrintMessage()
-                                            {
-                                                Zhidan = this.CB_ZhiDan.Text.Trim(),
-                                                IMEI = this.IMEI_Start.Text.Trim(),
-                                                IMEIStart = this.IMEI_num1.Text.Trim(),
-                                                IMEIEnd = this.IMEI_num2.Text.Trim(),
-                                                SN = ASS_sn,
-                                                IMEIRel = this.IMEIRel.Text.Trim(),
-                                                SIM = this.SIMStart.Text.Trim(),
-                                                VIP = this.VIPStart.Text.Trim(),
-                                                BAT = this.BATStart.Text.Trim(),
-                                                SoftModel = this.SoftModel.Text.Trim(),
-                                                Version = this.SoftwareVersion.Text.Trim(),
-                                                Remark = this.Remake.Text.Trim(),
-                                                JS_PrintTime = "",
-                                                JS_TemplatePath = "",
-                                                CH_PrintTime = ProductTime,
-                                                CH_TemplatePath1 = this.Select_Template1.Text,
-                                                CH_TemplatePath2 = this.Select_Template2.Text,
-                                                ICCID = this.ICCIDStart.Text,
-                                                MAC = this.MACStart.Text,
-                                                Equipment = this.EquipmentStart.Text
-                                            });
-                                            if (PMB.InsertPrintMessageBLL(list))
-                                            {
-                                                if (this.SIMStart.Text == "")
-                                                {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = this.EquipmentStart.Text,
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                                    {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = this.EquipmentStart.Text,
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                if (SN1_num.Text != "")
-                                                {
-                                                    Form1.Log("关联设备号打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                                                    sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                    sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                    sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                    if (MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0')))
-                                                    {
-                                                        this.SN1_num.Text = sn1;
-                                                        this.IMEI_Start.Clear();
-                                                        this.SIMStart.Clear();
-                                                        this.VIPStart.Clear();
-                                                        this.BATStart.Clear();
-                                                        this.ICCIDStart.Clear();
-                                                        this.MACStart.Clear();
-                                                        this.EquipmentStart.Clear();
-                                                        this.ShowSN.Clear();
-                                                        this.IMEI_Start.Focus();
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Form1.Log("关联设备号打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
-                                                    this.IMEI_Start.Clear();
-                                                    this.SIMStart.Clear();
-                                                    this.VIPStart.Clear();
-                                                    this.BATStart.Clear();
-                                                    this.ICCIDStart.Clear();
-                                                    this.MACStart.Clear();
-                                                    this.EquipmentStart.Clear();
-                                                    this.ShowSN.Clear();
-                                                    this.IMEI_Start.Focus();
-                                                }
-                                            }
-                                            if (this.updata_inline.Visible == true)
-                                            {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                    btFormat.SubStrings["SN"].Value = ASS_sn;
-                                    this.ShowSN.Text = ASS_sn;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -6901,7 +5891,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = "",
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -6932,7 +5922,7 @@ namespace WindowsForms_print
                                             drs.Add(new DataRelativeSheet()
                                             {
                                                 IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = "",
+                                                IMEI2 = this.ShowSN.Text,
                                                 IMEI3 = this.SIMStart.Text,
                                                 IMEI4 = "",
                                                 IMEI5 = "",
@@ -6966,6 +5956,7 @@ namespace WindowsForms_print
                                             this.MACStart.Clear();
                                             this.EquipmentStart.Clear();
                                             this.ShowSN.Clear();
+                                            this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
@@ -6980,6 +5971,7 @@ namespace WindowsForms_print
                                         this.MACStart.Clear();
                                         this.EquipmentStart.Clear();
                                         this.ShowSN.Clear();
+                                        this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
                                 }
@@ -6992,153 +5984,177 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                for (int S = 1; S <= 2; S++)
+                                lj = this.Select_Template1.Text;
+                                btFormat = btEngine.Documents.Open(lj);
+                                //指定打印机名称
+                                btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                //对模板相应字段进行赋值
+                                ValuesToTemplate(btFormat);
+                                btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
+                                foreach (PrintMessage a in list)
                                 {
-                                    if (S == 1)
+                                    if (a.SN != "")
                                     {
-                                        lj = this.Select_Template1.Text;
-                                        btFormat = btEngine.Documents.Open(lj);
-                                        //指定打印机名称
-                                        btFormat.PrintSetup.PrinterName = this.Printer1.Text;
-                                        //打印份数,同序列打印的份数
-                                        btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
+                                        btFormat.SubStrings["SN"].Value = a.SN;
+                                        this.ShowSN.Text = a.SN;
+                                        if (this.SIMStart.Text == "")
+                                        {
+                                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
+                                            {
+                                                DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = "",
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = this.MACStart.Text,
+                                                    IMEI7 = this.EquipmentStart.Text,
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = this.SIMStart.Text,
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = this.MACStart.Text,
+                                                    IMEI7 = this.EquipmentStart.Text,
+                                                    IMEI8 = this.VIPStart.Text,
+                                                    IMEI9 = this.BATStart.Text,
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
+                                        }
+                                        PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
                                     }
                                     else
                                     {
-                                        if (this.Select_Template2.Text == "")
+                                        if (Sn_mark == 1)
                                         {
-                                            this.IMEI_Start.Clear();
-                                            this.SIMStart.Clear();
-                                            this.VIPStart.Clear();
-                                            this.BATStart.Clear();
-                                            this.ICCIDStart.Clear();
-                                            this.MACStart.Clear();
-                                            this.EquipmentStart.Clear();
-                                            this.ShowSN.Clear();
-                                            this.IMEI_Start.Focus();
-                                            if (this.updata_inline.Visible == true)
+                                            btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            this.ShowSN.Text = this.SN1_num.Text;
+                                            if (this.SIMStart.Text == "")
                                             {
-                                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                                statusChange();
-                                            }
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            lj = this.Select_Template2.Text;
-                                            btFormat = btEngine.Documents.Open(lj);
-                                            //指定打印机名称
-                                            btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                                            //打印份数,同序列打印的份数
-                                            btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                                        }
-                                    }
-                                    //对模板相应字段进行赋值
-                                    ValuesToTemplate(btFormat);
-                                    btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
-                                    list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
-                                    foreach (PrintMessage a in list)
-                                    {
-                                        if (a.SN != "")
-                                        {
-                                            btFormat.SubStrings["SN"].Value = a.SN;
-                                            this.ShowSN.Text = a.SN;
-                                            if (S == 2 || this.Select_Template2.Text == "")
-                                            {
-                                                if (this.SIMStart.Text == "")
+                                                if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
-                                                    if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                                                    {
-                                                        DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = "",
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = this.EquipmentStart.Text,
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
+                                                    DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
                                                 }
                                                 else
                                                 {
-                                                    //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
                                                     {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                    }
-                                                    else
-                                                    {
-                                                        //记录关联数据信息到关联表
-                                                        drs.Add(new DataRelativeSheet()
-                                                        {
-                                                            IMEI1 = this.IMEI_Start.Text,
-                                                            IMEI2 = "",
-                                                            IMEI3 = this.SIMStart.Text,
-                                                            IMEI4 = "",
-                                                            IMEI5 = "",
-                                                            IMEI6 = this.MACStart.Text,
-                                                            IMEI7 = this.EquipmentStart.Text,
-                                                            IMEI8 = this.VIPStart.Text,
-                                                            IMEI9 = this.BATStart.Text,
-                                                            IMEI10 = "",
-                                                            IMEI11 = "",
-                                                            IMEI12 = "",
-                                                            ZhiDan = this.CB_ZhiDan.Text,
-                                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                        });
-                                                        DRSB.InsertRelativeSheetBLL(drs);
-                                                    }
-                                                }
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Sn_mark == 1)
-                                            {
-                                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                                this.ShowSN.Text = this.SN1_num.Text;
-                                                if (S == 2 || this.Select_Template2.Text == "")
-                                                {
-                                                    DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                    PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
-                                                    if (this.SN1_num.Text != "")
-                                                    {
-                                                        sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                                        sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                                        sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                                        MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                                        this.SN1_num.Text = sn1;
-                                                    }
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = "",
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = this.MACStart.Text,
+                                                        IMEI7 = this.EquipmentStart.Text,
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
                                                 }
                                             }
                                             else
                                             {
-                                                btFormat.SubStrings["SN"].Value = ASS_sn;
-                                                this.ShowSN.Text = ASS_sn;
-                                                DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                                PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
+                                                //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                                if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                {
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
+                                                }
+                                                else
+                                                {
+                                                    //记录关联数据信息到关联表
+                                                    drs.Add(new DataRelativeSheet()
+                                                    {
+                                                        IMEI1 = this.IMEI_Start.Text,
+                                                        IMEI2 = this.ShowSN.Text,
+                                                        IMEI3 = this.SIMStart.Text,
+                                                        IMEI4 = "",
+                                                        IMEI5 = "",
+                                                        IMEI6 = this.MACStart.Text,
+                                                        IMEI7 = this.EquipmentStart.Text,
+                                                        IMEI8 = this.VIPStart.Text,
+                                                        IMEI9 = this.BATStart.Text,
+                                                        IMEI10 = "",
+                                                        IMEI11 = "",
+                                                        IMEI12 = "",
+                                                        ZhiDan = this.CB_ZhiDan.Text,
+                                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                    });
+                                                    DRSB.InsertRelativeSheetBLL(drs);
+                                                }
+                                            }
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
+                                            if (this.SN1_num.Text != "")
+                                            {
+                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                this.SN1_num.Text = sn1;
                                             }
                                         }
+                                        else
+                                        {
+                                            btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            this.ShowSN.Text = ASS_sn;
+                                            DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
+                                            PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
+                                        }
                                     }
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                }
+                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                if (this.Select_Template2.Text != "")
+                                {
+                                    xc2 = 1;
+                                    //双模板线程
+                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
+                                    //启动线程
+                                    thread2.Start();
                                 }
                                 Form1.Log("关联设备号打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
@@ -7149,6 +6165,7 @@ namespace WindowsForms_print
                                 this.MACStart.Clear();
                                 this.EquipmentStart.Clear();
                                 this.ShowSN.Clear();
+                                this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
                             if (this.updata_inline.Visible == true)

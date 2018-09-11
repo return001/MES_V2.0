@@ -75,6 +75,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.reminder = new System.Windows.Forms.TextBox();
             this.TemplateNum = new System.Windows.Forms.TextBox();
             this.label23 = new System.Windows.Forms.Label();
             this.Refresh_template = new System.Windows.Forms.Button();
@@ -103,7 +104,6 @@
             this.CheckAndDelete = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.reminder = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabControl2.SuspendLayout();
@@ -621,6 +621,18 @@
             this.tabPage4.TabIndex = 0;
             this.tabPage4.Text = "打印";
             // 
+            // reminder
+            // 
+            this.reminder.BackColor = System.Drawing.Color.Linen;
+            this.reminder.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.reminder.ForeColor = System.Drawing.Color.Red;
+            this.reminder.Location = new System.Drawing.Point(716, 535);
+            this.reminder.Multiline = true;
+            this.reminder.Name = "reminder";
+            this.reminder.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.reminder.Size = new System.Drawing.Size(471, 191);
+            this.reminder.TabIndex = 80;
+            // 
             // TemplateNum
             // 
             this.TemplateNum.Location = new System.Drawing.Point(716, 408);
@@ -910,18 +922,6 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "重打查询";
             // 
-            // reminder
-            // 
-            this.reminder.BackColor = System.Drawing.Color.Linen;
-            this.reminder.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.reminder.ForeColor = System.Drawing.Color.Red;
-            this.reminder.Location = new System.Drawing.Point(716, 535);
-            this.reminder.Multiline = true;
-            this.reminder.Name = "reminder";
-            this.reminder.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.reminder.Size = new System.Drawing.Size(471, 191);
-            this.reminder.TabIndex = 80;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -932,7 +932,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(18, 50);
             this.Name = "Form1";
-            this.Text = "MES-Print_1.0.2_201808270900";
+            this.Text = "MES-Print_1.0.3_201809071030";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
