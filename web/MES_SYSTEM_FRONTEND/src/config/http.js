@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Qs from 'qs';
 import {setLoginToken} from "../store/actions";
+import {redTeaUrl} from './globalUrl'
 import store from "../store";
 import router from '../router';
 
@@ -10,7 +11,7 @@ import router from '../router';
 axios.interceptors.request.use(
   config => {
     //console.log(store.state.token)
-    if (store.state.token !== '') {
+    if (store.state.token !== '' && config.url != redTeaUrl) {
       if (config.data === "") {
         config.data += ("#TOKEN#=" + store.state.token);
       } else {

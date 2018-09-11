@@ -14,6 +14,12 @@
         </div>
         <span>配置</span>
       </div>
+      <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')">
+        <div class="setting-icon">
+          <icon name="toggles" scale="1.6" style="color: #fff;"></icon>
+        </div>
+        <span>红茶</span>
+      </div>
       <!--<div class="icon-container">-->
       <!--<div class="setting-icon"></div>-->
       <!--</div>-->

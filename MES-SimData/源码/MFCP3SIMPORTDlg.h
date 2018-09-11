@@ -26,6 +26,17 @@ extern CString Port1LogName;
 extern CString Port2LogName;
 extern CString Port3LogName;
 extern CString Port4LogName;
+extern CString LastPort1RID;
+extern CString LastPort1IMEI;
+extern CString LastPort2RID;
+extern CString LastPort2IMEI;
+extern CString LastPort3RID;
+extern CString LastPort3IMEI;
+extern CString LastPort4RID;
+extern CString LastPort4IMEI;
+extern int InteverTime;//发指令间隔时间
+extern int InteverCount;//发指令次数
+
 
 // CMFCP3SIMPORTDlg 对话框
 class CMFCP3SIMPORTDlg : public CDialogEx

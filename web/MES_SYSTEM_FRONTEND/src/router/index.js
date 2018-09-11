@@ -11,6 +11,7 @@ import TableModule from '../pages/table/details/TableModule'
 import SettingMain from '../pages/setting/SettingMain'
 import OrderManage from '../pages/setting/details/OrderManage'
 import UserConfig from '../pages/user/UserConfig'
+import RedTea from '../pages/redtea/RedTeaMain'
 Vue.use(Router);
 
 const router = new Router({
@@ -54,6 +55,11 @@ const router = new Router({
           path: '/users',
           name: 'Users',
           component: UserConfig
+        },
+        {
+          path: '/redtea',
+          name: 'RedTea',
+          component: RedTea
         }
       ]
     },
