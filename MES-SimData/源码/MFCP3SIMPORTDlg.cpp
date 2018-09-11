@@ -2435,6 +2435,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port1Thread(LPVOID lpParam)
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
+	int port1testcount=0;
 	//串口变量
 	DWORD dwBytesWrite;
 	COMSTAT ComStat;
@@ -2455,14 +2456,19 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port1Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 1);
 		//dlg->SetRicheditText(L"发:" + strcommand, 1);
 		bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+		if (port1testcount == 1)
+		{
+			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Ready, NULL);
+			//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"待测试");
+		}
 		Sleep(2000);
-
 		if (s_bExit == TRUE||m_Port1DownloadControl == FALSE)
 		{
 			dlg->DownloadClosePort1Thread();
 			dlg->DownloadRestPort1Thread();
 			return;
 		}
+		port1testcount++;
 	} while (m_Port1DownloadWrite1);
 
 	return ;
@@ -3055,6 +3061,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 	COMSTAT ComStat;
 	DWORD dwErrorFlags;
 	BOOL bWriteStat;
+	int port2testcount = 0;
 
 	//放指令用变量
 	CString strcommand = L"AT^GT_CM=TEST\r\n";
@@ -3070,7 +3077,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 2);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port2handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(2500);
+		if (port2testcount == 1)
+		{
+			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Ready, NULL);
+			//dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"待测试");
+		}
+		Sleep(2000);
 
 		if (s_bExit == TRUE || m_Port2DownloadControl == FALSE)
 		{
@@ -3078,6 +3090,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 			dlg->DownloadRestPort2Thread();
 			return;
 		}
+		port2testcount++;
 	} while (m_Port2DownloadWrite1);
 
 	return;
@@ -3665,6 +3678,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 	COMSTAT ComStat;
 	DWORD dwErrorFlags;
 	BOOL bWriteStat;
+	int port3testcount = 0;
 
 	//放指令用变量
 	CString strcommand = L"AT^GT_CM=TEST\r\n";
@@ -3680,7 +3694,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 3);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port3handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(2500);
+		if (port3testcount == 1)
+		{
+			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Ready, NULL);
+			//dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"待测试");
+		}
+		Sleep(2000);
 
 		if (s_bExit == TRUE || m_Port3DownloadControl == FALSE)
 		{
@@ -3688,6 +3707,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 			dlg->DownloadRestPort3Thread();
 			return;
 		}
+		port3testcount++;
 	} while (m_Port3DownloadWrite1);
 
 	return;
@@ -4285,7 +4305,8 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 	COMSTAT ComStat;
 	DWORD dwErrorFlags;
 	BOOL bWriteStat;
-
+	int port4testcount = 0;
+	dlg->PrintLog(L"test线程开启", 4);
 	//放指令用变量
 	CString strcommand = L"AT^GT_CM=TEST\r\n";
 
@@ -4300,7 +4321,12 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 		dlg->PrintLog(L"发:" + strcommand, 4);
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		bWriteStat = WriteFile(dlg->port4handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-		Sleep(2500);
+		if (port4testcount == 1)
+		{
+			::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Ready, NULL);
+			//dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"待测试");
+		}
+		Sleep(2000);
 
 		if (s_bExit == TRUE || m_Port4DownloadControl == FALSE)
 		{
@@ -4308,8 +4334,9 @@ void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 			dlg->DownloadRestPort4Thread();
 			return;
 		}
+		port4testcount++;
 	} while (m_Port4DownloadWrite1);
-
+	dlg->PrintLog(L"test线程关闭", 4);
 	return;
 }
 
@@ -4823,7 +4850,7 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(300);
+		Sleep(200);
 		bReadStat = ReadFile(dlg->port4handler, str, 100, &readreal, 0);
 		if (bReadStat)
 		{
@@ -5602,6 +5629,11 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
 		}
+		else if (str1 == "待测试")
+		{
+			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
+			pDC->SelectObject(&staticHint1font);
+		}
 		else if (str1 == "成功")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
@@ -5619,6 +5651,11 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		if (str2 == "失败" || str2 == "工位已测" || str2 == "耦合漏测" || str2 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
+			pDC->SelectObject(&staticHint2font);
+		}
+		else if (str2 == "待测试")
+		{
+			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
 		}
 		else if (str2 == "成功")
@@ -5640,6 +5677,11 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
 		}
+		else if (str3 == "待测试")
+		{
+			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
+			pDC->SelectObject(&staticHint3font);
+		}
 		else if (str3 == "成功")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
@@ -5657,6 +5699,11 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		if (str4 == "失败" || str4 == "工位已测" || str4 == "耦合漏测" || str4 == "需要返工")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
+			pDC->SelectObject(&staticHint4font);
+		}
+		else if (str4 == "待测试")
+		{
+			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
 		}
 		else if (str4 == "成功")
@@ -5682,8 +5729,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	{
 	//串口1提示结果
 	case Main_Hint1_Ready:
-		PrintLog(L"就绪", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"就绪");
+		PrintLog(L"待测试", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"待测试");
 		break;
 	case Main_Hint1_Connected:
 		PrintLog(L"已连接", 1);
@@ -5712,8 +5759,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 
 	//串口2提示结果
 	case Main_Hint2_Ready:
-		PrintLog(L"就绪", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"就绪");
+		PrintLog(L"待测试", 2);
+		SetDlgItemText(IDC_PORT2HINT_STATIC, L"待测试");
 		break;
 	case Main_Hint2_Connected:
 		PrintLog(L"已连接", 2);
@@ -5743,8 +5790,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 
 	//串口3提示结果
 	case Main_Hint3_Ready:
-		PrintLog(L"就绪", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"就绪");
+		PrintLog(L"待测试", 3);
+		SetDlgItemText(IDC_PORT3HINT_STATIC, L"待测试");
 		break;
 	case Main_Hint3_Connected:
 		PrintLog(L"已连接", 3);
@@ -5774,8 +5821,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 
 	//串口4提示结果
 	case Main_Hint4_Ready:
-		PrintLog(L"就绪", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"就绪");
+		PrintLog(L"待测试", 4);
+		SetDlgItemText(IDC_PORT4HINT_STATIC, L"待测试");
 		break;
 	case Main_Hint4_Connected:
 		PrintLog(L"已连接", 4);
