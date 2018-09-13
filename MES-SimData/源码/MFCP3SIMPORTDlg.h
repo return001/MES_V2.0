@@ -13,6 +13,8 @@
 UINT SendWritePortThread(LPVOID pParam);
 UINT SendReadPortThread(LPVOID pParam);
 UINT DownloadPortThread(LPVOID pParam);
+
+//全局变量
 extern HWND MainFormHWND;
 extern CString strFolderpath, strOKFolderpath;
 extern CString StrFolder[4];
@@ -26,14 +28,19 @@ extern CString Port1LogName;
 extern CString Port2LogName;
 extern CString Port3LogName;
 extern CString Port4LogName;
-extern CString LastPort1RID;
-extern CString LastPort1IMEI;
-extern CString LastPort2RID;
-extern CString LastPort2IMEI;
-extern CString LastPort3RID;
-extern CString LastPort3IMEI;
-extern CString LastPort4RID;
-extern CString LastPort4IMEI;
+extern BOOL SinglePortAbnomal;
+//extern CString LastPort1RID;
+//extern CString LastPort1IMEI;
+extern BOOL Port1Abnomal;
+//extern CString LastPort2RID;
+//extern CString LastPort2IMEI;
+extern BOOL Port2Abnomal;
+//extern CString LastPort3RID;
+//extern CString LastPort3IMEI;
+extern BOOL Port3Abnomal;
+//extern CString LastPort4RID;
+//extern CString LastPort4IMEI;
+extern BOOL Port4Abnomal;
 extern int InteverTime;//发指令间隔时间
 extern int InteverCount;//发指令次数
 

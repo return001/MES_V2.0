@@ -21,8 +21,9 @@ CString reComNo;
 HANDLE reporthandler;
 int simrestratflag = 0;
 CString ReLogName;
-CString LastReRID=L"";
-CString LastReIMEI=L"";
+BOOL RePortAbnomal = FALSE;
+//CString LastReRID=L"";
+//CString LastReIMEI=L"";
 
 volatile BOOL m_RePortDownloadWrite;
 volatile BOOL m_RePortDownloadRead;
@@ -90,8 +91,8 @@ BOOL CReSimDataDownload::OnInitDialog()
 	//获取日志名字
 	ReLogName = GetLogTime()+L"ReLog";
 
-	LastReRID = L"";
-	LastReIMEI = L"";
+	//LastReRID = L"";
+	//LastReIMEI = L"";
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
@@ -288,7 +289,7 @@ UINT ReDownloadMainThread(LPVOID lpParam)
 		::CreateDirectory(strReFolderpath, NULL);//创建目录,已有的话不影响
 	}
 
-	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
+	//dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
 
 	dlg->DWThread = AfxBeginThread(ReDownloadWirtePortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);//开启写test线程
 	m_RePortDownloadMain = TRUE;
@@ -297,7 +298,7 @@ UINT ReDownloadMainThread(LPVOID lpParam)
 	{
 		if (dlg->DWThread == NULL)
 			dlg->DWThread = AfxBeginThread(ReDownloadWirtePortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
-		Sleep(8000);
+		Sleep(4000);
 	}
 
 	//while (!s_bReExit)
@@ -340,6 +341,12 @@ PortTest:
 	//同时开启读线程
 	dlg->DWThread = AfxBeginThread(ReDownloadReadPortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 
+	if (RePortAbnomal == TRUE)//这里是如果出现异常插拔，就先停顿个2.5秒才继续往下跑
+	{
+		Sleep(2000);
+	}
+
+	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"等待连接");
 	do
 	{
 		dlg->PrintReLog(L"发:" + strcommand);
@@ -360,8 +367,9 @@ PortTest:
 		return 0;
 	}
 
-	//dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
+	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
 
+	RePortAbnomal = FALSE;
 
 	PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//连接上了就开始读它的RID和IMEI，如果连续发送三条命令都没反应，那就返回Test那里重新检测设备
@@ -385,27 +393,118 @@ PortTest:
 
 			if (count == 3)
 			{
-				dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工失败");
+				//dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"失败待重启");
+
+				//一直进入发送test指令，如果检测不到，那代表它已经断开了
+				BOOL reporttestflag = TRUE, reportfailflag = TRUE;
+				int reporttestcount = 0;
+				char reportteststr[100];
+				memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+				DWORD reporttestreadreal = 0, reporttestdwBytesWrite, reporttestdwErrorFlags;
+				BOOL reporttestbReadStat, reporttestbWriteStat;
+				CString reportteststrread, reportteststrcommand = L"AT^GT_CM=TEST\r\n";;
+				COMSTAT reporttestComStat;
+
+				ClearCommError(reporthandler, &reporttestdwErrorFlags, &reporttestComStat);
+
+				do
+				{
+					reporttestbWriteStat = WriteFile(reporthandler, CT2A(reportteststrcommand), reportteststrcommand.GetLength(), &reporttestdwBytesWrite, NULL);
+
+					Sleep(90);
+					reporttestbReadStat = ReadFile(reporthandler, reportteststr, 100, &reporttestreadreal, 0);
+					if (reporttestbReadStat)
+					{
+						reportteststrread = reportteststr;
+						if (reportteststrread.Find(L"TEST_OK") >= 0)
+						{
+							if (reportfailflag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"失败待重启");
+								reportfailflag = FALSE;
+							}
+							reporttestcount = 0;
+						}
+						else
+						{
+							if (reportfailflag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"异常插拔");
+								reportfailflag = FALSE;
+								RePortAbnomal = TRUE;
+							}
+						}
+					}
+					reporttestcount++;
+					if (reporttestcount == 5)
+					{
+						reporttestflag = FALSE;
+					}
+					Sleep(10);
+					memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+					dlg->PrintReLog(L"发:" + reportteststrcommand);
+					PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+				} while (reporttestflag);
+
+				Sleep(100);
 				m_RePortDownloadWrite = FALSE;
 				m_RePortDownloadRead = FALSE;
 				goto PortTest;
 			}
 			count++;
-			Sleep(2000);
+			Sleep(1500);
 		} while (m_RePortDownloadWrite);
 	}
 
-	//发重启指令
-	strcommand = dlg->CommandWriteUnit(6);
-	ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
-	bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-	dlg->PrintReLog(L"发:" + strcommand);
+	////发重启指令
+	//strcommand = dlg->CommandWriteUnit(6);
+	//ClearCommError(reporthandler, &dwErrorFlags, &ComStat);
+	//bWriteStat = WriteFile(reporthandler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
+	//dlg->PrintReLog(L"发:" + strcommand);
 
 	if (m_RePortDownloadMain == FALSE)
 	{
 		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
 		return 0;
 	}
+	Sleep(1500);
+
+	//一直进入发送test指令，如果检测不到，那代表它已经断开了
+	BOOL reporttestflag = TRUE;
+	int reporttestcount = 0;
+	char reportteststr[100];
+	memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+	DWORD reporttestreadreal = 0, reporttestdwBytesWrite, reporttestdwErrorFlags;
+	BOOL reporttestbReadStat, reporttestbWriteStat;
+	CString reportteststrread, reportteststrcommand = L"AT^GT_CM=TEST\r\n";
+	COMSTAT reporttestComStat;
+
+	ClearCommError(reporthandler, &reporttestdwErrorFlags, &reporttestComStat);
+	do
+	{
+		reporttestbWriteStat = WriteFile(reporthandler, CT2A(reportteststrcommand), reportteststrcommand.GetLength(), &reporttestdwBytesWrite, NULL);
+
+		Sleep(90);
+		reporttestbReadStat = ReadFile(reporthandler, reportteststr, 100, &reporttestreadreal, 0);
+		if (reporttestbReadStat)
+		{
+			reportteststrread = reportteststr;
+			if (reportteststrread.Find(L"TEST_OK") >= 0)
+			{
+				reporttestcount = 0;
+			}
+		}
+		reporttestcount++;
+		if (reporttestcount == 5)
+		{
+			reporttestflag = FALSE;
+		}
+		Sleep(10);
+		memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+		dlg->PrintReLog(L"发:" + reportteststrcommand);
+		PurgeComm(reporthandler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	} while (reporttestflag);
+
 	dlg->DWThread = NULL;
 	return 0;
 }
@@ -418,7 +517,7 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 
 	//串口变量
 	char str[200];
-	memset(str, 0, sizeof(str));
+	memset(str, 0, sizeof(str) / sizeof(str[0]));;
 	DWORD readreal = 0;
 	BOOL bReadStat;
 
@@ -480,10 +579,11 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 
 					dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID1);
 					dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI1);
-					if (LastReRID != strReRID1&&LastReIMEI != strReIMEI1)
-					{
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
-					}
+					//if (LastReRID != strReRID1&&LastReIMEI != strReIMEI1)
+					//{
+					//	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+					//}
+					dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
 				}
 				else if (dlg->CommandNo == 5)
 				{
@@ -503,10 +603,11 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 					}
 					else if (Reflag == 2 || Reflag == 3)
 					{
-						if (LastReRID != strReRID&&LastReIMEI != strReIMEI)
-						{
-							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
-						}
+						//if (LastReRID != strReRID&&LastReIMEI != strReIMEI)
+						//{
+						//	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+						//}
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
 						dlg->PrintReLog(L"无需返工");
 					}
 					else if (Reflag == 0)
@@ -520,8 +621,8 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 						dlg->PrintReLog(L"数据路径错误");
 					}
 
-					LastReRID = strReRID;
-					LastReIMEI = strReIMEI;
+					//LastReRID = strReRID;
+					//LastReIMEI = strReIMEI;
 
 					ReAdomanage.CloseAll();
 				}
@@ -642,7 +743,7 @@ HBRUSH CReSimDataDownload::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_REPORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_REPORT1HINT_STATIC, str1);
-		if (str1 == "返工失败" || str1 == "无此机记录" || str1 == "数据路径错误" || str1 == "无需返工")
+		if (str1 == "失败待重启" || str1 == "无此机记录" || str1 == "数据路径错误" || str1 == "无需返工"||str1=="异常插拔")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticReHintfont);
@@ -650,6 +751,11 @@ HBRUSH CReSimDataDownload::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		else if (str1 == "返工成功")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
+			pDC->SelectObject(&staticReHintfont);
+		}
+		else if (str1 == "等待连接")
+		{
+			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticReHintfont);
 		}
 		else
@@ -756,7 +862,7 @@ void CReSimDataDownload::OnBnClickedCancel()
 //
 //	//串口变量
 //	char str[100];
-//	memset(str, 0, sizeof(str));
+//	memset(str, 0, sizeof(str) / sizeof(str[0]));;
 //	DWORD readreal = 0;
 //	BOOL bReadStat;
 //
@@ -868,7 +974,7 @@ void CReSimDataDownload::OnBnClickedCancel()
 //	dlg = (CReSimDataDownload*)lpParam;
 //	//串口变量
 //	char str[100];
-//	memset(str, 0, sizeof(str));
+//	memset(str, 0, sizeof(str) / sizeof(str[0]));;
 //	DWORD readreal = 0;
 //	BOOL bReadStat;
 //
