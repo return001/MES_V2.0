@@ -24,10 +24,11 @@ public:
 
 
 	int CpImeiByNo(CString noname, CString no, CString strzhidan);//根据其它号段寻找IMEI
-	int CpCaiheByImei(CString imei);//根据IMEI寻找彩盒时间
+	int CpCaiheByImei(CString imei, CString ZhiDan);//根据IMEI寻找彩盒时间
 	int InsertCorrectImei(CString zhidan, CString imei1, CString imei2, CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入正确数据到表中
 	int InsertWrongImei(CString zhidan, CString imei1, CString imei2, CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入错误数据到表中
 	int JudgeImei(CString imei);//判断IMEI号是否存在
+	int JudgeZhidan(CString imei,CString Zhidan);//判断制单号是否对得上
 	_RecordsetPtr GetOrderNumber();//获取订单号
 	_RecordsetPtr GetIMEIByOrderNumber(CString ordernumber);//根据订单号获取IMEI号
 	_RecordsetPtr JudgeOrderNumber(CString ordernumber);//判断订单号是否存在

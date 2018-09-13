@@ -306,6 +306,21 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 					if (str1 == str2&&judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend))
 					{
 						adomanage.ConnSQL();
+
+						if (adomanage.JudgeZhidan(str1,strzhidan))
+						{
+						PlaySound(L"Ê§°Ü_¶Ô±ÈÊ§°Ü.wav", NULL, SND_FILENAME | SND_ASYNC);
+						adomanage.InsertWrongImei(strzhidan, str1, str2, strno1, strno2, strpcip, notypename[notype], L"ÖÆµ¥ºÅ´íÎó", L"0");
+						adomanage.CloseAll();
+						SetDlgItemText(IDC_HINT_STATIC, L"ÖÆµ¥ºÅ´íÎó");
+						SetDlgItemText(IDC_IMEI1_EDIT, L"");
+						SetDlgItemText(IDC_IMEI2_EDIT, L"");
+						GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+						strno1 = L"NULL";
+						strno2 = L"NULL";
+						return CDialogEx::PreTranslateMessage(pMsg);
+						}
+
 						PlaySound(L"Í¨¹ý.wav", NULL, SND_FILENAME | SND_ASYNC);
 						adomanage.InsertCorrectImei(strzhidan, str1, str2, strno1, strno2, strpcip, L"IMEI", L"NULL", L"1");
 						SetDlgItemText(IDC_HINT_STATIC, L"Í¨¹ý");
@@ -455,7 +470,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 				{
 					if (str1 == str2&&judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend))
 					{
-						resultflag2 = adomanage.CpCaiheByImei(str2);
+						resultflag2 = adomanage.CpCaiheByImei(str2, strzhidan);
 						if (resultflag2 == 2)
 						{
 							PlaySound(L"Í¨¹ý.wav", NULL, SND_FILENAME | SND_ASYNC);
@@ -469,6 +484,14 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 							strno1 = L"NULL";
 							strno2 = L"NULL";
 							SetDlgItemText(IDC_HINT_STATIC, L"Â©´ò²ÊºÐÌù");
+						}
+						else if (resultflag2 == 3)
+						{
+							PlaySound(L"Ê§°Ü_¶Ô±ÈÊ§°Ü.wav", NULL, SND_FILENAME | SND_ASYNC);
+							adomanage.InsertWrongImei(strzhidan, str1, str2, strno1, strno2, strpcip, notypename[notype], L"ÖÆµ¥ºÅ´íÎó", L"0");
+							strno1 = L"NULL";
+							strno2 = L"NULL";
+							SetDlgItemText(IDC_HINT_STATIC, L"ÖÆµ¥ºÅ´íÎó");
 						}
 						else
 						{
@@ -774,7 +797,7 @@ HBRUSH CMFCP2CPDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	GetDlgItemText(IDC_HINT_STATIC, str);
 	if (pWnd->GetDlgCtrlID() == IDC_HINT_STATIC)
 	{
-		if (str == "ºÅÂë´íÎó" || str == "Ê§°Ü" || str == "Â©´ò²ÊºÐÌù"||str=="ºÅ¶Î²»´æÔÚ»ò´íÎó"||str=="ºÅ¶ÎÔÚ·¶Î§Íâ")
+		if (str == "ºÅÂë´íÎó" || str == "Ê§°Ü" || str == "Â©´ò²ÊºÐÌù"||str=="ºÅ¶Î²»´æÔÚ»ò´íÎó"||str=="ºÅ¶ÎÔÚ·¶Î§Íâ"||str=="ÖÆµ¥ºÅ´íÎó")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//ÓÃRGBºê¸Ä±äÑÕÉ« 
 			pDC->SelectObject(&staticfont2);

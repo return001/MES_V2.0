@@ -191,21 +191,46 @@ int ADOManage::JudgeImei(CString imei)
 		return 0;
 	}
 
-	return 1;//上面都没问题就返回2代表成功
+	return 1;
 }
 
+//判断制单号是否对得上
+int ADOManage::JudgeZhidan(CString imei,CString Zhidan)
+{
+	//初始化Recordset指针
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+
+	//参数
+	_variant_t a;
+	CString strSql;
+
+	//查找IMEI是否存在，不存在返回0代表未找到IMEI
+	strSql = _T("SELECT [ZhiDan],[IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] ='") + imei + _T("' AND [ZhiDan]='") + Zhidan+_T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+
+	//找不到那就返回1
+	if (m_pRecordSet->adoEOF)
+	{
+		return 1;
+	}
+
+	return 0;//返回0就代表对得上
+}
+
+
 //根据IMEI寻找彩盒时间
-int ADOManage::CpCaiheByImei(CString imei)
+int ADOManage::CpCaiheByImei(CString imei, CString ZhiDan)
 {
 	//初始化Recordset指针
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
 	
 	//参数
 	_variant_t a;
-	CString strSql;
+	CString strSql,strzhidan;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI],[CH_PrintTime] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + imei + _T("'");
+	strSql = _T("SELECT [ZhiDan],[IMEI],[CH_PrintTime] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + imei + _T("'");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	if (m_pRecordSet->adoEOF)
@@ -219,6 +244,13 @@ int ADOManage::CpCaiheByImei(CString imei)
 	if (a.vt == VT_NULL)
 	{
 		return 1;
+	}
+
+	//如果制单号对不上，那就代表制单号错误
+	strzhidan = m_pRecordSet->GetCollect("ZhiDan");
+	if (ZhiDan!=strzhidan)
+	{
+		return 3;
 	}
 
 	return 2;//上面都没问题就返回2代表成功
