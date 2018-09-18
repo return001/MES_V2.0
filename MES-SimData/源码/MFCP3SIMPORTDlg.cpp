@@ -547,6 +547,7 @@ void CMFCP3SIMPORTDlg::FindCommPort(CComboBox *pComboBox, CString &ComNo, int Po
 	//先获取当前串口号
 	int cur = 0;
 	int nSel;
+	BOOL curflag = TRUE;
 	nSel = pComboBox->GetCurSel();
 	if (nSel >= 0)
 	{
@@ -575,24 +576,46 @@ void CMFCP3SIMPORTDlg::FindCommPort(CComboBox *pComboBox, CString &ComNo, int Po
 			}
 			if (nSel >= 0 && ComNo == LPWSTR(commName))//如果跟上次选择的相等那就不让当前选择变动
 			{
-				cur = i - PortNO+1;
+				/*cur = i - PortNO+1;*/
+				cur = i;
+				curflag = FALSE;
 			}
-			if (PortNO == 1 && i >= 0)
+			else
 			{
-				pComboBox->AddString(LPWSTR(commName)); // commName就是串口名字
+				if (PortNO == 1 && i == 0 && curflag == TRUE)
+				{
+					cur = i;
+				}
+				else if (PortNO == 2 && i == 1 && curflag == TRUE)
+				{
+					cur = i;
+				}
+				else if (PortNO == 3 && i == 2 && curflag == TRUE)
+				{
+					cur = i;
+				}
+				else if (PortNO == 4 && i == 3 && curflag == TRUE)
+				{
+					cur = i;
+				}
 			}
-			else if (PortNO == 2 && i >= 1)
-			{
-				pComboBox->AddString(LPWSTR(commName));
-			}
-			else if (PortNO == 3 && i >= 2)
-			{
-				pComboBox->AddString(LPWSTR(commName));
-			}
-			else if (PortNO == 4 && i >= 3)
-			{
-				pComboBox->AddString(LPWSTR(commName));
-			}
+			pComboBox->AddString(LPWSTR(commName));
+			//if (PortNO == 1 && i >= 0)
+			//{
+			//	pComboBox->AddString(LPWSTR(commName)); // commName就是串口名字
+			//}
+			//else if (PortNO == 2 && i >= 1)
+			//{
+			//	pComboBox->AddString(LPWSTR(commName));
+			//}
+			//else if (PortNO == 3 && i >= 2)
+			//{
+			//	pComboBox->AddString(LPWSTR(commName));
+			//}
+			//else if (PortNO == 4 && i >= 3)
+			//{
+			//	pComboBox->AddString(LPWSTR(commName));
+			//}
 			i++;
 		}
 		if (pComboBox->GetCount() == 0)
@@ -692,8 +715,35 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 		{
 			if (simconnect2flag == 0 && simconnect3flag == 0 && simconnect4flag == 0)
 			{
+				// TODO:  在此添加控件通知处理程序代码
 				GetDlgItemText(IDC_SIMDATAFOLDERPATH_EDIT, m_simdatafolderPath);
 
+				//找到一个文件
+				CFileFind findertemp;
+				bool bFindtemp = findertemp.FindFile(m_simdatafolderPath + "*.*");
+				CString strtempfile, strtempfolder, strtemp;
+				strtempfolder = m_simdatafolderPath;
+				while (bFindtemp)
+				{
+					bFindtemp = findertemp.FindNextFile();
+					if (findertemp.IsDots())
+					{
+						continue;
+					}
+					if (findertemp.IsDirectory())//是文件夹
+					{
+						strtempfile = findertemp.GetFileName();
+						strtemp = strtempfolder + strtempfile + L"\\assets.der";//文件夹名称
+						//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+						if (!PathFileExists(strtemp))
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							return;
+						}
+					break;
+					}
+				}
 				if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 				{
 					MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
@@ -861,10 +911,37 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 		GetCommPort((CComboBox*)GetDlgItem(IDC_PORTLIST2_COMBO), Com2No);
 
 		//然后再初始化串口号
-		if (simconnect1flag == 0 && simconnect3flag == 0 && simconnect4flag == 0 && simallconnectflag == 0)
+		if (simconnect1flag == 0 && simconnect3flag == 0 && simconnect4flag == 0)
 		{
+			// TODO:  在此添加控件通知处理程序代码
 			GetDlgItemText(IDC_SIMDATAFOLDERPATH_EDIT, m_simdatafolderPath);
 
+			//找到一个文件
+			CFileFind findertemp;
+			bool bFindtemp = findertemp.FindFile(m_simdatafolderPath + "*.*");
+			CString strtempfile, strtempfolder, strtemp;
+			strtempfolder = m_simdatafolderPath;
+			while (bFindtemp)
+			{
+				bFindtemp = findertemp.FindNextFile();
+				if (findertemp.IsDots())
+				{
+					continue;
+				}
+				if (findertemp.IsDirectory())//是文件夹
+				{
+					strtempfile = findertemp.GetFileName();
+					strtemp = strtempfolder + strtempfile + L"\\assets.der";//文件夹名称
+					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+					if (!PathFileExists(strtemp))
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						return;
+					}
+				break;
+				}
+			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
 				MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
@@ -991,10 +1068,37 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 		GetCommPort((CComboBox*)GetDlgItem(IDC_PORTLIST3_COMBO), Com3No);
 
 		//然后再初始化串口号
-		if (simconnect1flag == 0 && simconnect2flag == 0 && simconnect4flag == 0 && simallconnectflag == 0)
+		if (simconnect1flag == 0 && simconnect2flag == 0 && simconnect4flag == 0)
 		{
+			// TODO:  在此添加控件通知处理程序代码
 			GetDlgItemText(IDC_SIMDATAFOLDERPATH_EDIT, m_simdatafolderPath);
 
+			//找到一个文件
+			CFileFind findertemp;
+			bool bFindtemp = findertemp.FindFile(m_simdatafolderPath + "*.*");
+			CString strtempfile, strtempfolder, strtemp;
+			strtempfolder = m_simdatafolderPath;
+			while (bFindtemp)
+			{
+				bFindtemp = findertemp.FindNextFile();
+				if (findertemp.IsDots())
+				{
+					continue;
+				}
+				if (findertemp.IsDirectory())//是文件夹
+				{
+					strtempfile = findertemp.GetFileName();
+					strtemp = strtempfolder + strtempfile + L"\\assets.der";//文件夹名称
+					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+					if (!PathFileExists(strtemp))
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						return;
+					}
+				break;
+				}
+			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
 				MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
@@ -1122,7 +1226,35 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 		//然后再初始化串口号
 		if (simconnect1flag == 0 && simconnect2flag == 0 && simconnect3flag == 0)
 		{
+			// TODO:  在此添加控件通知处理程序代码
 			GetDlgItemText(IDC_SIMDATAFOLDERPATH_EDIT, m_simdatafolderPath);
+
+			//找到一个文件
+			CFileFind findertemp;
+			bool bFindtemp = findertemp.FindFile(m_simdatafolderPath + "*.*");
+			CString strtempfile, strtempfolder, strtemp;
+			strtempfolder = m_simdatafolderPath;
+			while (bFindtemp)
+			{
+				bFindtemp = findertemp.FindNextFile();
+				if (findertemp.IsDots())
+				{
+					continue;
+				}
+				if (findertemp.IsDirectory())//是文件夹
+				{
+					strtempfile = findertemp.GetFileName();
+					strtemp = strtempfolder + strtempfile + L"\\assets.der";//文件夹名称
+					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+					if (!PathFileExists(strtemp))
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						return;
+					}
+				break;
+				}
+			}
 
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
@@ -1237,6 +1369,40 @@ void CMFCP3SIMPORTDlg::SetPort4EditEmpty()
 void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
+	GetDlgItemText(IDC_SIMDATAFOLDERPATH_EDIT, m_simdatafolderPath);
+
+	//找到一个文件
+	CFileFind findertemp;
+	bool bFindtemp = findertemp.FindFile(m_simdatafolderPath + "*.*");
+	CString strtempfile, strtempfolder,strtemp;
+	strtempfolder = m_simdatafolderPath;
+	while (bFindtemp)
+	{
+		bFindtemp = findertemp.FindNextFile();
+		if (findertemp.IsDots())
+		{
+			continue;
+		}
+		if (findertemp.IsDirectory())//是文件夹
+		{
+			strtempfile = findertemp.GetFileName();
+			strtemp = strtempfolder + strtempfile + L"\\assets.der";//文件夹名称
+			//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+			if (!PathFileExists(strtemp))
+			{
+				MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+				return;
+			}
+		break;
+		}
+	}
+
+	if (m_simdatafolderPath == L"" || m_simdatafolderPath.Find(L"OK") >= 0)
+	{
+		MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+		return;
+	}
 	if (m_portlist1Combo.GetCurSel() >= 0&&simconnect1flag==0)
 	{
 		OnBnClickedPort1connectButton();
@@ -1488,9 +1654,9 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 	CMFCP3SIMPORTDlg* dlg;
 	dlg = (CMFCP3SIMPORTDlg*)lpParam;
 
-	int findfileend=1,singleflag,countfileend;
+	int findfileend=1,singleflag,countfileend,filelength;
 	DWORD dwTotalSize;//文件总大小
-	CFile ReadFile;
+	CFile ReadFile, ReadFile1, ReadFile2, ReadFile3, ReadFile4;
 	//CRC变量
 	CString strCID, strCIDfile;
 	int crc16, strCIDcount;
@@ -1512,7 +1678,16 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 	}
 	else if (dlg->initconfigflag == 0)
 	{
-		strOKFolderpath = strFolderpath.Left(strFolderpath.GetLength() - 1) + L"OK\\";
+		//先判断末尾是不是"\"，是的话去掉后再加OK，然后再创建目录
+		filelength = strFolderpath.GetLength();
+		if (filelength-1 == strFolderpath.ReverseFind('\\'))
+		{
+			strOKFolderpath = strFolderpath.Left(strFolderpath.GetLength() - 1) + L"OK\\";
+		}
+		else 
+		{
+			strOKFolderpath = strFolderpath + L"OK\\";
+		}
 		if (!PathIsDirectory(strOKFolderpath))
 		{
 			::CreateDirectory(strOKFolderpath, NULL);//创建目录,已有的话不影响
@@ -1526,76 +1701,79 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 
 			while (bFind)
 			{
-				bFind = finder.FindNextFile();
-				if (finder.IsDots())
-				{
-					if (!bFind)
+					bFind = finder.FindNextFile();
+					if (finder.IsDots())
 					{
-						findfileend = 0;
-					}
-					continue;
-				}
-				if (finder.IsDirectory())//是文件夹
-				{
-					strCIDfile = finder.GetFileName();
-					strFolderFile = strFolderpath + strCIDfile + L"\\assets.der";//文件夹名称
-					//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
-					
-					if (!PathFileExists(strFolderFile))
-					{
-						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！",L"提示信息",NULL);
-						dlg->OnBnClickedAutomultiplestartButton();
-						return;
-					}
-
-					ADOManage adosinglesimdatamanage;
-					adosinglesimdatamanage.ConnSQL();
-					singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);
-					adosinglesimdatamanage.CloseAll();
-
-					if (singleflag == 0)
-					{
-						bFind = TRUE;
-						MoveFileEx(strFolderpath + strCIDfile + "\\", strOKFolderpath + strCIDfile + "\\", MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
-						strFolderFile = L"";
-						finder.Close();
+						if (!bFind)
+						{
+							findfileend = 0;
+						}
 						continue;
 					}
-					findfileend = 1;
-                    
-				}
-				if (StrFolder[0] == strFolderFile)
-				{
-					if (!bFind)
+					if (finder.IsDirectory())//是文件夹
 					{
-						findfileend = 0;
+						strCIDfile = finder.GetFileName();
+						strFolderFile = strFolderpath + strCIDfile + L"\\assets.der";//文件夹名称
+						//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
+
+						if (!PathFileExists(strFolderFile))
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							dlg->OnBnClickedAutomultiplestartButton();
+							return;
+						}
+
+						//先判断种子文件是不是已经下载过的
+						ADOManage adosinglesimdatamanage;
+						adosinglesimdatamanage.ConnSQL();
+						singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);
+						adosinglesimdatamanage.CloseAll();
+
+						//是的话就将文件直接移动到OK文件夹
+						if (singleflag == 0)
+						{
+							bFind = TRUE;
+							MoveFileEx(strFolderpath + strCIDfile + "\\", strOKFolderpath + strCIDfile + "\\", MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+							strFolderFile = L"";
+							finder.Close();
+							continue;
+						}
+						findfileend = 1;
+
 					}
-					continue;
-				}
-				else if (StrFolder[1] == strFolderFile)
-				{
-					if (!bFind)
+					//接着判断当前存放文件路径的数组中是否跟找到的最后一个文件路径一样，是的话意味着文件已经分配完毕
+					if (StrFolder[0] == strFolderFile)
 					{
-						findfileend = 0;
+						if (!bFind)
+						{
+							findfileend = 0;
+						}
+						continue;
 					}
-					continue;
-				}
-				else if (StrFolder[2] == strFolderFile)
-				{
-					if (!bFind)
+					else if (StrFolder[1] == strFolderFile)
 					{
-						findfileend = 0;
+						if (!bFind)
+						{
+							findfileend = 0;
+						}
+						continue;
 					}
-					continue;
-				}
-				else if (StrFolder[3] == strFolderFile)
-				{
-					if (!bFind)
+					else if (StrFolder[2] == strFolderFile)
 					{
-						findfileend = 0;
+						if (!bFind)
+						{
+							findfileend = 0;
+						}
+						continue;
 					}
-					continue;
-				}
+					else if (StrFolder[3] == strFolderFile)
+					{
+						if (!bFind)
+						{
+							findfileend = 0;
+						}
+						continue;
+					}
 				//这里放判断种子号的数据库函数
 				break;
 			}
@@ -1605,127 +1783,157 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 			//用if语句一个一个串口判断，不为空，且处于开始状态，就将文件丢进去
 			if (StrFolder[0] == L""&& simstart1flag == 1 && findfileend == 1)
 			{
-				StrFolder[0] = strFolderFile;
-				dlg->SetPort1EditEmpty();
-				crc16 = 0;
-				strCIDcount = 0;
+				try{
+					StrFolder[0] = strFolderFile;
+					dlg->SetPort1EditEmpty();
+					crc16 = 0;
+					strCIDcount = 0;
+					//先读文件CRC
+					ReadFile1.Open(StrFolder[0], CFile::modeRead | CFile::shareDenyNone);
+					dwTotalSize = ReadFile1.GetLength();//获取文件总长度
+					char *crcBuf = new char[dwTotalSize + 1];
+					ReadFile1.Read(crcBuf, dwTotalSize);
+					crc16 = GetCrc16(crcBuf, dwTotalSize);
+					dlg->strport1crc16.Format(_T("%04x"), crc16);
 
-				//先读文件CRC
-				ReadFile.Open(StrFolder[0], CFile::modeRead);
-				dwTotalSize = ReadFile.GetLength();//获取文件总长度
-				char *crcBuf = new char[dwTotalSize + 1];
-				ReadFile.Read(crcBuf, dwTotalSize);
-				crc16 = GetCrc16(crcBuf, dwTotalSize);
-				dlg->strport1crc16.Format(_T("%04x"), crc16);
+					strCID = crcBuf;
 
-				strCID = crcBuf;
+					//读文件CID
+					strCIDcount = strCID.Find(L"\f", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT1CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
 
-				//读文件CID
-				strCIDcount = strCID.Find(L"\f", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT1CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
+					//读文件ICCID
+					strCIDcount = strCID.Find(L"iccid", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT1ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
+					delete[] crcBuf;
+					crcBuf = NULL;
+					ReadFile1.Close();
 
-				//读文件ICCID
-				strCIDcount = strCID.Find(L"iccid", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT1ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
-				delete[] crcBuf;
-				crcBuf = NULL;
-				ReadFile.Close();
+					::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Test, NULL);
+					Sleep(700);
+				}
+				catch (CFileException* e)
+				{
+					//TCHAR szCause[255];
+					//e->GetErrorMessage(szCause, 254);
+					//AfxMessageBox(szCause);/*打印出异常原因*/
+				}
 
-				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Test, NULL);
-				Sleep(700);
 			}
 			else if (StrFolder[1] == L""&&simstart2flag == 1 && findfileend == 1)
 			{
-				StrFolder[1] = strFolderFile;
-				dlg->SetPort2EditEmpty();
-				crc16 = 0;
-				strCIDcount = 0;
+				try{
+					StrFolder[1] = strFolderFile;
+					dlg->SetPort2EditEmpty();
+					crc16 = 0;
+					strCIDcount = 0;
+					//先读文件CRC
+					ReadFile2.Open(StrFolder[1], CFile::modeRead | CFile::shareDenyNone);
+					dwTotalSize = ReadFile2.GetLength();//获取文件总长度
+					char *crcBuf = new char[dwTotalSize + 1];
+					ReadFile2.Read(crcBuf, dwTotalSize);
+					crc16 = GetCrc16(crcBuf, dwTotalSize);
+					dlg->strport2crc16.Format(_T("%04x"), crc16);
 
-				//先读文件CRC
-				ReadFile.Open(StrFolder[1], CFile::modeRead);
-				dwTotalSize = ReadFile.GetLength();//获取文件总长度
-				char *crcBuf = new char[dwTotalSize + 1];
-				ReadFile.Read(crcBuf, dwTotalSize);
-				crc16 = GetCrc16(crcBuf, dwTotalSize);
-				dlg->strport2crc16.Format(_T("%04x"), crc16);
+					strCID = crcBuf;
 
-				strCID = crcBuf;
+					//读文件CID
+					strCIDcount = strCID.Find(L"\f", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT2CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
 
-				//读文件CID
-				strCIDcount = strCID.Find(L"\f", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT2CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
+					//读文件ICCID
+					strCIDcount = strCID.Find(L"iccid", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT2ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
+					delete[] crcBuf;
+					crcBuf = NULL;
+					ReadFile2.Close();
 
-				//读文件ICCID
-				strCIDcount = strCID.Find(L"iccid", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT2ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
-				delete[] crcBuf;
-				crcBuf = NULL;
-				ReadFile.Close();
-
-				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Test, NULL);
-				Sleep(700);
+					::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Test, NULL);
+					Sleep(700);
+				}
+				catch (CFileException* e)
+				{
+					//TCHAR szCause[255];
+					//e->GetErrorMessage(szCause, 254);
+					//AfxMessageBox(szCause);/*打印出异常原因*/
+				}
 			}
 			else if (StrFolder[2] == L""&&simstart3flag == 1 && findfileend == 1)
 			{
-				StrFolder[2] = strFolderFile;
-				dlg->SetPort3EditEmpty();
+				try{
+					StrFolder[2] = strFolderFile;
+					dlg->SetPort3EditEmpty();
 
-				crc16 = 0;
-				strCIDcount = 0;
+					crc16 = 0;
+					strCIDcount = 0;
+					//先读文件CRC
+					ReadFile3.Open(StrFolder[2], CFile::modeRead | CFile::shareDenyNone);
+					dwTotalSize = ReadFile3.GetLength();//获取文件总长度
+					char *crcBuf = new char[dwTotalSize + 1];
+					ReadFile3.Read(crcBuf, dwTotalSize);
+					crc16 = GetCrc16(crcBuf, dwTotalSize);
+					dlg->strport3crc16.Format(_T("%04x"), crc16);
 
-				//先读文件CRC
-				ReadFile.Open(StrFolder[2], CFile::modeRead);
-				dwTotalSize = ReadFile.GetLength();//获取文件总长度
-				char *crcBuf = new char[dwTotalSize + 1];
-				ReadFile.Read(crcBuf, dwTotalSize);
-				crc16 = GetCrc16(crcBuf, dwTotalSize);
-				dlg->strport3crc16.Format(_T("%04x"), crc16);
+					strCID = crcBuf;
 
-				strCID = crcBuf;
+					//读文件CID
+					strCIDcount = strCID.Find(L"\f", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT3CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
 
-				//读文件CID
-				strCIDcount = strCID.Find(L"\f", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT3CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
-
-				//读文件ICCID
-				strCIDcount = strCID.Find(L"iccid", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT3ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
-				delete[] crcBuf;
-				crcBuf = NULL;
-				ReadFile.Close();
-				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Test, NULL);
-				Sleep(700);
+					//读文件ICCID
+					strCIDcount = strCID.Find(L"iccid", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT3ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
+					delete[] crcBuf;
+					crcBuf = NULL;
+					ReadFile3.Close();
+					::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Test, NULL);
+					Sleep(700);
+				}
+				catch (CFileException* e)
+				{
+					//TCHAR szCause[255];
+					//e->GetErrorMessage(szCause, 254);
+					//AfxMessageBox(szCause);/*打印出异常原因*/
+				}
 			}
 			else if (StrFolder[3] == L""&&simstart4flag == 1 && findfileend == 1)
 			{
-				StrFolder[3] = strFolderFile;
-				dlg->SetPort4EditEmpty();
+				try{
+					StrFolder[3] = strFolderFile;
+					dlg->SetPort4EditEmpty();
 
-				crc16 = 0;
-				strCIDcount = 0;
+					crc16 = 0;
+					strCIDcount = 0;
+					GetLastError();
+					//先读文件CRC
+					ReadFile4.Open(StrFolder[3], CFile::modeRead | CFile::shareDenyNone);
+					dwTotalSize = ReadFile4.GetLength();//获取文件总长度
+					char *crcBuf = new char[dwTotalSize + 1];
+					ReadFile4.Read(crcBuf, dwTotalSize);
+					crc16 = GetCrc16(crcBuf, dwTotalSize);
+					dlg->strport4crc16.Format(_T("%04x"), crc16);
 
-				//先读文件CRC
-				ReadFile.Open(StrFolder[3], CFile::modeRead);
-				dwTotalSize = ReadFile.GetLength();//获取文件总长度
-				char *crcBuf = new char[dwTotalSize + 1];
-				ReadFile.Read(crcBuf, dwTotalSize);
-				crc16 = GetCrc16(crcBuf, dwTotalSize);
-				dlg->strport4crc16.Format(_T("%04x"), crc16);
+					strCID = crcBuf;
 
-				strCID = crcBuf;
+					//读文件CID
+					strCIDcount = strCID.Find(L"\f", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT4CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
 
-				//读文件CID
-				strCIDcount = strCID.Find(L"\f", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT4CID_EDIT, strCID.Mid(strCIDcount + 1, 12));
-
-				//读文件ICCID
-				strCIDcount = strCID.Find(L"iccid", strCIDcount);
-				dlg->SetDlgItemText(IDC_PORT4ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
-				delete[] crcBuf;
-				crcBuf = NULL;
-				ReadFile.Close();
-				::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Test, NULL);
-				Sleep(700);
+					//读文件ICCID
+					strCIDcount = strCID.Find(L"iccid", strCIDcount);
+					dlg->SetDlgItemText(IDC_PORT4ICCID_EDIT, strCID.Mid(strCIDcount + 8, 19));
+					delete[] crcBuf;
+					crcBuf = NULL;
+					ReadFile4.Close();
+					::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Test, NULL);
+					Sleep(700);
+				}
+				catch (CFileException* e)
+				{
+					//TCHAR szCause[255];
+					//e->GetErrorMessage(szCause, 254);
+					//AfxMessageBox(szCause);/*打印出异常原因*/
+				}
 			}
 			Sleep(200);
             
@@ -1912,7 +2120,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite2Port1Thread(LPVOID lpParam)
 
 	//先读文件CRC
 	CFile SingleReadFile;
-	BOOL bOpen = SingleReadFile.Open(strpath, CFile::modeRead);
+	BOOL bOpen = SingleReadFile.Open(strpath, CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = SingleReadFile.GetLength();//获取文件总长度
 	char *crcBuf = new char[dwTotalSize + 1];
 	SingleReadFile.Read(crcBuf, dwTotalSize);
@@ -2281,7 +2489,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	dlg->GetDlgItemText(IDC_SIMDATAFILEPATH_EDIT, strpath);
 
 	CFile ReadFile1;
-	BOOL bOpen = ReadFile1.Open(strpath, CFile::modeRead);
+	BOOL bOpen = ReadFile1.Open(strpath, CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = ReadFile1.GetLength();//获取文件总长度
 
 	//开始写文件
@@ -3242,7 +3450,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 
 	//文件下载地址
 	CFile ReadFile1;
-	BOOL bOpen = ReadFile1.Open(StrFolder[0], CFile::modeRead);
+	BOOL bOpen = ReadFile1.Open(StrFolder[0], CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = ReadFile1.GetLength();//获取文件总长度
 
 	//开始写文件
@@ -4217,7 +4425,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 
 	//文件下载地址
 	CFile ReadFile2;
-	BOOL bOpen = ReadFile2.Open(StrFolder[1], CFile::modeRead);
+	BOOL bOpen = ReadFile2.Open(StrFolder[1], CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = ReadFile2.GetLength();//获取文件总长度
 
 	//开始写文件
@@ -5185,7 +5393,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 
 	//文件下载地址
 	CFile ReadFile3;
-	BOOL bOpen = ReadFile3.Open(StrFolder[2], CFile::modeRead);
+	BOOL bOpen = ReadFile3.Open(StrFolder[2], CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = ReadFile3.GetLength();//获取文件总长度
 
 	//开始写文件
@@ -6152,7 +6360,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 
 	//文件下载地址
 	CFile ReadFile4;
-	BOOL bOpen = ReadFile4.Open(StrFolder[3], CFile::modeRead);
+	BOOL bOpen = ReadFile4.Open(StrFolder[3], CFile::modeRead | CFile::shareDenyNone);
 	dwTotalSize = ReadFile4.GetLength();//获取文件总长度
 
 	//开始写文件

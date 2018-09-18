@@ -86,14 +86,14 @@
     <ClCompile Include="ReSimDataDownload.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="semaphoreclass.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Log.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Manager.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="semaphoreclass.cpp">
+      <Filter>资源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
