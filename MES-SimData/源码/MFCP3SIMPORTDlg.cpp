@@ -55,10 +55,14 @@ BOOL Port3Abnomal = FALSE;
 //CString LastPort4IMEI = L"";
 BOOL Port4Abnomal = FALSE;
 
+extern BOOL LanguageFlag = FALSE;//语言标志位，FALSE为中文，TRUE为英文
+extern BOOL AgingFlag = FALSE;//关老化标志位
+extern BOOL DatabaseFlag = FALSE;//关数据库标志位
+
 int InteverIMEIRIDTime = 1600;//发指令间隔时间
 int InteverIMEIRIDCount = 3;//发指令次数
-//串口单文件下载
 
+//串口单文件下载
 volatile BOOL m_Port1SINGLEDownloadWrite1;
 volatile BOOL m_Port1SINGLEDownloadWrite2;
 volatile BOOL m_Port1SINGLEDownloadWrite3;
@@ -181,6 +185,8 @@ void CMFCP3SIMPORTDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PORTLIST2_COMBO, m_portlist2Combo);
 	DDX_Control(pDX, IDC_PORTLIST3_COMBO, m_portlist3Combo);
 	DDX_Control(pDX, IDC_PORTLIST4_COMBO, m_portlist4Combo);
+	DDX_Control(pDX, IDC_CLOSEAGEING_CHECK, m_closeageingCheck);
+	DDX_Control(pDX, IDC_CLOSEDB_CHECK, m_closedbCheck);
 }
 
 BEGIN_MESSAGE_MAP(CMFCP3SIMPORTDlg, CDialogEx)
@@ -213,6 +219,10 @@ BEGIN_MESSAGE_MAP(CMFCP3SIMPORTDlg, CDialogEx)
 	ON_CBN_DROPDOWN(IDC_PORTLIST3_COMBO, &CMFCP3SIMPORTDlg::OnCbnDropdownPortlist3Combo)
 	ON_CBN_DROPDOWN(IDC_PORTLIST4_COMBO, &CMFCP3SIMPORTDlg::OnCbnDropdownPortlist4Combo)
 	ON_BN_CLICKED(IDC_OPENREMODLE_BUTTON, &CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton)
+	ON_BN_CLICKED(IDC_CLOSEDB_CHECK, &CMFCP3SIMPORTDlg::OnBnClickedClosedbCheck)
+	ON_BN_CLICKED(IDC_CLOSEAGEING_CHECK, &CMFCP3SIMPORTDlg::OnBnClickedCloseageingCheck)
+	ON_BN_CLICKED(IDC_EHLANGUAGE_RADIO, &CMFCP3SIMPORTDlg::OnBnClickedEhlanguageRadio)
+	ON_BN_CLICKED(IDC_CHLANGUAGE_RADIO, &CMFCP3SIMPORTDlg::OnBnClickedChlanguageRadio)
 END_MESSAGE_MAP()
 
 
@@ -293,6 +303,17 @@ BOOL CMFCP3SIMPORTDlg::OnInitDialog()
 	Port3LogName = GetLogTime() + L"Port3Log";
 	Port4LogName = GetLogTime() + L"Port4Log";
 
+	//国际版新增的,获取之前的语言和关老化、关数据的选择
+	if (GetUserDefaultUILanguage() != MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED))//获取当前系统语言
+	{
+		LanguageFlag = TRUE;
+		//SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+	}
+
+	GetSystemConfigInfoIni();
+
+
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -345,7 +366,7 @@ HCURSOR CMFCP3SIMPORTDlg::OnQueryDragIcon()
 }
 
 
-//控件初始化以及控制函数
+/*控件初始化以及控制函数*/
 //当前下载模式的控件控制
 void CMFCP3SIMPORTDlg::SetInitConfigWindow()
 {
@@ -425,6 +446,11 @@ void CMFCP3SIMPORTDlg::PortSetOtherWindowTrue()
 	GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 	GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(TRUE);
+
+	GetDlgItem(IDC_CHLANGUAGE_RADIO)->EnableWindow(TRUE);
+	GetDlgItem(IDC_EHLANGUAGE_RADIO)->EnableWindow(TRUE);
+	GetDlgItem(IDC_CLOSEAGEING_CHECK)->EnableWindow(TRUE);
+	GetDlgItem(IDC_CLOSEDB_CHECK)->EnableWindow(TRUE);
 }
 
 void CMFCP3SIMPORTDlg::PortSetOtherWindowFalse()
@@ -435,10 +461,15 @@ void CMFCP3SIMPORTDlg::PortSetOtherWindowFalse()
 	GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 	GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(FALSE);
+
+	GetDlgItem(IDC_CHLANGUAGE_RADIO)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EHLANGUAGE_RADIO)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CLOSEAGEING_CHECK)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CLOSEDB_CHECK)->EnableWindow(FALSE);
 }
 
 
-//初始化配置模块函数
+/*初始化配置模块函数*/
 //点击批量下载单选框会做的事情
 void CMFCP3SIMPORTDlg::OnBnClickedMultipledownloadRadio()
 {
@@ -471,7 +502,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafolderpathButton()
 	ZeroMemory(&bi, sizeof(BROWSEINFO));
 	bi.hwndOwner = AfxGetMainWnd()->GetSafeHwnd();
 	bi.pszDisplayName = LPWSTR(name);
-	bi.lpszTitle = L"选择文件夹目录";
+	if (LanguageFlag == FALSE)
+	{
+		bi.lpszTitle = L"选择文件夹目录";
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		bi.lpszTitle = L"Please chose the SimData catalogue";
+	}
 	bi.ulFlags = BIF_RETURNFSANCESTORS;
 	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
 	if (idl == NULL)
@@ -515,7 +553,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafilepathButton()
 }
 
 
-//返工位的东西
+/*返工位的东西*/
 //开启返工位按钮
 void CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton()
 {
@@ -539,8 +577,9 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpenremodleButton()
 }
 
 
-//SIM卡数据下载模块函数
-//串口通用操作
+/*SIM卡数据下载模块函数*/
+
+/*串口通用操作*/
 //从注册表中寻找已经注册串口号然后展示出来
 void CMFCP3SIMPORTDlg::FindCommPort(CComboBox *pComboBox, CString &ComNo, int PortNO)
 {
@@ -688,12 +727,19 @@ void CMFCP3SIMPORTDlg::GetCommPort(CComboBox *pComboBox, CString &ComNo)
 
 	if (ComNo == "")
 	{
-		MessageBox(L"请先选择串口号！", L"提示信息", NULL);
+		if (LanguageFlag == FALSE)
+		{
+			MessageBox(L"请先选择串口号！", L"提示信息", NULL);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			MessageBox(L"Please chose the series port！", L"Hint", NULL);
+		}
 	}
 }
 
 
-//串口号1的逻辑操作
+/*串口号1的逻辑操作*/
 //点击串口号下拉框的时候会自动更新串口号
 void CMFCP3SIMPORTDlg::OnCbnDropdownPortlist1Combo()
 {
@@ -738,7 +784,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 
 						if (!PathFileExists(strtemp))
 						{
-							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							if (LanguageFlag == FALSE)
+							{
+								MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+							}
 							return;
 						}
 					break;
@@ -746,7 +799,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 				}
 				if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 				{
-					MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+					if (LanguageFlag == FALSE)
+					{
+						MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+					}
+					else if (LanguageFlag == TRUE)
+					{
+						MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+					}
 					return;
 				}
 			}
@@ -756,7 +816,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 			GetDlgItemText(IDC_SIMDATAFILEPATH_EDIT, m_simdatafilePath);
 			if (m_simdatafilePath == L"")
 			{
-				MessageBox(L"请选择SIM卡数据文件！", L"提示信息", NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"请选择SIM卡数据文件！", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Please chose the SimData file!", L"Hint", NULL);
+				}
 				return;
 			}
 		}
@@ -765,13 +832,27 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 
 		if (port1handler == NULL)
 		{
-			SetRicheditText(L"开启串口失败", 1);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"开启串口1失败", 1);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Open Serial Port1 failed!", 1);
+			}
 			return;
 		}
 
 		GetDlgItem(IDC_STARTDOWNLOAD1_BUTTON)->EnableWindow(TRUE);
 		simconnect1flag = 1;
-		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"断开");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"断开");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT1CONNECT_BUTTON,L"disconnect");
+		}
 		Port1SetOtherWindowFalse();
 		PortSetOtherWindowFalse();
 		OnBnClickedStartdownload1Button();
@@ -795,15 +876,38 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 		}
 		if (!CloseCom(port1handler))
 		{
-			SetRicheditText(L"关闭串口失败", 1);
-			MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"关闭串口1失败", 1);
+				MessageBox(L"关闭串口1失败", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Close Serial Port1 failed!", 1);
+				MessageBox(L"Close Serial Port1 failed!", L"Hint", NULL);
+			}
 			return;
 		}
 
-		SetRicheditText(L"关闭串口成功", 0);
+		if (LanguageFlag == FALSE)
+		{
+			SetRicheditText(L"关闭串口1成功", 0);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetRicheditText(L"Close Serial Port1 successful!", 0);
+		}
 		simconnect1flag = 0;
-		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"连接");
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"连接");
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"connect");
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"STOP");
+		}
 		Port1SetOtherWindowTrue();
 		GetDlgItem(IDC_STARTDOWNLOAD1_BUTTON)->EnableWindow(FALSE);
 
@@ -828,21 +932,42 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload1Button()
 		{
 			if (!PathFileExists(strSingleFilePath))
 			{
-				MessageBox(L"文件不存在！请选择其它数据文件！",L"提示信息",NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"文件不存在！请选择其它数据文件！", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"File does not exist! Please select other data files!", L"Hint", NULL);
+				}
 				return;
 			}
 			s_bSingleExit = FALSE;//主线程标志位
 			OpenThreadPoolTask(PORT_AUTO_THREAD);//开启主线程
 			simstart1flag = 1;
 			GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(FALSE);
-			SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"停止下载");
+			if (!LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"停止下载");
+			}
+			else if (LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"stop");
+			}
 		}
 		else if (simstart1flag == 1)
 		{
 			s_bSingleExit = TRUE;
 			simstart1flag = 0;
 			GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
-			SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
+			if (!LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
+			}
+			else if (LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"start");
+			}
 		}
 	}
 	//停止下载
@@ -854,12 +979,26 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload1Button()
 
 			if (!PathIsDirectory(strFolderpath))
 			{
-				MessageBox(L"您所选择的文件夹不存在！请重新选择！",L"提示信息",NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+				}
 				return;
 			}
 
 			simstart1flag = 1;
-			SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"停止下载");
+			if (!LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"停止下载");
+			}
+			else if (LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"stop");
+			}
 			m_Port1DownloadControl = TRUE;
 			if (simstart2flag == 0 && simstart3flag == 0 && simstart4flag == 0)
 			{
@@ -875,8 +1014,16 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload1Button()
 			}
 			m_Port1DownloadControl = FALSE;
 			simstart1flag = 0;
-			SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
-			SetDlgItemText(IDC_PORT1HINT_STATIC, L"暂停");
+			if (!LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
+				SetDlgItemText(IDC_PORT1HINT_STATIC, L"暂停");
+			}
+			else if (LanguageFlag)
+			{
+				SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"start");
+				SetDlgItemText(IDC_PORT1HINT_STATIC, L"STOP");
+			}
 			SetPort1EditEmpty();
 			StrFolder[0] = L"";
 		}
@@ -893,7 +1040,7 @@ void CMFCP3SIMPORTDlg::SetPort1EditEmpty()
 }
 
 
-//串口号2的逻辑操作
+/*串口号2的逻辑操作*/
 //点击串口号下拉框的时候会自动更新串口号
 void CMFCP3SIMPORTDlg::OnCbnDropdownPortlist2Combo()
 {
@@ -936,7 +1083,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 
 					if (!PathFileExists(strtemp))
 					{
-						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						if (LanguageFlag == FALSE)
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+						}
 						return;
 					}
 				break;
@@ -944,7 +1098,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
-				MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+				}
 				return;
 			}
 		}
@@ -953,12 +1114,26 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 
 		if (port2handler == NULL)
 		{
-			SetRicheditText(L"开启串口失败", 1);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"开启串口2失败", 1);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Open Serial Port1 failed!", 1);
+			}
 			return;
 		}
 
 		simconnect2flag = 1;
-		SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"断开");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"断开");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"disconnect");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD2_BUTTON)->EnableWindow(TRUE);
 		OnBnClickedStartdownload2Button();
 		GetDlgItem(IDC_PORTLIST2_COMBO)->EnableWindow(FALSE);
@@ -982,15 +1157,38 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 		}
 		if (!CloseCom(port2handler))
 		{
-			SetRicheditText(L"关闭串口失败", 1);
-			MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"关闭串口2失败", 1);
+				MessageBox(L"关闭串口2失败", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Close Serial Port2 failed!", 1);
+				MessageBox(L"Close Serial Port2 fail!", L"Hint", NULL);
+			}
 			return;
 		}
 
-		SetRicheditText(L"关闭串口成功", 0);
+		if (LanguageFlag == FALSE)
+		{
+			SetRicheditText(L"关闭串口2成功", 0);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetRicheditText(L"Close Serial Port2 successful!", 0);
+		}
 		simconnect2flag = 0;
-		SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"连接");
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"停止");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"连接");
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"connect");
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"STOP");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD2_BUTTON)->EnableWindow(FALSE);
 		GetDlgItem(IDC_PORTLIST2_COMBO)->EnableWindow(TRUE);
 		if (simconnect1flag == 0 && simconnect3flag == 0 && simconnect4flag == 0)
@@ -1013,11 +1211,25 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload2Button()
 
 		if (!PathIsDirectory(strFolderpath))
 		{
-			MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+			}
 			return;
 		}
 		simstart2flag = 1;
-		SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"停止下载");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"停止下载");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"stop");
+		}
 		m_Port2DownloadControl = TRUE;
 		if (simstart1flag == 0 && simstart3flag == 0 && simstart4flag == 0)
 		{
@@ -1033,8 +1245,16 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload2Button()
 		}
 		m_Port2DownloadControl = FALSE;
 		simstart2flag = 0;
-		SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"开始下载");
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"暂停");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"开始下载");
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"暂停");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"start");
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"STOP");
+		}
 		SetPort2EditEmpty();
 		StrFolder[1] = L"";
 	}
@@ -1050,7 +1270,7 @@ void CMFCP3SIMPORTDlg::SetPort2EditEmpty()
 }
 
 
-//串口号3的逻辑操作
+/*串口号3的逻辑操作*/
 //点击串口号下拉框的时候会自动更新串口号
 void CMFCP3SIMPORTDlg::OnCbnDropdownPortlist3Combo()
 {
@@ -1093,7 +1313,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 
 					if (!PathFileExists(strtemp))
 					{
-						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						if (LanguageFlag == FALSE)
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+						}
 						return;
 					}
 				break;
@@ -1101,7 +1328,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
-				MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+				}
 				return;
 			}
 		}
@@ -1110,12 +1344,26 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 
 		if (port3handler == NULL)
 		{
-			SetRicheditText(L"开启串口失败", 1);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"开启串口3失败", 1);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Open Serial Port3 failed!", 1);
+			}
 			return;
 		}
 
 		simconnect3flag = 1;
-		SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"断开");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"断开");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"disconnect");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD3_BUTTON)->EnableWindow(TRUE);
 		OnBnClickedStartdownload3Button();
 		GetDlgItem(IDC_PORTLIST3_COMBO)->EnableWindow(FALSE);
@@ -1138,15 +1386,38 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 		}
 		if (!CloseCom(port3handler))
 		{
-			SetRicheditText(L"关闭串口失败", 1);
-			MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"关闭串口3失败", 1);
+				MessageBox(L"关闭串口3失败", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Close Serial Port3 failed!", 1);
+				MessageBox(L"Close Serial Port3 failed!", L"Hint", NULL);
+			}
 			return;
 		}
 
-		SetRicheditText(L"关闭串口成功", 0);
+		if (LanguageFlag == FALSE)
+		{
+			SetRicheditText(L"关闭串口3成功", 0);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetRicheditText(L"Close Serial Port3 successful!", 0);
+		}
 		simconnect3flag = 0;
-		SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"连接");
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"停止");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"连接");
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"connect");
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"STOP");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD3_BUTTON)->EnableWindow(FALSE);
 		GetDlgItem(IDC_PORTLIST3_COMBO)->EnableWindow(TRUE);
 		if (simconnect1flag == 0 && simconnect2flag == 0 && simconnect4flag == 0)
@@ -1169,11 +1440,25 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload3Button()
 
 		if (!PathIsDirectory(strFolderpath))
 		{
-			MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+			}
 			return;
 		}
 		simstart3flag = 1;
-		SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"停止下载");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"停止下载");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"stop");
+		}
 		m_Port3DownloadControl = TRUE;
 		if (simstart2flag == 0 && simstart1flag == 0 && simstart4flag == 0)
 		{
@@ -1189,8 +1474,16 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload3Button()
 		}
 		m_Port3DownloadControl = FALSE;
 		simstart3flag = 0;
-		SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"开始下载");
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"暂停");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"开始下载");
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"暂停");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"start");
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"STOP");
+		}
 		SetPort3EditEmpty();
 		StrFolder[2] = L"";
 	}
@@ -1206,7 +1499,7 @@ void CMFCP3SIMPORTDlg::SetPort3EditEmpty()
 }
 
 
-//串口号4的逻辑操作
+/*串口号4的逻辑操作*/
 //点击串口号下拉框的时候会自动更新串口号
 void CMFCP3SIMPORTDlg::OnCbnDropdownPortlist4Combo()
 {
@@ -1249,7 +1542,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 
 					if (!PathFileExists(strtemp))
 					{
-						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						if (LanguageFlag == FALSE)
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+						}
 						return;
 					}
 				break;
@@ -1258,7 +1558,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
 			{
-				MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+				}
 				return;
 			}
 		}
@@ -1267,12 +1574,26 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 
 		if (port4handler == NULL)
 		{
-			SetRicheditText(L"开启串口失败", 1);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"开启串口4失败", 1);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Open Serial Port4 failed!", 1);
+			}
 			return;
 		}
 
 		simconnect4flag = 1;
-		SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"断开");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"断开");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"disconnect");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD4_BUTTON)->EnableWindow(TRUE);
 		OnBnClickedStartdownload4Button();
 		GetDlgItem(IDC_PORTLIST4_COMBO)->EnableWindow(FALSE);
@@ -1295,15 +1616,38 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 		}
 		if (!CloseCom(port4handler))
 		{
-			SetRicheditText(L"关闭串口失败", 1);
-			MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				SetRicheditText(L"关闭串口4失败", 1);
+				MessageBox(L"关闭串口4失败", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				SetRicheditText(L"Close Serial Port4 failed!", 1);
+				MessageBox(L"Close Serial Port4 failed!", L"Hint", NULL);
+			}
 			return;
 		}
 
-		SetRicheditText(L"关闭串口成功", 0);
+		if (LanguageFlag == FALSE)
+		{
+			SetRicheditText(L"关闭串口4成功", 0);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetRicheditText(L"Close Serial Port4 successful!", 0);
+		}
 		simconnect4flag = 0;
-		SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"连接");
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"停止");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"连接");
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"connect");
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"STOP");
+		}
 		GetDlgItem(IDC_STARTDOWNLOAD4_BUTTON)->EnableWindow(FALSE);
 		GetDlgItem(IDC_PORTLIST4_COMBO)->EnableWindow(TRUE);
 
@@ -1327,11 +1671,25 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload4Button()
 
 		if (!PathIsDirectory(strFolderpath))
 		{
-			MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				MessageBox(L"您所选择的文件夹不存在！请重新选择！", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+			}
 			return;
 		}
 		simstart4flag = 1;
-		SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"停止下载");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"停止下载");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"stop");
+		}
 		m_Port4DownloadControl = TRUE;
 		if (simstart2flag == 0 && simstart3flag == 0 && simstart1flag == 0)
 		{
@@ -1347,8 +1705,16 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload4Button()
 		}
 		m_Port4DownloadControl = FALSE;
 		simstart4flag = 0;
-		SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"开始下载");
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"暂停");
+		if (!LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"开始下载");
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"暂停");
+		}
+		else if (LanguageFlag)
+		{
+			SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"start");
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"STOP");
+		}
 		SetPort4EditEmpty();
 		StrFolder[3] = L"";
 	}
@@ -1364,7 +1730,7 @@ void CMFCP3SIMPORTDlg::SetPort4EditEmpty()
 }
 
 
-//一键下载的逻辑操作
+/*一键下载的逻辑操作*/
 //点击一键连接按钮
 void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 {
@@ -1391,7 +1757,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 
 			if (!PathFileExists(strtemp))
 			{
-				MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+				if (LanguageFlag == FALSE)
+				{
+					MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+				}
+				else if (LanguageFlag == TRUE)
+				{
+					MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+				}
 				return;
 			}
 		break;
@@ -1400,7 +1773,14 @@ void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 
 	if (m_simdatafolderPath == L"" || m_simdatafolderPath.Find(L"OK") >= 0)
 	{
-		MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+		if (LanguageFlag == FALSE)
+		{
+			MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+		}
 		return;
 	}
 	if (m_portlist1Combo.GetCurSel() >= 0&&simconnect1flag==0)
@@ -1478,7 +1858,7 @@ CString CMFCP3SIMPORTDlg::CommandReadUnit(int strcommandNo)
 }
 
 
-//线程主控函数
+/*线程主控函数*/
 //开启线程池函数
 void CMFCP3SIMPORTDlg::OpenThreadPoolTask(int Command)
 {
@@ -1718,26 +2098,38 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 
 						if (!PathFileExists(strFolderFile))
 						{
-							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							if (LanguageFlag == FALSE)
+							{
+								MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+							}
 							dlg->OnBnClickedAutomultiplestartButton();
 							return;
 						}
 
-						//先判断种子文件是不是已经下载过的
-						ADOManage adosinglesimdatamanage;
-						adosinglesimdatamanage.ConnSQL();
-						singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);
-						adosinglesimdatamanage.CloseAll();
-
-						//是的话就将文件直接移动到OK文件夹
-						if (singleflag == 0)
+						//关数据库标志位为FALSE就代表要执行数据库操作
+						if (DatabaseFlag == FALSE)
 						{
-							bFind = TRUE;
-							MoveFileEx(strFolderpath + strCIDfile + "\\", strOKFolderpath + strCIDfile + "\\", MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
-							strFolderFile = L"";
-							finder.Close();
-							continue;
+							//先判断种子文件是不是已经下载过的
+							ADOManage adosinglesimdatamanage;
+							adosinglesimdatamanage.ConnSQL();
+							singleflag = adosinglesimdatamanage.SimDataNoIsExitSql(strCIDfile);
+							adosinglesimdatamanage.CloseAll();
+
+							//是的话就将文件直接移动到OK文件夹
+							if (singleflag == 0)
+							{
+								bFind = TRUE;
+								MoveFileEx(strFolderpath + strCIDfile + "\\", strOKFolderpath + strCIDfile + "\\", MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+								strFolderFile = L"";
+								finder.Close();
+								continue;
+							}
 						}
+
 						findfileend = 1;
 
 					}
@@ -1956,7 +2348,14 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 					if (StrFolder[0] == L""&&StrFolder[1] == L""&&StrFolder[2] == L""&&StrFolder[3] == L""&&bFind == 0)
 					{
 						dlg->OnBnClickedAutomultiplestartButton();
-						::MessageBox(dlg->m_hWnd, L"文件已经全部下载完成", L"提示信息", NULL);
+						if (LanguageFlag == FALSE)
+						{
+							::MessageBox(dlg->m_hWnd, L"文件已经全部下载完成", L"提示信息", NULL);
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							::MessageBox(dlg->m_hWnd, L"All files have been downloaded!", L"Hint", NULL);
+						}
 					}
 				}
 				continue;
@@ -1990,7 +2389,7 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 }
 
 
-//单文件串口下载
+/*单文件串口下载*/
 //单文件串口1的test写线程
 void CMFCP3SIMPORTDlg::SingleDownloadWrite1Port1Thread(LPVOID lpParam)
 {
@@ -2016,11 +2415,14 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite1Port1Thread(LPVOID lpParam)
 	dlg->SetPort1EditEmpty();
 	//dlg->GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
 	m_Port1SINGLEDownloadWrite1 = TRUE;
-
 	::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Ready, NULL);
-
 	ClearCommError(dlg->port1handler, &dwErrorFlags, &ComStat);
+	
+	if (DatabaseFlag == FALSE)
+	{
 	::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_SimDataNoIsExit, NULL);
+	}
+	
 	Sleep(50);
 	do
 	{
@@ -2313,124 +2715,143 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
 
-							int singleflag;
-							CString strport1RID, strport1IMEI;
-							ADOManage adoport1manage3;
-							adoport1manage3.ConnSQL();
-
-							dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
-							dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
-
-							singleflag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
-
-							if (singleflag == 0)
+							if (DatabaseFlag == FALSE)
 							{
-								m_Port1SINGLEDownloadWrite2 = FALSE;
-								m_Port1SINGLEDownloadRead2 = FALSE;
-								m_Port1SINGLEDownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"耦合漏测", 0);
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
-								adoport1manage3.CloseAll();
+								int singleflag;
+								CString strport1RID, strport1IMEI;
+								ADOManage adoport1manage3;
+								adoport1manage3.ConnSQL();
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port1testflag = TRUE;
-								int port1testcount = 0;
-								char port1teststr[100];
-								memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-								DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
-								BOOL port1testbReadStat, port1testbWriteStat;
-								CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port1testComStat;
+								dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
+								dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
 
-								ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
-								do
+								singleflag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
+
+								if (singleflag == 0)
 								{
-									port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+									m_Port1SINGLEDownloadWrite2 = FALSE;
+									m_Port1SINGLEDownloadRead2 = FALSE;
+									m_Port1SINGLEDownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										PrintLog(L"耦合漏测\r\n", 0);
+										SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										PrintLog(L"CoupleFail\r\n", 0);
+										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
+									}
+									adoport1manage3.CloseAll();
 
-									Sleep(90);
-									port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
-									if (port1testbReadStat)
-									{
-										port1teststrread = port1teststr;
-										if (port1teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port1testcount = 0;
-										}
-									}
-									port1testcount++;
-									if (port1testcount == 5)
-									{
-										port1testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port1testflag = TRUE;
+									int port1testcount = 0;
+									char port1teststr[100];
 									memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-									dlg->PrintLog(L"发:" + port1teststrcommand, 0);
-									PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port1testflag);
+									DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+									BOOL port1testbReadStat, port1testbWriteStat;
+									CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port1testComStat;
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
-								dlg->SingleDownloadClosePort1Thread();
-								dlg->SingleDownloadRestPort1Thread();
-								return ;
-							}
-							singleflag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
-							if (singleflag == 0)
-							{
-								m_Port1SINGLEDownloadWrite2 = FALSE;
-								m_Port1SINGLEDownloadRead2 = FALSE;
-								m_Port1SINGLEDownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"工位已测", 0);
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
-								adoport1manage3.CloseAll();
+									ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+									do
+									{
+										port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port1testflag = TRUE;
-								int port1testcount = 0;
-								char port1teststr[100];
-								memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-								DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
-								BOOL port1testbReadStat, port1testbWriteStat;
-								CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port1testComStat;
+										Sleep(90);
+										port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+										if (port1testbReadStat)
+										{
+											port1teststrread = port1teststr;
+											if (port1teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port1testcount = 0;
+											}
+										}
+										port1testcount++;
+										if (port1testcount == 5)
+										{
+											port1testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+										dlg->PrintLog(L"发:" + port1teststrcommand, 0);
+										PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port1testflag);
 
-								ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
-								do
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
+									dlg->SingleDownloadClosePort1Thread();
+									dlg->SingleDownloadRestPort1Thread();
+									return;
+								}
+								singleflag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
+								if (singleflag == 0)
 								{
-									port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+									m_Port1SINGLEDownloadWrite2 = FALSE;
+									m_Port1SINGLEDownloadRead2 = FALSE;
+									m_Port1SINGLEDownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										dlg->PrintLog(L"工位已测", 0);
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										dlg->PrintLog(L"Already downloaded", 0);
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"Already downloaded");
+									}
+									adoport1manage3.CloseAll();
 
-									Sleep(90);
-									port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
-									if (port1testbReadStat)
-									{
-										port1teststrread = port1teststr;
-										if (port1teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port1testcount = 0;
-										}
-									}
-									port1testcount++;
-									if (port1testcount == 5)
-									{
-										port1testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port1testflag = TRUE;
+									int port1testcount = 0;
+									char port1teststr[100];
 									memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-									dlg->PrintLog(L"发:" + port1teststrcommand, 0);
-									PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port1testflag);
+									DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+									BOOL port1testbReadStat, port1testbWriteStat;
+									CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port1testComStat;
+
+									ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+									do
+									{
+										port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+										if (port1testbReadStat)
+										{
+											port1teststrread = port1teststr;
+											if (port1teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port1testcount = 0;
+											}
+										}
+										port1testcount++;
+										if (port1testcount == 5)
+										{
+											port1testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+										dlg->PrintLog(L"发:" + port1teststrcommand, 0);
+										PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port1testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
-								dlg->SingleDownloadClosePort1Thread();
-								dlg->SingleDownloadRestPort1Thread();
-								return ;
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
+									dlg->SingleDownloadClosePort1Thread();
+									dlg->SingleDownloadRestPort1Thread();
+									return;
+								}
+								//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
+								adoport1manage3.CloseAll();
 							}
-							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_IsExit, NULL);
-							adoport1manage3.CloseAll();
 						}
 						else
 						{
@@ -2560,8 +2981,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);//先插入失败记录
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);//先插入失败记录
+			}
 
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE, port1failflag = TRUE;
@@ -2636,6 +3059,50 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 		}
 	} while (m_Port1SINGLEDownloadWrite3);
 
+	if (AgingFlag == TRUE)
+	{
+		if (m_Port1SINGLEDownloadWrite3 == FALSE)
+		{
+			//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			BOOL port1testflag = TRUE;
+			int port1testcount = 0;
+			char port1teststr[100];
+			memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+			DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+			BOOL port1testbReadStat, port1testbWriteStat;
+			CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+			COMSTAT port1testComStat;
+
+			ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+			do
+			{
+				port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+
+				Sleep(90);
+				port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+				if (port1testbReadStat)
+				{
+					port1teststrread = port1teststr;
+					if (port1teststrread.Find(L"TEST_OK") >= 0)
+					{
+						port1testcount = 0;
+					}
+				}
+				port1testcount++;
+				if (port1testcount == 5)
+				{
+					port1testflag = FALSE;
+				}
+				Sleep(10);
+				memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+				dlg->PrintLog(L"发:" + port1teststrcommand, 0);
+				PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			} while (port1testflag);
+		}
+
+		dlg->SingleDownloadRestPort1Thread();
+	}
+
 	//dlg->SingleDownloadRestPort1Thread();
 	return;
 }
@@ -2669,12 +3136,20 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 			{
 					if (strread.Find(L"SoftSim,OK") >= 0)
 					{
+						if (AgingFlag == TRUE)
+						{
+							::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
+						}
 						//::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
 						//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
 					}
 					if (strread.Find(L"Error") >= 0)
 					{
-						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_ErrorInsert, NULL);
+						if (DatabaseFlag == FALSE)
+						{
+							::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_ErrorInsert, NULL);
+						}
 						m_Port1SINGLEDownloadWrite3 = FALSE;
 						m_Port1SINGLEDownloadRead3 = FALSE;
 						m_Port1SINGLEDownloadReadEnd3 = FALSE;
@@ -2755,6 +3230,12 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 
+	//老化指令被关掉之后，就不继续开启老化读写线程了，然后在文件写线程中进行线程的Rest
+	if (AgingFlag == TRUE)
+	{
+		return;
+	}
+
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Single_Write4, NULL);
 	return;
 }
@@ -2793,7 +3274,10 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite4Port1Thread(LPVOID lpParam)
 			//bWriteStat = WriteFile(dlg->port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 			//dlg->PrintLog(L"发:" + strcommand, 0);
 
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_ErrorInsert, NULL);
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_ErrorInsert, NULL);
+			}
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE, port1failflag = TRUE;
 			int port1testcount = 0;
@@ -2962,7 +3446,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadClosePort1Thread()
 
 //多文件串口下载
 
-//串口1下载逻辑
+/*串口1下载逻辑*/
 //串口1的test写线程
 void CMFCP3SIMPORTDlg::DownloadWrite1Port1Thread(LPVOID lpParam)
 {
@@ -3266,132 +3750,151 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 						{
 							dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, strcount);
 
-							//下面是数据库操作，判断此台机子在数据库的状况
-							int port1flag;
-							CString strport1RID, strport1IMEI;
-							ADOManage adoport1manage3;
-							adoport1manage3.ConnSQL();
-							dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
-							dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
-
-							port1flag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
-							if (port1flag == 0)
+							//关数据库标志位为FALSE就代表要执行数据库操作
+							if (DatabaseFlag == FALSE)
 							{
-								m_Port1DownloadWrite2 = FALSE;
-								m_Port1DownloadRead2 = FALSE;
-								m_Port1DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"耦合漏测", 1);
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
-								adoport1manage3.CloseAll();
+								//下面是数据库操作，判断此台机子在数据库的状况
+								int port1flag;
+								CString strport1RID, strport1IMEI;
+								ADOManage adoport1manage3;
+								adoport1manage3.ConnSQL();
+								dlg->GetDlgItemText(IDC_PORT1RID_EDIT, strport1RID);
+								dlg->GetDlgItemText(IDC_PORT1IMEI_EDIT, strport1IMEI);
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port1testflag = TRUE;
-								int port1testcount = 0;
-								char port1teststr[100];
-								memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-								DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
-								BOOL port1testbReadStat, port1testbWriteStat;
-								CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port1testComStat;
-
-								ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
-								do
+								port1flag = adoport1manage3.SimDataLastStationSql(strport1IMEI);
+								if (port1flag == 0)
 								{
-									port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+									m_Port1DownloadWrite2 = FALSE;
+									m_Port1DownloadRead2 = FALSE;
+									m_Port1DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										PrintLog(L"耦合漏测\r\n", 1);
+										SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										PrintLog(L"CoupleFail\r\n", 1);
+										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
+									}
+									adoport1manage3.CloseAll();
 
-									Sleep(90);
-									port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
-									if (port1testbReadStat)
-									{
-										port1teststrread = port1teststr;
-										if (port1teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port1testcount = 0;
-										}
-									}
-									port1testcount++;
-									if (port1testcount == 5)
-									{
-										port1testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port1testflag = TRUE;
+									int port1testcount = 0;
+									char port1teststr[100];
 									memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-									dlg->PrintLog(L"发:" + port1teststrcommand, 1);
-									PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port1testflag);
+									DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+									BOOL port1testbReadStat, port1testbWriteStat;
+									CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port1testComStat;
+
+									ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+									do
+									{
+										port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+										if (port1testbReadStat)
+										{
+											port1teststrread = port1teststr;
+											if (port1teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port1testcount = 0;
+											}
+										}
+										port1testcount++;
+										if (port1testcount == 5)
+										{
+											port1testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+										dlg->PrintLog(L"发:" + port1teststrcommand, 1);
+										PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port1testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
-								dlg->DownloadClosePort1Thread();
-								dlg->DownloadRestPort1Thread();
-								return ;
-							}
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
+									dlg->DownloadClosePort1Thread();
+									dlg->DownloadRestPort1Thread();
+									return;
+								}
 
-							port1flag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
+								port1flag = adoport1manage3.SimDataIsExitSql(strport1RID, strport1IMEI);
 
-							if (port1flag == 0)
-							{
-								m_Port1DownloadWrite2 = FALSE;
-								m_Port1DownloadRead2 = FALSE;
-								m_Port1DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"工位已测", 1);
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
-								//if (LastPort1RID != strport1RID&&LastPort1IMEI != strport1IMEI)
-								//{
-								//	dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
-								//}
-								adoport1manage3.CloseAll();
-
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port1testflag = TRUE;
-								int port1testcount = 0;
-								char port1teststr[100];
-								memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-								DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
-								BOOL port1testbReadStat, port1testbWriteStat;
-								CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port1testComStat;
-
-								ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
-								do
+								if (port1flag == 0)
 								{
-									port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+									m_Port1DownloadWrite2 = FALSE;
+									m_Port1DownloadRead2 = FALSE;
+									m_Port1DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										dlg->PrintLog(L"工位已测", 1);
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										dlg->PrintLog(L"Already downloaded", 1);
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"Already downloaded");
+									}
+									//if (LastPort1RID != strport1RID&&LastPort1IMEI != strport1IMEI)
+									//{
+									//	dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"工位已测");
+									//}
+									adoport1manage3.CloseAll();
 
-									Sleep(90);
-									port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
-									if (port1testbReadStat)
-									{
-										port1teststrread = port1teststr;
-										if (port1teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port1testcount = 0;
-										}
-									}
-									port1testcount++;
-									if (port1testcount == 5)
-									{
-										port1testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port1testflag = TRUE;
+									int port1testcount = 0;
+									char port1teststr[100];
 									memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
-									dlg->PrintLog(L"发:" + port1teststrcommand, 1);
-									PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port1testflag);
+									DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+									BOOL port1testbReadStat, port1testbWriteStat;
+									CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port1testComStat;
+
+									ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+									do
+									{
+										port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+										if (port1testbReadStat)
+										{
+											port1teststrread = port1teststr;
+											if (port1teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port1testcount = 0;
+											}
+										}
+										port1testcount++;
+										if (port1testcount == 5)
+										{
+											port1testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+										dlg->PrintLog(L"发:" + port1teststrcommand, 1);
+										PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port1testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
-								dlg->DownloadClosePort1Thread();
-								dlg->DownloadRestPort1Thread();
-								return;
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT1RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT1IMEI_EDIT, L"");
+									dlg->DownloadClosePort1Thread();
+									dlg->DownloadRestPort1Thread();
+									return;
+								}
+								adoport1manage3.CloseAll();
+								//LastPort1RID = strport1RID;
+								//LastPort1IMEI = strport1IMEI;
 							}
-							adoport1manage3.CloseAll();
-							//LastPort1RID = strport1RID;
-							//LastPort1IMEI = strport1IMEI;
-
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_IsExit, NULL);
 						}
 						else
@@ -3525,7 +4028,11 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		//循环中先判断countend也就是指令是否已经发了n次，如果发了n次没收到任何回应，就表示机子那边没回应，此时程序需要准备结束了
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);//先插入失败记录
+			//关数据库标志位为FALSE就代表要执行数据库操作
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);//先插入失败记录
+			}
 
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE, port1failflag = TRUE;
@@ -3601,7 +4108,49 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		}
 	} while (m_Port1DownloadWrite3);
 
-	//dlg->DownloadRestPort1Thread();
+	if (AgingFlag == TRUE)
+	{
+		if (m_Port1DownloadWrite3 == FALSE)
+		{
+			//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			BOOL port1testflag = TRUE;
+			int port1testcount = 0;
+			char port1teststr[100];
+			memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+			DWORD port1testreadreal = 0, port1testdwBytesWrite, port1testdwErrorFlags;
+			BOOL port1testbReadStat, port1testbWriteStat;
+			CString port1teststrread, port1teststrcommand = L"AT^GT_CM=TEST\r\n";
+			COMSTAT port1testComStat;
+
+			ClearCommError(dlg->port1handler, &port1testdwErrorFlags, &port1testComStat);
+			do
+			{
+				port1testbWriteStat = WriteFile(dlg->port1handler, CT2A(port1teststrcommand), port1teststrcommand.GetLength(), &port1testdwBytesWrite, NULL);
+
+				Sleep(90);
+				port1testbReadStat = ReadFile(dlg->port1handler, port1teststr, 100, &port1testreadreal, 0);
+				if (port1testbReadStat)
+				{
+					port1teststrread = port1teststr;
+					if (port1teststrread.Find(L"TEST_OK") >= 0)
+					{
+						port1testcount = 0;
+					}
+				}
+				port1testcount++;
+				if (port1testcount == 5)
+				{
+					port1testflag = FALSE;
+				}
+				Sleep(10);
+				memset(port1teststr, 0, sizeof(port1teststr) / sizeof(port1teststr[0]));
+				dlg->PrintLog(L"发:" + port1teststrcommand, 1);
+				PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			} while (port1testflag);
+		}
+
+		dlg->DownloadRestPort1Thread();
+	}
 	return;
 }
 
@@ -3634,11 +4183,27 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 			{
 				if (strread.Find(L"SoftSim,OK") >= 0)
 				{
+					if (AgingFlag == TRUE)
+					{
+						CString strport1folderpath, strport1foldercut;
+						strport1folderpath = StrFolder[0];//路径先复制到一个临时变量
+						strport1folderpath = strport1folderpath.Left(strport1folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+						strport1foldercut = strport1folderpath.Right(13);//然后将种子文件夹名称切割出来
+						Sleep(20);
+						MoveFileEx(strport1folderpath, strOKFolderpath + strport1foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+						StrFolder[0] = L"";
+						Sleep(20);
+						::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
+						//SetPort1EditEmpty();
+					}
 					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_SinglePort_OkInsert, NULL);
 				}
 				else if (strread.Find(L"Error") >= 0)
 				{
-					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
+					if (DatabaseFlag == FALSE)
+					{
+						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
+					}
 
 					m_Port1DownloadWrite3 = FALSE;
 					m_Port1DownloadRead3 = FALSE;
@@ -3720,6 +4285,12 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 	dlg->PrintLog(L"收:" + strread, 1);
 	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+	
+	//老化指令被关掉之后，就不继续开启老化读写线程了，然后在文件写线程中进行线程的Rest
+	if (AgingFlag == TRUE)
+	{
+		return;
+	}
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port1_Write4, NULL);
 	//dlg->DownloadRestPort1Thread();
 }
@@ -3755,7 +4326,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port1Thread(LPVOID lpParam)
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
+			}
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE, port1failflag = TRUE;
 			int port1testcount = 0;
@@ -3909,7 +4483,23 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port1Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+				//当没有关闭数据库的时候才启用数据库
+				if (DatabaseFlag == FALSE)
+				{
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_OkInsert, NULL);
+				}
+				else if (DatabaseFlag == TRUE)
+				{
+				CString strport1folderpath, strport1foldercut;
+				strport1folderpath = StrFolder[0];//路径先复制到一个临时变量
+				strport1folderpath = strport1folderpath.Left(strport1folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+				strport1foldercut = strport1folderpath.Right(13);//然后将种子文件夹名称切割出来
+				Sleep(20);
+				MoveFileEx(strport1folderpath, strOKFolderpath + strport1foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+				StrFolder[0] = L"";
+				Sleep(20);
+				::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint1_Success, NULL);
+				}
 				m_Port1DownloadRead4 = FALSE;
 				m_Port1DownloadWrite4 = FALSE;
 			}
@@ -3962,7 +4552,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort1Thread()
 }
 
 
-//串口2下载逻辑
+/*串口2下载逻辑*/
 //串口2的test写线程
 void CMFCP3SIMPORTDlg::DownloadWrite1Port2Thread(LPVOID lpParam)
 {
@@ -4251,124 +4841,144 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 						{
 							dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, strcount);
 
-							int port2flag;
-							CString strport2RID, strport2IMEI;
-							ADOManage adoport2manage4;
-							adoport2manage4.ConnSQL();
-
-							dlg->GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
-							dlg->GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
-
-							port2flag = adoport2manage4.SimDataLastStationSql(strport2IMEI);
-							if (port2flag == 0)
+							//关数据库标志位为FALSE就代表要执行数据库操作
+							if (DatabaseFlag == FALSE)
 							{
-								m_Port2DownloadWrite2 = FALSE;
-								m_Port2DownloadRead2 = FALSE;
-								m_Port2DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"耦合漏测", 2);
-								dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
-								adoport2manage4.CloseAll();
+								int port2flag;
+								CString strport2RID, strport2IMEI;
+								ADOManage adoport2manage4;
+								adoport2manage4.ConnSQL();
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port2testflag = TRUE;
-								int port2testcount = 0;
-								char port2teststr[100];
-								memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
-								DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
-								BOOL port2testbReadStat, port2testbWriteStat;
-								CString port2teststrread, port2teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port2testComStat;
+								dlg->GetDlgItemText(IDC_PORT2RID_EDIT, strport2RID);
+								dlg->GetDlgItemText(IDC_PORT2IMEI_EDIT, strport2IMEI);
 
-								ClearCommError(dlg->port2handler, &port2testdwErrorFlags, &port2testComStat);
-								do
+								port2flag = adoport2manage4.SimDataLastStationSql(strport2IMEI);
+								if (port2flag == 0)
 								{
-									port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
+									m_Port2DownloadWrite2 = FALSE;
+									m_Port2DownloadRead2 = FALSE;
+									m_Port2DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										PrintLog(L"耦合漏测\r\n", 2);
+										SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										PrintLog(L"CoupleFail\r\n", 2);
+										SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
+									}
+									adoport2manage4.CloseAll();
 
-									Sleep(90);
-									port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
-									if (port2testbReadStat)
-									{
-										port2teststrread = port2teststr;
-										if (port2teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port2testcount = 0;
-										}
-									}
-									port2testcount++;
-									if (port2testcount == 5)
-									{
-										port2testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port2testflag = TRUE;
+									int port2testcount = 0;
+									char port2teststr[100];
 									memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
-									dlg->PrintLog(L"发:" + port2teststrcommand, 2);
-									PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port2testflag);
+									DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
+									BOOL port2testbReadStat, port2testbWriteStat;
+									CString port2teststrread, port2teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port2testComStat;
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT2RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, L"");
-								dlg->DownloadClosePort2Thread();
-								dlg->DownloadRestPort2Thread();
-								return ;
-							}
+									ClearCommError(dlg->port2handler, &port2testdwErrorFlags, &port2testComStat);
+									do
+									{
+										port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
 
-							port2flag = adoport2manage4.SimDataIsExitSql(strport2RID, strport2IMEI);
-							if (port2flag == 0)
-							{
-								m_Port2DownloadWrite2 = FALSE;
-								m_Port2DownloadRead2 = FALSE;
-								m_Port2DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"工位已测", 2);
-								dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
-								adoport2manage4.CloseAll();
+										Sleep(90);
+										port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
+										if (port2testbReadStat)
+										{
+											port2teststrread = port2teststr;
+											if (port2teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port2testcount = 0;
+											}
+										}
+										port2testcount++;
+										if (port2testcount == 5)
+										{
+											port2testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
+										dlg->PrintLog(L"发:" + port2teststrcommand, 2);
+										PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port2testflag);
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port2testflag = TRUE;
-								int port2testcount = 0;
-								char port2teststr[100];
-								memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
-								DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
-								BOOL port2testbReadStat, port2testbWriteStat;
-								CString port2teststrread, port2teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port2testComStat;
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT2RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, L"");
+									dlg->DownloadClosePort2Thread();
+									dlg->DownloadRestPort2Thread();
+									return;
+								}
 
-								ClearCommError(dlg->port2handler, &port2testdwErrorFlags, &port2testComStat);
-								do
+								port2flag = adoport2manage4.SimDataIsExitSql(strport2RID, strport2IMEI);
+								if (port2flag == 0)
 								{
-									port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
+									m_Port2DownloadWrite2 = FALSE;
+									m_Port2DownloadRead2 = FALSE;
+									m_Port2DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										dlg->PrintLog(L"工位已测", 2);
+										dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"工位已测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										dlg->PrintLog(L"Already downloaded", 2);
+										dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"Already downloaded");
+									}
+									adoport2manage4.CloseAll();
 
-									Sleep(90);
-									port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
-									if (port2testbReadStat)
-									{
-										port2teststrread = port2teststr;
-										if (port2teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port2testcount = 0;
-										}
-									}
-									port2testcount++;
-									if (port2testcount == 5)
-									{
-										port2testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port2testflag = TRUE;
+									int port2testcount = 0;
+									char port2teststr[100];
 									memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
-									dlg->PrintLog(L"发:" + port2teststrcommand, 2);
-									PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port2testflag);
+									DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
+									BOOL port2testbReadStat, port2testbWriteStat;
+									CString port2teststrread, port2teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port2testComStat;
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT2RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, L"");
-								dlg->DownloadClosePort2Thread();
-								dlg->DownloadRestPort2Thread();
-								return ;
+									ClearCommError(dlg->port2handler, &port2testdwErrorFlags, &port2testComStat);
+									do
+									{
+										port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
+										if (port2testbReadStat)
+										{
+											port2teststrread = port2teststr;
+											if (port2teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port2testcount = 0;
+											}
+										}
+										port2testcount++;
+										if (port2testcount == 5)
+										{
+											port2testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
+										dlg->PrintLog(L"发:" + port2teststrcommand, 2);
+										PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port2testflag);
+
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT2RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT2IMEI_EDIT, L"");
+									dlg->DownloadClosePort2Thread();
+									dlg->DownloadRestPort2Thread();
+									return;
+								}
+								//LastPort2RID = strport2RID;
+								//LastPort2IMEI = strport2IMEI;
+								adoport2manage4.CloseAll();
 							}
-							//LastPort2RID = strport2RID;
-							//LastPort2IMEI = strport2IMEI;
-							adoport2manage4.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_IsExit, NULL);
 						}
 						else 
@@ -4499,7 +5109,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);//先插入失败记录
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);//先插入失败记录
+			}
 
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port2testflag = TRUE, port2failflag = TRUE;
@@ -4574,7 +5187,49 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		}
 	} while (m_Port2DownloadWrite3);
 
-	//dlg->DownloadRestPort2Thread();
+	if (AgingFlag == TRUE)
+	{
+		if (m_Port2DownloadWrite3 == FALSE)
+		{
+			//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			BOOL port2testflag = TRUE;
+			int port2testcount = 0;
+			char port2teststr[100];
+			memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
+			DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
+			BOOL port2testbReadStat, port2testbWriteStat;
+			CString port2teststrread, port2teststrcommand = L"AT^GT_CM=TEST\r\n";
+			COMSTAT port2testComStat;
+
+			ClearCommError(dlg->port2handler, &port2testdwErrorFlags, &port2testComStat);
+			do
+			{
+				port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
+
+				Sleep(90);
+				port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
+				if (port2testbReadStat)
+				{
+					port2teststrread = port2teststr;
+					if (port2teststrread.Find(L"TEST_OK") >= 0)
+					{
+						port2testcount = 0;
+					}
+				}
+				port2testcount++;
+				if (port2testcount == 5)
+				{
+					port2testflag = FALSE;
+				}
+				Sleep(10);
+				memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
+				dlg->PrintLog(L"发:" + port2teststrcommand, 2);
+				PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			} while (port2testflag);
+		}
+
+		dlg->DownloadRestPort2Thread();
+	}
 	return;
 }
 
@@ -4607,11 +5262,26 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 			{
 				if (strread.Find(L"SoftSim,OK") >= 0)
 				{
+					if (AgingFlag == TRUE)
+					{
+						CString strport2folderpath, strport2foldercut;
+						strport2folderpath = StrFolder[1];//路径先复制到一个临时变量
+						strport2folderpath = strport2folderpath.Left(strport2folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+						strport2foldercut = strport2folderpath.Right(13);//然后将种子文件夹名称切割出来
+						Sleep(20);
+						MoveFileEx(strport2folderpath, strOKFolderpath + strport2foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+						StrFolder[1] = L"";
+						Sleep(20);
+						::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Success, NULL);
+					}
 					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
 				}
 				else if (strread.Find(L"Error") >= 0)
 				{
-					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
+					if (DatabaseFlag == FALSE)
+					{
+						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
+					}
 					m_Port2DownloadWrite3 = FALSE;
 					m_Port2DownloadRead3 = FALSE;
 					m_Port2DownloadReadEnd3 = FALSE;
@@ -4691,6 +5361,10 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port2handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort2Thread();
+	if (AgingFlag == TRUE)
+	{
+		return;
+	}
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port2_Write4, NULL);
 }
 
@@ -4723,7 +5397,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port2Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
+			}
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port2testflag = TRUE, port2failflag = TRUE;
 			int port2testcount = 0;
@@ -4879,8 +5556,23 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port2Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-
-				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
+				//当没有关闭数据库的时候才启用数据库
+				if (DatabaseFlag == FALSE)
+				{
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_OkInsert, NULL);
+				}
+				else if (DatabaseFlag == TRUE)
+				{
+					CString strport2folderpath, strport2foldercut;
+					strport2folderpath = StrFolder[1];//路径先复制到一个临时变量
+					strport2folderpath = strport2folderpath.Left(strport2folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+					strport2foldercut = strport2folderpath.Right(13);//然后将种子文件夹名称切割出来
+					Sleep(20);
+					MoveFileEx(strport2folderpath, strOKFolderpath + strport2foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+					StrFolder[1] = L"";
+					Sleep(20);
+					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint2_Success, NULL);
+				}
 				m_Port2DownloadRead4 = FALSE;
 				m_Port2DownloadWrite4 = FALSE;
 			}
@@ -4933,7 +5625,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort2Thread()
 }
 
 
-//串口3下载逻辑
+/*串口3下载逻辑*/
 //串口3的test写线程
 void CMFCP3SIMPORTDlg::DownloadWrite1Port3Thread(LPVOID lpParam)
 {
@@ -5215,128 +5907,147 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount != "^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, strcount);
-
-							int port3flag;
-							CString strport3RID, strport3IMEI;
-							ADOManage adoport3manage5;
-							adoport3manage5.ConnSQL();
-
-							dlg->GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
-							dlg->GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
-
-							port3flag = adoport3manage5.SimDataLastStationSql(strport3IMEI);
-
-							if (port3flag == 0)
+							//关数据库标志位为FALSE就代表要执行数据库操作
+							if (DatabaseFlag == FALSE)
 							{
-								m_Port3DownloadWrite2 = FALSE;
-								m_Port3DownloadRead2 = FALSE;
-								m_Port3DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"耦合漏测", 3);
-								dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
-								adoport3manage5.CloseAll();
+								int port3flag;
+								CString strport3RID, strport3IMEI;
+								ADOManage adoport3manage5;
+								adoport3manage5.ConnSQL();
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port3testflag = TRUE;
-								int port3testcount = 0;
-								char port3teststr[100];
-								memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
-								DWORD port3testreadreal = 0, port3testdwBytesWrite, port3testdwErrorFlags;
-								BOOL port3testbReadStat, port3testbWriteStat;
-								CString port3teststrread, port3teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port3testComStat;
+								dlg->GetDlgItemText(IDC_PORT3RID_EDIT, strport3RID);
+								dlg->GetDlgItemText(IDC_PORT3IMEI_EDIT, strport3IMEI);
 
-								ClearCommError(dlg->port3handler, &port3testdwErrorFlags, &port3testComStat);
-								do
+								port3flag = adoport3manage5.SimDataLastStationSql(strport3IMEI);
+
+								if (port3flag == 0)
 								{
-									port3testbWriteStat = WriteFile(dlg->port3handler, CT2A(port3teststrcommand), port3teststrcommand.GetLength(), &port3testdwBytesWrite, NULL);
+									m_Port3DownloadWrite2 = FALSE;
+									m_Port3DownloadRead2 = FALSE;
+									m_Port3DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										PrintLog(L"耦合漏测\r\n", 3);
+										SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										PrintLog(L"CoupleFail\r\n", 3);
+										SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
+									}
+									adoport3manage5.CloseAll();
 
-									Sleep(90);
-									port3testbReadStat = ReadFile(dlg->port3handler, port3teststr, 100, &port3testreadreal, 0);
-									if (port3testbReadStat)
-									{
-										port3teststrread = port3teststr;
-										if (port3teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port3testcount = 0;
-										}
-									}
-									port3testcount++;
-									if (port3testcount == 5)
-									{
-										port3testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port3testflag = TRUE;
+									int port3testcount = 0;
+									char port3teststr[100];
 									memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
-									dlg->PrintLog(L"发:" + port3teststrcommand, 3);
-									PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port3testflag);
+									DWORD port3testreadreal = 0, port3testdwBytesWrite, port3testdwErrorFlags;
+									BOOL port3testbReadStat, port3testbWriteStat;
+									CString port3teststrread, port3teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port3testComStat;
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT3RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, L"");
-								dlg->DownloadClosePort3Thread();
-								dlg->DownloadRestPort3Thread();
-								return ;
-							}
+									ClearCommError(dlg->port3handler, &port3testdwErrorFlags, &port3testComStat);
+									do
+									{
+										port3testbWriteStat = WriteFile(dlg->port3handler, CT2A(port3teststrcommand), port3teststrcommand.GetLength(), &port3testdwBytesWrite, NULL);
 
-							port3flag = adoport3manage5.SimDataIsExitSql(strport3RID, strport3IMEI);
+										Sleep(90);
+										port3testbReadStat = ReadFile(dlg->port3handler, port3teststr, 100, &port3testreadreal, 0);
+										if (port3testbReadStat)
+										{
+											port3teststrread = port3teststr;
+											if (port3teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port3testcount = 0;
+											}
+										}
+										port3testcount++;
+										if (port3testcount == 5)
+										{
+											port3testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
+										dlg->PrintLog(L"发:" + port3teststrcommand, 3);
+										PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port3testflag);
 
-							if (port3flag == 0)
-							{
-								m_Port3DownloadWrite2 = FALSE;
-								m_Port3DownloadRead2 = FALSE;
-								m_Port3DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"工位已测", 3);
-								dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
-								adoport3manage5.CloseAll();
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT3RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, L"");
+									dlg->DownloadClosePort3Thread();
+									dlg->DownloadRestPort3Thread();
+									return;
+								}
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port3testflag = TRUE;
-								int port3testcount = 0;
-								char port3teststr[100];
-								memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
-								DWORD port3testreadreal = 0, port3testdwBytesWrite, port3testdwErrorFlags;
-								BOOL port3testbReadStat, port3testbWriteStat;
-								CString port3teststrread, port3teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port3testComStat;
+								port3flag = adoport3manage5.SimDataIsExitSql(strport3RID, strport3IMEI);
 
-								ClearCommError(dlg->port3handler, &port3testdwErrorFlags, &port3testComStat);
-								do
+								if (port3flag == 0)
 								{
-									port3testbWriteStat = WriteFile(dlg->port3handler, CT2A(port3teststrcommand), port3teststrcommand.GetLength(), &port3testdwBytesWrite, NULL);
+									m_Port3DownloadWrite2 = FALSE;
+									m_Port3DownloadRead2 = FALSE;
+									m_Port3DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										dlg->PrintLog(L"工位已测", 3);
+										dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"工位已测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										dlg->PrintLog(L"Already downloaded", 3);
+										dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"Already downloaded");
+									}
+									adoport3manage5.CloseAll();
 
-									Sleep(90);
-									port3testbReadStat = ReadFile(dlg->port3handler, port3teststr, 100, &port3testreadreal, 0);
-									if (port3testbReadStat)
-									{
-										port3teststrread = port3teststr;
-										if (port3teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port3testcount = 0;
-										}
-									}
-									port3testcount++;
-									if (port3testcount == 5)
-									{
-										port3testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port3testflag = TRUE;
+									int port3testcount = 0;
+									char port3teststr[100];
 									memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
-									dlg->PrintLog(L"发:" + port3teststrcommand, 3);
-									PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port3testflag);
+									DWORD port3testreadreal = 0, port3testdwBytesWrite, port3testdwErrorFlags;
+									BOOL port3testbReadStat, port3testbWriteStat;
+									CString port3teststrread, port3teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port3testComStat;
+
+									ClearCommError(dlg->port3handler, &port3testdwErrorFlags, &port3testComStat);
+									do
+									{
+										port3testbWriteStat = WriteFile(dlg->port3handler, CT2A(port3teststrcommand), port3teststrcommand.GetLength(), &port3testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port3testbReadStat = ReadFile(dlg->port3handler, port3teststr, 100, &port3testreadreal, 0);
+										if (port3testbReadStat)
+										{
+											port3teststrread = port3teststr;
+											if (port3teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port3testcount = 0;
+											}
+										}
+										port3testcount++;
+										if (port3testcount == 5)
+										{
+											port3testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
+										dlg->PrintLog(L"发:" + port3teststrcommand, 3);
+										PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port3testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT3RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, L"");
-								dlg->DownloadClosePort3Thread();
-								dlg->DownloadRestPort3Thread();
-								return ;
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT3RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT3IMEI_EDIT, L"");
+									dlg->DownloadClosePort3Thread();
+									dlg->DownloadRestPort3Thread();
+									return;
+								}
+								//LastPort3RID = strport3RID;
+								//LastPort3IMEI = strport3IMEI;
+								adoport3manage5.CloseAll();
 							}
-							//LastPort3RID = strport3RID;
-							//LastPort3IMEI = strport3IMEI;
-							adoport3manage5.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_IsExit, NULL);
 						}
 						else 
@@ -5467,7 +6178,11 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);//先插入失败记录
+			//关数据库标志位为FALSE就代表要执行数据库操作
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);//先插入失败记录
+			}
 
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port3testflag = TRUE, port3failflag = TRUE;
@@ -5542,7 +6257,49 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		}
 	} while (m_Port3DownloadWrite3);
 
-	//dlg->DownloadRestPort3Thread();
+	if (AgingFlag == TRUE)
+	{
+		if (m_Port3DownloadWrite3 == FALSE)
+		{
+			//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			BOOL port3testflag = TRUE;
+			int port3testcount = 0;
+			char port3teststr[100];
+			memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
+			DWORD port3testreadreal = 0, port3testdwBytesWrite, port3testdwErrorFlags;
+			BOOL port3testbReadStat, port3testbWriteStat;
+			CString port3teststrread, port3teststrcommand = L"AT^GT_CM=TEST\r\n";
+			COMSTAT port3testComStat;
+
+			ClearCommError(dlg->port3handler, &port3testdwErrorFlags, &port3testComStat);
+			do
+			{
+				port3testbWriteStat = WriteFile(dlg->port3handler, CT2A(port3teststrcommand), port3teststrcommand.GetLength(), &port3testdwBytesWrite, NULL);
+
+				Sleep(90);
+				port3testbReadStat = ReadFile(dlg->port3handler, port3teststr, 100, &port3testreadreal, 0);
+				if (port3testbReadStat)
+				{
+					port3teststrread = port3teststr;
+					if (port3teststrread.Find(L"TEST_OK") >= 0)
+					{
+						port3testcount = 0;
+					}
+				}
+				port3testcount++;
+				if (port3testcount == 5)
+				{
+					port3testflag = FALSE;
+				}
+				Sleep(10);
+				memset(port3teststr, 0, sizeof(port3teststr) / sizeof(port3teststr[0]));
+				dlg->PrintLog(L"发:" + port3teststrcommand, 3);
+				PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			} while (port3testflag);
+		}
+
+		dlg->DownloadRestPort3Thread();
+	}
 	return;
 }
 
@@ -5574,12 +6331,27 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 			{
 				if (strread.Find(L"SoftSim,OK") >= 0)
 				{
-
+					if (AgingFlag == TRUE)
+					{
+						CString strport3folderpath, strport3foldercut;
+						strport3folderpath = StrFolder[2];//路径先复制到一个临时变量
+						strport3folderpath = strport3folderpath.Left(strport3folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+						strport3foldercut = strport3folderpath.Right(13);//然后将种子文件夹名称切割出来
+						Sleep(20);
+						MoveFileEx(strport3folderpath, strOKFolderpath + strport3foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+						StrFolder[2] = L"";
+						Sleep(20);
+						::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Success, NULL);
+						//SetPort3EditEmpty();
+					}
 					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_OkInsert, NULL);
 				}
 				else if (strread.Find(L"Error") >= 0)
 				{
+					if (DatabaseFlag == FALSE)
+					{
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
+					}
 					m_Port3DownloadWrite3 = FALSE;
 					m_Port3DownloadRead3 = FALSE;
 					m_Port3DownloadReadEnd3 = FALSE;
@@ -5659,6 +6431,12 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port3handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort3Thread();
+
+	//老化指令被关掉之后，就不继续开启老化读写线程了，然后在文件写线程中进行线程的Rest
+	if (AgingFlag == TRUE)
+	{
+		return;
+	}
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port3_Write4, NULL);
 }
 
@@ -5691,7 +6469,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port3Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
+			}
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port3testflag = TRUE, port3failflag = TRUE;
 			int port3testcount = 0;
@@ -5849,7 +6630,22 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port3Thread(LPVOID lpParam)
 			dlg->PrintLog(L"收:" + strread, 3);
 			if (strread.Find(L"OK") >= 0)
 			{
+				if (DatabaseFlag == FALSE)
+				{
 				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_OkInsert, NULL);
+				}
+				else if (DatabaseFlag == TRUE)
+				{
+					CString strport3folderpath, strport3foldercut;
+					strport3folderpath = StrFolder[2];//路径先复制到一个临时变量
+					strport3folderpath = strport3folderpath.Left(strport3folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+					strport3foldercut = strport3folderpath.Right(13);//然后将种子文件夹名称切割出来
+					Sleep(20);
+					MoveFileEx(strport3folderpath, strOKFolderpath + strport3foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+					StrFolder[2] = L"";
+					Sleep(20);
+					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint3_Success, NULL);
+				}
 				m_Port3DownloadRead4 = FALSE;
 				m_Port3DownloadWrite4 = FALSE;
 			}
@@ -5902,7 +6698,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort3Thread()
 }
 
 
-//串口4下载逻辑
+/*串口4下载逻辑*/
 //串口4的test写线程
 void CMFCP3SIMPORTDlg::DownloadWrite1Port4Thread(LPVOID lpParam)
 {
@@ -6181,129 +6977,148 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 						if (strcount != ""&&strcount!="^"&&strcounttemp.Trim(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() == 0)
 						{
 							dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, strcount);
-
-							int port4flag;
-							CString strport4RID, strport4IMEI;
-							ADOManage adoport4manage6;
-							adoport4manage6.ConnSQL();
-
-							dlg->GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
-							dlg->GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
-
-							port4flag = adoport4manage6.SimDataLastStationSql(strport4IMEI);
-
-							if (port4flag == 0)
+							//关数据库标志位为FALSE就代表要执行数据库操作
+							if (DatabaseFlag == FALSE)
 							{
-								m_Port4DownloadWrite2 = FALSE;
-								m_Port4DownloadRead2 = FALSE;
-								m_Port4DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"耦合漏测", 4);
-								dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
-								adoport4manage6.CloseAll();
+								int port4flag;
+								CString strport4RID, strport4IMEI;
+								ADOManage adoport4manage6;
+								adoport4manage6.ConnSQL();
 
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port4testflag = TRUE;
-								int port4testcount = 0;
-								char port4teststr[100];
-								memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
-								DWORD port4testreadreal = 0, port4testdwBytesWrite, port4testdwErrorFlags;
-								BOOL port4testbReadStat, port4testbWriteStat;
-								CString port4teststrread, port4teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port4testComStat;
+								dlg->GetDlgItemText(IDC_PORT4RID_EDIT, strport4RID);
+								dlg->GetDlgItemText(IDC_PORT4IMEI_EDIT, strport4IMEI);
 
-								ClearCommError(dlg->port4handler, &port4testdwErrorFlags, &port4testComStat);
-								do
+								port4flag = adoport4manage6.SimDataLastStationSql(strport4IMEI);
+
+								if (port4flag == 0)
 								{
-									port4testbWriteStat = WriteFile(dlg->port4handler, CT2A(port4teststrcommand), port4teststrcommand.GetLength(), &port4testdwBytesWrite, NULL);
+									m_Port4DownloadWrite2 = FALSE;
+									m_Port4DownloadRead2 = FALSE;
+									m_Port4DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										PrintLog(L"耦合漏测\r\n", 4);
+										SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										PrintLog(L"CoupleFail\r\n", 4);
+										SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
+									}
+									adoport4manage6.CloseAll();
 
-									Sleep(90);
-									port4testbReadStat = ReadFile(dlg->port4handler, port4teststr, 100, &port4testreadreal, 0);
-									if (port4testbReadStat)
-									{
-										port4teststrread = port4teststr;
-										if (port4teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port4testcount = 0;
-										}
-									}
-									port4testcount++;
-									if (port4testcount == 5)
-									{
-										port4testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port4testflag = TRUE;
+									int port4testcount = 0;
+									char port4teststr[100];
 									memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
-									dlg->PrintLog(L"发:" + port4teststrcommand, 4);
-									PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port4testflag);
+									DWORD port4testreadreal = 0, port4testdwBytesWrite, port4testdwErrorFlags;
+									BOOL port4testbReadStat, port4testbWriteStat;
+									CString port4teststrread, port4teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port4testComStat;
+
+									ClearCommError(dlg->port4handler, &port4testdwErrorFlags, &port4testComStat);
+									do
+									{
+										port4testbWriteStat = WriteFile(dlg->port4handler, CT2A(port4teststrcommand), port4teststrcommand.GetLength(), &port4testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port4testbReadStat = ReadFile(dlg->port4handler, port4teststr, 100, &port4testreadreal, 0);
+										if (port4testbReadStat)
+										{
+											port4teststrread = port4teststr;
+											if (port4teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port4testcount = 0;
+											}
+										}
+										port4testcount++;
+										if (port4testcount == 5)
+										{
+											port4testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
+										dlg->PrintLog(L"发:" + port4teststrcommand, 4);
+										PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port4testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT4RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, L"");
-								dlg->DownloadClosePort4Thread();
-								dlg->DownloadRestPort4Thread();
-								return ;
-							}
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT4RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, L"");
+									dlg->DownloadClosePort4Thread();
+									dlg->DownloadRestPort4Thread();
+									return;
+								}
 
-							port4flag = adoport4manage6.SimDataIsExitSql(strport4RID, strport4IMEI);
+								port4flag = adoport4manage6.SimDataIsExitSql(strport4RID, strport4IMEI);
 
-							if (port4flag == 0)
-							{
-								m_Port4DownloadWrite2 = FALSE;
-								m_Port4DownloadRead2 = FALSE;
-								m_Port4DownloadReadEnd2 = FALSE;
-								dlg->PrintLog(L"工位已测", 4);
-								dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
-								adoport4manage6.CloseAll();
-
-								//一直进入发送test指令，如果检测不到，那代表它已经断开了
-								BOOL port4testflag = TRUE;
-								int port4testcount = 0;
-								char port4teststr[100];
-								memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
-								DWORD port4testreadreal = 0, port4testdwBytesWrite, port4testdwErrorFlags;
-								BOOL port4testbReadStat, port4testbWriteStat;
-								CString port4teststrread, port4teststrcommand = L"AT^GT_CM=TEST\r\n";
-								COMSTAT port4testComStat;
-
-								ClearCommError(dlg->port4handler, &port4testdwErrorFlags, &port4testComStat);
-								do
+								if (port4flag == 0)
 								{
-									port4testbWriteStat = WriteFile(dlg->port4handler, CT2A(port4teststrcommand), port4teststrcommand.GetLength(), &port4testdwBytesWrite, NULL);
+									m_Port4DownloadWrite2 = FALSE;
+									m_Port4DownloadRead2 = FALSE;
+									m_Port4DownloadReadEnd2 = FALSE;
+									if (LanguageFlag == FALSE)
+									{
+										dlg->PrintLog(L"工位已测", 4);
+										dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"工位已测");
+									}
+									else if (LanguageFlag == TRUE)
+									{
+										dlg->PrintLog(L"Already downloaded", 4);
+										dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"Already downloaded");
+									}
+									adoport4manage6.CloseAll();
 
-									Sleep(90);
-									port4testbReadStat = ReadFile(dlg->port4handler, port4teststr, 100, &port4testreadreal, 0);
-									if (port4testbReadStat)
-									{
-										port4teststrread = port4teststr;
-										if (port4teststrread.Find(L"TEST_OK") >= 0)
-										{
-											port4testcount = 0;
-										}
-									}
-									port4testcount++;
-									if (port4testcount == 5)
-									{
-										port4testflag = FALSE;
-									}
-									Sleep(10);
+									//一直进入发送test指令，如果检测不到，那代表它已经断开了
+									BOOL port4testflag = TRUE;
+									int port4testcount = 0;
+									char port4teststr[100];
 									memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
-									dlg->PrintLog(L"发:" + port4teststrcommand, 4);
-									PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-								} while (port4testflag);
+									DWORD port4testreadreal = 0, port4testdwBytesWrite, port4testdwErrorFlags;
+									BOOL port4testbReadStat, port4testbWriteStat;
+									CString port4teststrread, port4teststrcommand = L"AT^GT_CM=TEST\r\n";
+									COMSTAT port4testComStat;
+
+									ClearCommError(dlg->port4handler, &port4testdwErrorFlags, &port4testComStat);
+									do
+									{
+										port4testbWriteStat = WriteFile(dlg->port4handler, CT2A(port4teststrcommand), port4teststrcommand.GetLength(), &port4testdwBytesWrite, NULL);
+
+										Sleep(90);
+										port4testbReadStat = ReadFile(dlg->port4handler, port4teststr, 100, &port4testreadreal, 0);
+										if (port4testbReadStat)
+										{
+											port4teststrread = port4teststr;
+											if (port4teststrread.Find(L"TEST_OK") >= 0)
+											{
+												port4testcount = 0;
+											}
+										}
+										port4testcount++;
+										if (port4testcount == 5)
+										{
+											port4testflag = FALSE;
+										}
+										Sleep(10);
+										memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
+										dlg->PrintLog(L"发:" + port4teststrcommand, 4);
+										PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+									} while (port4testflag);
 
 
-								Sleep(50);
-								dlg->SetDlgItemText(IDC_PORT4RID_EDIT, L"");
-								dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, L"");
-								dlg->DownloadClosePort4Thread();
-								dlg->DownloadRestPort4Thread();
-								return ;
+									Sleep(50);
+									dlg->SetDlgItemText(IDC_PORT4RID_EDIT, L"");
+									dlg->SetDlgItemText(IDC_PORT4IMEI_EDIT, L"");
+									dlg->DownloadClosePort4Thread();
+									dlg->DownloadRestPort4Thread();
+									return;
+								}
+								//LastPort4RID = strport4RID;
+								//LastPort4IMEI = strport4IMEI;
+								adoport4manage6.CloseAll();
 							}
-							//LastPort4RID = strport4RID;
-							//LastPort4IMEI = strport4IMEI;
-							adoport4manage6.CloseAll();
 							//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_IsExit, NULL);
 						}
 						else 
@@ -6434,7 +7249,11 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 	{
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);//先插入失败记录
+			//关数据库标志位为FALSE就代表要执行数据库操作
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);//先插入失败记录
+			}
 
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port4testflag = TRUE, port4failflag = TRUE;
@@ -6509,6 +7328,49 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		}
 	} while (m_Port4DownloadWrite3);
 
+	if (AgingFlag == TRUE)
+	{
+		if (m_Port4DownloadWrite3 == FALSE)
+		{
+			//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			BOOL port4testflag = TRUE;
+			int port4testcount = 0;
+			char port4teststr[100];
+			memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
+			DWORD port4testreadreal = 0, port4testdwBytesWrite, port4testdwErrorFlags;
+			BOOL port4testbReadStat, port4testbWriteStat;
+			CString port4teststrread, port4teststrcommand = L"AT^GT_CM=TEST\r\n";
+			COMSTAT port4testComStat;
+
+			ClearCommError(dlg->port4handler, &port4testdwErrorFlags, &port4testComStat);
+			do
+			{
+				port4testbWriteStat = WriteFile(dlg->port4handler, CT2A(port4teststrcommand), port4teststrcommand.GetLength(), &port4testdwBytesWrite, NULL);
+
+				Sleep(90);
+				port4testbReadStat = ReadFile(dlg->port4handler, port4teststr, 100, &port4testreadreal, 0);
+				if (port4testbReadStat)
+				{
+					port4teststrread = port4teststr;
+					if (port4teststrread.Find(L"TEST_OK") >= 0)
+					{
+						port4testcount = 0;
+					}
+				}
+				port4testcount++;
+				if (port4testcount == 5)
+				{
+					port4testflag = FALSE;
+				}
+				Sleep(10);
+				memset(port4teststr, 0, sizeof(port4teststr) / sizeof(port4teststr[0]));
+				dlg->PrintLog(L"发:" + port4teststrcommand, 4);
+				PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			} while (port4testflag);
+		}
+
+		dlg->DownloadRestPort4Thread();
+	}
 	//dlg->DownloadRestPort4Thread();
 	return;
 }
@@ -6541,12 +7403,27 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 			{
 				if (strread.Find(L"SoftSim,OK") >= 0)
 				{
-
+					if (AgingFlag == TRUE)
+					{
+						CString strport4folderpath, strport4foldercut;
+						strport4folderpath = StrFolder[3];//路径先复制到一个临时变量
+						strport4folderpath = strport4folderpath.Left(strport4folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+						strport4foldercut = strport4folderpath.Right(13);//然后将种子文件夹名称切割出来
+						Sleep(20);
+						MoveFileEx(strport4folderpath, strOKFolderpath + strport4foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+						StrFolder[3] = L"";
+						Sleep(20);
+						::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Success, NULL);
+						//SetPort4EditEmpty();
+					}
 					//::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
 				}
 				else if (strread.Find(L"Error") >= 0)
 				{
-					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
+					if (DatabaseFlag == FALSE)
+					{
+						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
+					}
 					m_Port4DownloadWrite3 = FALSE;
 					m_Port4DownloadRead3 = FALSE;
 					m_Port4DownloadReadEnd3 = FALSE;
@@ -6626,6 +7503,12 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 	//dlg->SetRicheditText(L"收:" + strread, 0);
 	PurgeComm(dlg->port4handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//dlg->DownloadRestPort4Thread();
+
+	//老化指令被关掉之后，就不继续开启老化读写线程了，然后在文件写线程中进行线程的Rest
+	if (AgingFlag == TRUE)
+	{
+		return;
+	}
 	::PostMessage(MainFormHWND, WM_MainPortThreadControl, MainPort_Port4_Write4, NULL);
 }
 
@@ -6660,7 +7543,10 @@ void CMFCP3SIMPORTDlg::DownloadWrite4Port4Thread(LPVOID lpParam)
 		//dlg->SetRicheditText(L"发:" + strcommand, 0);
 		if (countend == 3)
 		{
-			::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
+			if (DatabaseFlag == FALSE)
+			{
+				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
+			}
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port4testflag = TRUE, port4failflag = TRUE;
 			int port4testcount = 0;
@@ -6813,7 +7699,23 @@ void CMFCP3SIMPORTDlg::DownloadRead4Port4Thread(LPVOID lpParam)
 			strread = str;
 			if (strread.Find(L"aging,on\r\r\nOK!") >= 0)
 			{
-				::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
+				//当没有关闭数据库的时候才启用数据库
+				if (DatabaseFlag == FALSE)
+				{
+					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_OkInsert, NULL);
+				}
+				else if (DatabaseFlag == TRUE)
+				{
+					CString strport4folderpath, strport4foldercut;
+					strport4folderpath = StrFolder[3];//路径先复制到一个临时变量
+					strport4folderpath = strport4folderpath.Left(strport4folderpath.GetLength() - 10);//将末尾的证书文件路径切掉
+					strport4foldercut = strport4folderpath.Right(13);//然后将种子文件夹名称切割出来
+					Sleep(20);
+					MoveFileEx(strport4folderpath, strOKFolderpath + strport4foldercut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
+					StrFolder[3] = L"";
+					Sleep(20);
+					::PostMessage(MainFormHWND, WM_MainFontControl, Main_Hint4_Success, NULL);
+				}
 				m_Port4DownloadRead4 = FALSE;
 				m_Port4DownloadWrite4 = FALSE;
 			}
@@ -6867,7 +7769,7 @@ void CMFCP3SIMPORTDlg::DownloadClosePort4Thread()
 
 
 
-//信息日志模块函数
+/*信息日志模块函数*/
 //信息日志核心函数
 void CMFCP3SIMPORTDlg::SetRicheditText(CString strMsg, int No)
 {
@@ -6953,7 +7855,7 @@ void CMFCP3SIMPORTDlg::PrintLog(CString strMsg, int No)
 
 
 
-//数据库模块函数
+/*数据库模块函数*/
 //点击数据库配置按钮
 void CMFCP3SIMPORTDlg::OnBnClickedDbconfigButton()
 {
@@ -6988,7 +7890,14 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 		{
 			OnBnClickedStartdownload1Button();
 			INT_PTR nRes;
-			nRes = MessageBox(_T("SIM数据文件重复，点击确定则选择其它文件，点击取消则停止下载！"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
+			if (LanguageFlag == FALSE)
+			{
+				nRes = MessageBox(_T("SIM数据文件重复，点击确定则选择其它文件，点击取消则停止下载！"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				nRes = MessageBox(_T("SIM Data File duplication, please click ok to chose another file,or click cancel to stop！"), _T("Hint"), MB_OKCANCEL | MB_ICONQUESTION);
+			}
 			// 判断消息对话框返回值。如果为IDCANCEL就return，否则继续向下执行   
 			if (IDOK == nRes)
 			{
@@ -7031,14 +7940,24 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainDataInsertControl(WPARAM wParam, LPARAM lP
 	case DataInsert_SinglePort_OkInsert:
 		strSingleFileTempPath = strSingleFilePath.Left(strSingleFilePath.GetLength() - 10);//将末尾的证书文件路径切掉
 		strSingleFilecut = strSingleFileTempPath.Right(13);//然后将种子文件夹名称切割出来
-		SimDataOkInsertFun1();
+		if (DatabaseFlag == FALSE)
+		{
+			SimDataOkInsertFun1();
+		}
 		Sleep(20);
 		MoveFileEx(strSingleFileTempPath, strOKFolderpath + strSingleFilecut, MOVEFILE_REPLACE_EXISTING);//然后粘到下好的OK文件夹路径后面
 		Sleep(20);
 		//SetPort1EditEmpty();
 		OnBnClickedStartdownload1Button();
 		INT_PTR nRes;
-		nRes = MessageBox(_T("是否继续下载？"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
+		if (LanguageFlag == FALSE)
+		{
+			nRes = MessageBox(_T("是否继续下载？"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			nRes = MessageBox(_T("Do you want to continue？"), _T("Hint"), MB_OKCANCEL | MB_ICONQUESTION);
+		}
 		// 判断消息对话框返回值。如果为IDCANCEL就return，否则继续向下执行   
 		if (IDOK == nRes)
 		{
@@ -7248,7 +8167,7 @@ int CMFCP3SIMPORTDlg::SimDataNoIsExitFun(CString strfile)
 }
 
 
-//串口1的数据库函数
+/*串口1的数据库函数*/
 //判断串口1的机器上个工位（也就是耦合位）
 int CMFCP3SIMPORTDlg::SimDataLastStationFun1()
 {
@@ -7315,7 +8234,7 @@ void CMFCP3SIMPORTDlg::SimDataErrorInsertFun1()
 	adoport1manage2.CloseAll();
 }
 
-//串口2的数据库函数
+/*串口2的数据库函数*/
 //判断串口2的机器上个工位（也就是耦合位）
 int CMFCP3SIMPORTDlg::SimDataLastStationFun2()
 {
@@ -7382,7 +8301,7 @@ void CMFCP3SIMPORTDlg::SimDataErrorInsertFun2()
 	adoport2manage4.CloseAll();
 }
 
-//串口3的数据库函数
+/*串口3的数据库函数*/
 //判断串口3的机器上个工位（也就是耦合位）
 int CMFCP3SIMPORTDlg::SimDataLastStationFun3()
 {
@@ -7449,7 +8368,7 @@ void CMFCP3SIMPORTDlg::SimDataErrorInsertFun3()
 	adoport3manage5.CloseAll();
 }
 
-//串口4的数据库函数
+/*串口4的数据库函数*/
 //判断串口4的机器上个工位（也就是耦合位）
 int CMFCP3SIMPORTDlg::SimDataLastStationFun4()
 {
@@ -7517,7 +8436,261 @@ void CMFCP3SIMPORTDlg::SimDataErrorInsertFun4()
 }
 
 
-//其它函数
+/*国际版新增的模块*/
+//点击中文单选框
+void CMFCP3SIMPORTDlg::OnBnClickedChlanguageRadio()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	LanguageFlag = FALSE;//当前为中文
+	WritePrivateProfileString(_T("SystemConfigInfo"), _T("LanguageFlag"), L"0", _T(".\\SystemInfo.ini"));
+	SetUILanguage();
+	fontinit();
+}
+
+//点击英文单选框
+void CMFCP3SIMPORTDlg::OnBnClickedEhlanguageRadio()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	LanguageFlag = TRUE;//当前为英文
+	WritePrivateProfileString(_T("SystemConfigInfo"), _T("LanguageFlag"), L"1", _T(".\\SystemInfo.ini"));
+	SetUILanguage();
+	fontinit();
+}
+
+//点击关闭数据库复选框
+void CMFCP3SIMPORTDlg::OnBnClickedClosedbCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	
+	//获取控件目前状态，如果为1就代表选中，则将标志位设置为TRUE
+	if (m_closedbCheck.GetCheck())
+	{
+		DatabaseFlag = TRUE;
+		WritePrivateProfileString(_T("SystemConfigInfo"), _T("DatabaseFlag"), L"1", _T(".\\SystemInfo.ini"));
+	}
+	else if (!m_closedbCheck.GetCheck())
+	{
+		DatabaseFlag = FALSE;
+		WritePrivateProfileString(_T("SystemConfigInfo"), _T("DatabaseFlag"), L"0", _T(".\\SystemInfo.ini"));
+	}
+}
+
+//点击关闭老化复选框
+void CMFCP3SIMPORTDlg::OnBnClickedCloseageingCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+
+	//获取控件目前状态，如果为1就代表选中，则将标志位设置为TRUE
+	if (m_closeageingCheck.GetCheck())
+	{
+		AgingFlag = TRUE;
+		WritePrivateProfileString(_T("SystemConfigInfo"), _T("AgingFlag"), L"1", _T(".\\SystemInfo.ini"));
+	}
+	else if (!m_closeageingCheck.GetCheck())
+	{
+		AgingFlag = FALSE;
+		WritePrivateProfileString(_T("SystemConfigInfo"), _T("AgingFlag"), L"0", _T(".\\SystemInfo.ini"));
+	}
+}
+
+//获取INI文件配置
+void CMFCP3SIMPORTDlg::GetSystemConfigInfoIni()
+{
+	int initemp;
+	/*从INI配置文件中读，2为默认值，也就是说读不到任何值的时候会返回2，如果返回2那么控件就以默认为准，即选择中文且不选择关老化和关数据库
+	如果正常返回值，则返回的是上一次用户所选择的配置*/
+	//关老化复选框
+	initemp = GetPrivateProfileInt(_T("SystemConfigInfo"), _T("AgingFlag"), 2, _T(".\\SystemInfo.ini"));
+	if (initemp != 2)
+	{
+		AgingFlag = initemp;
+		m_closeageingCheck.SetCheck(AgingFlag);
+	}
+	else if (initemp == 2)
+	{
+		m_closeageingCheck.SetCheck(AgingFlag);
+	}
+	//关数据库复选框
+	initemp = GetPrivateProfileInt(_T("SystemConfigInfo"), _T("DatabaseFlag"), 2, _T(".\\SystemInfo.ini"));
+	if (initemp != 2)
+	{
+		DatabaseFlag = initemp;
+		m_closedbCheck.SetCheck(DatabaseFlag);
+	}
+	else if (initemp == 2)
+	{
+		m_closedbCheck.SetCheck(DatabaseFlag);
+	}
+	//选择中文还是英文单选框
+	initemp = GetPrivateProfileInt(_T("SystemConfigInfo"), _T("LanguageFlag"), 2, _T(".\\SystemInfo.ini"));
+	if (initemp != 2)
+	{
+		LanguageFlag = initemp;
+		if (LanguageFlag)
+		{
+			OnBnClickedEhlanguageRadio();
+			CheckDlgButton(IDC_EHLANGUAGE_RADIO, 1);
+
+		}
+		else if (!LanguageFlag)
+		{
+			OnBnClickedChlanguageRadio();
+			CheckDlgButton(IDC_CHLANGUAGE_RADIO, 1);
+		}
+	}
+	else if (initemp == 2)
+	{
+		if (LanguageFlag)
+		{
+			OnBnClickedEhlanguageRadio();
+			CheckDlgButton(IDC_EHLANGUAGE_RADIO, 1);
+
+		}
+		else if (!LanguageFlag)
+		{
+			OnBnClickedChlanguageRadio();
+			CheckDlgButton(IDC_CHLANGUAGE_RADIO, 1);
+		}
+	}
+}
+
+//将界面设置为对应的语言
+void CMFCP3SIMPORTDlg::SetUILanguage()
+{
+	//设置为中文
+	if (!LanguageFlag)
+	{ 
+		//初始化配置模块
+		SetDlgItemText(IDC_DBCONFIG_BUTTON, L"数据库配置");
+		SetDlgItemText(IDC_CHLANGUAGE_RADIO, L"中文");
+		SetDlgItemText(IDC_EHLANGUAGE_RADIO, L"Engilesh");
+		SetDlgItemText(IDC_CLOSEAGEING_CHECK, L"关老化");
+		SetDlgItemText(IDC_CLOSEDB_CHECK, L"关数据库");
+		SetDlgItemText(IDC_MULTIPLEDOWNLOAD_RADIO, L"批量下载");
+		SetDlgItemText(IDC_SINGLEDOWNLOAD_RADIO, L"单个下载");
+		SetDlgItemText(IDC_INITCONFIG_GROUP, L"初始化配置");
+		SetDlgItemText(IDC_SIMDATAFOLDERPATH_STATIC, L"SIM卡数据路径");
+		SetDlgItemText(IDC_SIMDATAFILEPATH_STATIC, L"SIM卡数据文件");
+		SetDlgItemText(IDC_OPENSIMDATAFOLDERPATH_BUTTON, L"浏览");
+		SetDlgItemText(IDC_OPENSIMDATAFILEPATH_BUTTON, L"浏览");
+
+		//本机信息
+		SetDlgItemText(IDC_PCINFORMATION_GROUP, L"本机信息");
+		SetDlgItemText(IDC_PCNAME_STATIC, L"本机名称");
+		SetDlgItemText(IDC_PCIP_STATIC, L"本机IP");
+
+		//SIM卡数据下载
+		SetDlgItemText(IDC_SIMDOWNLOAD_GROUP, L"SIM卡数据下载");
+		SetDlgItemText(IDC_PORT1_GROUP, L"串口1");
+		SetDlgItemText(IDC_PORT1_STATIC, L"串口1");
+		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"连接");
+		SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"开始下载");
+
+		SetDlgItemText(IDC_PORT2_GROUP, L"串口2");
+		SetDlgItemText(IDC_PORT2_STATIC, L"串口2");
+		SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"连接");
+		SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"开始下载");
+
+		SetDlgItemText(IDC_PORT3_GROUP, L"串口3");
+		SetDlgItemText(IDC_PORT3_STATIC, L"串口3");
+		SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"连接");
+		SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"开始下载");
+
+		SetDlgItemText(IDC_PORT4_GROUP, L"串口4");
+		SetDlgItemText(IDC_PORT4_STATIC, L"串口4");
+		SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"连接");
+		SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"开始下载");
+
+		//串口状态
+		SetDlgItemText(IDC_PORT1STATE_GROUP, L"串口1当前状态");
+		SetDlgItemText(IDC_PORT2STATE_GROUP, L"串口2当前状态");
+		SetDlgItemText(IDC_PORT3STATE_GROUP, L"串口3当前状态");
+		SetDlgItemText(IDC_PORT4STATE_GROUP, L"串口4当前状态");
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		SetDlgItemText(IDC_PORT2HINT_STATIC, L"停止");
+		SetDlgItemText(IDC_PORT3HINT_STATIC, L"停止");
+		SetDlgItemText(IDC_PORT4HINT_STATIC, L"停止");
+
+		//信息日志
+		SetDlgItemText(IDC_LOG_GROUP, L"信息日志");
+
+		//批量下载一键操作
+		SetDlgItemText(IDC_AUTOMULTIPLE_GROUP, L"批量下载一键操作");
+		SetDlgItemText(IDC_AUTOMULTIPLECONNECT_BUTTON, L"一键连接");
+		SetDlgItemText(IDC_AUTOMULTIPLESTART_BUTTON, L"一键断开");
+
+		//返工模式
+		SetDlgItemText(IDC_OPENREMODLE_BUTTON, L"开启返工模式");
+	}
+	//设置为英文
+	else if (LanguageFlag)
+	{
+		//初始化配置模块
+		SetDlgItemText(IDC_DBCONFIG_BUTTON, L"Database");
+		SetDlgItemText(IDC_CHLANGUAGE_RADIO, L"CH");
+		SetDlgItemText(IDC_EHLANGUAGE_RADIO, L"EN");
+		SetDlgItemText(IDC_CLOSEAGEING_CHECK, L"CloseAgeing");
+		SetDlgItemText(IDC_CLOSEDB_CHECK, L"CloseDatabase");
+		SetDlgItemText(IDC_MULTIPLEDOWNLOAD_RADIO, L"BatchDownload");
+		SetDlgItemText(IDC_SINGLEDOWNLOAD_RADIO, L"SingleDownload");
+		SetDlgItemText(IDC_INITCONFIG_GROUP, L"InitConfig");
+		SetDlgItemText(IDC_SIMDATAFOLDERPATH_STATIC, L"DataFolderPath");
+		SetDlgItemText(IDC_SIMDATAFILEPATH_STATIC, L"DataFilePath");
+		SetDlgItemText(IDC_OPENSIMDATAFOLDERPATH_BUTTON, L"Browse");
+		SetDlgItemText(IDC_OPENSIMDATAFILEPATH_BUTTON, L"Browse");
+
+		//本机信息
+		SetDlgItemText(IDC_PCINFORMATION_GROUP, L"PCInfo");
+		SetDlgItemText(IDC_PCNAME_STATIC, L"PCName");
+		SetDlgItemText(IDC_PCIP_STATIC, L"PCIP");
+
+		//SIM卡数据下载
+		SetDlgItemText(IDC_SIMDOWNLOAD_GROUP, L"SimDataDownload");
+		SetDlgItemText(IDC_PORT1_GROUP, L"Port1");
+		SetDlgItemText(IDC_PORT1_STATIC, L"Port1");
+		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"Connect");
+		SetDlgItemText(IDC_STARTDOWNLOAD1_BUTTON, L"Start");
+
+		SetDlgItemText(IDC_PORT2_GROUP, L"Port2");
+		SetDlgItemText(IDC_PORT2_STATIC, L"Port2");
+		SetDlgItemText(IDC_PORT2CONNECT_BUTTON, L"Connect");
+		SetDlgItemText(IDC_STARTDOWNLOAD2_BUTTON, L"Start");
+
+		SetDlgItemText(IDC_PORT3_GROUP, L"Port3");
+		SetDlgItemText(IDC_PORT3_STATIC, L"Port3");
+		SetDlgItemText(IDC_PORT3CONNECT_BUTTON, L"Connect");
+		SetDlgItemText(IDC_STARTDOWNLOAD3_BUTTON, L"Start");
+
+		SetDlgItemText(IDC_PORT4_GROUP, L"Port4");
+		SetDlgItemText(IDC_PORT4_STATIC, L"Port4");
+		SetDlgItemText(IDC_PORT4CONNECT_BUTTON, L"Connect");
+		SetDlgItemText(IDC_STARTDOWNLOAD4_BUTTON, L"Start");
+
+		//串口状态
+		SetDlgItemText(IDC_PORT1STATE_GROUP, L"Port1State");
+		SetDlgItemText(IDC_PORT2STATE_GROUP, L"Port2State");
+		SetDlgItemText(IDC_PORT3STATE_GROUP, L"Port3State");
+		SetDlgItemText(IDC_PORT4STATE_GROUP, L"Port4State");
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"STOP");
+		SetDlgItemText(IDC_PORT2HINT_STATIC, L"STOP");
+		SetDlgItemText(IDC_PORT3HINT_STATIC, L"STOP");
+		SetDlgItemText(IDC_PORT4HINT_STATIC, L"STOP");
+
+		//信息日志
+		SetDlgItemText(IDC_LOG_GROUP, L"LogInformation");
+
+		//批量下载一键操作
+		SetDlgItemText(IDC_AUTOMULTIPLE_GROUP, L"BatchDownloadControl");
+		SetDlgItemText(IDC_AUTOMULTIPLECONNECT_BUTTON, L"AllConnect");
+		SetDlgItemText(IDC_AUTOMULTIPLESTART_BUTTON, L"AllDisconnect");
+
+		//返工模式
+		SetDlgItemText(IDC_OPENREMODLE_BUTTON, L"ReworkMode");
+	}
+}
+
+
+/*其它函数*/
 //获取本机IP和地址
 int CMFCP3SIMPORTDlg::GetLocalHostIPName(CString &sLocalName, CString &sIpAddress)
 {
@@ -7563,16 +8736,30 @@ int CMFCP3SIMPORTDlg::GetLocalHostIPName(CString &sLocalName, CString &sIpAddres
 //字体初始化函数
 void CMFCP3SIMPORTDlg::fontinit()
 {
-	staticHint1font.CreatePointFont(750, L"黑体");
-	staticHint2font.CreatePointFont(750, L"黑体");
-	staticHint3font.CreatePointFont(750, L"黑体");
-	staticHint4font.CreatePointFont(750, L"黑体");
+	if (!LanguageFlag)
+	{
+		staticHint1font.CreatePointFont(750, L"黑体");
+		staticHint2font.CreatePointFont(750, L"黑体");
+		staticHint3font.CreatePointFont(750, L"黑体");
+		staticHint4font.CreatePointFont(750, L"黑体");
 
-	GetDlgItem(IDC_PORT1HINT_STATIC)->SetFont(&staticHint1font);
-	GetDlgItem(IDC_PORT2HINT_STATIC)->SetFont(&staticHint2font);
-	GetDlgItem(IDC_PORT3HINT_STATIC)->SetFont(&staticHint3font);
-	GetDlgItem(IDC_PORT4HINT_STATIC)->SetFont(&staticHint4font);
+		GetDlgItem(IDC_PORT1HINT_STATIC)->SetFont(&staticHint1font);
+		GetDlgItem(IDC_PORT2HINT_STATIC)->SetFont(&staticHint2font);
+		GetDlgItem(IDC_PORT3HINT_STATIC)->SetFont(&staticHint3font);
+		GetDlgItem(IDC_PORT4HINT_STATIC)->SetFont(&staticHint4font);
+	}
+	else if (LanguageFlag)
+	{
+		staticHint1font.CreatePointFont(450, L"arial");
+		staticHint2font.CreatePointFont(450, L"arial");
+		staticHint3font.CreatePointFont(450, L"arial");
+		staticHint4font.CreatePointFont(450, L"arial");
 
+		GetDlgItem(IDC_PORT1HINT_STATIC)->SetFont(&staticHint1font);
+		GetDlgItem(IDC_PORT2HINT_STATIC)->SetFont(&staticHint2font);
+		GetDlgItem(IDC_PORT3HINT_STATIC)->SetFont(&staticHint3font);
+		GetDlgItem(IDC_PORT4HINT_STATIC)->SetFont(&staticHint4font);
+	}
 }
 
 //颜色改变函数
@@ -7584,17 +8771,18 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_PORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
-		if (str1 == "失败等待重启" || str1 == "工位已测" || str1 == "耦合漏测" || str1 == "需要返工" || str1 == L"读错误请重启" || str1 == L"设备异常插拔")
+		if (str1 == "失败等待重启" || str1 == "工位已测" || str1 == "耦合漏测" || str1 == "需要返工" || str1 == L"读错误请重启" || str1 == L"设备异常插拔"
+			|| str1 == "FAIL" || str1 == "CoupleFail" || str1 == "LoadingFail" || str1 == "AbnormolFail" || str1=="Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
 		}
-		else if (str1 == "待测试")
+		else if (str1 == "待测试"||str1=="Ready")
 		{
 			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
 		}
-		else if (str1 == "成功")
+		else if (str1 == "成功"||str1=="PASS")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
@@ -7608,17 +8796,18 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT2HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT2HINT_STATIC, str2);
-		if (str2 == "失败等待重启" || str2 == "工位已测" || str2 == "耦合漏测" || str2 == "需要返工" || str2 == L"读错误请重启" || str2 == L"设备异常插拔")
+		if (str2 == "失败等待重启" || str2 == "工位已测" || str2 == "耦合漏测" || str2 == "需要返工" || str2 == L"读错误请重启" || str2 == L"设备异常插拔"
+			|| str2 == "FAIL" || str2 == "CoupleFail" || str2 == "LoadingFail" || str2 == "AbnormolFail" || str2 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
 		}
-		else if (str2 == "待测试")
+		else if (str2 == "待测试" || str2 == "Ready")
 		{
 			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
 		}
-		else if (str2 == "成功")
+		else if (str2 == "成功" || str2 == "PASS")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
@@ -7632,17 +8821,18 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT3HINT_STATIC)
 	{ 
 		GetDlgItemText(IDC_PORT3HINT_STATIC, str3);
-		if (str3 == "失败等待重启" || str3 == "工位已测" || str3 == "耦合漏测" || str3 == "需要返工" || str3 == L"读错误请重启" || str3 == L"设备异常插拔")
+		if (str3 == "失败等待重启" || str3 == "工位已测" || str3 == "耦合漏测" || str3 == "需要返工" || str3 == L"读错误请重启" || str3 == L"设备异常插拔"
+			|| str3 == "FAIL" || str3 == "CoupleFail" || str3 == "LoadingFail" || str3 == "AbnormolFail" || str3 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
 		}
-		else if (str3 == "待测试")
+		else if (str3 == "待测试" || str3 == "Ready")
 		{
 			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
 		}
-		else if (str3 == "成功")
+		else if (str3 == "成功" || str3 == "PASS")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
@@ -7656,17 +8846,18 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if (pWnd->GetDlgCtrlID() == IDC_PORT4HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT4HINT_STATIC, str4);
-		if (str4 == "失败等待重启" || str4 == "工位已测" || str4 == "耦合漏测" || str4 == "需要返工" || str4 == L"读错误请重启" || str4 == L"设备异常插拔")
+		if (str4 == "失败等待重启" || str4 == "工位已测" || str4 == "耦合漏测" || str4 == "需要返工" || str4 == L"读错误请重启" || str4 == L"设备异常插拔"
+			|| str4 == "FAIL" || str4 == "CoupleFail" || str4 == "LoadingFail" || str4 == "AbnormolFail" || str4 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
 		}
-		else if (str4 == "待测试")
+		else if (str4 == "待测试" || str4 == "Ready")
 		{
 			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
 		}
-		else if (str4 == "成功")
+		else if (str4 == "成功" || str4 == "PASS")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
@@ -7689,154 +8880,442 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 	{
 	//串口1提示结果
 	case Main_Hint1_Ready:
+		if (LanguageFlag == FALSE)
+		{
 		PrintLog(L"待测试\r\n", 1);
 		SetDlgItemText(IDC_PORT1HINT_STATIC, L"待测试");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+		PrintLog(L"Ready\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"Ready");
+		}
 		break;
 	case Main_Hint1_Connected:
-		PrintLog(L"读取数据中\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取数据中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读取数据中\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取数据中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Loading...\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Loading...");
+		}
 		break;
 	case Main_Hint1_Downloading:
-		PrintLog(L"下载中\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"下载中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"下载中\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"下载中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"DownloadFile...\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Download File...");
+		}
 		break;
 	case Main_Hint1_Ageing:
-		PrintLog(L"老化中\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"老化中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"老化中\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"老化中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ageing...\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Ageing...");
+		}
 		break;
 	case Main_Hint1_Success:
-		PrintLog(L"成功\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"成功");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"成功\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"成功");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"PASS\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"PASS");
+		}
 		break;
 	case Main_Hint1_Fail:
-		PrintLog(L"失败等待重启\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败等待重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"失败等待重启\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败等待重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"FAIL\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"FAIL");
+		}
 		break;
 	case Main_Hint1_CoupleFail:
-		PrintLog(L"耦合漏测\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"耦合漏测\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"CoupleFail\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
+		}
 		break;
 	case Main_Hint1_READFail:
-		PrintLog(L"读错误请重启\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"读错误请重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读错误请重启\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"读错误请重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"LoadingFail\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Loading Fail");
+		}
 		break;
 	case Main_Hint1_AbnormolFail:
-		PrintLog(L"设备异常插拔\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"设备异常插拔");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"设备异常插拔\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"设备异常插拔");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"AbnormolFail\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Abnormol Fail");
+		}
 		break;
 
 	//串口2提示结果
 	case Main_Hint2_Ready:
-		PrintLog(L"待测试\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"待测试");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"待测试\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"待测试");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ready\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Ready");
+		}
 		break;
 	case Main_Hint2_Connected:
-		PrintLog(L"读取数据中\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"读取数据中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读取数据中\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"读取数据中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Loading...\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Loading...");
+		}
 		break;
 	case Main_Hint2_Downloading:
-		PrintLog(L"下载中\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"下载中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"下载中\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"下载中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"DownloadFile...\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Download File...");
+		}
 		break;
 	case Main_Hint2_Ageing:
-		PrintLog(L"老化中\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"老化中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"老化中\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"老化中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ageing...\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Ageing...");
+		}
 		break;
 	case Main_Hint2_Success:
-		PrintLog(L"成功\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"成功");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"成功\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"成功");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"PASS\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"PASS");
+		}
 		break;
 	case Main_Hint2_Fail:
-		PrintLog(L"失败等待重启\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"失败等待重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"失败等待重启\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"失败等待重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"FAIL\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"FAIL");
+		}
 		break;
 	case Main_Hint2_CoupleFail:
-		PrintLog(L"耦合漏测\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"耦合漏测\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"CoupleFail\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
+		}
 		break;
 	case Main_Hint2_READFail:
-		PrintLog(L"读错误请重启\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"读错误请重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读错误请重启\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"读错误请重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"LoadingFail\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Loading Fail");
+		}
 		break;
 	case Main_Hint2_AbnormolFail:
-		PrintLog(L"设备异常插拔\r\n", 2);
-		SetDlgItemText(IDC_PORT2HINT_STATIC, L"设备异常插拔");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"设备异常插拔\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"设备异常插拔");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"AbnormolFail\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Abnormol Fail");
+		}
 		break;
 
 	//串口3提示结果
 	case Main_Hint3_Ready:
-		PrintLog(L"待测试\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"待测试");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"待测试\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"待测试");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ready\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Ready");
+		}
 		break;
 	case Main_Hint3_Connected:
-		PrintLog(L"读取数据中\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"读取数据中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读取数据中\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"读取数据中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Loading...\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Loading...");
+		}
 		break;
 	case Main_Hint3_Downloading:
-		PrintLog(L"下载中\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"下载中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"下载中\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"下载中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"DownloadFile...\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Download File...");
+		}
 		break;
 	case Main_Hint3_Ageing:
-		PrintLog(L"老化中\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"老化中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"老化中\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"老化中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ageing...\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Ageing...");
+		}
 		break;
 	case Main_Hint3_Success:
-		PrintLog(L"成功\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"成功");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"成功\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"成功");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"PASS\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"PASS");
+		}
 		break;
 	case Main_Hint3_Fail:
-		PrintLog(L"失败等待重启\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"失败等待重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"失败等待重启\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"失败等待重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"FAIL\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"FAIL");
+		}
 		break;
 	case Main_Hint3_CoupleFail:
-		PrintLog(L"耦合漏测\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"耦合漏测\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"CoupleFail\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
+		}
 		break;
 	case Main_Hint3_READFail:
-		PrintLog(L"读错误请重启\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"读错误请重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读错误请重启\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"读错误请重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"LoadingFail\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Loading Fail");
+		}
 		break;
 	case Main_Hint3_AbnormolFail:
-		PrintLog(L"设备异常插拔\r\n", 3);
-		SetDlgItemText(IDC_PORT3HINT_STATIC, L"设备异常插拔");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"设备异常插拔\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"设备异常插拔");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"AbnormolFail\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Abnormol Fail");
+		}
 		break;
 
 	//串口4提示结果
 	case Main_Hint4_Ready:
-		PrintLog(L"待测试\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"待测试");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"待测试\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"待测试");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ready\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Ready");
+		}
 		break;
 	case Main_Hint4_Connected:
-		PrintLog(L"读取数据中\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"读取数据中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读取数据中\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"读取数据中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Loading...\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Loading...");
+		}
 		break;
 	case Main_Hint4_Downloading:
-		PrintLog(L"下载中\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"下载中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"下载中\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"下载中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"DownloadFile...\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Download File...");
+		}
 		break;
 	case Main_Hint4_Ageing:
-		PrintLog(L"老化中\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"老化中");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"老化中\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"老化中");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"Ageing...\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Ageing...");
+		}
 		break;
 	case Main_Hint4_Success:
-		PrintLog(L"成功\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"成功");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"成功\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"成功");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"PASS\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"PASS");
+		}
 		break;
 	case Main_Hint4_Fail:
-		PrintLog(L"失败等待重启\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"失败等待重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"失败等待重启\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"失败等待重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"FAIL\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"FAIL");
+		}
 		break;
 	case Main_Hint4_CoupleFail:
-		PrintLog(L"耦合漏测\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"耦合漏测\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"CoupleFail\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
+		}
 		break;
 	case Main_Hint4_READFail:
-		PrintLog(L"读错误请重启\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"读错误请重启");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"读错误请重启\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"读错误请重启");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"LoadingFail\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Loading Fail");
+		}
 		break;
 	case Main_Hint4_AbnormolFail:
-		PrintLog(L"设备异常插拔\r\n", 4);
-		SetDlgItemText(IDC_PORT4HINT_STATIC, L"设备异常插拔");
+		if (LanguageFlag == FALSE)
+		{
+			PrintLog(L"设备异常插拔\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"设备异常插拔");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintLog(L"AbnormolFail\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Abnormol Fail");
+		}
 		break;
 
 	default:
@@ -7864,12 +9343,21 @@ void CMFCP3SIMPORTDlg::OnBnClickedCancel()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	INT_PTR nRes;
-	nRes = MessageBox(_T("您确定要退出吗？"), _T("提示"), MB_OKCANCEL | MB_ICONQUESTION);
+	if (LanguageFlag == FALSE)
+	{
+		nRes = MessageBox(_T("您确定要退出吗？"), _T("提示"), MB_OKCANCEL | MB_ICONQUESTION);
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		nRes = MessageBox(_T("Are you sure want to exit？"), _T("Hint"), MB_OKCANCEL | MB_ICONQUESTION);
+	}
 	// 判断消息对话框返回值。如果为IDCANCEL就return，否则继续向下执行   
 	if (IDCANCEL == nRes)
 		return;
 
 	CDialogEx::OnCancel();
 }
+
+
 
 

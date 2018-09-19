@@ -15,20 +15,20 @@ UINT SendReadPortThread(LPVOID pParam);
 UINT DownloadPortThread(LPVOID pParam);
 
 //全局变量
-extern HWND MainFormHWND;
-extern CString strFolderpath, strOKFolderpath;
-extern CString StrFolder[4];
-extern CString strSingleFilePath;
-extern int simstart1flag;
+extern HWND MainFormHWND;//主控线程句柄
+extern CString strFolderpath, strOKFolderpath;//文件夹路径
+extern CString StrFolder[4];//串口下载用的文件夹路径
+extern CString strSingleFilePath;//单文件下载文件路径
+extern int simstart1flag;//串口开始标志位
 extern int simstart3flag;
 extern int simstart2flag;
 extern int simstart4flag;
-extern CString SinglePortLogName;
+extern CString SinglePortLogName;//串口日志名称
 extern CString Port1LogName;
 extern CString Port2LogName;
 extern CString Port3LogName;
 extern CString Port4LogName;
-extern BOOL SinglePortAbnomal;
+extern BOOL SinglePortAbnomal;//串口异常标志位
 //extern CString LastPort1RID;
 //extern CString LastPort1IMEI;
 extern BOOL Port1Abnomal;
@@ -43,7 +43,9 @@ extern BOOL Port3Abnomal;
 extern BOOL Port4Abnomal;
 extern int InteverTime;//发指令间隔时间
 extern int InteverCount;//发指令次数
-
+extern BOOL LanguageFlag;//语言标志位
+extern BOOL AgingFlag;//关老化标志位
+extern BOOL DatabaseFlag;//关数据库标志位
 
 // CMFCP3SIMPORTDlg 对话框
 class CMFCP3SIMPORTDlg : public CDialogEx
@@ -83,6 +85,7 @@ public:
 
 	afx_msg LRESULT MainFontControl(WPARAM wParam, LPARAM lParam);//字体更改的消息循环
 
+
 	//初始化配置模块函数以及变量
 	int initconfigflag;
 	CString m_simdatafolderPath, m_simdatafilePath;
@@ -92,7 +95,9 @@ public:
 	afx_msg void OnBnClickedSingledownloadRadio();
 	afx_msg void OnBnClickedOpensimdatafolderpathButton();
 	afx_msg void OnBnClickedOpensimdatafilepathButton();
+	afx_msg void OnBnClickedOpenremodleButton();//打开返工模式
 	void SetInitConfigWindow();
+
 
 	//SIM卡数据下载模块函数以及变量
 	int simconnect1flag,  simconnect2flag,  simconnect3flag,  simconnect4flag,  simallconnectflag, simallstartflag;
@@ -136,7 +141,6 @@ public:
 
 
 	//下面是连接、开始和串口下拉框按钮点击事件
-	afx_msg void OnCbnDropdownPortlist1Combo();
 	afx_msg void OnBnClickedPort1connectButton();
 	afx_msg void OnBnClickedStartdownload1Button();
 	afx_msg void OnBnClickedPort2connectButton();
@@ -147,6 +151,7 @@ public:
 	afx_msg void OnBnClickedStartdownload4Button();
 	afx_msg void OnBnClickedAutomultipleconnectButton();
 	afx_msg void OnBnClickedAutomultiplestartButton();
+	afx_msg void OnCbnDropdownPortlist1Combo();
 	afx_msg void OnCbnDropdownPortlist2Combo();
 	afx_msg void OnCbnDropdownPortlist3Combo();
 	afx_msg void OnCbnDropdownPortlist4Combo();
@@ -154,10 +159,10 @@ public:
 
 	//以下是各个串口的线程
 	//单文件下载
-	void SingleDownloadWrite1Port1Thread(LPVOID lpParam);
-	void SingleDownloadWrite2Port1Thread(LPVOID lpParam);
-	void SingleDownloadWrite3Port1Thread(LPVOID lpParam);
-	void SingleDownloadWrite4Port1Thread(LPVOID lpParam);
+	void SingleDownloadWrite1Port1Thread(LPVOID lpParam);//TEST指令
+	void SingleDownloadWrite2Port1Thread(LPVOID lpParam);//IMEI和RID
+	void SingleDownloadWrite3Port1Thread(LPVOID lpParam);//文件下载
+	void SingleDownloadWrite4Port1Thread(LPVOID lpParam);//老化指令
 	void SingleDownloadRead1Port1Thread(LPVOID lpParam);
 	void SingleDownloadRead2Port1Thread(LPVOID lpParam);
 	void SingleDownloadRead3Port1Thread(LPVOID lpParam);
@@ -216,9 +221,9 @@ public:
 
 	//信息日志模块函数以及变量
 	CRichEditCtrl m_currentinformationRichedit;
-	void PrintLog(CString strMsg,int No);
 
-	void SetRicheditText(CString strMsg, int No);
+	void PrintLog(CString strMsg,int No);//本地日志
+	void SetRicheditText(CString strMsg, int No);//即时日志
 	CString GetTime();
 	CString GetLogTime();
 
@@ -227,14 +232,14 @@ public:
 
 	afx_msg LRESULT MainDataInsertControl(WPARAM wParam, LPARAM lParam);//数据库消息循环函数
 
-	int SimDataSingleNoIsExitFun(CString strfile);
-	int SimDataNoIsExitFun(CString strfile);
+	int SimDataSingleNoIsExitFun(CString strfile);//单文件下载判断文件是否下过
+	int SimDataNoIsExitFun(CString strfile);//多文件下载判断文件是否下过
 
 	//串口1的
-	int SimDataLastStationFun1();
-	int SimDataIsExitFun1();
-	void SimDataOkInsertFun1();
-	void SimDataErrorInsertFun1();
+	int SimDataLastStationFun1();//判断耦合位
+	int SimDataIsExitFun1();//判断该工位
+	void SimDataOkInsertFun1();//插入成功数据
+	void SimDataErrorInsertFun1();//插入失败数据
 
 	//串口2的
 	int SimDataLastStationFun2();
@@ -264,6 +269,18 @@ public:
 	CString m_pcipEdit;
 
 	int GetLocalHostIPName(CString &sLocalName, CString &sIpAddress);
-	afx_msg void OnBnClickedOpenremodleButton();
+
+
+	//国际版新增的模块
+	CButton m_closeageingCheck;
+	CButton m_closedbCheck;
+
+	afx_msg void OnBnClickedClosedbCheck();//关闭数据库
+	afx_msg void OnBnClickedCloseageingCheck();//关闭老化指令
+	afx_msg void OnBnClickedEhlanguageRadio();//切换英文
+	afx_msg void OnBnClickedChlanguageRadio();//切换中文
+
+	void GetSystemConfigInfoIni();//获取INI文件配置
+	void SetUILanguage();//将界面设置为对应语言
 };
 

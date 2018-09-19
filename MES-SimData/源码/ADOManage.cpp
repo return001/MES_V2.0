@@ -468,7 +468,7 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 }
 
 
-//以下是通用函数
+/*以下是通用函数*/
 //清除数据库某张表
 _RecordsetPtr ADOManage::GetRst()
 {
