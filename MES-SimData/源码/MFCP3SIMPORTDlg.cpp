@@ -420,6 +420,11 @@ void CMFCP3SIMPORTDlg::Port1SetOtherWindowTrue()
 		GetDlgItem(IDC_OPENSIMDATAFILEPATH_BUTTON)->EnableWindow(TRUE);
 		GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
 		GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(TRUE);
+
+		GetDlgItem(IDC_CHLANGUAGE_RADIO)->EnableWindow(TRUE);
+		GetDlgItem(IDC_EHLANGUAGE_RADIO)->EnableWindow(TRUE);
+		GetDlgItem(IDC_CLOSEAGEING_CHECK)->EnableWindow(TRUE);
+		GetDlgItem(IDC_CLOSEDB_CHECK)->EnableWindow(TRUE);
 	}
 	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(TRUE);
 	GetDlgItem(IDC_PORTLIST1_COMBO)->EnableWindow(TRUE);
@@ -433,6 +438,11 @@ void CMFCP3SIMPORTDlg::Port1SetOtherWindowFalse()
 		GetDlgItem(IDC_MULTIPLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 		GetDlgItem(IDC_SINGLEDOWNLOAD_RADIO)->EnableWindow(FALSE);
 		GetDlgItem(IDC_SIMDATAFILEPATH_EDIT)->EnableWindow(FALSE);
+
+		GetDlgItem(IDC_CHLANGUAGE_RADIO)->EnableWindow(FALSE);
+		GetDlgItem(IDC_EHLANGUAGE_RADIO)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CLOSEAGEING_CHECK)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CLOSEDB_CHECK)->EnableWindow(FALSE);
 	}
 	GetDlgItem(IDC_OPENREMODLE_BUTTON)->EnableWindow(FALSE);
 	GetDlgItem(IDC_PORTLIST1_COMBO)->EnableWindow(FALSE);
@@ -508,7 +518,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedOpensimdatafolderpathButton()
 	}
 	else if (LanguageFlag == TRUE)
 	{
-		bi.lpszTitle = L"Please chose the SimData catalogue";
+		bi.lpszTitle = L"Please chose the SimData's Diretory";
 	}
 	bi.ulFlags = BIF_RETURNFSANCESTORS;
 	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
@@ -805,7 +815,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 					}
 					else if (LanguageFlag == TRUE)
 					{
-						MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+						MessageBox(L"Please chose the SimData's diretory！（Please be sure the diretory do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
 					}
 					return;
 				}
@@ -985,7 +995,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload1Button()
 				}
 				else if (LanguageFlag == TRUE)
 				{
-					MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+					MessageBox(L"Directory does not exist! Please select other diretory!", L"Hint", NULL);
 				}
 				return;
 			}
@@ -1100,11 +1110,11 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 			{
 				if (LanguageFlag == FALSE)
 				{
-					MessageBox(L"请选择SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+					MessageBox(L"请选择未完成的SIM卡数据路径！（即放着未下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
 				}
 				else if (LanguageFlag == TRUE)
 				{
-					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+					MessageBox(L"Please chose the SimData's diretory！（Please be sure the diretory do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
 				}
 				return;
 			}
@@ -1217,7 +1227,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload2Button()
 			}
 			else if (LanguageFlag == TRUE)
 			{
-				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+				MessageBox(L"Directory does not exist! Please select other diretory!", L"Hint", NULL);
 			}
 			return;
 		}
@@ -1334,7 +1344,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 				}
 				else if (LanguageFlag == TRUE)
 				{
-					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+					MessageBox(L"Please chose the SimData's diretory！（Please be sure the diretory do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
 				}
 				return;
 			}
@@ -1446,7 +1456,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload3Button()
 			}
 			else if (LanguageFlag == TRUE)
 			{
-				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+				MessageBox(L"Directory does not exist! Please select other diretory!", L"Hint", NULL);
 			}
 			return;
 		}
@@ -1564,7 +1574,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 				}
 				else if (LanguageFlag == TRUE)
 				{
-					MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+					MessageBox(L"Please chose the SimData's diretory！（Please be sure the diretory do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
 				}
 				return;
 			}
@@ -1677,7 +1687,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedStartdownload4Button()
 			}
 			else if (LanguageFlag == TRUE)
 			{
-				MessageBox(L"Catalogue does not exist! Please select other catalogue!", L"Hint", NULL);
+				MessageBox(L"Directory does not exist! Please select other diretory!", L"Hint", NULL);
 			}
 			return;
 		}
@@ -1779,7 +1789,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			MessageBox(L"Please chose the SimData catalogue！（Please be sure the path of catalogue do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
+			MessageBox(L"Please chose the SimData diretory！（Please be sure the diretory do not include 'OK' and the SimData has not been downloaded）", L"Hint", NULL);
 		}
 		return;
 	}
@@ -2739,7 +2749,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 									}
 									else if (LanguageFlag == TRUE)
 									{
-										PrintLog(L"CoupleFail\r\n", 0);
+										PrintLog(L"Couple Fail\r\n", 0);
 										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
 									}
 									adoport1manage3.CloseAll();
@@ -3061,7 +3071,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadWrite3Port1Thread(LPVOID lpParam)
 
 	if (AgingFlag == TRUE)
 	{
-		if (m_Port1SINGLEDownloadWrite3 == FALSE)
+		if (m_Port1SINGLEDownloadWrite3 == FALSE && m_Port1SINGLEDownloadReadEnd3 == TRUE)
 		{
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE;
@@ -3153,7 +3163,7 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead3Port1Thread(LPVOID lpParam)
 						m_Port1SINGLEDownloadWrite3 = FALSE;
 						m_Port1SINGLEDownloadRead3 = FALSE;
 						m_Port1SINGLEDownloadReadEnd3 = FALSE;
-
+						Sleep(5000);
 						//一直进入发送test指令，如果检测不到，那代表它已经断开了
 						BOOL port1testflag = TRUE, port1failflag = TRUE;
 						int port1testcount = 0;
@@ -3774,7 +3784,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 									}
 									else if (LanguageFlag == TRUE)
 									{
-										PrintLog(L"CoupleFail\r\n", 1);
+										PrintLog(L"Couple Fail\r\n", 1);
 										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
 									}
 									adoport1manage3.CloseAll();
@@ -4108,9 +4118,9 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port1Thread(LPVOID lpParam)
 		}
 	} while (m_Port1DownloadWrite3);
 
-	if (AgingFlag == TRUE)
+	if (AgingFlag == TRUE&& m_Port1DownloadReadEnd3 == TRUE)
 	{
-		if (m_Port1DownloadWrite3 == FALSE)
+		if (m_Port1DownloadWrite3 == FALSE )
 		{
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port1testflag = TRUE;
@@ -4204,11 +4214,11 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 					{
 						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port1_ErrorInsert, NULL);
 					}
-
+					dlg->PrintLog(L"收:" + strread, 1);
 					m_Port1DownloadWrite3 = FALSE;
 					m_Port1DownloadRead3 = FALSE;
 					m_Port1DownloadReadEnd3 = FALSE;
-
+					Sleep(5000);
 					//一直进入发送test指令，如果检测不到，那代表它已经断开了
 					BOOL port1testflag = TRUE, port1failflag = TRUE;
 					int port1testcount = 0;
@@ -4261,7 +4271,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port1Thread(LPVOID lpParam)
 
 					Sleep(100);
 
-					dlg->PrintLog(L"收:" + strread, 1);
+
 					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort1Thread();
 					return;
@@ -4865,7 +4875,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 									}
 									else if (LanguageFlag == TRUE)
 									{
-										PrintLog(L"CoupleFail\r\n", 2);
+										PrintLog(L"Couple Fail\r\n", 2);
 										SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
 									}
 									adoport2manage4.CloseAll();
@@ -5187,7 +5197,7 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port2Thread(LPVOID lpParam)
 		}
 	} while (m_Port2DownloadWrite3);
 
-	if (AgingFlag == TRUE)
+	if (AgingFlag == TRUE && m_Port2DownloadReadEnd3 == TRUE)
 	{
 		if (m_Port2DownloadWrite3 == FALSE)
 		{
@@ -5282,14 +5292,16 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 					{
 						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port2_ErrorInsert, NULL);
 					}
+					dlg->PrintLog(L"收:" + strread, 2);
+
 					m_Port2DownloadWrite3 = FALSE;
 					m_Port2DownloadRead3 = FALSE;
 					m_Port2DownloadReadEnd3 = FALSE;
-
+					Sleep(5000);
 					//一直进入发送test指令，如果检测不到，那代表它已经断开了
 					BOOL port2testflag = TRUE, port2failflag = TRUE;
 					int port2testcount = 0;
-					char port2teststr[100];
+					char port2teststr[300];
 					memset(port2teststr, 0, sizeof(port2teststr) / sizeof(port2teststr[0]));
 					DWORD port2testreadreal = 0, port2testdwBytesWrite, port2testdwErrorFlags;
 					BOOL port2testbReadStat, port2testbWriteStat;
@@ -5302,7 +5314,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 						port2testbWriteStat = WriteFile(dlg->port2handler, CT2A(port2teststrcommand), port2teststrcommand.GetLength(), &port2testdwBytesWrite, NULL);
 
 						Sleep(90);
-						port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 100, &port2testreadreal, 0);
+						port2testbReadStat = ReadFile(dlg->port2handler, port2teststr, 300, &port2testreadreal, 0);
 						if (port2testbReadStat)
 						{
 							port2teststrread = port2teststr;
@@ -5337,7 +5349,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port2Thread(LPVOID lpParam)
 					} while (port2testflag);
 
 					Sleep(100);
-					dlg->PrintLog(L"收:" + strread, 2);
+
 					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort2Thread();
 					return;
@@ -5932,7 +5944,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 									}
 									else if (LanguageFlag == TRUE)
 									{
-										PrintLog(L"CoupleFail\r\n", 3);
+										PrintLog(L"Couple Fail\r\n", 3);
 										SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
 									}
 									adoport3manage5.CloseAll();
@@ -6257,9 +6269,9 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port3Thread(LPVOID lpParam)
 		}
 	} while (m_Port3DownloadWrite3);
 
-	if (AgingFlag == TRUE)
+	if (AgingFlag == TRUE&& m_Port3DownloadReadEnd3 == TRUE)
 	{
-		if (m_Port3DownloadWrite3 == FALSE)
+		if (m_Port3DownloadWrite3 == FALSE )
 		{
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port3testflag = TRUE;
@@ -6352,10 +6364,11 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 					{
 					::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port3_ErrorInsert, NULL);
 					}
+					dlg->PrintLog(L"收:" + strread, 3);
 					m_Port3DownloadWrite3 = FALSE;
 					m_Port3DownloadRead3 = FALSE;
 					m_Port3DownloadReadEnd3 = FALSE;
-
+					Sleep(5000);
 					//一直进入发送test指令，如果检测不到，那代表它已经断开了
 					BOOL port3testflag = TRUE, port3failflag = TRUE;
 					int port3testcount = 0;
@@ -6407,7 +6420,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port3Thread(LPVOID lpParam)
 					} while (port3testflag);
 
 					Sleep(100);
-					dlg->PrintLog(L"收:" + strread, 3);
+
 					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort3Thread();
 					return;
@@ -7002,7 +7015,7 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 									}
 									else if (LanguageFlag == TRUE)
 									{
-										PrintLog(L"CoupleFail\r\n", 4);
+										PrintLog(L"Couple Fail\r\n", 4);
 										SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
 									}
 									adoport4manage6.CloseAll();
@@ -7328,9 +7341,9 @@ void CMFCP3SIMPORTDlg::DownloadWrite3Port4Thread(LPVOID lpParam)
 		}
 	} while (m_Port4DownloadWrite3);
 
-	if (AgingFlag == TRUE)
+	if (AgingFlag == TRUE&& m_Port4DownloadReadEnd3 == TRUE)
 	{
-		if (m_Port4DownloadWrite3 == FALSE)
+		if (m_Port4DownloadWrite3 == FALSE )
 		{
 			//一直进入发送test指令，如果检测不到，那代表它已经断开了
 			BOOL port4testflag = TRUE;
@@ -7424,10 +7437,11 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 					{
 						::PostMessage(MainFormHWND, WM_MainDataInsertControl, DataInsert_Port4_ErrorInsert, NULL);
 					}
+					dlg->PrintLog(L"收:" + strread, 4);
 					m_Port4DownloadWrite3 = FALSE;
 					m_Port4DownloadRead3 = FALSE;
 					m_Port4DownloadReadEnd3 = FALSE;
-
+					Sleep(5000);
 					//一直进入发送test指令，如果检测不到，那代表它已经断开了
 					BOOL port4testflag = TRUE, port4failflag = TRUE;
 					int port4testcount = 0;
@@ -7479,7 +7493,7 @@ void CMFCP3SIMPORTDlg::DownloadRead3Port4Thread(LPVOID lpParam)
 					} while (port4testflag);
 
 					Sleep(100);
-					dlg->PrintLog(L"收:" + strread, 4);
+
 					//dlg->SetRicheditText(L"收:" + strread, 0);
 					dlg->DownloadRestPort4Thread();
 					return;
@@ -8467,11 +8481,13 @@ void CMFCP3SIMPORTDlg::OnBnClickedClosedbCheck()
 	{
 		DatabaseFlag = TRUE;
 		WritePrivateProfileString(_T("SystemConfigInfo"), _T("DatabaseFlag"), L"1", _T(".\\SystemInfo.ini"));
+		GetDlgItem(IDC_DBCONFIG_BUTTON)->ShowWindow(SW_HIDE);
 	}
 	else if (!m_closedbCheck.GetCheck())
 	{
 		DatabaseFlag = FALSE;
 		WritePrivateProfileString(_T("SystemConfigInfo"), _T("DatabaseFlag"), L"0", _T(".\\SystemInfo.ini"));
+		GetDlgItem(IDC_DBCONFIG_BUTTON)->ShowWindow(SW_SHOW);
 	}
 }
 
@@ -8510,6 +8526,7 @@ void CMFCP3SIMPORTDlg::GetSystemConfigInfoIni()
 	{
 		m_closeageingCheck.SetCheck(AgingFlag);
 	}
+	OnBnClickedCloseageingCheck();
 	//关数据库复选框
 	initemp = GetPrivateProfileInt(_T("SystemConfigInfo"), _T("DatabaseFlag"), 2, _T(".\\SystemInfo.ini"));
 	if (initemp != 2)
@@ -8521,6 +8538,7 @@ void CMFCP3SIMPORTDlg::GetSystemConfigInfoIni()
 	{
 		m_closedbCheck.SetCheck(DatabaseFlag);
 	}
+	OnBnClickedClosedbCheck();
 	//选择中文还是英文单选框
 	initemp = GetPrivateProfileInt(_T("SystemConfigInfo"), _T("LanguageFlag"), 2, _T(".\\SystemInfo.ini"));
 	if (initemp != 2)
@@ -8563,7 +8581,7 @@ void CMFCP3SIMPORTDlg::SetUILanguage()
 		//初始化配置模块
 		SetDlgItemText(IDC_DBCONFIG_BUTTON, L"数据库配置");
 		SetDlgItemText(IDC_CHLANGUAGE_RADIO, L"中文");
-		SetDlgItemText(IDC_EHLANGUAGE_RADIO, L"Engilesh");
+		SetDlgItemText(IDC_EHLANGUAGE_RADIO, L"English");
 		SetDlgItemText(IDC_CLOSEAGEING_CHECK, L"关老化");
 		SetDlgItemText(IDC_CLOSEDB_CHECK, L"关数据库");
 		SetDlgItemText(IDC_MULTIPLEDOWNLOAD_RADIO, L"批量下载");
@@ -8621,6 +8639,8 @@ void CMFCP3SIMPORTDlg::SetUILanguage()
 
 		//返工模式
 		SetDlgItemText(IDC_OPENREMODLE_BUTTON, L"开启返工模式");
+		SetDlgItemText(IDOK, L"确定");
+		SetDlgItemText(IDCANCEL, L"取消");
 	}
 	//设置为英文
 	else if (LanguageFlag)
@@ -8634,8 +8654,8 @@ void CMFCP3SIMPORTDlg::SetUILanguage()
 		SetDlgItemText(IDC_MULTIPLEDOWNLOAD_RADIO, L"BatchDownload");
 		SetDlgItemText(IDC_SINGLEDOWNLOAD_RADIO, L"SingleDownload");
 		SetDlgItemText(IDC_INITCONFIG_GROUP, L"InitConfig");
-		SetDlgItemText(IDC_SIMDATAFOLDERPATH_STATIC, L"DataFolderPath");
-		SetDlgItemText(IDC_SIMDATAFILEPATH_STATIC, L"DataFilePath");
+		SetDlgItemText(IDC_SIMDATAFOLDERPATH_STATIC, L"SimDataDiretoryPath");
+		SetDlgItemText(IDC_SIMDATAFILEPATH_STATIC, L"SimDataFilePath");
 		SetDlgItemText(IDC_OPENSIMDATAFOLDERPATH_BUTTON, L"Browse");
 		SetDlgItemText(IDC_OPENSIMDATAFILEPATH_BUTTON, L"Browse");
 
@@ -8686,6 +8706,8 @@ void CMFCP3SIMPORTDlg::SetUILanguage()
 
 		//返工模式
 		SetDlgItemText(IDC_OPENREMODLE_BUTTON, L"ReworkMode");
+		SetDlgItemText(IDOK, L"OK");
+		SetDlgItemText(IDCANCEL, L"CANCEL");
 	}
 }
 
@@ -8750,10 +8772,10 @@ void CMFCP3SIMPORTDlg::fontinit()
 	}
 	else if (LanguageFlag)
 	{
-		staticHint1font.CreatePointFont(450, L"arial");
-		staticHint2font.CreatePointFont(450, L"arial");
-		staticHint3font.CreatePointFont(450, L"arial");
-		staticHint4font.CreatePointFont(450, L"arial");
+		staticHint1font.CreatePointFont(400, L"arial");
+		staticHint2font.CreatePointFont(400, L"arial");
+		staticHint3font.CreatePointFont(400, L"arial");
+		staticHint4font.CreatePointFont(400, L"arial");
 
 		GetDlgItem(IDC_PORT1HINT_STATIC)->SetFont(&staticHint1font);
 		GetDlgItem(IDC_PORT2HINT_STATIC)->SetFont(&staticHint2font);
@@ -8772,7 +8794,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
 		if (str1 == "失败等待重启" || str1 == "工位已测" || str1 == "耦合漏测" || str1 == "需要返工" || str1 == L"读错误请重启" || str1 == L"设备异常插拔"
-			|| str1 == "FAIL" || str1 == "CoupleFail" || str1 == "LoadingFail" || str1 == "AbnormolFail" || str1=="Already downloaded")
+			|| str1 == "FAIL WAIT TO RESTART" || str1 == "Couple Fail" || str1 == "Loading Fail WAIT TO RESTART" || str1 == "Exception Error" || str1=="Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint1font);
@@ -8797,7 +8819,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{
 		GetDlgItemText(IDC_PORT2HINT_STATIC, str2);
 		if (str2 == "失败等待重启" || str2 == "工位已测" || str2 == "耦合漏测" || str2 == "需要返工" || str2 == L"读错误请重启" || str2 == L"设备异常插拔"
-			|| str2 == "FAIL" || str2 == "CoupleFail" || str2 == "LoadingFail" || str2 == "AbnormolFail" || str2 == "Already downloaded")
+			|| str2 == "FAIL WAIT TO RESTART" || str2 == "Couple Fail" || str2 == "Loading Fail WAIT TO RESTART" || str2 == "Exception Error" || str2 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint2font);
@@ -8822,7 +8844,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{ 
 		GetDlgItemText(IDC_PORT3HINT_STATIC, str3);
 		if (str3 == "失败等待重启" || str3 == "工位已测" || str3 == "耦合漏测" || str3 == "需要返工" || str3 == L"读错误请重启" || str3 == L"设备异常插拔"
-			|| str3 == "FAIL" || str3 == "CoupleFail" || str3 == "LoadingFail" || str3 == "AbnormolFail" || str3 == "Already downloaded")
+			|| str3 == "FAIL WAIT TO RESTART" || str3 == "Couple Fail" || str3 == "Loading Fail WAIT TO RESTART" || str3 == "Exception Error" || str3 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint3font);
@@ -8847,7 +8869,7 @@ HBRUSH CMFCP3SIMPORTDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{
 		GetDlgItemText(IDC_PORT4HINT_STATIC, str4);
 		if (str4 == "失败等待重启" || str4 == "工位已测" || str4 == "耦合漏测" || str4 == "需要返工" || str4 == L"读错误请重启" || str4 == L"设备异常插拔"
-			|| str4 == "FAIL" || str4 == "CoupleFail" || str4 == "LoadingFail" || str4 == "AbnormolFail" || str4 == "Already downloaded")
+			|| str4 == "FAIL WAIT TO RESTART" || str4 == "Couple Fail" || str4 == "Loading Fail WAIT TO RESTART" || str4 == "Exception Error" || str4 == "Already downloaded")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticHint4font);
@@ -8947,8 +8969,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"FAIL\r\n", 1);
-			SetDlgItemText(IDC_PORT1HINT_STATIC, L"FAIL");
+			PrintLog(L"FAIL WAIT TO RESTART\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"FAIL WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint1_CoupleFail:
@@ -8959,7 +8981,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"CoupleFail\r\n", 1);
+			PrintLog(L"Couple Fail\r\n", 1);
 			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
 		}
 		break;
@@ -8971,8 +8993,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"LoadingFail\r\n", 1);
-			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Loading Fail");
+			PrintLog(L"Loading Fail WAIT TO RESTART\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Loading Fail WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint1_AbnormolFail:
@@ -8983,8 +9005,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"AbnormolFail\r\n", 1);
-			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Abnormol Fail");
+			PrintLog(L"Exception Error\r\n", 1);
+			SetDlgItemText(IDC_PORT1HINT_STATIC, L"Exception Error");
 		}
 		break;
 
@@ -9057,8 +9079,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"FAIL\r\n", 2);
-			SetDlgItemText(IDC_PORT2HINT_STATIC, L"FAIL");
+			PrintLog(L"FAIL WAIT TO RESTART\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"FAIL WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint2_CoupleFail:
@@ -9069,7 +9091,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"CoupleFail\r\n", 2);
+			PrintLog(L"Couple Fail\r\n", 2);
 			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
 		}
 		break;
@@ -9081,8 +9103,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"LoadingFail\r\n", 2);
-			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Loading Fail");
+			PrintLog(L"Loading Fail WAIT TO RESTART\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Loading Fail WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint2_AbnormolFail:
@@ -9093,8 +9115,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"AbnormolFail\r\n", 2);
-			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Abnormol Fail");
+			PrintLog(L"Exception Error\r\n", 2);
+			SetDlgItemText(IDC_PORT2HINT_STATIC, L"Exception Error");
 		}
 		break;
 
@@ -9167,8 +9189,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"FAIL\r\n", 3);
-			SetDlgItemText(IDC_PORT3HINT_STATIC, L"FAIL");
+			PrintLog(L"FAIL WAIT TO RESTART\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"FAIL WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint3_CoupleFail:
@@ -9179,7 +9201,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"CoupleFail\r\n", 3);
+			PrintLog(L"Couple Fail\r\n", 3);
 			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
 		}
 		break;
@@ -9191,8 +9213,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"LoadingFail\r\n", 3);
-			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Loading Fail");
+			PrintLog(L"Loading Fail WAIT TO RESTART\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Loading Fail WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint3_AbnormolFail:
@@ -9203,8 +9225,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"AbnormolFail\r\n", 3);
-			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Abnormol Fail");
+			PrintLog(L"Exception Error\r\n", 3);
+			SetDlgItemText(IDC_PORT3HINT_STATIC, L"Exception Error");
 		}
 		break;
 
@@ -9277,8 +9299,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"FAIL\r\n", 4);
-			SetDlgItemText(IDC_PORT4HINT_STATIC, L"FAIL");
+			PrintLog(L"FAIL WAIT TO RESTART\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"FAIL WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint4_CoupleFail:
@@ -9289,7 +9311,7 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"CoupleFail\r\n", 4);
+			PrintLog(L"Couple Fail\r\n", 4);
 			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
 		}
 		break;
@@ -9301,8 +9323,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"LoadingFail\r\n", 4);
-			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Loading Fail");
+			PrintLog(L"Loading Fail WAIT TO RESTART\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Loading Fail WAIT TO RESTART");
 		}
 		break;
 	case Main_Hint4_AbnormolFail:
@@ -9313,8 +9335,8 @@ afx_msg LRESULT CMFCP3SIMPORTDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 		}
 		else if (LanguageFlag == TRUE)
 		{
-			PrintLog(L"AbnormolFail\r\n", 4);
-			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Abnormol Fail");
+			PrintLog(L"Exception Error\r\n", 4);
+			SetDlgItemText(IDC_PORT4HINT_STATIC, L"Exception Error");
 		}
 		break;
 

@@ -58,6 +58,7 @@ public:
 	void ReDownloadRestPortThread();//重置线程变量
 	void ReDownloadClosePortThread();//关闭线程变量
 	void SetRePortEditEmpty();//清除窗口
+	void SetReUILanguage();	//将界面设置为对应的语言
 
 	afx_msg void OnBnClickedReport1connectButton();
 	afx_msg void OnBnClickedRestart1Button();

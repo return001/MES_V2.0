@@ -91,6 +91,7 @@ BOOL CReSimDataDownload::OnInitDialog()
 	//获取日志名字
 	ReLogName = GetLogTime()+L"ReLog";
 
+	SetReUILanguage();
 	//LastReRID = L"";
 	//LastReIMEI = L"";
 
@@ -110,7 +111,14 @@ void CReSimDataDownload::OnBnClickedReopensimdatafolderpathButton()
 	ZeroMemory(&bi, sizeof(BROWSEINFO));
 	bi.hwndOwner = AfxGetMainWnd()->GetSafeHwnd();
 	bi.pszDisplayName = LPWSTR(name);
-	bi.lpszTitle = L"选择文件夹目录";
+	if (LanguageFlag == FALSE)
+	{
+		bi.lpszTitle = L"选择文件夹目录";
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		bi.lpszTitle = L"Please chose the SimData's diretory";
+	}
 	bi.ulFlags = BIF_RETURNFSANCESTORS;
 	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
 	if (idl == NULL)
@@ -142,7 +150,14 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 	GetDlgItemText(IDC_RESIMDATAFOLDERPATH_EDIT, m_resimdatafolderPath);
 	if (m_resimdatafolderPath == L""||m_resimdatafolderPath.Find(L"OK")==-1)
 	{
-		MessageBox(L"请选择已完成的SIM卡数据路径！（即放着已下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+		if (LanguageFlag == FALSE)
+		{
+			MessageBox(L"请选择已完成的SIM卡数据路径！（即放着已下载过的sim卡数据文件夹，的文件夹）", L"提示信息", NULL);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			MessageBox(L"Please chose the SimData diretory which is completed！（Please be sure the path of diretory include 'OK' and the SimData has been downloaded!）", L"Hint", NULL);
+		}
 		return;
 	}
 
@@ -150,14 +165,29 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 
 	if (reporthandler == NULL)
 	{
-		PrintReLog(L"串口初始化失败");
-		MessageBox(L"串口初始化失败",L"提示信息",NULL);
+		if (LanguageFlag == FALSE)
+		{
+			PrintReLog(L"串口初始化失败");
+			MessageBox(L"串口初始化失败", L"提示信息", NULL);
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			PrintReLog(L"Open Serial Port fail!");
+			MessageBox(L"Open Serial Port fail!", L"Hint", NULL);
+		}
 		return;
 	}
 
 	GetDlgItem(IDC_RESTART_BUTTON)->EnableWindow(TRUE);
 	simreconnectflag = 1;
-	SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"断开");
+	if (LanguageFlag == FALSE)
+	{
+		SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"断开");
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"disconnect");
+	}
 	GetDlgItem(IDC_REOPENSIMDATAFOLDERPATH_BUTTON)->EnableWindow(FALSE);
 	OnBnClickedRestart1Button();
 	GetDlgItem(IDC_REPORTLIST1_COMBO)->EnableWindow(FALSE);
@@ -170,8 +200,16 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 		}
 		if (!parentdlg->CloseCom(reporthandler))
 		{
-			PrintReLog(L"关闭串口失败");
-			MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			if (LanguageFlag == FALSE)
+			{
+				PrintReLog(L"关闭串口失败");
+				MessageBox(L"关闭串口失败", L"提示信息", NULL);
+			}
+			else if (LanguageFlag == TRUE)
+			{
+				PrintReLog(L"Close Serial Port fail!");
+				MessageBox(L"Close Serial Port fail!", L"Hint", NULL);
+			}
 			return;
 		}
 
@@ -180,7 +218,14 @@ void CReSimDataDownload::OnBnClickedReport1connectButton()
 		//SetRicheditText(L"关闭串口成功", 0);
 		GetDlgItem(IDC_RESTART_BUTTON)->EnableWindow(FALSE);
 		simreconnectflag = 0;
-		SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"连接");
+		if (LanguageFlag == FALSE)
+		{
+			SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"连接");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"connect");
+		}
 		GetDlgItem(IDC_REOPENSIMDATAFOLDERPATH_BUTTON)->EnableWindow(TRUE);
 		GetDlgItem(IDC_REPORTLIST1_COMBO)->EnableWindow(TRUE);
 	}
@@ -203,8 +248,16 @@ void CReSimDataDownload::OnBnClickedRestart1Button()
 		}
 
 		simrestratflag = 1;
-		SetDlgItemText(IDC_RESTART_BUTTON, L"停止返工");
-		SetDlgItemText(IDC_REPORT1HINT_STATIC, L"就绪");
+		if (LanguageFlag == FALSE)
+		{
+			SetDlgItemText(IDC_RESTART_BUTTON, L"停止返工");
+			SetDlgItemText(IDC_REPORT1HINT_STATIC, L"等待连接");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetDlgItemText(IDC_RESTART_BUTTON, L"Stop");
+			SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Ready");
+		}
 		//m_Port2DownloadControl = TRUE;
 		s_bReExit = FALSE;
 		MainThread = AfxBeginThread(ReDownloadMainThread, this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
@@ -215,8 +268,16 @@ void CReSimDataDownload::OnBnClickedRestart1Button()
 		s_bReExit = TRUE;
 		//m_Port2DownloadControl = FALSE;
 		simrestratflag = 0;
-		SetDlgItemText(IDC_RESTART_BUTTON, L"开始返工");
-		SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		if (LanguageFlag == FALSE)
+		{
+			SetDlgItemText(IDC_RESTART_BUTTON, L"开始返工");
+			SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			SetDlgItemText(IDC_RESTART_BUTTON, L"Start");
+			SetDlgItemText(IDC_REPORT1HINT_STATIC, L"STOP");
+		}
 		SetRePortEditEmpty();
 		//StrFolder[1] = L"";
 	}
@@ -237,8 +298,7 @@ void CReSimDataDownload::SetRePortEditEmpty()
 }
 
 
-//以下为返工位模块函数
-
+/*以下为返工位模块函数*/
 //文件下载写命令集合,0是TEST指令,1是RID指令,2是IMEI指令,3是开始下载指令,4是下载结束指令
 CString CReSimDataDownload::CommandWriteUnit(int strcommandNo)
 {
@@ -341,12 +401,20 @@ PortTest:
 	//同时开启读线程
 	dlg->DWThread = AfxBeginThread(ReDownloadReadPortThread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 
-	if (RePortAbnomal == TRUE)//这里是如果出现异常插拔，就先停顿个2.5秒才继续往下跑
+	if (RePortAbnomal == TRUE)//这里是如果出现异常插拔，就先停顿个2秒才继续往下跑
 	{
 		Sleep(2000);
 	}
 
-	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"等待连接");
+	if (LanguageFlag == FALSE)
+	{
+		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"等待连接");
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Ready");
+	}
+
 	do
 	{
 		dlg->PrintReLog(L"发:" + strcommand);
@@ -363,11 +431,25 @@ PortTest:
 
 	if (m_RePortDownloadMain == FALSE)
 	{
-		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		if (LanguageFlag == FALSE)
+		{
+			dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"STOP");
+		}
 		return 0;
 	}
 
-	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
+	if (LanguageFlag == FALSE)
+	{
+		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"已连接");
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Connected");
+	}
 
 	RePortAbnomal = FALSE;
 
@@ -420,7 +502,14 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"失败待重启");
+								if (LanguageFlag == FALSE)
+								{
+									dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"失败待重启");
+								}
+								else if (LanguageFlag == TRUE)
+								{
+									dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"FAIL");
+								}
 								reportfailflag = FALSE;
 							}
 							reporttestcount = 0;
@@ -429,7 +518,14 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"异常插拔");
+								if (LanguageFlag == FALSE)
+								{
+									dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"异常插拔");
+								}
+								else if (LanguageFlag == TRUE)
+								{
+									dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Exception Error");
+								}
 								reportfailflag = FALSE;
 								RePortAbnomal = TRUE;
 							}
@@ -464,7 +560,14 @@ PortTest:
 
 	if (m_RePortDownloadMain == FALSE)
 	{
-		dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		if (LanguageFlag == FALSE)
+		{
+			dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		}
+		else if (LanguageFlag == TRUE)
+		{
+			dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"STOP");
+		}
 		return 0;
 	}
 	Sleep(1500);
@@ -583,48 +686,106 @@ UINT ReDownloadReadPortThread(LPVOID lpParam)
 					//{
 					//	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
 					//}
-					dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+					if (LanguageFlag == FALSE)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"清除数据中");
+					}
+					else if (LanguageFlag == TRUE)
+					{
+						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Empty data...");
+					}
 				}
 				else if (dlg->CommandNo == 5)
 				{
-					CString strReIMEI, strReRID;
 
-					dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID);
-					dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI);
-
-
-					ADOManage ReAdomanage;
-					ReAdomanage.ConnSQL();
-					Reflag = ReAdomanage.SimDataReSql(strReRID, strReIMEI, strReOKFolderpath);//根据返回值确定是否成功
-					if (Reflag == 1)
+					if (DatabaseFlag == FALSE)
 					{
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工成功");
-						dlg->PrintReLog(L"返工成功");
-					}
-					else if (Reflag == 2 || Reflag == 3)
-					{
-						//if (LastReRID != strReRID&&LastReIMEI != strReIMEI)
-						//{
-						//	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
-						//}
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
-						dlg->PrintReLog(L"无需返工");
-					}
-					else if (Reflag == 0)
-					{
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无此机记录");
-						dlg->PrintReLog(L"无此机记录");
-					}
-					else if (Reflag == 4)
-					{
-						dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"数据路径错误");
-						dlg->PrintReLog(L"数据路径错误");
-					}
+						CString strReIMEI, strReRID;
 
-					//LastReRID = strReRID;
-					//LastReIMEI = strReIMEI;
+						dlg->GetDlgItemText(IDC_REPORT1RID_EDIT, strReRID);
+						dlg->GetDlgItemText(IDC_REPORT1IMEI_EDIT, strReIMEI);
 
-					ReAdomanage.CloseAll();
+
+						ADOManage ReAdomanage;
+						ReAdomanage.ConnSQL();
+						Reflag = ReAdomanage.SimDataReSql(strReRID, strReIMEI, strReOKFolderpath);//根据返回值确定是否成功
+						if (Reflag == 1)
+						{
+							if (LanguageFlag == FALSE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工成功");
+								dlg->PrintReLog(L"返工成功");
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"PASS");
+								dlg->PrintReLog(L"PASS");
+							}
+						}
+						else if (Reflag == 2 || Reflag == 3)
+						{
+							//if (LastReRID != strReRID&&LastReIMEI != strReIMEI)
+							//{
+							//	dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+							//}
+							if (LanguageFlag == FALSE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无需返工");
+								dlg->PrintReLog(L"无需返工");
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Needn't Rework");
+								dlg->PrintReLog(L"Needn't Rework");
+							}
+						}
+						else if (Reflag == 0)
+						{
+							if (LanguageFlag == FALSE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"无此机记录");
+								dlg->PrintReLog(L"无此机记录");
+
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Record not found");
+								dlg->PrintReLog(L"Record not found");
+							}
+						}
+						else if (Reflag == 4)
+						{
+							if (LanguageFlag == FALSE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"数据路径错误");
+								dlg->PrintReLog(L"数据路径错误");
+							}
+							else if (LanguageFlag == TRUE)
+							{
+								dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"Catalog Error");
+								dlg->PrintReLog(L"Catalog Error");
+							}
+
+						}
+
+						//LastReRID = strReRID;
+						//LastReIMEI = strReIMEI;
+
+						ReAdomanage.CloseAll();
+					}
+					else if (DatabaseFlag == TRUE)
+					{
+						if (LanguageFlag == FALSE)
+						{
+							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"返工成功");
+							dlg->PrintReLog(L"返工成功");
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							dlg->SetDlgItemText(IDC_REPORT1HINT_STATIC, L"PASS");
+							dlg->PrintReLog(L"PASS");
+						}
+					}
 				}
 				m_RePortDownloadRead = FALSE;
 				m_RePortDownloadWrite = FALSE;
@@ -647,7 +808,6 @@ void CReSimDataDownload::ReDownloadRestPortThread()
 	m_RePortDownloadRead1 = TRUE;
 	m_RePortDownloadRead2 = TRUE;
 	m_RePortDownloadReadEnd2 = TRUE;
-
 }
 
 ////返工位串口关闭线程全局变量
@@ -660,7 +820,44 @@ void CReSimDataDownload::ReDownloadRestPortThread()
 //}
 
 
-//其它函数
+/*其它函数*/
+//将界面设置为对应的语言
+void CReSimDataDownload::SetReUILanguage()
+{
+	//设置为中文
+	if (!LanguageFlag)
+	{
+		SetDlgItemText(IDC_RESIMDATAFOLDERPATH_STATIC, L"已完成的SIM卡数据路径：");
+		SetDlgItemText(IDC_REOPENSIMDATAFOLDERPATH_BUTTON, L"浏览");
+		SetDlgItemText(IDC_REPORT_GROUP, L"串口1");
+		SetDlgItemText(IDC_REPORT1_STATIC, L"串口1");
+		SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"连接");
+		SetDlgItemText(IDC_RESTART_BUTTON, L"开始返工");
+		SetDlgItemText(IDCANCEL, L"退出返工模式");
+		SetDlgItemText(IDC_REPORTSTATE_STATIC, L"串口1当前状态");
+		SetDlgItemText(IDC_REPORT1HINT_STATIC, L"停止");
+		SetDlgItemText(IDC_BROKENREWORK_GROUP, L"坏机返工");
+		SetDlgItemText(IDC_RENORMAL_RADIO, L"普通返工");
+		SetDlgItemText(IDC_REBROKEN_RADIO, L"坏机返工");
+
+	}
+	//设置为英文
+	else if (LanguageFlag)
+	{
+		SetDlgItemText(IDC_RESIMDATAFOLDERPATH_STATIC, L"SimDataDiretoryOKPath：");
+		SetDlgItemText(IDC_REOPENSIMDATAFOLDERPATH_BUTTON, L"Browse");
+		SetDlgItemText(IDC_REPORT_GROUP, L"Port1");
+		SetDlgItemText(IDC_REPORT1_STATIC, L"Port1");
+		SetDlgItemText(IDC_REPORT1CONNECT_BUTTON, L"connect");
+		SetDlgItemText(IDC_RESTART_BUTTON, L"start");
+		SetDlgItemText(IDCANCEL, L"Exit");
+		SetDlgItemText(IDC_REPORTSTATE_STATIC, L"Port1State");
+		SetDlgItemText(IDC_REPORT1HINT_STATIC, L"STOP");
+		SetDlgItemText(IDC_BROKENREWORK_GROUP, L"Damage Mode");
+		SetDlgItemText(IDC_RENORMAL_RADIO, L"Eegular Mode");
+		SetDlgItemText(IDC_REBROKEN_RADIO, L"Damage Mode");
+	}
+}
 
 //信息日志函数
 void CReSimDataDownload::SetRicheditText(CString strMsg, int No)
@@ -728,9 +925,18 @@ void CReSimDataDownload::PrintReLog(CString strMsg)
 //初始化字体
 void CReSimDataDownload::fontinit()
 {
-	staticReHintfont.CreatePointFont(900, L"黑体");
+	if (LanguageFlag == FALSE)
+	{
+		staticReHintfont.CreatePointFont(900, L"黑体");
 
-	GetDlgItem(IDC_REPORT1HINT_STATIC)->SetFont(&staticReHintfont);
+		GetDlgItem(IDC_REPORT1HINT_STATIC)->SetFont(&staticReHintfont);
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		staticReHintfont.CreatePointFont(700, L"arial");
+
+		GetDlgItem(IDC_REPORT1HINT_STATIC)->SetFont(&staticReHintfont);
+	}
 }
 
 //改变字体颜色的消息
@@ -743,17 +949,18 @@ HBRUSH CReSimDataDownload::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_REPORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_REPORT1HINT_STATIC, str1);
-		if (str1 == "失败待重启" || str1 == "无此机记录" || str1 == "数据路径错误" || str1 == "无需返工"||str1=="异常插拔")
+		if (str1 == "失败待重启" || str1 == "无此机记录" || str1 == "数据路径错误" || str1 == "无需返工"||str1=="异常插拔"
+			|| str1 == "FAIL" || str1 == "Needn't Rework" || str1 == "Catalog Error" || str1 == "Exception Error" || str1 == "Record not found")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticReHintfont);
 		}
-		else if (str1 == "返工成功")
+		else if (str1 == "返工成功" || str1 == "PASS")
 		{
 			pDC->SetTextColor(RGB(0, 255, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticReHintfont);
 		}
-		else if (str1 == "等待连接")
+		else if (str1 == "等待连接" || str1 == "Ready")
 		{
 			pDC->SetTextColor(RGB(65, 105, 225));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticReHintfont);
@@ -773,7 +980,14 @@ void CReSimDataDownload::OnBnClickedCancel()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	INT_PTR nRes;
-	nRes = MessageBox(_T("确定要退出吗？"), _T("提示消息"), MB_OKCANCEL | MB_ICONQUESTION);
+	if (LanguageFlag == FALSE)
+	{
+		nRes = MessageBox(_T("您确定要退出吗？"), _T("提示"), MB_OKCANCEL | MB_ICONQUESTION);
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		nRes = MessageBox(_T("Are you sure want to exit？"), _T("Hint"), MB_OKCANCEL | MB_ICONQUESTION);
+	}
 	// 判断消息对话框返回值。如果为IDCANCEL就return，否则继续向下执行   
 	if (IDOK == nRes)
 	{
@@ -784,6 +998,7 @@ void CReSimDataDownload::OnBnClickedCancel()
 		CDialogEx::OnCancel();
 	}
 }
+
 
 
 

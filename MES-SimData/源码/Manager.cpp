@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "MFCP3SIMPORT.h"
+#include "MFCP3SIMPORTDlg.h"
 #include "Manager.h"
 #include "afxdialogex.h"
 
@@ -35,6 +36,31 @@ END_MESSAGE_MAP()
 
 // CManager 消息处理程序
 
+BOOL CManager::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// TODO:  在此添加额外的初始化
+
+	//设置为中文
+	if (!LanguageFlag)
+	{
+		//初始化配置模块
+		SetDlgItemText(IDC_PASSWORD_STATIC, L"请输入密码:");
+		SetDlgItemText(IDOK, L"确定");
+		SetDlgItemText(IDCANCEL, L"取消");
+	}
+	//设置为英文
+	else if (LanguageFlag)
+	{
+		SetDlgItemText(IDC_PASSWORD_STATIC, L"Password:");
+		SetDlgItemText(IDOK, L"OK");
+		SetDlgItemText(IDCANCEL, L"CANCEL");
+	}
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// 异常:  OCX 属性页应返回 FALSE
+}
+
 
 void CManager::OnBnClickedOk()
 {
@@ -58,3 +84,5 @@ void CManager::OnBnClickedCancel()
 	// TODO:  在此添加控件通知处理程序代码
 	CDialogEx::OnCancel();
 }
+
+

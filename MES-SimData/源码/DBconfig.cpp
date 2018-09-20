@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "MFCP3SIMPORT.h"
+#include "MFCP3SIMPORTDlg.h"
 #include "DBconfig.h"
 #include "afxdialogex.h"
 #include "ADOManage.h"
@@ -88,6 +89,37 @@ BOOL CDBconfig::OnInitDialog()
 		UpdateData(FALSE);
 		str.ReleaseBuffer();
 	}
+
+	//设置为中文
+	if (!LanguageFlag)
+	{
+		//初始化配置模块
+		SetDlgItemText(IDC_SERVERIP_STATIC, L"服务器IP");
+		SetDlgItemText(IDC_SERVERPORT_STATIC, L"端口");
+		SetDlgItemText(IDC_SERVERACCOUNT_STATIC, L"账号");
+		SetDlgItemText(IDC_SERVERPASSWORD_STATIC, L"密码");
+		SetDlgItemText(IDC_DATABASE1_STATIC, L"数据库1名称");
+		SetDlgItemText(IDC_DATABASE2_STATIC, L"数据库2名称");
+		SetDlgItemText(IDC_DATASHEET1_STATIC, L"数据表1名称");
+		SetDlgItemText(IDC_DATASHEET2_STATIC, L"数据表2名称");
+		SetDlgItemText(IDOK, L"测试连接并保存");
+		SetDlgItemText(IDCANCEL, L"取消");
+	}
+	//设置为英文
+	else if (LanguageFlag)
+	{
+		SetDlgItemText(IDC_SERVERIP_STATIC, L"ServerIP");
+		SetDlgItemText(IDC_SERVERPORT_STATIC, L"ServerPort");
+		SetDlgItemText(IDC_SERVERACCOUNT_STATIC, L"Account");
+		SetDlgItemText(IDC_SERVERPASSWORD_STATIC, L"Password");
+		SetDlgItemText(IDC_DATABASE1_STATIC, L"DatabaseName1");
+		SetDlgItemText(IDC_DATABASE2_STATIC, L"DatabaseName2");
+		SetDlgItemText(IDC_DATASHEET1_STATIC, L"DatasheetName1");
+		SetDlgItemText(IDC_DATASHEET2_STATIC, L"DatasheetName2");
+		SetDlgItemText(IDOK, L"OK");
+		SetDlgItemText(IDCANCEL, L"CANCEL");
+	}
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }

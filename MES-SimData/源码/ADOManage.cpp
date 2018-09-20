@@ -3,6 +3,7 @@
 #include "iostream"   
 #include "vector"
 #include <string>
+#include "MFCP3SIMPORTDlg.h"
 
 //全局变量需在类外进行初始化
 
@@ -68,7 +69,16 @@ bool ADOManage::ConntestdbSQL1()
 		AfxMessageBox(e.Description());/*打印出异常原因*/
 		return 0;
 	}
-	MessageBox(NULL, L"数据库连接成功", L"提示信息", NULL);
+
+	if (LanguageFlag == FALSE)
+	{
+		MessageBox(NULL, L"数据库连接成功", L"提示信息", NULL);
+	}
+	else if (LanguageFlag == TRUE)
+	{
+		MessageBox(NULL, L"Database connect successful！", L"Hint", NULL);
+	}
+
 	return 1;
 }
 
@@ -418,7 +428,7 @@ int ADOManage::SimDataReSql(CString RID, CString IMEI,CString strOKpath)
 	_variant_t a;
 	CString strSql,strCID;
 	int flag;
-	bool moveflag;
+	BOOL moveflag;
 	//查找RID是否存在
 	strSql = _T("SELECT [RID],[IMEI],[CID],[SDRESULT] FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + RID + _T("' AND [IMEI] = '") + IMEI + _T("'");
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
