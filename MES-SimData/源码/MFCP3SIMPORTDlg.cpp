@@ -629,6 +629,7 @@ void CMFCP3SIMPORTDlg::FindCommPort(CComboBox *pComboBox, CString &ComNo, int Po
 				cur = i;
 				curflag = FALSE;
 			}
+			//如果不相等那就按顺序自动分配一下，结合一个标志位使得各个串口不会对cur重复赋值
 			else
 			{
 				if (PortNO == 1 && i == 0 && curflag == TRUE)
@@ -804,7 +805,20 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort1connectButton()
 							}
 							return;
 						}
-					break;
+
+						break;
+					}
+					else
+					{
+						if (LanguageFlag == FALSE)
+						{
+							MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						}
+						else if (LanguageFlag == TRUE)
+						{
+							MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+						}
+						return;
 					}
 				}
 				if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
@@ -1083,8 +1097,11 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 				bFindtemp = findertemp.FindNextFile();
 				if (findertemp.IsDots())
 				{
+					strtempfile = findertemp.GetFileName();
 					continue;
 				}
+
+				//如果找到的不是文件夹，那肯定是文件，此时就要提示错误
 				if (findertemp.IsDirectory())//是文件夹
 				{
 					strtempfile = findertemp.GetFileName();
@@ -1104,6 +1121,18 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort2connectButton()
 						return;
 					}
 				break;
+				}
+				else
+				{
+					if (LanguageFlag == FALSE)
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+					}
+					else if (LanguageFlag == TRUE)
+					{
+						MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+					}
+					return;
 				}
 			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
@@ -1333,7 +1362,20 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort3connectButton()
 						}
 						return;
 					}
-				break;
+
+					break;
+				}
+				else
+				{
+					if (LanguageFlag == FALSE)
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+					}
+					else if (LanguageFlag == TRUE)
+					{
+						MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+					}
+					return;
 				}
 			}
 			if (m_simdatafolderPath == L""||m_simdatafolderPath.Find(L"OK") >= 0)
@@ -1562,7 +1604,20 @@ void CMFCP3SIMPORTDlg::OnBnClickedPort4connectButton()
 						}
 						return;
 					}
-				break;
+
+					break;
+				}
+				else
+				{
+					if (LanguageFlag == FALSE)
+					{
+						MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+					}
+					else if (LanguageFlag == TRUE)
+					{
+						MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+					}
+					return;
 				}
 			}
 
