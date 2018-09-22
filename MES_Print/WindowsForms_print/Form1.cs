@@ -15,12 +15,14 @@ using System.Drawing.Printing;
 using System.Text.RegularExpressions;
 using System.Media;
 using System.Threading;
+using System.Diagnostics;
 
 namespace WindowsForms_print
 {
     public partial class Form1 : Form
     {
 
+        //写日志函数
         public static void Log(string msg, Exception e)
         {
             try
@@ -53,6 +55,7 @@ namespace WindowsForms_print
 
         string outString;
 
+        //音频文件
         SoundPlayer player = new SoundPlayer(AppDomain.CurrentDomain.BaseDirectory + "失败.wav");
         SoundPlayer player1 = new SoundPlayer(AppDomain.CurrentDomain.BaseDirectory + "请先选择模板.wav");
         SoundPlayer player2 = new SoundPlayer(AppDomain.CurrentDomain.BaseDirectory + "请选择制单号.wav");
@@ -75,6 +78,9 @@ namespace WindowsForms_print
         string lj = "";
         Messages messages;
         int waitout = 10000;
+
+        //记录模板刷新次数
+        int RefreshNum=0;
 
         //记录模板打印份数
         int TN = 1;
@@ -99,6 +105,8 @@ namespace WindowsForms_print
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder returnvalue, int buffersize, string filepath);
 
         private string IniFilePath;
+
+        //读取ini配置文件
         private void GetValue(string section, string key, out string value)
         {
             IniFilePath = AppDomain.CurrentDomain.BaseDirectory + "PrintVariable.ini";
@@ -107,6 +115,7 @@ namespace WindowsForms_print
             value = stringBuilder.ToString();
         }     
 
+        //程序加载时运行的函数
         private void Form1_Load(object sender, EventArgs e)
         {
             PrintDocument print = new PrintDocument();
@@ -128,6 +137,7 @@ namespace WindowsForms_print
             btEngine.Start();
         }
 
+        //选择制单时引发的事件
         private void CB_ZhiDan_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.reminder.Text = "";
@@ -169,6 +179,7 @@ namespace WindowsForms_print
                 this.VIP_num2.Text = b.VIPEnd;
                 this.IMEI_Present.Text = b.IMEIPrints;
                 this.Select_Template1.Text = b.JST_template;
+                lj = b.JST_template;
                 if (b.Remark1 != "")
                 {
                     string rem = b.Remark1;
@@ -221,6 +232,7 @@ namespace WindowsForms_print
             }
         }
         
+        //判断是否为纯数字
         static bool IsNumeric(string s)
         {
             double v;
@@ -234,6 +246,7 @@ namespace WindowsForms_print
             }
         }
 
+        //获取IMEI的校验位
         public string getimei15(string imei) {
             if (imei.Length == 14)
             {
@@ -254,6 +267,7 @@ namespace WindowsForms_print
             else { return ""; }
         }
 
+        //判断是否为日期格式的函数
         public bool IsDate(string strDate)
         {
             try
@@ -267,6 +281,7 @@ namespace WindowsForms_print
             }
         }
 
+        //鼠标移出生产日期框时引发的函数
         private void ProductData_MouseLeave(object sender, EventArgs e)
         {
             if (this.ProductData.Text != "")
@@ -279,6 +294,7 @@ namespace WindowsForms_print
             }
         }
 
+        //光标离开生产日期框时引发的函数
         private void ProductData_Leave(object sender, EventArgs e)
         {
             if (this.ProductData.Text != "")
@@ -297,6 +313,7 @@ namespace WindowsForms_print
             return Regex.IsMatch(str, @"[\u4e00-\u9fa5]");
         }
 
+        //打开模板按钮函数
         private void Open_Template1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -313,11 +330,13 @@ namespace WindowsForms_print
                 }
                 else {
                     this.Select_Template1.Text = path;
+                    lj = path;
                 }
             }
 
         }
 
+        //选择tabControl子页面
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             tabControl1.SelectedTab.Refresh();
@@ -338,16 +357,56 @@ namespace WindowsForms_print
             }
         }
 
+        //关闭程序时引发事件
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (MessageBox.Show("是否退出系统？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+            try
             {
-                e.Cancel = true;
+                Application.Exit();
+                foreach (Process p in Process.GetProcessesByName("bartend"))
+                {
+                    if (!p.CloseMainWindow())
+                    {
+                        //p.CloseMainWindow();
+                        p.Kill();
+                    }
+                }
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                if (Directory.Exists(path + "机身贴模板"))
+                {
+                    if (File.GetAttributes(path + "机身贴模板") == FileAttributes.Directory)
+                    {
+                        Directory.Delete(path + "机身贴模板", true);
+                    }
+                }
+                if (Directory.Exists(path + "Excel模板"))
+                {
+                    if (File.GetAttributes(path + "Excel模板") == FileAttributes.Directory)
+                    {
+                        Directory.Delete(path + "Excel模板", true);
+                    }
+                }
+                if (Directory.Exists(path + "彩盒贴模板"))
+                {
+                    if (File.GetAttributes(path + "彩盒贴模板") == FileAttributes.Directory)
+                    {
+                        Directory.Delete(path + "彩盒贴模板", true);
+                    }
+                }
+                if (MessageBox.Show("是否退出系统？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+                //结束打印引擎
+                btEngine.Stop();
             }
-            //结束打印引擎
-            btEngine.Stop();
+            catch (Exception ex)
+            {
+                MessageBox.Show("Exception:" + ex.Message);
+            }
         }
 
+        //将tabControl子页面的按钮文字横着显示
         private void tabControl2_DrawItem(object sender, DrawItemEventArgs e)
         {
             Rectangle tabArea = tabControl2.GetTabRect(e.Index);//主要是做个转换来获得TAB项的RECTANGELF 
@@ -361,6 +420,7 @@ namespace WindowsForms_print
             g.DrawString(((TabControl)(sender)).TabPages[e.Index].Text, font, brush, tabTextArea, sf);
         }
 
+        //选择tabContro2子页面
         private void tabControl2_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl2.SelectedTab == CheckAndDelete)
@@ -382,13 +442,13 @@ namespace WindowsForms_print
             }
         }
 
+        //调试打印
         private void Debug_print_Click(object sender, EventArgs e)
         {
             try
             {
                 if (this.Select_Template1.Text != "")
                 {
-                    lj = this.Select_Template1.Text;
                     LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                     //指定打印机名称
                     btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -414,9 +474,7 @@ namespace WindowsForms_print
                     btFormat.SubStrings[outString].Value = this.ProductData.Text;
                     //打印份数,同序列打印的份数
                     btFormat.PrintSetup.IdenticalCopiesOfLabel = TN;
-                    Messages messages;
-                    int waitout = 10000;
-                    btFormat.Print("标签打印软件", waitout, out messages);
+                    btFormat.Print();
                     Form1.Log("调试打印了机身贴IMEI号为" + this.IMEI_num1.Text + "的制单", null);
                 }
                 else
@@ -431,6 +489,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择逐个打印引发的事件
         private void PrintOne_Click(object sender, EventArgs e)
         {
             if (this.PrintOne.Checked == true)
@@ -448,6 +507,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择批量打印时引发的事件
         private void PrintMore_Click(object sender, EventArgs e)
         {
             if (this.PrintMore.Checked == true)
@@ -465,6 +525,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择逐个重打引发的事件
         private void RePrintOne_Click(object sender, EventArgs e)
         {
             if (this.RePrintOne.Checked == true)
@@ -483,6 +544,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择批量重打引发的事件
         private void RePrintMore_Click(object sender, EventArgs e)
         {
             if (this.RePrintMore.Checked == true)
@@ -501,6 +563,7 @@ namespace WindowsForms_print
             }
         }
 
+        //批量打印
         private void PrintNum_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13) {
@@ -553,7 +616,6 @@ namespace WindowsForms_print
                 {
                     if (this.Select_Template1.Text != "")
                     {
-                        lj = this.Select_Template1.Text;
                         LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                         //对模板相应字段进行赋值
                         ValueToTemplate(btFormat);
@@ -620,8 +682,8 @@ namespace WindowsForms_print
                                         });
                                         if (PMB.InsertPrintMessageBLL(list))
                                         {
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                            Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                            btFormat.Print();
+                                            //Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                             imei_begin++;
                                         }
                                     }
@@ -697,8 +759,8 @@ namespace WindowsForms_print
                                                 });
                                                 if (PMB.InsertPrintMessageBLL(list))
                                                 {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                    btFormat.Print();
+                                                    //Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                                     imei_begin++;
                                                     sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
                                                 }
@@ -749,8 +811,8 @@ namespace WindowsForms_print
                                             });
                                             if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                btFormat.Print();
+                                                //Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -829,8 +891,8 @@ namespace WindowsForms_print
                                                     });
                                                     if (PMB.InsertPrintMessageBLL(list))
                                                     {
-                                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                        Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                        btFormat.Print();
+                                                        //Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                                         imei_begin++;
                                                         sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
                                                     }
@@ -888,8 +950,8 @@ namespace WindowsForms_print
                                             });
                                             if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
+                                                btFormat.Print();
+                                                //Form1.Log("批量打印了IMEI号为" + imei_begin + imei15 + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -964,8 +1026,8 @@ namespace WindowsForms_print
                                                 });
                                                 if (PMB.InsertPrintMessageBLL(list))
                                                 {
-                                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                    Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                    btFormat.Print();
+                                                    //Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                                     imei_begin++;
                                                     sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
                                                 }
@@ -1015,8 +1077,8 @@ namespace WindowsForms_print
                                             });
                                             if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                btFormat.Print();
+                                                //Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -1093,8 +1155,8 @@ namespace WindowsForms_print
                                                     });
                                                     if (PMB.InsertPrintMessageBLL(list))
                                                     {
-                                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                        Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                        btFormat.Print();
+                                                        //Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                                         imei_begin++;
                                                         sn_aft = (int.Parse(sn_aft) + 1).ToString().PadLeft(s, '0');
                                                     }
@@ -1151,8 +1213,8 @@ namespace WindowsForms_print
                                             });
                                             if (PMB.InsertPrintMessageBLL(list))
                                             {
-                                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                                Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                                btFormat.Print();
+                                                //Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                                 imei_begin++;
                                             }
                                         }
@@ -1220,8 +1282,8 @@ namespace WindowsForms_print
                                         });
                                         if (PMB.InsertPrintMessageBLL(list))
                                         {
-                                            Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                            Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
+                                            btFormat.Print();
+                                            //Form1.Log("批量打印了IMEI号为" + imei_begin + "的制单", null);
                                             imei_begin++;
                                         }
                                     }
@@ -1250,6 +1312,7 @@ namespace WindowsForms_print
             }
         }
 
+        //单个打印
         private void IMEI_Start_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13) {
@@ -1359,7 +1422,6 @@ namespace WindowsForms_print
                 {
                     if (this.Select_Template1.Text != "")
                     {
-                        lj = this.Select_Template1.Text;
                         LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                         //指定打印机名称
                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -1987,6 +2049,7 @@ namespace WindowsForms_print
             }
         }
 
+        //公用模板复制函数
         private void ValueToTemplate(LabelFormatDocument btFormat)
         {
             //GetValue("Information", "型号", out outString);
@@ -1999,6 +2062,7 @@ namespace WindowsForms_print
             //btFormat.SubStrings[outString].Value = this.Remake.Text;
         }
 
+        //逐个重打
         private void Re_IMEINum_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13) {
@@ -2008,6 +2072,14 @@ namespace WindowsForms_print
                     {
                         if (IsNumeric(this.Re_IMEINum.Text))
                         {
+                            if (long.Parse(this.Re_IMEINum.Text.Substring(0,14)) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.Re_IMEINum.Text.Substring(0, 14)) > long.Parse(this.IMEI_num2.Text))
+                            {
+                                player.Play();
+                                this.reminder.AppendText("IMEI不在范围内\r\n");
+                                this.Re_IMEINum.Clear();
+                                this.Re_IMEINum.Focus();
+                                return;
+                            }
                             if (this.Re_IMEINum.Text.Length != 15)
                             {
                                 player.Play();
@@ -2049,12 +2121,18 @@ namespace WindowsForms_print
                             this.Re_IMEINum.Focus();
                             return;
                         }
+                        if (long.Parse(this.Re_IMEINum.Text) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.Re_IMEINum.Text) > long.Parse(this.IMEI_num2.Text))
+                        {
+                            player.Play();
+                            this.reminder.AppendText("IMEI不在范围内\r\n");
+                            this.Re_IMEINum.Clear();
+                            this.Re_IMEINum.Focus();
+                            return;
+                        }
                     }
                 }
                 else
                 {
-                    player.Play();
-                    this.reminder.AppendText("请输入重打IMEI\r\n");
                     this.Re_IMEINum.Focus();
                     return;
                 }
@@ -2062,7 +2140,6 @@ namespace WindowsForms_print
                 {
                     if (this.Select_Template1.Text != "")
                     {
-                        lj = this.Select_Template1.Text;
                         LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                         //指定打印机名称
                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -2084,7 +2161,7 @@ namespace WindowsForms_print
                             string RE_PrintTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff");
                             if (PMB.UpdateRePrintBLL(this.Re_IMEINum.Text, RE_PrintTime, 1, lj, lj))
                             {
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
                                 Form1.Log("重打了IMEI号为" + this.Re_IMEINum.Text + "的制单", null);
                                 this.Re_IMEINum.Clear();
                                 this.Re_IMEINum.Focus();
@@ -2113,6 +2190,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择客供SN复选框引发的事件
         private void SnFromCustomer_Click(object sender, EventArgs e)
         {
             if (this.SnFromCustomer.Checked == true)
@@ -2129,6 +2207,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择无校验位复选框引发的事件
         private void NoCheckCode_Click(object sender, EventArgs e)
         {
             if (this.NoCheckCode.Checked == true)
@@ -2141,6 +2220,7 @@ namespace WindowsForms_print
             }
         }
 
+        //选择不打印SN复选框引发的事件
         private void NoSn_Click(object sender, EventArgs e)
         {
             if (this.NoSn.Checked == true)
@@ -2158,6 +2238,7 @@ namespace WindowsForms_print
             }
         }
 
+        //批量重打IMEI起始位
         private void ReImeiNum1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13)
@@ -2200,6 +2281,14 @@ namespace WindowsForms_print
                             this.ReImeiNum1.Focus();
                             return;
                         }
+                        if (long.Parse(this.ReImeiNum1.Text.Substring(0,14)) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.ReImeiNum1.Text.Substring(0, 14)) > long.Parse(this.IMEI_num2.Text))
+                        {
+                            player.Play();
+                            this.reminder.AppendText("IMEI不在范围内\r\n");
+                            this.ReImeiNum1.Clear();
+                            this.ReImeiNum1.Focus();
+                            return;
+                        }
                     }
                     else {
                         if (!IsNumeric(this.ReImeiNum1.Text))
@@ -2210,12 +2299,21 @@ namespace WindowsForms_print
                             this.ReImeiNum1.Focus();
                             return;
                         }
+                        if (long.Parse(this.ReImeiNum1.Text) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.ReImeiNum1.Text) > long.Parse(this.IMEI_num2.Text))
+                        {
+                            player.Play();
+                            this.reminder.AppendText("IMEI不在范围内\r\n");
+                            this.ReImeiNum1.Clear();
+                            this.ReImeiNum1.Focus();
+                            return;
+                        }
                     }
                     this.ReImeiNum2.Focus();
                 }
             }
         }
 
+        //批量重打IMEI终止位
         private void ReImeiNum2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13)
@@ -2266,12 +2364,28 @@ namespace WindowsForms_print
                             this.ReImeiNum2.Focus();
                             return;
                         }
+                        if (long.Parse(this.ReImeiNum2.Text.Substring(0,14)) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.ReImeiNum2.Text.Substring(0, 14)) > long.Parse(this.IMEI_num2.Text))
+                        {
+                            player.Play();
+                            this.reminder.AppendText("IMEI不在范围内\r\n");
+                            this.ReImeiNum2.Clear();
+                            this.ReImeiNum2.Focus();
+                            return;
+                        }
                     }
                     else {
                         if (!IsNumeric(this.ReImeiNum2.Text))
                         {
                             player.Play();
                             this.reminder.AppendText("IMEI格式错误\r\n");
+                            this.ReImeiNum2.Clear();
+                            this.ReImeiNum2.Focus();
+                            return;
+                        }
+                        if (long.Parse(this.ReImeiNum2.Text) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.ReImeiNum2.Text) > long.Parse(this.IMEI_num2.Text))
+                        {
+                            player.Play();
+                            this.reminder.AppendText("IMEI不在范围内\r\n");
                             this.ReImeiNum2.Clear();
                             this.ReImeiNum2.Focus();
                             return;
@@ -2288,7 +2402,6 @@ namespace WindowsForms_print
                 {
                     if (this.Select_Template1.Text != "")
                     {
-                        lj = this.Select_Template1.Text;
                         LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                         //指定打印机名称
                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -2316,14 +2429,13 @@ namespace WindowsForms_print
                                     string RE_PrintTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff");
                                     if (PMB.UpdateRePrintBLL(Num1Imei14.ToString() + Num1Imei15.ToString(), RE_PrintTime, 1, lj, lj))
                                     {
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                        Form1.Log("批量重打了IMEI号为" + this.Re_IMEINum.Text + "的制单", null); 
+                                        btFormat.Print();
+                                        Form1.Log("批量重打了IMEI号为" + Num1Imei14.ToString() + Num1Imei15.ToString() + "的制单", null); 
                                     }
                                 }
                                 else
                                 {
-                                    player.Play();
-                                    this.reminder.AppendText(this.Re_IMEINum.Text+"无记录\r\n");
+                                    this.reminder.AppendText(Num1Imei14.ToString() + Num1Imei15.ToString() + "无记录\r\n");
                                 }
                             }
                             this.ReImeiNum1.Clear();
@@ -2346,14 +2458,13 @@ namespace WindowsForms_print
                                     string RE_PrintTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff");
                                     if (PMB.UpdateRePrintBLL(Num1Imei14.ToString(), RE_PrintTime, 1, lj, lj))
                                     {
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                        Form1.Log("批量重打了IMEI号为" + this.Re_IMEINum.Text + "的制单", null);
+                                        btFormat.Print();
+                                        Form1.Log("批量重打了IMEI号为" + Num1Imei14 + "的制单", null);
                                     }
                                 }
                                 else
                                 {
-                                    player.Play();
-                                    this.reminder.AppendText(this.Re_IMEINum.Text + "无记录\r\n");
+                                    this.reminder.AppendText(Num1Imei14 + "无记录\r\n");
                                 }
                             }
                             this.ReImeiNum1.Clear();
@@ -2376,6 +2487,7 @@ namespace WindowsForms_print
             }
         }
 
+        //刷新制单
         private void Refresh_zhidan_Click(object sender, EventArgs e)
         {
             this.CB_ZhiDan.Items.Clear();
@@ -2425,12 +2537,14 @@ namespace WindowsForms_print
             }
         }
 
+        //解锁按钮，弹出输入密码的界面
         private void Unlock_Click(object sender, EventArgs e)
         {
             JS_Unlock ul = new JS_Unlock(this);
             ul.ShowDialog();
         }   
 
+        //解锁的内容
         public void Unlock_content()
         {
             this.Open_Template1.Enabled = true;
@@ -2464,6 +2578,7 @@ namespace WindowsForms_print
             }
         }
 
+        //锁定
         private void ToLock_Click(object sender, EventArgs e)
         {
             this.Open_Template1.Enabled = false;
@@ -2493,6 +2608,7 @@ namespace WindowsForms_print
             this.ToUnlock.Enabled = true;
         }
 
+        //输入模板打印份数引发函数
         private void TemplateNum_TextChanged(object sender, EventArgs e)
         {
             if (this.TemplateNum.Text != "")
@@ -2510,6 +2626,7 @@ namespace WindowsForms_print
             }
         }
 
+        //光标离开模板打印份数引发函数
         private void TemplateNum_Leave(object sender, EventArgs e)
         {
             if (this.TemplateNum.Text == "")
@@ -2518,6 +2635,7 @@ namespace WindowsForms_print
             }
         }
 
+        //打开模板函数
         private void Open_file_Click(object sender, EventArgs e)
         {
             if (this.Select_Template1.Text == "")
@@ -2537,14 +2655,24 @@ namespace WindowsForms_print
             }
         }
 
+        //刷新模板函数
         private void Refresh_template_Click(object sender, EventArgs e)
         {
-            string path = this.Select_Template1.Text;
-            string filename = Path.GetFileName(path);
-            if (this.Select_Template1.Text != AppDomain.CurrentDomain.BaseDirectory + filename)
+            if (this.Select_Template1.Text != "")
             {
-                File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + filename, true);
-                this.Select_Template1.Text = AppDomain.CurrentDomain.BaseDirectory + filename;
+                string path = this.Select_Template1.Text;
+                string filename = Path.GetFileName(path);
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "机身贴模板"))
+                {
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory+ "\\机身贴模板");
+                }
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "机身贴模板\\" + RefreshNum)) {
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\机身贴模板\\" + RefreshNum);
+                }
+                File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + "\\机身贴模板\\" + RefreshNum +"\\"+ filename, true);
+                lj = AppDomain.CurrentDomain.BaseDirectory + "\\机身贴模板\\" + RefreshNum + "\\" + filename;
+                this.reminder.AppendText("刷新模板成功\r\n");
+                RefreshNum++;
             }
         }
     

@@ -26,5 +26,14 @@ namespace Print_Message
 
         //模板
         public string Template { get; set; }
+
+        //重打次数
+        public int RePrintNum { get; set; }
+
+        //首次重打时间
+        public string ReFirstPrintTime { get; set; }
+
+        //末次重打时间
+        public string ReEndPrintTime { get; set; }
     }
 }

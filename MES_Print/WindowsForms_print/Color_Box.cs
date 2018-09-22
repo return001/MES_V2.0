@@ -78,6 +78,7 @@ namespace WindowsForms_print
 
         Engine btEngine = new Engine();
         LabelFormatDocument btFormat;
+        
 
         //g1-g7依次对应关联SIM、VIP、BAT、ICCID、蓝牙号、设备号、
         int g=0, g1, g2, g3, g4, g5, g6;
@@ -97,15 +98,15 @@ namespace WindowsForms_print
         string dj2 = "";
         //打印时间
         string ProductTime = "";
-        //打印参数
-        Messages messages;
-        int waitout = 10000;
         //SN参数
         string sn1_prefix;
         long sn1_suffix;
         string sn1 ;
         string ASS_sn;
         int Sn_mark = 0;
+
+        //记录模板刷新次数
+        int RefreshNum = 0;
 
         //记录SN号后缀位数
         int s;
@@ -117,7 +118,11 @@ namespace WindowsForms_print
         int xc;
         int xc2 = 0;
         //记录IMEI等，主要用于双模板线程使用
-        string IMEI,GLBSN,SIM,VIP,BAT,ICCID,MAC,Equipment;
+        string DZSN,IMEI,GLBSN,SIM,VIP,BAT,ICCID,MAC,Equipment;
+
+        //调试打印双模板线程
+        Thread thread2;
+        bool tl2= false;
 
         public Color_Box()
         {
@@ -167,6 +172,7 @@ namespace WindowsForms_print
             //thread2.Start();
         }
 
+        //选择模板1
         private void open_template1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -185,10 +191,12 @@ namespace WindowsForms_print
                 else
                 {
                     this.Select_Template1.Text = path;
+                    lj = path;
                 }
             }
         }
 
+        //选择模板2
         private void open_template2_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -207,6 +215,13 @@ namespace WindowsForms_print
                 else
                 {
                     this.Select_Template2.Text = path;
+                    lj2 = path;
+                    thread2 = new Thread(new ThreadStart(PrintTemplate2));
+                    if(thread2.ThreadState != ThreadState.Running)
+                    {
+                        //启动线程
+                        thread2.Start();
+                    }
                 }
             }
         }
@@ -252,7 +267,9 @@ namespace WindowsForms_print
                 this.Equipment_digits.Text = b.Equipment_digits;
                 this.Equipment_prefix.Text = b.Equipment_prefix;
                 this.Select_Template1.Text = b.CHT_template1;
+                lj = b.CHT_template1;
                 this.Select_Template2.Text = b.CHT_template2;
+                lj2= b.CHT_template2;
                 this.PrintDate.Text = b.ProductDate;
                 if (b.Remark1 != "")
                 {
@@ -380,6 +397,16 @@ namespace WindowsForms_print
                     this.choose_iccid.Checked = false;
                     this.choose_mac.Checked = false;
                     this.choose_Equipment.Checked = false;
+                }
+            }
+            if (this.Select_Template2.Text != "")
+            {
+                tl2 = true;
+                thread2 = new Thread(new ThreadStart(PrintTemplate2));
+                if (thread2.ThreadState != ThreadState.Running)
+                {
+                    //启动线程
+                    thread2.Start();
                 }
             }
         }
@@ -511,9 +538,7 @@ namespace WindowsForms_print
             {
                 if (this.Select_Template1.Text != "" || this.Select_Template2.Text != "")
                 {
-                    lj = this.Select_Template1.Text;
                     dj = this.Printer1.Text;
-                    lj2 = this.Select_Template2.Text;
                     dj2 = this.Printer2.Text;
                     LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
 
@@ -541,12 +566,10 @@ namespace WindowsForms_print
                     btFormat.SubStrings[outString].Value = this.PrintDate.Text;
                     //打印份数,同序列打印的份数
                     btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                    Messages messages;
-                    int waitout = 10000;
                     //指定打印机名称
                     btFormat.PrintSetup.PrinterName = dj;
-                    btFormat.Print("标签打印软件", waitout, out messages);
-                    if (dj2 != "")
+                    btFormat.Print();
+                    if (lj2 != "")
                     {
                         xc = 1;
                         //调试打印双模板线程
@@ -592,7 +615,7 @@ namespace WindowsForms_print
                 btFormat.SubStrings[outString].Value = this.PrintDate.Text;
                 //打印份数,同序列打印的份数
                 btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                btFormat.Print("标签打印软件", waitout, out messages);
+                btFormat.Print();
                 xc = 0;
             }
         }
@@ -610,8 +633,16 @@ namespace WindowsForms_print
                 this.MACStart.Clear();
                 this.EquipmentStart.Clear();
                 this.IMEI_Start.Focus();
+                this.choose_iccid.Enabled = false;
+                if(this.choose_iccid.Checked == true)
+                {
+                    this.choose_iccid.Checked = false;
+                    this.ICCIDStart.ReadOnly = true;
+                    g = g - 8;
+                }
                 g1 = 1;
                 g = g + g1;
+                //this.reminder.AppendText(g.ToString());
             }
             else {
                 this.SIMStart.ReadOnly = true;
@@ -623,11 +654,13 @@ namespace WindowsForms_print
                 this.MACStart.Clear();
                 this.EquipmentStart.Clear();
                 this.IMEI_Start.Focus();
+                this.choose_iccid.Enabled = true;
                 g1 = 0;
                 g = g - 1;
                 if (g == 0) {
                     this.NoPaper.Checked = false;
                 }
+                //this.reminder.AppendText(g.ToString());
             }
         }
 
@@ -941,6 +974,14 @@ namespace WindowsForms_print
                     {
                         this.Re_IMEINum.Text = Gl_IMEI;
                     }
+                    if (long.Parse(this.Re_IMEINum.Text.Substring(0, 14)) < long.Parse(this.IMEI_num1.Text) || long.Parse(this.Re_IMEINum.Text.Substring(0, 14)) > long.Parse(this.IMEI_num2.Text))
+                    {
+                        player.Play();
+                        this.reminder.AppendText(this.Re_IMEINum.Text + "IMEI不在范围内\r\n");
+                        this.Re_IMEINum.Clear();
+                        this.Re_IMEINum.Focus();
+                        return;
+                    }
                 }
                 else
                 {
@@ -958,7 +999,7 @@ namespace WindowsForms_print
                             {
                                 if (this.Select_Template1.Text != "")
                                 {
-                                    LabelFormatDocument btFormat = btEngine.Documents.Open(this.Select_Template1.Text);
+                                    LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
                                     //指定打印机名称
                                     btFormat.PrintSetup.PrinterName = this.Printer1.Text;
                                     //对模板相应字段进行赋值
@@ -980,7 +1021,7 @@ namespace WindowsForms_print
                                     }
                                     GLBSN = DRSB.SelectGLBSNByImeiBLL(this.Re_IMEINum.Text);
                                     btFormat.SubStrings["GLB_SN"].Value = GLBSN;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    btFormat.Print();
                                     //更新打印信息到数据表
                                     if (PMB.UpdateRePrintBLL(this.Re_IMEINum.Text, RE_PrintTime, 2, this.Select_Template1.Text, this.Select_Template2.Text))
                                     {
@@ -996,7 +1037,7 @@ namespace WindowsForms_print
                             {
                                 if (this.Select_Template2.Text != "")
                                 {
-                                    LabelFormatDocument btFormat = btEngine.Documents.Open(this.Select_Template2.Text);
+                                    LabelFormatDocument btFormat = btEngine.Documents.Open(lj2);
                                     //指定打印机名称
                                     btFormat.PrintSetup.PrinterName = this.Printer2.Text;
                                     //对模板相应字段进行赋值
@@ -1018,7 +1059,7 @@ namespace WindowsForms_print
                                     }
                                     GLBSN = DRSB.SelectGLBSNByImeiBLL(this.Re_IMEINum.Text);
                                     btFormat.SubStrings["GLB_SN"].Value = GLBSN;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    btFormat.Print();
                                     //更新打印信息到数据表
                                     if (PMB.UpdateRePrintBLL(this.Re_IMEINum.Text, RE_PrintTime, 2, this.Select_Template1.Text, this.Select_Template2.Text))
                                     {
@@ -1057,6 +1098,7 @@ namespace WindowsForms_print
             }
         }
 
+        //不关联任何字段，只输入IMEI进行打印
         private void IMEI_Start_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 13)
@@ -1157,6 +1199,7 @@ namespace WindowsForms_print
                     this.IMEI_Start.Focus();
                     return;
                 }
+                //查漏测，h是漏测复选框的总和
                 switch (h)
                 {
                     case 1:
@@ -1340,25 +1383,26 @@ namespace WindowsForms_print
                         }
                         break;
                 }
+                //根据IMEI到关联表查询带出相应字段    
                 drs = DRSB.SelectByIMEIBLL(this.IMEI_Start.Text);
                 if (drs.Count != 0)
                 {
                     foreach (DataRelativeSheet a in drs)
                     {
                         this.GLB_SN.Text = a.SN;
-                        GLBSN = a.SN;
+                        //GLBSN = a.SN;
                         this.SIMStart.Text = a.IMEI3;
-                        SIM = a.IMEI3;
+                        //SIM = a.IMEI3;
                         this.ICCIDStart.Text = a.IMEI4;
-                        ICCID = a.IMEI4;
+                        //ICCID = a.IMEI4;
                         this.MACStart.Text = a.IMEI6;
-                        MAC = a.IMEI6;
+                        //MAC = a.IMEI6;
                         this.EquipmentStart.Text = a.IMEI7;
-                        Equipment = a.IMEI7;
+                        //Equipment = a.IMEI7;
                         this.VIPStart.Text = a.IMEI8;
-                        VIP = a.IMEI8;
+                        //VIP = a.IMEI8;
                         this.BATStart.Text = a.IMEI9;
-                        BAT = a.IMEI9;
+                        //BAT = a.IMEI9;
                         if (a.IMEI2 != "")
                         {
                             ASS_sn = a.IMEI2;
@@ -1374,15 +1418,17 @@ namespace WindowsForms_print
                 {
                     Sn_mark = 1;
                     ASS_sn = this.SN1_num.Text;
-                    GLBSN = "";
-                    SIM = "";
-                    VIP = "";
-                    BAT = "";
-                    ICCID = "";
-                    MAC = "";
-                    Equipment = "";
+                    //GLBSN = "";
+                    //SIM = "";
+                    //VIP = "";
+                    //BAT = "";
+                    //ICCID = "";
+                    //MAC = "";
+                    //Equipment = "";
                 }
-                IMEI = this.IMEI_Start.Text;
+                ////扫入后给全局变量IMEI赋值，双模板打印时使用
+                //IMEI = this.IMEI_Start.Text;
+                //g是关联字段复选框的总和
                 switch (g)
                 {
                     case 0:
@@ -1392,27 +1438,34 @@ namespace WindowsForms_print
                                 ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
                                 if (!PMB.CheckIMEIBLL(this.IMEI_Start.Text))
                                 {
-                                    lj = this.Select_Template1.Text;
+                                    if(Sn_mark == 1)
+                                    {
+                                        if(ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                        {
+                                            this.reminder.AppendText("SN号超出范围\r\n");
+                                            this.IMEI_Start.Clear();
+                                            this.IMEI_Start.Focus();
+                                            return;
+                                        }
+                                    }
                                     btFormat = btEngine.Documents.Open(lj);
                                     //指定打印机名称
                                     btFormat.PrintSetup.PrinterName = this.Printer1.Text;
                                     //打印份数,同序列打印的份数
                                     btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                    if (this.Select_Template2.Text != "")
-                                    {
-                                        xc2 = 1;
-                                        //调试打印双模板线程
-                                        Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                        //启动线程
-                                        thread2.Start();
-                                    }
                                     //对模板相应字段进行赋值;
                                     ValuesToTemplate(btFormat);
                                     btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                    IMEI = btFormat.SubStrings["IMEI"].Value;
                                     btFormat.SubStrings["SN"].Value = ASS_sn;
+                                    DZSN = btFormat.SubStrings["SN"].Value;
                                     this.ShowSN.Text = ASS_sn;
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                    Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                                    btFormat.Print();
+                                    Form1.Log("主线程打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                                    if (this.Select_Template2.Text != "")
+                                    {
+                                        xc2 = 1;
+                                    }
                                     //记录关联数据信息到关联表
                                     if (!DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                     {
@@ -1484,7 +1537,6 @@ namespace WindowsForms_print
                                         }
                                         else
                                         {
-                                            Form1.Log("打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                             this.IMEI_Start.Clear();
                                             this.SIMStart.Clear();
                                             this.VIPStart.Clear();
@@ -1505,7 +1557,6 @@ namespace WindowsForms_print
                                 }
                                 else if (PMB.CheckCHOrJSIMEIBLL(this.IMEI_Start.Text, 2))
                                 {
-                                    lj = this.Select_Template1.Text;
                                     btFormat = btEngine.Documents.Open(lj);
                                     //指定打印机名称
                                     btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -1514,6 +1565,7 @@ namespace WindowsForms_print
                                     //对模板相应字段进行赋值
                                     ValuesToTemplate(btFormat);
                                     btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                    IMEI = btFormat.SubStrings["IMEI"].Value;
                                     list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                     foreach (PrintMessage a in list)
                                     {
@@ -1521,6 +1573,7 @@ namespace WindowsForms_print
                                         {
                                             ASS_sn = a.SN;
                                             btFormat.SubStrings["SN"].Value = a.SN;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
                                             this.ShowSN.Text = a.SN;
                                             MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
                                         }
@@ -1529,12 +1582,21 @@ namespace WindowsForms_print
                                             if (Sn_mark == 0)
                                             {
                                                 btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                DZSN = btFormat.SubStrings["SN"].Value;
                                                 this.ShowSN.Text = ASS_sn;
                                                 MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
                                             }
                                             else
                                             {
                                                 btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                DZSN = btFormat.SubStrings["SN"].Value;
+                                                if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                                {
+                                                    this.reminder.AppendText("SN号超出范围\r\n");
+                                                    this.IMEI_Start.Clear();
+                                                    this.IMEI_Start.Focus();
+                                                    return;
+                                                }
                                                 this.ShowSN.Text = this.SN1_num.Text;
                                                 MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
                                                 if (this.SN1_num.Text != "")
@@ -1548,16 +1610,12 @@ namespace WindowsForms_print
                                             }
                                         }
                                     }
-                                    Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                    btFormat.Print();
+                                    Form1.Log("主线程打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                     if (this.Select_Template2.Text != "")
                                     {
                                         xc2 = 1;
-                                        //调试打印双模板线程
-                                        Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                        //启动线程
-                                        thread2.Start();
                                     }
-                                    //}
                                     //记录关联数据信息到关联表
                                     if (!DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                     {
@@ -1580,7 +1638,6 @@ namespace WindowsForms_print
                                         });
                                         DRSB.InsertRelativeSheetBLL(drs);
                                     }
-                                    Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                     this.IMEI_Start.Clear();
                                     this.SIMStart.Clear();
                                     this.VIPStart.Clear();
@@ -3001,52 +3058,68 @@ namespace WindowsForms_print
             }
         }
 
-        public void Thread2()
+        public void PrintTemplate2()
         {
-            if (xc2 == 1)
+            while (tl2)
             {
-                lj = this.Select_Template2.Text;
-                btFormat = btEngine.Documents.Open(lj);
-                //指定打印机名称
-                btFormat.PrintSetup.PrinterName = this.Printer2.Text;
-                //打印份数,同序列打印的份数
-                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
-                //对模板相应字段进行赋值;
-                ValuesToTemplate(btFormat);
-                btFormat.SubStrings["IMEI"].Value = IMEI;
-                btFormat.SubStrings["SN"].Value = ASS_sn;
-                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                Form1.Log("打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
-                xc2 = 0;
+                if (xc2 == 1)
+                {
+                    btFormat = btEngine.Documents.Open(lj2);
+                    //指定打印机名称
+                    btFormat.PrintSetup.PrinterName = this.Printer2.Text;
+                    //打印份数,同序列打印的份数
+                    btFormat.PrintSetup.IdenticalCopiesOfLabel = TN2;
+                    //对模板相应字段进行赋值;
+                    //ValuesToTemplate(btFormat);
+                    btFormat.SubStrings["SIM"].Value = SIM;
+                    btFormat.SubStrings["VIP"].Value = VIP;
+                    btFormat.SubStrings["BAT"].Value = BAT;
+                    btFormat.SubStrings["ICCID"].Value = ICCID;
+                    btFormat.SubStrings["MAC"].Value = MAC;
+                    btFormat.SubStrings["Equipment"].Value = Equipment;
+                    btFormat.SubStrings["IMEI"].Value = IMEI;
+                    btFormat.SubStrings["SN"].Value = DZSN;
+                    btFormat.Print();
+                    Form1.Log("使用线程2打印了IMEI号:" + IMEI +",SN:"+ DZSN + ",SIM卡号:"+SIM+",电池号:"+BAT+",VIP号:"+VIP + ",蓝牙号:" + MAC + ",ICCID号:" + ICCID + ",设备号:" + Equipment + "的彩盒贴制单", null);
+                    xc2 = 0;
+                }
+                Thread.Sleep(10);
             }
         }
 
         private void ValuesToTemplate(LabelFormatDocument btFormat)
         {
-            GetValue("Information", "型号", out outString);
-            btFormat.SubStrings[outString].Value = this.SoftModel.Text;
             GetValue("Information", "生产日期", out outString);
             btFormat.SubStrings[outString].Value = this.PrintDate.Text;
-            //GetValue("Information", "产品编码", out outString);
-            //btFormat.SubStrings[outString].Value = this.ProductNo.Text;
-            //GetValue("Information", "软件版本", out outString);
-            //btFormat.SubStrings[outString].Value = this.SoftwareVersion.Text;
-            //GetValue("Information", "备注", out outString);
-            //btFormat.SubStrings[outString].Value = this.Remake.Text;
-            btFormat.SubStrings["SIM"].Value = SIM;
-            btFormat.SubStrings["VIP"].Value = VIP;
-            btFormat.SubStrings["BAT"].Value = BAT;
-            btFormat.SubStrings["ICCID"].Value = ICCID;
-            btFormat.SubStrings["MAC"].Value = MAC;
-            btFormat.SubStrings["Equipment"].Value = Equipment;
+            //btFormat.SubStrings["SIM"].Value = SIM;
+            //btFormat.SubStrings["VIP"].Value = VIP;
+            //btFormat.SubStrings["BAT"].Value = BAT;
+            //btFormat.SubStrings["ICCID"].Value = ICCID;
+            //btFormat.SubStrings["MAC"].Value = MAC;
+            //btFormat.SubStrings["Equipment"].Value = Equipment;
+            btFormat.SubStrings["SIM"].Value = this.SIMStart.Text;
+            SIM = btFormat.SubStrings["SIM"].Value;
+            btFormat.SubStrings["VIP"].Value = this.VIPStart.Text;
+            VIP = btFormat.SubStrings["VIP"].Value;
+            btFormat.SubStrings["BAT"].Value = this.BATStart.Text;
+            BAT = btFormat.SubStrings["BAT"].Value;
+            btFormat.SubStrings["ICCID"].Value = this.ICCIDStart.Text;
+            ICCID = btFormat.SubStrings["ICCID"].Value;
+            btFormat.SubStrings["MAC"].Value = this.MACStart.Text;
+            MAC = btFormat.SubStrings["MAC"].Value;
+            btFormat.SubStrings["Equipment"].Value = this.EquipmentStart.Text;
+            Equipment = btFormat.SubStrings["Equipment"].Value;
             btFormat.SubStrings["GLB_SN"].Value = GLBSN;
         }
 
         private void SIMStart_KeyPress(object sender, KeyPressEventArgs e)
         {
+            //是否按下Enter键，13是Enter键的值
             if (e.KeyChar == 13) {
+                //扫入SIM号不为空
                 if (this.SIMStart.Text != "")
                 {
+                    //SIM卡号位数和前缀都不为空时
                     if (this.SIM_digits.Text != "" && this.SIM_prefix.Text != "")
                     {
                         int sim_width = this.SIMStart.Text.Length;
@@ -3079,6 +3152,7 @@ namespace WindowsForms_print
                         this.SIMStart.Focus();
                         return;
                     }
+                    //检查SIM卡号是否重号，是的话直接清空返回
                     if (PMB.CheckSIMBLL(this.SIMStart.Text))
                     {
                         player.Play();
@@ -3087,14 +3161,25 @@ namespace WindowsForms_print
                         this.SIMStart.Focus();
                         return;
                     }
-
+                    //根据SIM卡号带出ICCID 有值带值，无值带空
                     this.ICCIDStart.Text = DRSB.SelectIccidBySimBLL(this.SIMStart.Text);
                     ICCID = this.ICCIDStart.Text;
-                    if (DRSB.CheckSIMByIMEIBLL(this.IMEI_Start.Text) == "")
+                    //根据IMEI检查SIM号是否存在，不存在则更新SIM（连带ICCID）
+                    string GLBSIM = DRSB.CheckSIMByIMEIBLL(this.IMEI_Start.Text);
+                    if (GLBSIM == "")
                     {
-                        DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                        DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text,this.ICCIDStart.Text);
                     }
-                    SIM = this.SIMStart.Text;
+                    else
+                    {
+                        if (GLBSIM != this.SIMStart.Text)
+                        {
+                            DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.ICCIDStart.Text);
+                        }
+                    }
+                    ////给全局变量SIM赋值，在线程中打印时使用
+                    //SIM = this.SIMStart.Text;
+                    //g为勾选关联字段总和
                     switch (g)
                     {
                         case 1:
@@ -3110,53 +3195,66 @@ namespace WindowsForms_print
                                         {
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
+                                            if (ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
                                         //打印份数,同序列打印的份数
                                         btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
-                                        if (this.Select_Template2.Text != "")
-                                        {
-                                            xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
-                                        }
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = ASS_sn;
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
-                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                        btFormat.Print();
+                                        Form1.Log("关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                                        if (this.Select_Template2.Text != "")
                                         {
-                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            xc2 = 1;
                                         }
-                                        else
+                                        //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
+                                        if (this.NoUpdateIMEI.Checked == false)
                                         {
-                                            //记录关联数据信息到关联表
-                                            drs.Add(new DataRelativeSheet()
+                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                             {
-                                                IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = this.ShowSN.Text,
-                                                IMEI3 = this.SIMStart.Text,
-                                                IMEI4 = "",
-                                                IMEI5 = "",
-                                                IMEI6 = "",
-                                                IMEI7 = "",
-                                                IMEI8 = "",
-                                                IMEI9 = "",
-                                                IMEI10 = "",
-                                                IMEI11 = "",
-                                                IMEI12 = "",
-                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                            });
-                                            DRSB.InsertRelativeSheetBLL(drs);
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = this.SIMStart.Text,
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = "",
+                                                    IMEI7 = "",
+                                                    IMEI8 = "",
+                                                    IMEI9 = "",
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -3187,7 +3285,6 @@ namespace WindowsForms_print
                                         {
                                             if (SN1_num.Text != "" && Sn_mark == 1)
                                             {
-                                                Form1.Log("关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                                 sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                                 sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                                 sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -3204,7 +3301,6 @@ namespace WindowsForms_print
                                             }
                                             else
                                             {
-                                                Form1.Log("关联SIM打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                                 this.IMEI_Start.Clear();
                                                 this.SIMStart.Clear();
                                                 this.ICCIDStart.Clear();
@@ -3228,7 +3324,10 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -3237,12 +3336,14 @@ namespace WindowsForms_print
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                         foreach (PrintMessage a in list)
                                         {
                                             if (a.SN != "")
                                             {
                                                 btFormat.SubStrings["SN"].Value = a.SN;
+                                                DZSN = btFormat.SubStrings["SN"].Value;
                                                 ASS_sn = a.SN;
                                                 this.ShowSN.Text = a.SN;
                                                 PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, a.SN);
@@ -3252,7 +3353,18 @@ namespace WindowsForms_print
                                                 if (Sn_mark == 1)
                                                 {
                                                     btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
+                                                    //判断递增SN号是否超出范围
+                                                    if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                                    {
+                                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                                        this.IMEI_Start.Clear();
+                                                        this.SIMStart.Clear();
+                                                        this.IMEI_Start.Focus();
+                                                        return;
+                                                    }
                                                     this.ShowSN.Text = this.SN1_num.Text;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
                                                     PMB.UpdateSN_SIM_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
                                                     if (this.SN1_num.Text != "")
                                                     {
@@ -3271,43 +3383,42 @@ namespace WindowsForms_print
                                                 }
                                             }
                                         }
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        btFormat.Print();
+                                        Form1.Log("主线程关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         if (this.Select_Template2.Text != "")
                                         {
                                             xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
                                         }
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                        if (this.NoUpdateIMEI.Checked == false)
                                         {
-                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                        }
-                                        else
-                                        {
-                                            //记录关联数据信息到关联表
-                                            drs.Add(new DataRelativeSheet()
+                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                             {
-                                                IMEI1 = this.IMEI_Start.Text,
-                                                IMEI2 = this.ShowSN.Text,
-                                                IMEI3 = this.SIMStart.Text,
-                                                IMEI4 = "",
-                                                IMEI5 = "",
-                                                IMEI6 = "",
-                                                IMEI7 = "",
-                                                IMEI8 = "",
-                                                IMEI9 = "",
-                                                IMEI10 = "",
-                                                IMEI11 = "",
-                                                IMEI12 = "",
-                                                ZhiDan = this.CB_ZhiDan.Text,
-                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                            });
-                                            DRSB.InsertRelativeSheetBLL(drs);
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            }
+                                            else
+                                            {
+                                                //记录关联数据信息到关联表
+                                                drs.Add(new DataRelativeSheet()
+                                                {
+                                                    IMEI1 = this.IMEI_Start.Text,
+                                                    IMEI2 = this.ShowSN.Text,
+                                                    IMEI3 = this.SIMStart.Text,
+                                                    IMEI4 = "",
+                                                    IMEI5 = "",
+                                                    IMEI6 = "",
+                                                    IMEI7 = "",
+                                                    IMEI8 = "",
+                                                    IMEI9 = "",
+                                                    IMEI10 = "",
+                                                    IMEI11 = "",
+                                                    IMEI12 = "",
+                                                    ZhiDan = this.CB_ZhiDan.Text,
+                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                                });
+                                                DRSB.InsertRelativeSheetBLL(drs);
+                                            }
                                         }
-                                        Form1.Log("关联SIM打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
                                         this.ICCIDStart.Clear();
@@ -3479,7 +3590,6 @@ namespace WindowsForms_print
                             }
                             break;
                     }
-
                 }
                 else
                 { this.SIMStart.Focus(); }
@@ -3491,6 +3601,7 @@ namespace WindowsForms_print
             if (e.KeyChar == 13) {
                 if (this.VIPStart.Text != "")
                 {
+                    //判断扫入VIP是否在范围内
                     if (this.VIP_digits.Text != "" && this.VIP_prefix.Text != "")
                     {
                         int vip_width = this.VIPStart.Text.Length;
@@ -3523,6 +3634,7 @@ namespace WindowsForms_print
                         this.VIPStart.Focus();
                         return;
                     }
+                    //检查VIP是否重号
                     if (PMB.CheckVIPBLL(this.VIPStart.Text))
                     {
                         player.Play();
@@ -3531,11 +3643,13 @@ namespace WindowsForms_print
                         this.VIPStart.Focus();
                         return;
                     }
-                    VIP = this.VIPStart.Text;
+                    ////给全局变量VIP赋值，双模板打印时使用
+                    //VIP = this.VIPStart.Text;
                     switch (g)
                     {
                         case 2:
                             {
+                                //出贴纸
                                 if (this.NoPaper.Checked == false)
                                 {
                                     ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
@@ -3546,8 +3660,20 @@ namespace WindowsForms_print
                                         {
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
+                                            if (ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -3556,16 +3682,15 @@ namespace WindowsForms_print
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = ASS_sn;
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        btFormat.Print();
+                                        Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         if (this.Select_Template2.Text != "")
                                         {
                                             xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -3621,7 +3746,6 @@ namespace WindowsForms_print
                                             }
                                             if (SN1_num.Text != "" && Sn_mark == 1)
                                             {
-                                                Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                                 sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                                 sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                                 sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -3630,17 +3754,16 @@ namespace WindowsForms_print
                                                     this.SN1_num.Text = sn1;
                                                     this.IMEI_Start.Clear();
                                                     this.VIPStart.Clear();
-                                                    this.ShowSN.Clear();
+                                                    //this.ShowSN.Clear();
                                                     this.GLB_SN.Clear();
                                                     this.IMEI_Start.Focus();
                                                 }
                                             }
                                             else
                                             {
-                                                Form1.Log("关联VIP打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                                 this.IMEI_Start.Clear();
                                                 this.VIPStart.Clear();
-                                                this.ShowSN.Clear();
+                                                //this.ShowSN.Clear();
                                                 this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
@@ -3654,7 +3777,10 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -3663,12 +3789,14 @@ namespace WindowsForms_print
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                         foreach (PrintMessage a in list)
                                         {
                                             if (a.SN != "")
                                             {
                                                 btFormat.SubStrings["SN"].Value = a.SN;
+                                                DZSN = btFormat.SubStrings["SN"].Value;
                                                 this.ShowSN.Text = a.SN;
                                                 if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
@@ -3703,6 +3831,16 @@ namespace WindowsForms_print
                                                 if (Sn_mark == 1)
                                                 {
                                                     btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
+                                                    if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                                    {
+                                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                                        this.IMEI_Start.Clear();
+                                                        this.SIMStart.Clear();
+                                                        this.VIPStart.Clear();
+                                                        this.IMEI_Start.Focus();
+                                                        return;
+                                                    }
                                                     this.ShowSN.Text = this.SN1_num.Text;
                                                     if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                     {
@@ -3743,25 +3881,22 @@ namespace WindowsForms_print
                                                 else
                                                 {
                                                     btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
                                                     this.ShowSN.Text = ASS_sn;
                                                     DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                                     PMB.UpdateSN_VIPBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, ASS_sn);
                                                 }
                                             }
                                         }
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        btFormat.Print();
+                                        Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         if (this.Select_Template2.Text != "")
                                         {
                                             xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
                                         }
-                                        Form1.Log("关联VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         this.IMEI_Start.Clear();
                                         this.VIPStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -3772,6 +3907,7 @@ namespace WindowsForms_print
                                         statusChange();
                                     }
                                 }
+                                //不出贴纸
                                 else
                                 {
                                     //查询关联表，有数据则UPDATA进去，没有则INSERT
@@ -3834,8 +3970,20 @@ namespace WindowsForms_print
                                         {
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
+                                            if (ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -3844,16 +3992,15 @@ namespace WindowsForms_print
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         btFormat.SubStrings["SN"].Value = ASS_sn;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = ASS_sn;
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        btFormat.Print();
+                                        Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         if (this.Select_Template2.Text != "")
                                         {
                                             xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -3884,7 +4031,10 @@ namespace WindowsForms_print
                                             //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                             if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                             {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                if (this.NoUpdateIMEI.Checked == false)
+                                                {
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                }
                                                 DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                             }
                                             else
@@ -3911,7 +4061,6 @@ namespace WindowsForms_print
                                             }
                                             if (SN1_num.Text != "" && Sn_mark == 1)
                                             {
-                                                Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                                 sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                                 sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                                 sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -3922,19 +4071,18 @@ namespace WindowsForms_print
                                                     this.SIMStart.Clear();
                                                     this.VIPStart.Clear();
                                                     this.ICCIDStart.Clear();
-                                                    this.ShowSN.Clear();
+                                                    //this.ShowSN.Clear();
                                                     this.GLB_SN.Clear();
                                                     this.IMEI_Start.Focus();
                                                 }
                                             }
                                             else
                                             {
-                                                Form1.Log("关联SIM && VIP打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                                 this.IMEI_Start.Clear();
                                                 this.SIMStart.Clear();
                                                 this.VIPStart.Clear();
                                                 this.ICCIDStart.Clear();
-                                                this.ShowSN.Clear();
+                                                //this.ShowSN.Clear();
                                                 this.GLB_SN.Clear();
                                                 this.IMEI_Start.Focus();
                                             }
@@ -3948,7 +4096,10 @@ namespace WindowsForms_print
                                             ASS_sn = this.SN1_num.Text;
                                             Sn_mark = 1;
                                         }
-                                        lj = this.Select_Template1.Text;
+                                        else
+                                        {
+                                            Sn_mark = 0;
+                                        }
                                         btFormat = btEngine.Documents.Open(lj);
                                         //指定打印机名称
                                         btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -3957,13 +4108,14 @@ namespace WindowsForms_print
                                         //对模板相应字段进行赋值
                                         ValuesToTemplate(btFormat);
                                         btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
+                                        IMEI = btFormat.SubStrings["IMEI"].Value;
                                         list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                         foreach (PrintMessage a in list)
                                         {
                                             if (a.SN != "")
                                             {
                                                 btFormat.SubStrings["SN"].Value = a.SN;
+                                                DZSN = btFormat.SubStrings["SN"].Value;
                                                 this.ShowSN.Text = a.SN;
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
@@ -4000,11 +4152,24 @@ namespace WindowsForms_print
                                                 if (Sn_mark == 1)
                                                 {
                                                     btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
+                                                    if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                                    {
+                                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                                        this.IMEI_Start.Clear();
+                                                        this.SIMStart.Clear();
+                                                        this.VIPStart.Clear();
+                                                        this.IMEI_Start.Focus();
+                                                        return;
+                                                    }
                                                     this.ShowSN.Text = this.SN1_num.Text;
                                                     //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                     if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                     {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                        if (this.NoUpdateIMEI.Checked == false)
+                                                        {
+                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                        }
                                                         DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                                     }
                                                     else
@@ -4042,27 +4207,24 @@ namespace WindowsForms_print
                                                 else
                                                 {
                                                     btFormat.SubStrings["SN"].Value = ASS_sn;
+                                                    DZSN = btFormat.SubStrings["SN"].Value;
                                                     this.ShowSN.Text = ASS_sn;
                                                     DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                                     PMB.UpdateSN_SIM_VIP_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.ICCIDStart.Text, ASS_sn);
                                                 }
                                             }
                                         }
-                                        Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                        btFormat.Print();
+                                        Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         if (this.Select_Template2.Text != "")
                                         {
                                             xc2 = 1;
-                                            //双模板线程
-                                            Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                            //启动线程
-                                            thread2.Start();
                                         }
-                                        Form1.Log("关联SIM && VIP打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
                                         this.VIPStart.Clear();
                                         this.ICCIDStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -4286,6 +4448,7 @@ namespace WindowsForms_print
             {
                 if (this.BATStart.Text != "")
                 {
+                    //判断BAT是否在范围内
                     if (this.BAT_digits.Text != "" && this.BAT_prefix.Text != "")
                     {
                         int bat_width = this.BATStart.Text.Length;
@@ -4319,6 +4482,7 @@ namespace WindowsForms_print
                         this.BATStart.Focus();
                         return;
                     }
+                    //检查BAT是否重号
                     if (PMB.CheckBATBLL(this.BATStart.Text))
                     {
                         player.Play();
@@ -4327,7 +4491,9 @@ namespace WindowsForms_print
                         this.BATStart.Focus();
                         return;
                     }
-                    BAT = this.BATStart.Text;
+                    ////给全局变量BAT赋值，双模板打印时使用
+                    //BAT = this.BATStart.Text;
+                    //执行打印的g范围
                     if (g >= 4 && g <= 7)
                     {
                         if (this.NoPaper.Checked == false)
@@ -4340,8 +4506,21 @@ namespace WindowsForms_print
                                 {
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
+                                    if (ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                    {
+                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                        this.IMEI_Start.Clear();
+                                        this.SIMStart.Clear();
+                                        this.VIPStart.Clear();
+                                        this.BATStart.Clear();
+                                        this.IMEI_Start.Focus();
+                                        return;
+                                    }
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -4350,16 +4529,15 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
                                 btFormat.SubStrings["SN"].Value = ASS_sn;
+                                DZSN = btFormat.SubStrings["SN"].Value;
                                 this.ShowSN.Text = ASS_sn;
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联BAT为"+this.BATStart.Text+"&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -4421,7 +4599,10 @@ namespace WindowsForms_print
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                         if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                         {
-                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            if (this.NoUpdateIMEI.Checked == false)
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            }
                                             DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                         }
                                         else
@@ -4449,7 +4630,6 @@ namespace WindowsForms_print
                                     }
                                     if (SN1_num.Text != "" && Sn_mark == 1)
                                     {
-                                        Form1.Log("关联BAT打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                         sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                         sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -4460,19 +4640,18 @@ namespace WindowsForms_print
                                             this.SIMStart.Clear();
                                             this.VIPStart.Clear();
                                             this.BATStart.Clear();
-                                            this.ShowSN.Clear();
+                                            //this.ShowSN.Clear();
                                             this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
                                     else
                                     {
-                                        Form1.Log("关联BAT打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
                                         this.VIPStart.Clear();
                                         this.BATStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -4486,7 +4665,10 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -4495,12 +4677,15 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
+                                //根据IMEI判断SN有没有打印过了
                                 list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                 foreach (PrintMessage a in list)
                                 {
                                     if (a.SN != "")
                                     {
                                         btFormat.SubStrings["SN"].Value = a.SN;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = a.SN;
                                         if (this.SIMStart.Text == "")
                                         {
@@ -4569,9 +4754,23 @@ namespace WindowsForms_print
                                         if (Sn_mark == 1)
                                         {
                                             btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
+                                            //判断SN是否超出范围
+                                            if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.BATStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                             this.ShowSN.Text = this.SN1_num.Text;
+                                            //判断有无扫入SIM
                                             if (this.SIMStart.Text == "")
                                             {
+                                                //查关联表IMEI，存在的话则更新数据进去，不存在则插入一天数据
                                                 if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
                                                     DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
@@ -4604,7 +4803,10 @@ namespace WindowsForms_print
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                 {
-                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    if (this.NoUpdateIMEI.Checked == false)
+                                                    {
+                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    }
                                                     DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                                 }
                                                 else
@@ -4643,28 +4845,25 @@ namespace WindowsForms_print
                                         else
                                         {
                                             btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
                                             this.ShowSN.Text = ASS_sn;
                                             DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                             PMB.UpdateSN_SIM_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, ASS_sn);
                                         }
                                     }
                                 }
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联BAT&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
-                                Form1.Log("关联BAT打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
                                 this.SIMStart.Clear();
                                 this.VIPStart.Clear();
                                 this.BATStart.Clear();
                                 this.ICCIDStart.Clear();
-                                this.ShowSN.Clear();
+                                //this.ShowSN.Clear();
                                 this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
@@ -4721,6 +4920,7 @@ namespace WindowsForms_print
                             }
                         }
                     }
+                    //执行跳转的g范围
                     switch (g)
                     {
                         case 12:
@@ -4865,9 +5065,7 @@ namespace WindowsForms_print
                             break;
                     }
                 }
-                else{
-                    this.BATStart.Focus();
-                }
+                else{this.BATStart.Focus();}
             }
         }
 
@@ -4877,6 +5075,7 @@ namespace WindowsForms_print
             {
                 if (this.ICCIDStart.Text != "")
                 {
+                    //判断ICCI是否在范围内
                     if (this.ICCID_digits.Text != "" && this.ICCID_prefix.Text != "")
                     {
                         int iccid_width = this.ICCIDStart.Text.Length;
@@ -4910,6 +5109,7 @@ namespace WindowsForms_print
                         this.ICCIDStart.Focus();
                         return;
                     }
+                    //检查ICCID是否重号
                     if (PMB.CheckICCIDBLL(this.ICCIDStart.Text))
                     {
                         player.Play();
@@ -4918,7 +5118,8 @@ namespace WindowsForms_print
                         this.ICCIDStart.Focus();
                         return;
                     }
-                    ICCID = this.ICCIDStart.Text;
+                    ////给全局变量ICCID赋值，双模板打印时使用
+                    //ICCID = this.ICCIDStart.Text;
                     if (g >= 8 && g <= 15)
                     {
                         if (this.NoPaper.Checked == false)
@@ -4926,7 +5127,26 @@ namespace WindowsForms_print
                             ProductTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff");
                             if (!PMB.CheckIMEIBLL(this.IMEI_Start.Text))
                             {
-                                lj = this.Select_Template1.Text;
+                                ASS_sn = DRSB.SelectSNByImeiBLL(this.IMEI_Start.Text);
+                                if (ASS_sn == "")
+                                {
+                                    ASS_sn = this.SN1_num.Text;
+                                    Sn_mark = 1;
+                                    if (ASS_sn.CompareTo(this.SN2_num.Text) == 1)
+                                    {
+                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                        this.IMEI_Start.Clear();
+                                        this.VIPStart.Clear();
+                                        this.BATStart.Clear();
+                                        this.ICCIDStart.Clear();
+                                        this.IMEI_Start.Focus();
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -4935,15 +5155,15 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-                                btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
+                                btFormat.SubStrings["SN"].Value = ASS_sn;
+                                DZSN = btFormat.SubStrings["SN"].Value;
+                                this.ShowSN.Text = ASS_sn;
+                                btFormat.Print();
+                                Form1.Log("关联ICCID&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -4971,9 +5191,27 @@ namespace WindowsForms_print
                                 });
                                 if (PMB.InsertPrintMessageBLL(list))
                                 {
-                                    if (SN1_num.Text != "")
+                                    //记录关联数据信息到关联表
+                                    drs.Add(new DataRelativeSheet()
                                     {
-                                        Form1.Log("关联ICCID打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                                        IMEI1 = this.IMEI_Start.Text,
+                                        IMEI2 = this.ShowSN.Text,
+                                        IMEI3 = "",
+                                        IMEI4 = this.ICCIDStart.Text,
+                                        IMEI5 = "",
+                                        IMEI6 = "",
+                                        IMEI7 = "",
+                                        IMEI8 = this.VIPStart.Text,
+                                        IMEI9 = this.BATStart.Text,
+                                        IMEI10 = "",
+                                        IMEI11 = "",
+                                        IMEI12 = "",
+                                        ZhiDan = this.CB_ZhiDan.Text,
+                                        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                    });
+                                    DRSB.InsertRelativeSheetBLL(drs);
+                                    if (SN1_num.Text != "" && Sn_mark == 1)
+                                    {
                                         sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                         sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                         sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -4981,24 +5219,21 @@ namespace WindowsForms_print
                                         {
                                             this.SN1_num.Text = sn1;
                                             this.IMEI_Start.Clear();
-                                            this.SIMStart.Clear();
                                             this.VIPStart.Clear();
                                             this.BATStart.Clear();
                                             this.ICCIDStart.Clear();
-                                            this.ShowSN.Clear();
+                                            //this.ShowSN.Clear();
                                             this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
                                     else
                                     {
-                                        Form1.Log("关联ICCID打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                         this.IMEI_Start.Clear();
-                                        this.SIMStart.Clear();
                                         this.VIPStart.Clear();
                                         this.BATStart.Clear();
                                         this.ICCIDStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -5006,102 +5241,126 @@ namespace WindowsForms_print
                             }
                             else
                             {
-                                lj = this.Select_Template1.Text;
+                                ASS_sn = DRSB.SelectSNByImeiBLL(this.IMEI_Start.Text);
+                                if (ASS_sn == "")
+                                {
+                                    ASS_sn = this.SN1_num.Text;
+                                    Sn_mark = 1;
+                                }
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
+                                //打印份数,同序列打印的份数
+                                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN1;
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
+                                //根据IMEI判断SN有没有打印过了
                                 list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                 foreach (PrintMessage a in list)
                                 {
                                     if (a.SN != "")
                                     {
                                         btFormat.SubStrings["SN"].Value = a.SN;
-                                        MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, a.SN);
+                                        DZSN = btFormat.SubStrings["SN"].Value;
+                                        this.ShowSN.Text = a.SN;
+                                        //记录关联数据信息到关联表
+                                        drs.Add(new DataRelativeSheet()
+                                        {
+                                            IMEI1 = this.IMEI_Start.Text,
+                                            IMEI2 = this.ShowSN.Text,
+                                            IMEI3 = "",
+                                            IMEI4 = this.ICCIDStart.Text,
+                                            IMEI5 = "",
+                                            IMEI6 = "",
+                                            IMEI7 = "",
+                                            IMEI8 = this.VIPStart.Text,
+                                            IMEI9 = this.BATStart.Text,
+                                            IMEI10 = "",
+                                            IMEI11 = "",
+                                            IMEI12 = "",
+                                            ZhiDan = this.CB_ZhiDan.Text,
+                                            TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                        });
+                                        DRSB.InsertRelativeSheetBLL(drs);
+                                        PMB.UpdateSN_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text,this.VIPStart.Text,this.BATStart.Text, this.ICCIDStart.Text, a.SN);
                                     }
                                     else
                                     {
-                                        btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
-                                        DRSB.UpdateAssociatedBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
-                                        MOPB.UpdateCHAssociatedBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, this.SN1_num.Text);
-                                        if (this.SN1_num.Text != "")
+                                        if (Sn_mark == 1)
                                         {
-                                            sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
-                                            sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
-                                            sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
-                                            MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
-                                            this.SN1_num.Text = sn1;
+                                            btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
+                                            //判断SN是否超出范围
+                                            if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.BATStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
+                                            this.ShowSN.Text = this.SN1_num.Text;
+                                            //记录关联数据信息到关联表
+                                            drs.Add(new DataRelativeSheet()
+                                            {
+                                                IMEI1 = this.IMEI_Start.Text,
+                                                IMEI2 = this.ShowSN.Text,
+                                                IMEI3 = "",
+                                                IMEI4 = this.ICCIDStart.Text,
+                                                IMEI5 = "",
+                                                IMEI6 = "",
+                                                IMEI7 = "",
+                                                IMEI8 = this.VIPStart.Text,
+                                                IMEI9 = this.BATStart.Text,
+                                                IMEI10 = "",
+                                                IMEI11 = "",
+                                                IMEI12 = "",
+                                                ZhiDan = this.CB_ZhiDan.Text,
+                                                TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                            });
+                                            DRSB.InsertRelativeSheetBLL(drs);
+                                            //更新打印记录表
+                                            PMB.UpdateSN_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
+                                            if (this.SN1_num.Text != "")
+                                            {
+                                                sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
+                                                sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
+                                                sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
+                                                MOPB.UpdateSNAddOneBLL(this.CB_ZhiDan.Text, (sn1_suffix + 1).ToString().PadLeft(s, '0'));
+                                                this.SN1_num.Text = sn1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
+                                            this.ShowSN.Text = ASS_sn;
+                                            PMB.UpdateSN_VIP_BAT_ICCIDBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.SN1_num.Text);
                                         }
                                     }
                                 }
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联ICCID&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
-                                Form1.Log("关联ICCID打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
-                                this.SIMStart.Clear();
                                 this.VIPStart.Clear();
                                 this.BATStart.Clear();
                                 this.ICCIDStart.Clear();
-                                this.ShowSN.Clear();
+                                //this.ShowSN.Clear();
                                 this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
-                            if (this.updata_inline.Visible == true)
-                            {
-                                MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
-                                statusChange();
-                            }
-                        }
-                        else
-                        {
-                            if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
-                            {
-                                DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
-                            }
-                            else
-                            {
-                                //记录关联数据信息到关联表
-                                drs.Add(new DataRelativeSheet()
-                                {
-                                    IMEI1 = this.IMEI_Start.Text,
-                                    IMEI2 = "",
-                                    IMEI3 = this.SIMStart.Text,
-                                    IMEI4 = this.ICCIDStart.Text,
-                                    IMEI5 = "",
-                                    IMEI6 = "",
-                                    IMEI7 = "",
-                                    IMEI8 = this.VIPStart.Text,
-                                    IMEI9 = this.BATStart.Text,
-                                    IMEI10 = "",
-                                    IMEI11 = "",
-                                    IMEI12 = "",
-                                    ZhiDan = this.CB_ZhiDan.Text,
-                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                });
-                                DRSB.InsertRelativeSheetBLL(drs);
-                            }
-                            if (PMB.CheckIMEIBLL(this.IMEI_Start.Text))
-                            {
-                                PMB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text);
-                            }
-                            this.IMEI_Start.Clear();
-                            this.SIMStart.Clear();
-                            this.BATStart.Clear();
-                            this.VIPStart.Clear();
-                            this.MACStart.Clear();
-                            this.ICCIDStart.Clear();
-                            this.EquipmentStart.Clear();
-                            this.IMEI_Start.Focus();
                             if (this.updata_inline.Visible == true)
                             {
                                 MOPB.UpdateStatusByZhiDanBLL(this.CB_ZhiDan.Text);
@@ -5285,7 +5544,7 @@ namespace WindowsForms_print
                         this.MACStart.Focus();
                         return;
                     }
-                    MAC = this.MACStart.Text;
+                    //MAC = this.MACStart.Text;
                     if (g >= 16 && g <= 31)
                     {
                         if (this.NoPaper.Checked == false)
@@ -5298,8 +5557,24 @@ namespace WindowsForms_print
                                 {
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
+                                    //判断SN是否超出范围
+                                    if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                    {
+                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                        this.IMEI_Start.Clear();
+                                        this.SIMStart.Clear();
+                                        this.VIPStart.Clear();
+                                        this.BATStart.Clear();
+                                        this.ICCIDStart.Clear();
+                                        this.MACStart.Clear();
+                                        this.IMEI_Start.Focus();
+                                        return;
+                                    }
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -5308,16 +5583,15 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
                                 btFormat.SubStrings["SN"].Value = ASS_sn;
+                                DZSN = btFormat.SubStrings["SN"].Value;
                                 this.ShowSN.Text = ASS_sn;
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联MAC&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -5379,7 +5653,10 @@ namespace WindowsForms_print
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                         if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                         {
-                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            if (this.NoUpdateIMEI.Checked == false)
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            }
                                             DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
                                         }
                                         else
@@ -5407,7 +5684,6 @@ namespace WindowsForms_print
                                     }
                                     if (SN1_num.Text != "" && Sn_mark == 1)
                                     {
-                                        Form1.Log("关联MAC打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                         sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                         sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -5420,21 +5696,20 @@ namespace WindowsForms_print
                                             this.BATStart.Clear();
                                             this.ICCIDStart.Clear();
                                             this.MACStart.Clear();
-                                            this.ShowSN.Clear();
+                                            //this.ShowSN.Clear();
                                             this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
                                     else
                                     {
-                                        Form1.Log("关联MAC打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
                                         this.VIPStart.Clear();
                                         this.BATStart.Clear();
                                         this.ICCIDStart.Clear();
                                         this.MACStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -5448,7 +5723,10 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -5457,13 +5735,14 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
-
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
                                 list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                 foreach (PrintMessage a in list)
                                 {
                                     if (a.SN != "")
                                     {
                                         btFormat.SubStrings["SN"].Value = a.SN;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = a.SN;
                                         if (this.SIMStart.Text == "")
                                         {
@@ -5532,6 +5811,20 @@ namespace WindowsForms_print
                                         if (Sn_mark == 1)
                                         {
                                             btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
+                                            //判断SN是否超出范围
+                                            if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.BATStart.Clear();
+                                                this.ICCIDStart.Clear();
+                                                this.MACStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                             this.ShowSN.Text = this.SN1_num.Text;
                                             if (this.SIMStart.Text == "")
                                             {
@@ -5567,7 +5860,10 @@ namespace WindowsForms_print
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                 {
-                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    if (this.NoUpdateIMEI.Checked == false)
+                                                    {
+                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    }
                                                     DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
                                                 }
                                                 else
@@ -5606,29 +5902,26 @@ namespace WindowsForms_print
                                         else
                                         {
                                             btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
                                             this.ShowSN.Text = ASS_sn;
                                             DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
                                             PMB.UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, ASS_sn);
                                         }
                                     }
                                 }
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联MAC&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
-                                Form1.Log("关联MAC打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
                                 this.SIMStart.Clear();
                                 this.VIPStart.Clear();
                                 this.BATStart.Clear();
                                 this.ICCIDStart.Clear();
                                 this.MACStart.Clear();
-                                this.ShowSN.Clear();
+                                //this.ShowSN.Clear();
                                 this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
@@ -5768,7 +6061,7 @@ namespace WindowsForms_print
                             break;
                     }
                 }
-                else {this.MACStart.Focus(); }
+                else {this.MACStart.Focus();}
             }
         }
 
@@ -5819,7 +6112,7 @@ namespace WindowsForms_print
                         this.EquipmentStart.Focus();
                         return;
                     }
-                    Equipment = this.EquipmentStart.Text;
+                    //Equipment = this.EquipmentStart.Text;
                     if (g >= 32 && g <= 63)
                     {
                         if (this.NoPaper.Checked == false)
@@ -5832,8 +6125,25 @@ namespace WindowsForms_print
                                 {
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
+                                    //判断SN是否超出范围
+                                    if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                    {
+                                        this.reminder.AppendText("SN号超出范围\r\n");
+                                        this.IMEI_Start.Clear();
+                                        this.SIMStart.Clear();
+                                        this.VIPStart.Clear();
+                                        this.BATStart.Clear();
+                                        this.ICCIDStart.Clear();
+                                        this.MACStart.Clear();
+                                        this.EquipmentStart.Clear();
+                                        this.IMEI_Start.Focus();
+                                        return;
+                                    }
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -5842,16 +6152,15 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
                                 btFormat.SubStrings["SN"].Value = ASS_sn;
+                                DZSN = btFormat.SubStrings["SN"].Value;
                                 this.ShowSN.Text = ASS_sn;
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联设备号&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
                                 //记录打印信息日志
                                 list.Add(new PrintMessage()
@@ -5913,7 +6222,10 @@ namespace WindowsForms_print
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                         if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                         {
-                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            if (this.NoUpdateIMEI.Checked == false)
+                                            {
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            }
                                             DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
                                         }
                                         else
@@ -5941,7 +6253,6 @@ namespace WindowsForms_print
                                     }
                                     if (SN1_num.Text != "" && Sn_mark == 1)
                                     {
-                                        Form1.Log("关联设备号打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                         sn1_prefix = SN1_num.Text.Substring(0, this.SN1_num.Text.Length - s);
                                         sn1_suffix = long.Parse(SN1_num.Text.Remove(0, (this.SN1_num.Text.Length) - s));
                                         sn1 = sn1_prefix + (sn1_suffix + 1).ToString().PadLeft(s, '0');
@@ -5955,14 +6266,13 @@ namespace WindowsForms_print
                                             this.ICCIDStart.Clear();
                                             this.MACStart.Clear();
                                             this.EquipmentStart.Clear();
-                                            this.ShowSN.Clear();
+                                            //this.ShowSN.Clear();
                                             this.GLB_SN.Clear();
                                             this.IMEI_Start.Focus();
                                         }
                                     }
                                     else
                                     {
-                                        Form1.Log("关联设备号打印了彩盒贴IMEI号为" + this.IMEI_Start.Text + "的制单", null);
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
                                         this.VIPStart.Clear();
@@ -5970,7 +6280,7 @@ namespace WindowsForms_print
                                         this.ICCIDStart.Clear();
                                         this.MACStart.Clear();
                                         this.EquipmentStart.Clear();
-                                        this.ShowSN.Clear();
+                                        //this.ShowSN.Clear();
                                         this.GLB_SN.Clear();
                                         this.IMEI_Start.Focus();
                                     }
@@ -5984,7 +6294,10 @@ namespace WindowsForms_print
                                     ASS_sn = this.SN1_num.Text;
                                     Sn_mark = 1;
                                 }
-                                lj = this.Select_Template1.Text;
+                                else
+                                {
+                                    Sn_mark = 0;
+                                }
                                 btFormat = btEngine.Documents.Open(lj);
                                 //指定打印机名称
                                 btFormat.PrintSetup.PrinterName = this.Printer1.Text;
@@ -5993,12 +6306,14 @@ namespace WindowsForms_print
                                 //对模板相应字段进行赋值
                                 ValuesToTemplate(btFormat);
                                 btFormat.SubStrings["IMEI"].Value = this.IMEI_Start.Text;
+                                IMEI = btFormat.SubStrings["IMEI"].Value;
                                 list = PMB.SelectSnByIMEIBLL(this.IMEI_Start.Text);
                                 foreach (PrintMessage a in list)
                                 {
                                     if (a.SN != "")
                                     {
                                         btFormat.SubStrings["SN"].Value = a.SN;
+                                        DZSN = btFormat.SubStrings["SN"].Value;
                                         this.ShowSN.Text = a.SN;
                                         if (this.SIMStart.Text == "")
                                         {
@@ -6067,6 +6382,21 @@ namespace WindowsForms_print
                                         if (Sn_mark == 1)
                                         {
                                             btFormat.SubStrings["SN"].Value = this.SN1_num.Text;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
+                                            //判断SN是否超出范围
+                                            if (this.SN1_num.Text.CompareTo(this.SN2_num.Text) == 1)
+                                            {
+                                                this.reminder.AppendText("SN号超出范围\r\n");
+                                                this.IMEI_Start.Clear();
+                                                this.SIMStart.Clear();
+                                                this.VIPStart.Clear();
+                                                this.BATStart.Clear();
+                                                this.ICCIDStart.Clear();
+                                                this.MACStart.Clear();
+                                                this.EquipmentStart.Clear();
+                                                this.IMEI_Start.Focus();
+                                                return;
+                                            }
                                             this.ShowSN.Text = this.SN1_num.Text;
                                             if (this.SIMStart.Text == "")
                                             {
@@ -6102,7 +6432,10 @@ namespace WindowsForms_print
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                 {
-                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    if (this.NoUpdateIMEI.Checked == false)
+                                                    {
+                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                                    }
                                                     DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
                                                 }
                                                 else
@@ -6141,22 +6474,19 @@ namespace WindowsForms_print
                                         else
                                         {
                                             btFormat.SubStrings["SN"].Value = ASS_sn;
+                                            DZSN = btFormat.SubStrings["SN"].Value;
                                             this.ShowSN.Text = ASS_sn;
                                             DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
                                             PMB.UpdateSN_SIM_VIP_BAT_ICCID_MAC_EquipmentBLL(this.IMEI_Start.Text, ProductTime, this.Select_Template1.Text, this.Select_Template2.Text, this.SIMStart.Text, this.VIPStart.Text, this.BATStart.Text, this.ICCIDStart.Text, this.MACStart.Text, this.EquipmentStart.Text, ASS_sn);
                                         }
                                     }
                                 }
-                                Result nResult1 = btFormat.Print("标签打印软件", waitout, out messages);
+                                btFormat.Print();
+                                Form1.Log("关联设备号&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
-                                    //双模板线程
-                                    Thread thread2 = new Thread(new ThreadStart(Thread2));
-                                    //启动线程
-                                    thread2.Start();
                                 }
-                                Form1.Log("关联设备号打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 this.IMEI_Start.Clear();
                                 this.SIMStart.Clear();
                                 this.VIPStart.Clear();
@@ -6164,7 +6494,7 @@ namespace WindowsForms_print
                                 this.ICCIDStart.Clear();
                                 this.MACStart.Clear();
                                 this.EquipmentStart.Clear();
-                                this.ShowSN.Clear();
+                                //this.ShowSN.Clear();
                                 this.GLB_SN.Clear();
                                 this.IMEI_Start.Focus();
                             }
@@ -6222,9 +6552,7 @@ namespace WindowsForms_print
                         }
                     }
                 }
-                else {
-                    this.EquipmentStart.Focus();
-                }
+                else {this.EquipmentStart.Focus();}
             }
         }
 
@@ -6507,7 +6835,9 @@ namespace WindowsForms_print
             this.choose_vip.Enabled = false;
             this.choose_bat.Enabled = false;
             this.choose_mac.Enabled = false;
+            this.choose_iccid.Enabled = false;
             this.choose_Equipment.Enabled = false;
+            this.NoUpdateIMEI.Enabled = false;
             this.choose_reprint.Enabled = false;
             this.NoCheckCode.Enabled = false;
             this.NoPaper.Enabled = false;
@@ -6577,7 +6907,9 @@ namespace WindowsForms_print
             this.choose_vip.Enabled = true;
             this.choose_bat.Enabled = true;
             this.choose_mac.Enabled = true;
+            this.choose_iccid.Enabled = true;
             this.choose_Equipment.Enabled = true;
+            this.NoUpdateIMEI.Enabled = true;
             this.choose_reprint.Enabled = true;
             this.NoCheckCode.Enabled = true;
             this.NoPaper.Enabled = true;
@@ -6613,28 +6945,42 @@ namespace WindowsForms_print
             this.updata_inline.Enabled = true;
         }
 
+        //刷新模板按钮函数
         private void Refresh_template_Click(object sender, EventArgs e)
         {
             if (this.Select_Template1.Text != "")
             {
                 string path = this.Select_Template1.Text;
                 string filename = Path.GetFileName(path);
-                if (Select_Template1.Text != AppDomain.CurrentDomain.BaseDirectory + filename)
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "彩盒贴模板"))
                 {
-                    File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + filename, true);
-                    this.Select_Template1.Text = AppDomain.CurrentDomain.BaseDirectory + filename;
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板");
                 }
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "彩盒贴模板\\" + RefreshNum))
+                {
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum);
+                }
+                File.Copy(path, AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum + "\\" + filename, true);
+                lj = AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum + "\\" + filename;
+                this.reminder.AppendText("刷新模板1成功\r\n");
             }
             if (this.Select_Template2.Text != "")
             {
                 string path1 = this.Select_Template2.Text;
                 string filename1 = Path.GetFileName(path1);
-                if (this.Select_Template2.Text != AppDomain.CurrentDomain.BaseDirectory + filename1)
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "彩盒贴模板"))
                 {
-                    File.Copy(path1, AppDomain.CurrentDomain.BaseDirectory + filename1, true);
-                    this.Select_Template2.Text = AppDomain.CurrentDomain.BaseDirectory + filename1;
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板");
                 }
+                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "彩盒贴模板\\" + RefreshNum))
+                {
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum);
+                }
+                File.Copy(path1, AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum + "\\" + filename1, true);
+                lj2 = AppDomain.CurrentDomain.BaseDirectory + "\\彩盒贴模板\\" + RefreshNum + "\\" + filename1;
+                this.reminder.AppendText("刷新模板2成功\r\n");
             }
+             RefreshNum++;
         }
 
 

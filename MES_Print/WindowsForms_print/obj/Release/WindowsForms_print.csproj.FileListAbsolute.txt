@@ -10,9 +10,8 @@ F:\C#打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print
 F:\C#打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.csproj.CopyComplete
 F:\C#打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.exe
 F:\C#打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.pdb
-F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\WindowsForms_print.exe.config
 F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\WindowsForms_print.exe
-F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\WindowsForms_print.pdb
+F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\WindowsForms_print.exe.config
 F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\Seagull.BarTender.Print.dll
 F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.CheckRePrint.resources
 F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.CH_Unlock.resources
@@ -27,4 +26,4 @@ F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_prin
 F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.csproj.CopyComplete
 F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.exe
 F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.pdb
-F:\MES打印\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.csprojAssemblyReference.cache
+F:\MES打印\WindowsForms_print\WindowsForms_print\bin\Release\WindowsForms_print.pdb

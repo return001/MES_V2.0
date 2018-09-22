@@ -932,7 +932,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(18, 50);
             this.Name = "Form1";
-            this.Text = "MES-Print_1.0.3_201809071030";
+            this.Text = "MES-Print_1.0.5_201809151617";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);

@@ -21,24 +21,26 @@ namespace DataRelative.Param.DAL
             List<DataRelativeSheet> pm = new List<DataRelativeSheet>();
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 ='"+Imei1+"'";
-            SqlDataReader dr = command.ExecuteReader();
-            while (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                pm.Add(new DataRelativeSheet()
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 ='" + Imei1 + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
                 {
-                    SN = dr.IsDBNull(0) ? "" : dr.GetString(0),
-                    IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
-                    IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
-                    IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
-                    IMEI6 = dr.IsDBNull(6) ? "" : dr.GetString(6),
-                    IMEI7 = dr.IsDBNull(7) ? "" : dr.GetString(7),
-                    IMEI8 = dr.IsDBNull(8) ? "" : dr.GetString(8),
-                    IMEI9 = dr.IsDBNull(9) ? "" : dr.GetString(9)
-                });
+                    pm.Add(new DataRelativeSheet()
+                    {
+                        SN = dr.IsDBNull(0) ? "" : dr.GetString(0),
+                        IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
+                        IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
+                        IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
+                        IMEI6 = dr.IsDBNull(6) ? "" : dr.GetString(6),
+                        IMEI7 = dr.IsDBNull(7) ? "" : dr.GetString(7),
+                        IMEI8 = dr.IsDBNull(8) ? "" : dr.GetString(8),
+                        IMEI9 = dr.IsDBNull(9) ? "" : dr.GetString(9)
+                    });
+                }
+                return pm;
             }
-            return pm;
         }
 
         //根据SIM号获取ICCID
@@ -47,17 +49,20 @@ namespace DataRelative.Param.DAL
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             string Iccid;
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            if (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                Iccid = dr.IsDBNull(4) ? "" : dr.GetString(4);
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                if (dr.Read())
+                {
+                    Iccid = dr.IsDBNull(4) ? "" : dr.GetString(4);
+                }
+                else
+                {
+                    Iccid = "";
+                }
+                return Iccid;
             }
-            else {
-                Iccid = "";
-            }
-            return Iccid;
         }
 
         public string SelectSNByImeiDAL(string IMEI)
@@ -65,18 +70,20 @@ namespace DataRelative.Param.DAL
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             string Sn;
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 = '" + IMEI + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            if (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                Sn = dr.IsDBNull(2) ? "" : dr.GetString(2);
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 = '" + IMEI + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                if (dr.Read())
+                {
+                    Sn = dr.IsDBNull(2) ? "" : dr.GetString(2);
+                }
+                else
+                {
+                    Sn = "";
+                }
+                return Sn;
             }
-            else
-            {
-                Sn = "";
-            }
-            return Sn;
         }
 
         public string SelectGLBSNByImeiDAL(string IMEI)
@@ -84,18 +91,20 @@ namespace DataRelative.Param.DAL
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             string GLBSn;
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 = '" + IMEI + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            if (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                GLBSn = dr.IsDBNull(0) ? "" : dr.GetString(0);
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 = '" + IMEI + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                if (dr.Read())
+                {
+                    GLBSn = dr.IsDBNull(0) ? "" : dr.GetString(0);
+                }
+                else
+                {
+                    GLBSn = "";
+                }
+                return GLBSn;
             }
-            else
-            {
-                GLBSn = "";
-            }
-            return GLBSn;
         }
 
         //检查IMEI号是否存在，存在返回1，否则返回0
@@ -103,14 +112,16 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1='" + IMEInumber + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            while (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                return 1;
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1='" + IMEInumber + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
+                {
+                    return 1;
+                }
+                return 0;
             }
-            return 0;
         }
 
         //检查SIM号是否存在，存在返回1，否则返回0
@@ -118,34 +129,38 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI3='" + SIMnumber + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            while (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                return 1;
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI3='" + SIMnumber + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
+                {
+                    return 1;
+                }
+                return 0;
             }
-            return 0;
         }
 
-        //检查IMEI检查SIM号是否存在，存在返回1，否则返回0
+        //检查IMEI检查SIM号是否存在，存在返回SIM，否则返回“”
         public string CheckSIMByIMEIDAL(string IMEI)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             string Sim;
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1='" + IMEI + "'";
-            SqlDataReader dr = command.ExecuteReader();
-            if (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                Sim = dr.IsDBNull(3) ? "" : dr.GetString(3);
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1='" + IMEI + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                if (dr.Read())
+                {
+                    Sim = dr.IsDBNull(3) ? "" : dr.GetString(3);
+                }
+                else
+                {
+                    Sim = "";
+                }
+                return Sim;
             }
-            else
-            {
-                Sim = "";
-            }
-            return Sim;
         }
 
         //更新IMEI通过SIM
@@ -153,19 +168,23 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI1='" + IMEI + "' WHERE IMEI3='" + SIM + "'";
-            return command.ExecuteNonQuery();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI1='" + IMEI + "' WHERE IMEI3='" + SIM + "'";
+                return command.ExecuteNonQuery();
+            }
         }
 
         //更新IMEI通过SIM
-        public int UpdateSIMByIMEIDAL(string IMEI, string SIM)
+        public int UpdateSIMByIMEIDAL(string IMEI, string SIM,string ICCID)
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI3='" + SIM + "' WHERE IMEI1='" + IMEI + "'";
-            return command.ExecuteNonQuery();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI3='" + SIM + "',IMEI4 ='"+ ICCID + "' WHERE IMEI1='" + IMEI + "'";
+                return command.ExecuteNonQuery();
+            }
         }
 
         //更新关联表字段
@@ -173,9 +192,11 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-            return command.ExecuteNonQuery();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                return command.ExecuteNonQuery();
+            }
         }
 
         //更新VIP
@@ -183,9 +204,11 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
-            return command.ExecuteNonQuery();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
+                return command.ExecuteNonQuery();
+            }
         }
 
         //更新VIP或者BAT
@@ -193,15 +216,18 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            if (VIP == "")
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                if (VIP == "")
+                {
+                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                }
+                return command.ExecuteNonQuery();
             }
-            else {
-                command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-            }
-            return command.ExecuteNonQuery();
         }
 
         //更新VIP或者BAT或者MAC
@@ -209,29 +235,32 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            if (VIP == "")
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                if (BAT == "")
+                if (VIP == "")
                 {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "' WHERE IMEI1='" + IMEI + "'";
+                    if (BAT == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
                 }
                 else
                 {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    if (BAT == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
                 }
+                return command.ExecuteNonQuery();
             }
-            else
-            {
-                if (BAT == "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-                }
-            }
-            return command.ExecuteNonQuery();
         }
 
         //更新VIP或者BAT或者MAC、Equipment
@@ -239,45 +268,48 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            if (VIP == "")
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                if (BAT == "" && MAC == "")
+                if (VIP == "")
                 {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else if (BAT != "" && MAC == "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET IMEI7 ='" + Equipment + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else if (BAT == "" && MAC != "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-                }
-            }
-            else {
-                if (BAT == "" && MAC == "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else if (BAT != "" && MAC == "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
-                }
-                else if (BAT == "" && MAC != "")
-                {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
+                    if (BAT == "" && MAC == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else if (BAT != "" && MAC == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET IMEI7 ='" + Equipment + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else if (BAT == "" && MAC != "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
                 }
                 else
                 {
-                    command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    if (BAT == "" && MAC == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else if (BAT != "" && MAC == "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else if (BAT == "" && MAC != "")
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "' WHERE IMEI1='" + IMEI + "'";
+                    }
+                    else
+                    {
+                        command.CommandText = "UPDATE dbo.DataRelativeSheet SET  IMEI6 ='" + MAC + "', IMEI7 ='" + Equipment + "',IMEI8='" + VIP + "',IMEI9='" + BAT + "' WHERE IMEI1='" + IMEI + "'";
+                    }
                 }
+                return command.ExecuteNonQuery();
             }
-            return command.ExecuteNonQuery();
         }
 
         //插入数据到关联表
@@ -285,14 +317,16 @@ namespace DataRelative.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            int i = list.Count;
-            if (i > 0)
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                command.CommandText = "INSERT INTO dbo.DataRelativeSheet([SN], [IMEI1], [IMEI2], [IMEI3], [IMEI4], [IMEI5], [IMEI6], [IMEI7],[IMEI8], [IMEI9], [IMEI10], [IMEI11], [IMEI12], [ZhiDan], [TestTime], [_MASK_FROM_V2]) VALUES(NULL,'" + list[i - 1].IMEI1 + "','" + list[i - 1].IMEI2 + "','" + list[i - 1].IMEI3 + "','" + list[i - 1].IMEI4 + "','" + list[i - 1].IMEI5 + "','" + list[i - 1].IMEI6 + "','" + list[i - 1].IMEI7 + "','" + list[i - 1].IMEI8 + "','" + list[i - 1].IMEI9 + "','" + list[i - 1].IMEI10 + "','" + list[i - 1].IMEI11 + "','" + list[i - 1].IMEI12 + "','" + list[i - 1].ZhiDan+ "','"+ list[i - 1].TestTime + "',NULL)";
+                int i = list.Count;
+                if (i > 0)
+                {
+                    command.CommandText = "INSERT INTO dbo.DataRelativeSheet([SN], [IMEI1], [IMEI2], [IMEI3], [IMEI4], [IMEI5], [IMEI6], [IMEI7],[IMEI8], [IMEI9], [IMEI10], [IMEI11], [IMEI12], [ZhiDan], [TestTime], [_MASK_FROM_V2]) VALUES(NULL,'" + list[i - 1].IMEI1 + "','" + list[i - 1].IMEI2 + "','" + list[i - 1].IMEI3 + "','" + list[i - 1].IMEI4 + "','" + list[i - 1].IMEI5 + "','" + list[i - 1].IMEI6 + "','" + list[i - 1].IMEI7 + "','" + list[i - 1].IMEI8 + "','" + list[i - 1].IMEI9 + "','" + list[i - 1].IMEI10 + "','" + list[i - 1].IMEI11 + "','" + list[i - 1].IMEI12 + "','" + list[i - 1].ZhiDan + "','" + list[i - 1].TestTime + "',NULL)";
+                }
+                int httpstr = command.ExecuteNonQuery();
+                return httpstr;
             }
-            int httpstr = command.ExecuteNonQuery();
-            return httpstr;
         }
 
         //根据SN或者IMEI2带出IMEI
@@ -301,18 +335,20 @@ namespace DataRelative.Param.DAL
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
             string IMEI;
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE (SN = '" + IMEI2Value + "' OR IMEI2 = '"+IMEI2Value+"')";
-            SqlDataReader dr = command.ExecuteReader();
-            if (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                IMEI = dr.IsDBNull(1) ? "" : dr.GetString(1);
+                command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE (SN = '" + IMEI2Value + "' OR IMEI2 = '" + IMEI2Value + "')";
+                SqlDataReader dr = command.ExecuteReader();
+                if (dr.Read())
+                {
+                    IMEI = dr.IsDBNull(1) ? "" : dr.GetString(1);
+                }
+                else
+                {
+                    IMEI = "";
+                }
+                return IMEI;
             }
-            else
-            {
-                IMEI = "";
-            }
-            return IMEI;
         }
 
     }

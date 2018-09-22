@@ -41,5 +41,22 @@ namespace ExcelPrint.Param.Bll
             return MEPPD.SelectByImei1to5DAL(IMEI);
         }
 
+        public List<ManuExcelPrintParam> SelectAllRePrintBLL()
+        {
+            return MEPPD.SelectAllRePrintDAL();
+        }
+
+        public bool UpdateRePrintTimeBLL(string IMEI1, string RePrintTime)
+        {
+            if (MEPPD.UpdateRePrintTimeDAL(IMEI1, RePrintTime) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }

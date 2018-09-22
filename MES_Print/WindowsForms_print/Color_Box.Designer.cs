@@ -104,6 +104,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.NoUpdateIMEI = new System.Windows.Forms.CheckBox();
             this.label23 = new System.Windows.Forms.Label();
             this.GLB_SN = new System.Windows.Forms.TextBox();
             this.Tempalte2Num = new System.Windows.Forms.TextBox();
@@ -465,6 +466,7 @@
             // 
             this.splitContainer3.Panel2.AllowDrop = true;
             this.splitContainer3.Panel2.BackColor = System.Drawing.Color.Linen;
+            this.splitContainer3.Panel2.Controls.Add(this.NoUpdateIMEI);
             this.splitContainer3.Panel2.Controls.Add(this.label23);
             this.splitContainer3.Panel2.Controls.Add(this.GLB_SN);
             this.splitContainer3.Panel2.Controls.Add(this.Tempalte2Num);
@@ -996,6 +998,16 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "软件型号：";
             // 
+            // NoUpdateIMEI
+            // 
+            this.NoUpdateIMEI.AutoSize = true;
+            this.NoUpdateIMEI.Location = new System.Drawing.Point(544, 25);
+            this.NoUpdateIMEI.Name = "NoUpdateIMEI";
+            this.NoUpdateIMEI.Size = new System.Drawing.Size(106, 19);
+            this.NoUpdateIMEI.TabIndex = 137;
+            this.NoUpdateIMEI.Text = "不更新IMEI";
+            this.NoUpdateIMEI.UseVisualStyleBackColor = true;
+            // 
             // label23
             // 
             this.label23.AutoSize = true;
@@ -1169,7 +1181,6 @@
             // choose_iccid
             // 
             this.choose_iccid.AutoSize = true;
-            this.choose_iccid.Enabled = false;
             this.choose_iccid.Location = new System.Drawing.Point(44, 59);
             this.choose_iccid.Name = "choose_iccid";
             this.choose_iccid.Size = new System.Drawing.Size(99, 19);
@@ -1539,5 +1550,6 @@
         private System.Windows.Forms.TextBox Tempalte2Num;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.TextBox GLB_SN;
+        private System.Windows.Forms.CheckBox NoUpdateIMEI;
     }
 }

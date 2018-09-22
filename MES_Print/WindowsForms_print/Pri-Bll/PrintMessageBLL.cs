@@ -82,6 +82,18 @@ namespace Print.Message.Bll
             }
         }
 
+        public bool UpdateSN_VIP_BAT_ICCIDBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string VIP, string BAT, string ICCID, string SN)
+        {
+            if (PMD.UpdateSN_VIP_BAT_ICCIDDAL(IMEI, CHPrintTime, lj1, lj2, VIP, BAT, ICCID, SN) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public bool UpdateSN_SIM_VIP_BAT_ICCID_MACBLL(string IMEI, string CHPrintTime, string lj1, string lj2, string SIM, string VIP, string BAT, string ICCID, string MAC, string SN)
         {
             if (PMD.UpdateSN_SIM_VIP_BAT_ICCID_MACDAL(IMEI, CHPrintTime, lj1, lj2, SIM, VIP, BAT, ICCID,MAC, SN) > 0)

@@ -73,9 +73,9 @@ namespace DataRelative.Param.BLL
             }
         }
 
-        public bool UpdateSIMByIMEIBLL(string IMEI, string SIM)
+        public bool UpdateSIMByIMEIBLL(string IMEI, string SIM,string ICCID)
         {
-            if (DRSD.UpdateSIMByIMEIDAL(IMEI, SIM) > 0)
+            if (DRSD.UpdateSIMByIMEIDAL(IMEI, SIM, ICCID) > 0)
             {
                 return true;
             }

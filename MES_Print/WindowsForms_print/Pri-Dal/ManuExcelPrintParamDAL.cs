@@ -18,14 +18,16 @@ namespace ExcelPrint.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.Gps_ManuExcelPrintParam WHERE (IMEI1='" + IMEI1 + "' OR IMEI2 = '"+IMEI2+"')";
-            SqlDataReader dr = command.ExecuteReader();
-            while (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                return 1;
+                command.CommandText = "SELECT * FROM dbo.Gps_ManuExcelPrintParam WHERE (IMEI1='" + IMEI1 + "' OR IMEI2 = '" + IMEI2 + "')";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
+                {
+                    return 1;
+                }
+                return 0;
             }
-            return 0;
         }
 
         //插入Excel打印数据到ManuExcelPrintParam表
@@ -33,14 +35,16 @@ namespace ExcelPrint.Param.DAL
         {
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            int i = list.Count;
-            if (i > 0)
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                command.CommandText = "INSERT INTO Gps_ManuExcelPrintParam(IMEI1,IMEI2,IMEI3,IMEI4,IMEI5,PrintTime,Template) VALUES('" + list[i - 1].IMEI1 + "','" + list[i - 1].IMEI2 + "','" + list[i - 1].IMEI3 + "','" + list[i - 1].IMEI4 + "','" + list[i - 1].IMEI5 + "','" + list[i - 1].PrintTime + "','" + list[i - 1].Template + "')";
+                int i = list.Count;
+                if (i > 0)
+                {
+                    command.CommandText = "INSERT INTO Gps_ManuExcelPrintParam(IMEI1,IMEI2,IMEI3,IMEI4,IMEI5,PrintTime,Template,RePrintNum,ReFirstPrintTime,ReEndPrintTime) VALUES('" + list[i - 1].IMEI1 + "','" + list[i - 1].IMEI2 + "','" + list[i - 1].IMEI3 + "','" + list[i - 1].IMEI4 + "','" + list[i - 1].IMEI5 + "','" + list[i - 1].PrintTime + "','" + list[i - 1].Template + "','0',NULL,NULL)";
+                }
+                int httpstr = command.ExecuteNonQuery();
+                return httpstr;
             }
-            int httpstr = command.ExecuteNonQuery();
-            return httpstr;
         }
 
         //根据IMEI1-5获取关联数据
@@ -49,24 +53,96 @@ namespace ExcelPrint.Param.DAL
             List<ManuExcelPrintParam> pm = new List<ManuExcelPrintParam>();
             SqlConnection conn1 = new SqlConnection(conStr);
             conn1.Open();
-            SqlCommand command = conn1.CreateCommand();
-            command.CommandText = "SELECT * FROM dbo.Gps_ManuExcelPrintParam WHERE (IMEI1 ='" + Imei + "' OR IMEI2 = '"+Imei+ "'OR IMEI3 = '" + Imei + "'OR IMEI4 = '" + Imei + "'OR IMEI5 = '" + Imei + "')";
-            SqlDataReader dr = command.ExecuteReader();
-            while (dr.Read())
+            using (SqlCommand command = conn1.CreateCommand())
             {
-                pm.Add(new ManuExcelPrintParam()
+                command.CommandText = "SELECT * FROM dbo.Gps_ManuExcelPrintParam WHERE (IMEI1 ='" + Imei + "' OR IMEI2 = '" + Imei + "'OR IMEI3 = '" + Imei + "'OR IMEI4 = '" + Imei + "'OR IMEI5 = '" + Imei + "')";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
                 {
-                    IMEI1 = dr.IsDBNull(1) ? "" : dr.GetString(1),
-                    IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
-                    IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
-                    IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
-                    IMEI5 = dr.IsDBNull(5) ? "" : dr.GetString(5),
-                    PrintTime = dr.IsDBNull(6) ? "" : dr.GetDateTime(6).ToString(),
-                    Template = dr.IsDBNull(7) ? "" : dr.GetString(7)
-                });
+                    pm.Add(new ManuExcelPrintParam()
+                    {
+                        IMEI1 = dr.IsDBNull(1) ? "" : dr.GetString(1),
+                        IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
+                        IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
+                        IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
+                        IMEI5 = dr.IsDBNull(5) ? "" : dr.GetString(5),
+                        PrintTime = dr.IsDBNull(6) ? "" : dr.GetDateTime(6).ToString(),
+                        Template = dr.IsDBNull(7) ? "" : dr.GetString(7),
+                        RePrintNum =dr.GetInt32(8),
+                        ReFirstPrintTime = dr.IsDBNull(9) ? "" : dr.GetDateTime(9).ToString(),
+                        ReEndPrintTime = dr.IsDBNull(10) ? "" : dr.GetDateTime(10).ToString()
+                    });
+                }
+                return pm;
             }
-            return pm;
         }
+
+        //根据重打次数不为0获取重打记录
+        public List<ManuExcelPrintParam> SelectAllRePrintDAL()
+        {
+            List<ManuExcelPrintParam> pm = new List<ManuExcelPrintParam>();
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM dbo.Gps_ManuExcelPrintParam WHERE RePrintNum!=0 ";
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
+                {
+                    pm.Add(new ManuExcelPrintParam()
+                    {
+                        IMEI1 = dr.IsDBNull(1) ? "" : dr.GetString(1),
+                        IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
+                        IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
+                        IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
+                        IMEI5 = dr.IsDBNull(5) ? "" : dr.GetString(5),
+                        PrintTime = dr.IsDBNull(6) ? "" : dr.GetDateTime(6).ToString(),
+                        Template = dr.IsDBNull(7) ? "" : dr.GetString(7),
+                        RePrintNum = dr.GetInt32(8),
+                        ReFirstPrintTime = dr.IsDBNull(9) ? "" : dr.GetDateTime(9).ToString(),
+                        ReEndPrintTime = dr.IsDBNull(10) ? "" : dr.GetDateTime(10).ToString()
+                    });
+                }
+                return pm;
+            }
+        }
+
+        //更新重打时间
+        public int UpdateRePrintTimeDAL(string IMEI1, string RePrintTime)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                if (SelectRePrintNumByIMEI1(IMEI1) == 0)
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuExcelPrintParam SET ReFirstPrintTime ='" + RePrintTime + "',RePrintNum = RePrintNum+1 WHERE IMEI1='" + IMEI1 + "'";
+                }
+                else
+                {
+                    command.CommandText = "UPDATE dbo.Gps_ManuExcelPrintParam SET ReEndPrintTime ='" + RePrintTime + "',RePrintNum = RePrintNum+1 WHERE IMEI1='" + IMEI1 + "'";
+                }
+                return command.ExecuteNonQuery();
+            }
+        }
+
+        public int SelectRePrintNumByIMEI1(string IMEI1)
+        {
+            SqlConnection conn1 = new SqlConnection(conStr);
+            conn1.Open();
+            using (SqlCommand command = conn1.CreateCommand())
+            {
+                command.CommandText = "select  * FROM dbo.Gps_ManuExcelPrintParam WHERE IMEI1='" + IMEI1 + "'";
+                SqlDataReader dr = command.ExecuteReader();
+                int RePrintNum = 0;
+                while (dr.Read())
+                {
+                    RePrintNum = dr.GetInt32(8);
+                }
+                return RePrintNum;
+            }
+        }
+
 
     }
 }
