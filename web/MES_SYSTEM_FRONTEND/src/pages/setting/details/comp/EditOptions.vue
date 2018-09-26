@@ -116,7 +116,7 @@
           };
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
-              alert('更新成功');
+              this.$alertSuccess('更新成功');
               this.isStatusPanel = false;
               this.thisRow = {};
               let tempUrl = this.$route.path;
@@ -124,12 +124,12 @@
               this.$router.replace('/_empty');
               this.$router.replace(tempUrl)
             } else if (res.data.result === 400) {
-              alert("只有未开始及进行中的订单可进行状态操作")
+              this.$alertInfo("只有未开始及进行中的订单可进行状态操作")
             } else {
               errHandler(res.data.result)
             }
           }).catch(err => {
-            alert(err)
+            this.$alertD(err)
           })
         }
       }

@@ -75,13 +75,13 @@
                 let obj = JSON.parse(data);
                 if(obj.errorMessage !== "成功"){
                   that.cId = "";
-                  alert(obj.errorMessage);
+                  this.$alertWarning(obj.errorMessage);
                 }else{
                   let cId = obj.data.cid;
                   that.cId = cId
                 }
               }else{
-                alert("请求失败，请检查参数是否正确");
+                this.$alertWarning("请求失败，请检查参数是否正确");
               }
             }
           })
@@ -89,7 +89,7 @@
             console.log(err);
           })
         }else{
-          alert("参数不能为空");
+          this.$alertWarning("参数不能为空");
         }
       }
     }

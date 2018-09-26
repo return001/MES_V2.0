@@ -300,7 +300,7 @@
             if (_.trim(this.formData[i].value) !== "") {
               tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
             } else {
-              alert("存在不能为空数据");
+              this.$alertWarning("存在不能为空数据");
               return
             }
           }
@@ -332,7 +332,7 @@
         };
         axiosFetch(options).then(res => {
           if (res.data.result === 200) {
-            alert('更新成功');
+            this.$alertSuccess('更新成功');
             this.setEditing(false);
             this.setEditData([]);
             let tempUrl = this.$route.path;
@@ -340,12 +340,12 @@
             this.$router.replace('/_empty')
             this.$router.replace(tempUrl)
           } else if (res.data.result === 400) {
-            alert('请检查格式并重试')
+            this.$alertInfo('请检查格式并重试')
           } else {
             errHandler(res.data.result)
           }
         }).catch(err => {
-          alert('请求超时，请刷新重试')
+          this.$alertDanger('请求超时，请刷新重试')
         })
       },
       createData: function () {
@@ -356,7 +356,7 @@
             if (_.trim(this.formData[i].value) !== "") {
               tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
             } else {
-              alert("存在不能为空数据");
+              this.$alertWarning("存在不能为空数据");
               return
             }
           }
@@ -387,24 +387,24 @@
         };
         axiosFetch(options).then(res => {
           if (res.data.result === 200) {
-            alert('添加成功');
+            this.$alertSuccess('添加成功');
             this.setEditing(false);
             this.setCopyData([]);
             let tempUrl = this.$route.path;
             this.$router.replace('/_empty');
             this.$router.replace(tempUrl)
           } else if (res.data.result === 412) {
-            alert('请检查格式并重试');
+            this.$alertWarning('请检查格式并重试');
             this.setEditing(false);
           } else if (res.data.result === 400) {
-            alert('该制单号已存在');
+            this.$alertWarning('该制单号已存在');
             this.setEditing(false);
           } else {
             errHandler(res.data.result)
           }
         }).catch(err => {
           console.log(JSON.stringify(err))
-          alert('请求超时，请刷新重试');
+          this.$alertDanger('请求超时，请刷新重试');
         })
       },
       btnHandler: function () {

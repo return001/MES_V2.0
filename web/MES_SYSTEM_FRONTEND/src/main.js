@@ -10,6 +10,12 @@ import  Icon from 'vue-svg-icon/Icon'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min'
 import Datatable from '../static/js/datatable.min.js'
+import {alertDanger, alertInfo, alertSuccess,alertWarning} from "./utils/modal";
+
+Vue.prototype.$alertDanger = alertDanger
+Vue.prototype.$alertInfo = alertInfo
+Vue.prototype.$alertSuccess = alertSuccess
+Vue.prototype.$alertWarning = alertWarning
 
 Vue.component('icon', Icon)
 Vue.use(Datatable)
