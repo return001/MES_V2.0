@@ -104,6 +104,7 @@
     <ClInclude Include="ADOManage.h" />
     <ClInclude Include="AutoCombox.h" />
     <ClInclude Include="DBconfig.h" />
+    <ClInclude Include="Manager.h" />
     <ClInclude Include="MFCP2CP.h" />
     <ClInclude Include="MFCP2CPDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="ADOManage.cpp" />
     <ClCompile Include="AutoCombox.cpp" />
     <ClCompile Include="DBconfig.cpp" />
+    <ClCompile Include="Manager.cpp" />
     <ClCompile Include="MFCP2CP.cpp" />
     <ClCompile Include="MFCP2CPDlg.cpp" />
     <ClCompile Include="stdafx.cpp">

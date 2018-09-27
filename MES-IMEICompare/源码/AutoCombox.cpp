@@ -142,7 +142,7 @@ void CAutoCombox::AutoMatchAndSel()
 		}//for
 	}
 
-	if (GetCount() == 0)	//没有的显示所有
+	if (GetCount() == 0 && strText.IsEmpty())	//没有且当前输入框为空的时候显示所有
 	{
 		for (int nIndex = 0; nIndex<m_strArr.GetSize(); ++nIndex)
 		{

@@ -3,6 +3,7 @@
 #include "iostream"   
 #include "vector"
 #include <string>
+#include "MFCP2CPDlg.h"
 
 //全局变量需在类外进行初始化
 
@@ -137,7 +138,7 @@ _RecordsetPtr ADOManage::GetRst()
 }
 
 //根据其它号段寻找IMEI
-int ADOManage::CpImeiByNo(CString noname,CString no,CString strzhidan)
+int ADOManage::CpImeiByNo(CString Syllablesqlstr, CString noname, CString no, CString strzhidan)
 {
 	//初始化Recordset指针
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
@@ -146,30 +147,35 @@ int ADOManage::CpImeiByNo(CString noname,CString no,CString strzhidan)
 	//_variant_t a;
 	CString strSql;
 
-	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [") + noname + _T("] =") + _T("'") + no + _T("'") + _T("AND ZhiDan='") + strzhidan + _T("'");
+	//根据用户选择的字段去将IMEI号转换出来
+	strSql = _T("SELECT * FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuPrintParam] WHERE ZhiDan ='")+strzhidan+_T("' AND( ");
+	strSql += Syllablesqlstr+L")";
+	strSql.Replace(L"InputNumber",no);//然后将里面的预设字符串替换掉成具体的数据
+
 	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	////查找IMEI是否存在，不存在返回0代表未找到IMEI
+	//strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [") + noname + _T("] =") + _T("'") + no + _T("'") + _T("AND ZhiDan='") + strzhidan + _T("'");
+	//m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 	//代表不存在此号段
 	if (m_pRecordSet->adoEOF)
 	{
-		strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + no + _T("'");
-		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+		//strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + no + _T("'");
+		//m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
-		if (m_pRecordSet->adoEOF)
-		{
-			return 1;
-		}
-		else
-		{
-			return 3;//返回3代表这个是个IMEI号
-		}
+		//if (m_pRecordSet->adoEOF)
+		//{
+		//	return 1;
+		//}
+		//else
+		//{
+		//	return 3;//返回3代表这个是个IMEI号
+		//}
 		return 0;
 	}
 
-
 	return 2;//上面都没问题就返回2代表成功
-
 }
 
 //判断IMEI号是否存在
@@ -251,6 +257,83 @@ int ADOManage::CpCaiheByImei(CString imei, CString ZhiDan)
 	if (ZhiDan!=strzhidan)
 	{
 		return 3;
+	}
+
+	/*打印表的IMEI，SN，SIM，ICCID，MAC，Equipment，VIP，BAT*/
+	/*关联表的IMEI3（SIM），IMEI4（ICCID），IMEI6（MAC），IMEI7（Equipment），IMEI8（VIP），IMEI9（BAT）*/
+
+	//这里是查绑定的
+	//static map<int, CString>::iterator Syllableiter;
+	map<int, CString>::iterator BindIter;
+	_variant_t Bindtempvt;
+	CString Bindtemp;
+	//strSql = _T("SELECT * FROM [") + m_Firstdbname + _T("].[dbo].[DataRelativeSheet] WHERE [IMEI1] =") + _T("'") + imei + _T("'") + _T("AND ZhiDan='") + ZhiDan + _T("'");
+	strSql = _T("SELECT * FROM [") + m_Firstdbname + _T("].[dbo].[Gps_ManuPrintParam] WHERE [IMEI] =") + _T("'") + imei + _T("'") + _T("AND ZhiDan='") + ZhiDan + _T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+	//根据MAP的长度来决定循环次数，如果对应的值为""，那就代表它缺少绑定，此时返回绑定的字段并报相应的错误
+	for (BindIter = CMFCP2CPDlg::BindMap.begin(); BindIter != CMFCP2CPDlg::BindMap.end(); BindIter++)
+	{
+		switch (BindIter->first)
+		{
+		case 0:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI3");
+			Bindtemp = m_pRecordSet->GetCollect("SIM");
+			Bindtempvt = m_pRecordSet->GetCollect("SIM");
+			if (Bindtemp == "" || Bindtemp == " " || Bindtempvt.vt == VT_NULL)
+			{
+				return d_SimBindCheck;
+			}
+			break;
+		case 1:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI8");
+			Bindtemp = m_pRecordSet->GetCollect("VIP");
+			Bindtempvt = m_pRecordSet->GetCollect("VIP");
+			if (Bindtemp == "")
+			{
+				return d_VipBindCheck;
+			}
+			break;
+		case 2:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI4");
+			Bindtemp = m_pRecordSet->GetCollect("ICCID");
+			Bindtempvt = m_pRecordSet->GetCollect("ICCID");
+			if (Bindtemp == "")
+			{
+				return d_IccidBindCheck;
+			}
+			break;
+		case 3:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI9");
+			Bindtemp = m_pRecordSet->GetCollect("BAT");
+			Bindtempvt = m_pRecordSet->GetCollect("BAT");
+			if (Bindtemp == "")
+			{
+				return d_BatBindCheck;
+			}
+			break;
+		case 4:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI6");
+			Bindtemp = m_pRecordSet->GetCollect("MAC");
+			Bindtempvt = m_pRecordSet->GetCollect("MAC");
+			if (Bindtemp == "")
+			{
+				return d_MacBindCheck;
+			}
+			break;
+		case 5:
+			//Bindtemp = m_pRecordSet->GetCollect("IMEI7");
+			Bindtemp = m_pRecordSet->GetCollect("Equipment");
+			Bindtempvt = m_pRecordSet->GetCollect("Equipment");
+			if (Bindtemp == "")
+			{
+				return d_EquipmentBindCheck;
+			}
+			break;
+		default:
+			break;
+		}
+
 	}
 
 	return 2;//上面都没问题就返回2代表成功
@@ -356,6 +439,86 @@ _RecordsetPtr ADOManage::JudgeOrderNumber(CString ordernumber)
 
 }
 
+
+//保存订单所选择的字段
+void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment)
+{
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//初始化Recordset指针
+	//CString a;
+	//a = CMFCP2CPDlg::SyllableMap[0];
+	//参数
+	_variant_t Affectline;
+	CString strSql;
+
+	//将数据插入表中
+	strSql.Format(_T("insert into[" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam]([ZhiDan],[IMEISyllable], [SNSyllable], [SIMSyllable], [VIPSyllable], [ICCIDSyllable], [BATSyllable], [MACSyllable], [EquipmentSyllable])values('")
+		+ order + _T("', %d,%d,%d,%d,%d,%d,%d,%d)"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment);
+
+	try{
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+	}
+	catch (_com_error &e)
+	{
+	}
+
+	//Affectline是insert操作返回的影响行数，如果为0代表插入失败，也就是说之前已经插入过这条数据
+	if (Affectline.vt == 0)
+	{
+		strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam] SET [IMEISyllable]=%d, [SNSyllable]=%d, [SIMSyllable]=%d, [VIPSyllable]=%d, [ICCIDSyllable]=%d, [BATSyllable]=%d, [MACSyllable]=%d, [EquipmentSyllable]=%d  WHERE [ZhiDan]='") + order + _T("'"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment);
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+	}
+}
+
+//读取订单所选择的字段
+void ADOManage::Readsyllable(CString order)
+{
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//初始化Recordset指针
+	CString strSql = _T("SELECT  * FROM [" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam] WHERE [ZhiDan]='") + order + _T("'");
+
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+
+}
+
+//保存订单所绑定的字段
+void ADOManage::Savebind(CString order, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment)
+{
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//初始化Recordset指针
+
+	//参数
+	_variant_t Affectline;
+	CString strSql;
+
+	//将数据插入表中
+	strSql.Format(_T("insert into[" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam]([ZhiDan],[SIMBind], [VIPBind], [ICCIDBind], [BATBind], [MACBind], [EquipmentBind])values('")
+		+ order + _T("', %d,%d,%d,%d,%d,%d)"), SIM, VIP, ICCID, BAT, MAC, Equipment);
+
+	try{
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+	}
+	catch (_com_error &e)
+	{
+	}
+
+	//Affectline是insert操作返回的影响行数，如果为0代表插入失败，也就是说之前已经插入过这条数据
+	if (Affectline.vt == 0)
+	{
+		strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam] SET [SIMBind]=%d, [VIPBind]=%d, [ICCIDBind]=%d, [BATBind]=%d, [MACBind]=%d, [EquipmentBind]=%d  WHERE [ZhiDan]='") + order + _T("'"), SIM, VIP, ICCID, BAT, MAC, Equipment);
+		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
+	}
+}
+
+//读取订单所绑定的字段
+void ADOManage::Readbind(CString order)
+{
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//初始化Recordset指针
+	CString strSql = _T("SELECT  * FROM [" + m_Firstdbname + "].[dbo].[Gps_ManuCpOrderRelationParam] WHERE [ZhiDan]='") + order + _T("'");
+
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+}
 
 //获取当前时间函数
 CString ADOManage::GetTime(){
