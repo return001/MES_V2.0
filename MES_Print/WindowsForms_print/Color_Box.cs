@@ -430,6 +430,8 @@ namespace WindowsForms_print
             this.choose_iccid.Checked = false;
             this.choose_mac.Checked = false;
             this.choose_Equipment.Checked = false;
+            this.UpdataSimByImei.Checked = false;
+            this.UpdateIMEIBySim.Checked = false;
             this.NoPaper.Checked = false;
             this.NoCheckCode.Checked = false;
             this.SIMStart.ReadOnly = true;
@@ -924,6 +926,30 @@ namespace WindowsForms_print
                 {
                     this.choose_Equipment.Enabled = true;
                     this.EquipmentStart.ReadOnly = false;
+                }
+            }
+        }
+
+        //根据SIM卡号更新IMEI复选框点击事件
+        private void UpdateIMEIBySim_Click(object sender, EventArgs e)
+        {
+            if (this.UpdateIMEIBySim.Checked == true)
+            {
+                if (this.UpdataSimByImei.Checked == true)
+                {
+                    this.UpdataSimByImei.Checked = false;
+                }
+            }
+        }
+
+        //根据IMEI更新SIM卡号复选框点击事件
+        private void UpdataSimByImei_Click(object sender, EventArgs e)
+        {
+            if (this.UpdataSimByImei.Checked == true)
+            {
+                if (this.UpdateIMEIBySim.Checked == true)
+                {
+                    this.UpdateIMEIBySim.Checked = false;
                 }
             }
         }
@@ -3087,6 +3113,7 @@ namespace WindowsForms_print
             }
         }
 
+        //给关联数据赋值，供打印时调用
         private void ValuesToTemplate(LabelFormatDocument btFormat)
         {
             GetValue("Information", "生产日期", out outString);
@@ -3112,6 +3139,7 @@ namespace WindowsForms_print
             btFormat.SubStrings["GLB_SN"].Value = GLBSN;
         }
 
+        //扫描SIM卡后触发事件
         private void SIMStart_KeyPress(object sender, KeyPressEventArgs e)
         {
             //是否按下Enter键，13是Enter键的值
@@ -3164,19 +3192,24 @@ namespace WindowsForms_print
                     //根据SIM卡号带出ICCID 有值带值，无值带空
                     this.ICCIDStart.Text = DRSB.SelectIccidBySimBLL(this.SIMStart.Text);
                     ICCID = this.ICCIDStart.Text;
+
                     //根据IMEI检查SIM号是否存在，不存在则更新SIM（连带ICCID）
-                    string GLBSIM = DRSB.CheckSIMByIMEIBLL(this.IMEI_Start.Text);
-                    if (GLBSIM == "")
+                    if(this.UpdataSimByImei.Checked == true)
                     {
-                        DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text,this.ICCIDStart.Text);
+                        DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.ICCIDStart.Text);
                     }
-                    else
-                    {
-                        if (GLBSIM != this.SIMStart.Text)
-                        {
-                            DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.ICCIDStart.Text);
-                        }
-                    }
+                    //string GLBSIM = DRSB.CheckSIMByIMEIBLL(this.IMEI_Start.Text);
+                    //if (GLBSIM == "")
+                    //{
+                    //    DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text,this.ICCIDStart.Text);
+                    //}
+                    //else
+                    //{
+                    //    if (GLBSIM != this.SIMStart.Text)
+                    //    {
+                    //        DRSB.UpdateSIMByIMEIBLL(this.IMEI_Start.Text, this.SIMStart.Text, this.ICCIDStart.Text);
+                    //    }
+                    //}
                     ////给全局变量SIM赋值，在线程中打印时使用
                     //SIM = this.SIMStart.Text;
                     //g为勾选关联字段总和
@@ -3227,34 +3260,35 @@ namespace WindowsForms_print
                                             xc2 = 1;
                                         }
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (this.NoUpdateIMEI.Checked == false)
+                                        if (this.UpdateIMEIBySim.Checked == true)
                                         {
-                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                            {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                            }
-                                            else
-                                            {
-                                                //记录关联数据信息到关联表
-                                                drs.Add(new DataRelativeSheet()
-                                                {
-                                                    IMEI1 = this.IMEI_Start.Text,
-                                                    IMEI2 = this.ShowSN.Text,
-                                                    IMEI3 = this.SIMStart.Text,
-                                                    IMEI4 = "",
-                                                    IMEI5 = "",
-                                                    IMEI6 = "",
-                                                    IMEI7 = "",
-                                                    IMEI8 = "",
-                                                    IMEI9 = "",
-                                                    IMEI10 = "",
-                                                    IMEI11 = "",
-                                                    IMEI12 = "",
-                                                    ZhiDan = this.CB_ZhiDan.Text,
-                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                });
-                                                DRSB.InsertRelativeSheetBLL(drs);
-                                            }
+                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            //if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            //{
+                                            //    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            //}
+                                            //else
+                                            //{
+                                            //    //记录关联数据信息到关联表
+                                            //    drs.Add(new DataRelativeSheet()
+                                            //    {
+                                            //        IMEI1 = this.IMEI_Start.Text,
+                                            //        IMEI2 = this.ShowSN.Text,
+                                            //        IMEI3 = this.SIMStart.Text,
+                                            //        IMEI4 = "",
+                                            //        IMEI5 = "",
+                                            //        IMEI6 = "",
+                                            //        IMEI7 = "",
+                                            //        IMEI8 = "",
+                                            //        IMEI9 = "",
+                                            //        IMEI10 = "",
+                                            //        IMEI11 = "",
+                                            //        IMEI12 = "",
+                                            //        ZhiDan = this.CB_ZhiDan.Text,
+                                            //        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                            //    });
+                                            //    DRSB.InsertRelativeSheetBLL(drs);
+                                            //}
                                         }
                                         //记录打印信息日志
                                         list.Add(new PrintMessage()
@@ -3390,34 +3424,35 @@ namespace WindowsForms_print
                                             xc2 = 1;
                                         }
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (this.NoUpdateIMEI.Checked == false)
+                                        if (this.UpdateIMEIBySim.Checked == true)
                                         {
-                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
-                                            {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                            }
-                                            else
-                                            {
-                                                //记录关联数据信息到关联表
-                                                drs.Add(new DataRelativeSheet()
-                                                {
-                                                    IMEI1 = this.IMEI_Start.Text,
-                                                    IMEI2 = this.ShowSN.Text,
-                                                    IMEI3 = this.SIMStart.Text,
-                                                    IMEI4 = "",
-                                                    IMEI5 = "",
-                                                    IMEI6 = "",
-                                                    IMEI7 = "",
-                                                    IMEI8 = "",
-                                                    IMEI9 = "",
-                                                    IMEI10 = "",
-                                                    IMEI11 = "",
-                                                    IMEI12 = "",
-                                                    ZhiDan = this.CB_ZhiDan.Text,
-                                                    TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
-                                                });
-                                                DRSB.InsertRelativeSheetBLL(drs);
-                                            }
+                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            //if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            //{
+                                            //    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
+                                            //}
+                                            //else
+                                            //{
+                                            //    //记录关联数据信息到关联表
+                                            //    drs.Add(new DataRelativeSheet()
+                                            //    {
+                                            //        IMEI1 = this.IMEI_Start.Text,
+                                            //        IMEI2 = this.ShowSN.Text,
+                                            //        IMEI3 = this.SIMStart.Text,
+                                            //        IMEI4 = "",
+                                            //        IMEI5 = "",
+                                            //        IMEI6 = "",
+                                            //        IMEI7 = "",
+                                            //        IMEI8 = "",
+                                            //        IMEI9 = "",
+                                            //        IMEI10 = "",
+                                            //        IMEI11 = "",
+                                            //        IMEI12 = "",
+                                            //        ZhiDan = this.CB_ZhiDan.Text,
+                                            //        TestTime = System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")
+                                            //    });
+                                            //    DRSB.InsertRelativeSheetBLL(drs);
+                                            //}
                                         }
                                         this.IMEI_Start.Clear();
                                         this.SIMStart.Clear();
@@ -4029,12 +4064,9 @@ namespace WindowsForms_print
                                         if (PMB.InsertPrintMessageBLL(list))
                                         {
                                             //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            if (this.UpdateIMEIBySim.Checked == true)
                                             {
-                                                if (this.NoUpdateIMEI.Checked == false)
-                                                {
-                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                }
+                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                 DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
                                             }
                                             else
@@ -4164,15 +4196,11 @@ namespace WindowsForms_print
                                                     }
                                                     this.ShowSN.Text = this.SN1_num.Text;
                                                     //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                    if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                    if (this.UpdateIMEIBySim.Checked == true)
                                                     {
-                                                        if (this.NoUpdateIMEI.Checked == false)
-                                                        {
-                                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                        }
+                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                         DRSB.UpdateVIPBLL(this.IMEI_Start.Text, this.VIPStart.Text);
-                                                    }
-                                                    else
+                                                    }else
                                                     {
                                                         //记录关联数据信息到关联表
                                                         drs.Add(new DataRelativeSheet()
@@ -4534,7 +4562,7 @@ namespace WindowsForms_print
                                 DZSN = btFormat.SubStrings["SN"].Value;
                                 this.ShowSN.Text = ASS_sn;
                                 btFormat.Print();
-                                Form1.Log("关联BAT为"+this.BATStart.Text+"&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
+                                Form1.Log("关联BAT为" + this.BATStart.Text + "&&打印了IMEI号为" + this.IMEI_Start.Text + "的彩盒贴制单", null);
                                 if (this.Select_Template2.Text != "")
                                 {
                                     xc2 = 1;
@@ -4597,12 +4625,9 @@ namespace WindowsForms_print
                                     else
                                     {
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                        if (this.UpdateIMEIBySim.Checked == true)
                                         {
-                                            if (this.NoUpdateIMEI.Checked == false)
-                                            {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                            }
+                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                             DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                         }
                                         else
@@ -4770,7 +4795,7 @@ namespace WindowsForms_print
                                             //判断有无扫入SIM
                                             if (this.SIMStart.Text == "")
                                             {
-                                                //查关联表IMEI，存在的话则更新数据进去，不存在则插入一天数据
+                                                //查关联表IMEI，存在的话则更新数据进去，不存在则插入一条数据
                                                 if (DRSB.CheckIMEIBLL(this.IMEI_Start.Text))
                                                 {
                                                     DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
@@ -4800,13 +4825,10 @@ namespace WindowsForms_print
                                             }
                                             else
                                             {
-                                                //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                                if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                                //判断是否选择了“根据SIM卡号更新IMEI”复选框，选择了则更新IMEI和关联字段，无则插入一条记录
+                                                if (this.UpdateIMEIBySim.Checked == true)
                                                 {
-                                                    if (this.NoUpdateIMEI.Checked == false)
-                                                    {
-                                                        DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                                    }
+                                                    DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                     DRSB.UpdateVipAndBatBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text);
                                                 }
                                                 else
@@ -5651,12 +5673,9 @@ namespace WindowsForms_print
                                     else
                                     {
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                        if (this.UpdateIMEIBySim.Checked == true)
                                         {
-                                            if (this.NoUpdateIMEI.Checked == false)
-                                            {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                            }
+                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                             DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
                                         }
                                         else
@@ -5776,7 +5795,7 @@ namespace WindowsForms_print
                                         else
                                         {
                                             //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            if (this.UpdateIMEIBySim.Checked == true)
                                             {
                                                 DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                 DRSB.UpdateVipAndBatAndMacBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text);
@@ -5860,7 +5879,7 @@ namespace WindowsForms_print
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                 {
-                                                    if (this.NoUpdateIMEI.Checked == false)
+                                                    if (this.UpdateIMEIBySim.Checked == false)
                                                     {
                                                         DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                     }
@@ -6220,12 +6239,9 @@ namespace WindowsForms_print
                                     else
                                     {
                                         //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                        if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                        if (this.UpdateIMEIBySim.Checked == true)
                                         {
-                                            if (this.NoUpdateIMEI.Checked == false)
-                                            {
-                                                DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
-                                            }
+                                            DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                             DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
                                         }
                                         else
@@ -6347,7 +6363,7 @@ namespace WindowsForms_print
                                         else
                                         {
                                             //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
-                                            if (DRSB.CheckSIMBLL(this.SIMStart.Text))
+                                            if (this.UpdateIMEIBySim.Checked == true)
                                             {
                                                 DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                 DRSB.UpdateVipAndBatAndMacAndEquBLL(this.IMEI_Start.Text, this.VIPStart.Text, this.BATStart.Text, this.MACStart.Text, this.EquipmentStart.Text);
@@ -6432,7 +6448,7 @@ namespace WindowsForms_print
                                                 //判断关联表是否有该SIM号，有的话根据该SIM号更新IMEI，无则插入一条记录
                                                 if (DRSB.CheckSIMBLL(this.SIMStart.Text))
                                                 {
-                                                    if (this.NoUpdateIMEI.Checked == false)
+                                                    if (this.UpdateIMEIBySim.Checked == false)
                                                     {
                                                         DRSB.UpdateIMEIBySIMBLL(this.IMEI_Start.Text, this.SIMStart.Text);
                                                     }
@@ -6837,7 +6853,8 @@ namespace WindowsForms_print
             this.choose_mac.Enabled = false;
             this.choose_iccid.Enabled = false;
             this.choose_Equipment.Enabled = false;
-            this.NoUpdateIMEI.Enabled = false;
+            this.UpdateIMEIBySim.Enabled = false;
+            this.UpdataSimByImei.Enabled = false;
             this.choose_reprint.Enabled = false;
             this.NoCheckCode.Enabled = false;
             this.NoPaper.Enabled = false;
@@ -6909,7 +6926,8 @@ namespace WindowsForms_print
             this.choose_mac.Enabled = true;
             this.choose_iccid.Enabled = true;
             this.choose_Equipment.Enabled = true;
-            this.NoUpdateIMEI.Enabled = true;
+            this.UpdateIMEIBySim.Enabled = true;
+            this.UpdataSimByImei.Enabled = true;
             this.choose_reprint.Enabled = true;
             this.NoCheckCode.Enabled = true;
             this.NoPaper.Enabled = true;

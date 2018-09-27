@@ -104,7 +104,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.NoUpdateIMEI = new System.Windows.Forms.CheckBox();
+            this.UpdataSimByImei = new System.Windows.Forms.CheckBox();
+            this.UpdateIMEIBySim = new System.Windows.Forms.CheckBox();
             this.label23 = new System.Windows.Forms.Label();
             this.GLB_SN = new System.Windows.Forms.TextBox();
             this.Tempalte2Num = new System.Windows.Forms.TextBox();
@@ -161,7 +162,7 @@
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.splitContainer1.Margin = new System.Windows.Forms.Padding(2);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -197,8 +198,9 @@
             this.splitContainer1.Panel2.AutoScroll = true;
             this.splitContainer1.Panel2.BackColor = System.Drawing.Color.Linen;
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
-            this.splitContainer1.Size = new System.Drawing.Size(1700, 900);
-            this.splitContainer1.SplitterDistance = 174;
+            this.splitContainer1.Size = new System.Drawing.Size(1275, 720);
+            this.splitContainer1.SplitterDistance = 139;
+            this.splitContainer1.SplitterWidth = 3;
             this.splitContainer1.TabIndex = 0;
             // 
             // Re_Tem2
@@ -206,9 +208,10 @@
             this.Re_Tem2.AutoSize = true;
             this.Re_Tem2.Checked = true;
             this.Re_Tem2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Re_Tem2.Location = new System.Drawing.Point(1174, 16);
+            this.Re_Tem2.Location = new System.Drawing.Point(880, 13);
+            this.Re_Tem2.Margin = new System.Windows.Forms.Padding(2);
             this.Re_Tem2.Name = "Re_Tem2";
-            this.Re_Tem2.Size = new System.Drawing.Size(18, 17);
+            this.Re_Tem2.Size = new System.Drawing.Size(15, 14);
             this.Re_Tem2.TabIndex = 128;
             this.Re_Tem2.UseVisualStyleBackColor = true;
             this.Re_Tem2.Visible = false;
@@ -218,18 +221,20 @@
             this.Re_Tem1.AutoSize = true;
             this.Re_Tem1.Checked = true;
             this.Re_Tem1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Re_Tem1.Location = new System.Drawing.Point(579, 16);
+            this.Re_Tem1.Location = new System.Drawing.Point(434, 13);
+            this.Re_Tem1.Margin = new System.Windows.Forms.Padding(2);
             this.Re_Tem1.Name = "Re_Tem1";
-            this.Re_Tem1.Size = new System.Drawing.Size(18, 17);
+            this.Re_Tem1.Size = new System.Drawing.Size(15, 14);
             this.Re_Tem1.TabIndex = 127;
             this.Re_Tem1.UseVisualStyleBackColor = true;
             this.Re_Tem1.Visible = false;
             // 
             // Refresh_template
             // 
-            this.Refresh_template.Location = new System.Drawing.Point(908, 99);
+            this.Refresh_template.Location = new System.Drawing.Point(681, 79);
+            this.Refresh_template.Margin = new System.Windows.Forms.Padding(2);
             this.Refresh_template.Name = "Refresh_template";
-            this.Refresh_template.Size = new System.Drawing.Size(93, 25);
+            this.Refresh_template.Size = new System.Drawing.Size(70, 20);
             this.Refresh_template.TabIndex = 126;
             this.Refresh_template.Text = "刷新模板";
             this.Refresh_template.UseVisualStyleBackColor = true;
@@ -238,9 +243,10 @@
             // ToUnlock
             // 
             this.ToUnlock.Enabled = false;
-            this.ToUnlock.Location = new System.Drawing.Point(1213, 98);
+            this.ToUnlock.Location = new System.Drawing.Point(910, 78);
+            this.ToUnlock.Margin = new System.Windows.Forms.Padding(2);
             this.ToUnlock.Name = "ToUnlock";
-            this.ToUnlock.Size = new System.Drawing.Size(93, 25);
+            this.ToUnlock.Size = new System.Drawing.Size(70, 20);
             this.ToUnlock.TabIndex = 110;
             this.ToUnlock.Text = "解锁";
             this.ToUnlock.UseVisualStyleBackColor = true;
@@ -248,9 +254,10 @@
             // 
             // ToLock
             // 
-            this.ToLock.Location = new System.Drawing.Point(1112, 98);
+            this.ToLock.Location = new System.Drawing.Point(834, 78);
+            this.ToLock.Margin = new System.Windows.Forms.Padding(2);
             this.ToLock.Name = "ToLock";
-            this.ToLock.Size = new System.Drawing.Size(93, 26);
+            this.ToLock.Size = new System.Drawing.Size(70, 21);
             this.ToLock.TabIndex = 109;
             this.ToLock.Text = "锁定";
             this.ToLock.UseVisualStyleBackColor = true;
@@ -258,9 +265,10 @@
             // 
             // Refresh_zhidan
             // 
-            this.Refresh_zhidan.Location = new System.Drawing.Point(608, 98);
+            this.Refresh_zhidan.Location = new System.Drawing.Point(456, 78);
+            this.Refresh_zhidan.Margin = new System.Windows.Forms.Padding(2);
             this.Refresh_zhidan.Name = "Refresh_zhidan";
-            this.Refresh_zhidan.Size = new System.Drawing.Size(93, 26);
+            this.Refresh_zhidan.Size = new System.Drawing.Size(70, 21);
             this.Refresh_zhidan.TabIndex = 108;
             this.Refresh_zhidan.Text = "刷新制单";
             this.Refresh_zhidan.UseVisualStyleBackColor = true;
@@ -268,9 +276,10 @@
             // 
             // Open_file2
             // 
-            this.Open_file2.Location = new System.Drawing.Point(808, 99);
+            this.Open_file2.Location = new System.Drawing.Point(606, 79);
+            this.Open_file2.Margin = new System.Windows.Forms.Padding(2);
             this.Open_file2.Name = "Open_file2";
-            this.Open_file2.Size = new System.Drawing.Size(93, 25);
+            this.Open_file2.Size = new System.Drawing.Size(70, 20);
             this.Open_file2.TabIndex = 107;
             this.Open_file2.Text = "打开模板2";
             this.Open_file2.UseVisualStyleBackColor = true;
@@ -278,9 +287,10 @@
             // 
             // Open_file1
             // 
-            this.Open_file1.Location = new System.Drawing.Point(707, 98);
+            this.Open_file1.Location = new System.Drawing.Point(530, 78);
+            this.Open_file1.Margin = new System.Windows.Forms.Padding(2);
             this.Open_file1.Name = "Open_file1";
-            this.Open_file1.Size = new System.Drawing.Size(93, 26);
+            this.Open_file1.Size = new System.Drawing.Size(70, 21);
             this.Open_file1.TabIndex = 106;
             this.Open_file1.Text = "打开模板1";
             this.Open_file1.UseVisualStyleBackColor = true;
@@ -289,31 +299,35 @@
             // Printer1
             // 
             this.Printer1.FormattingEnabled = true;
-            this.Printer1.Location = new System.Drawing.Point(160, 58);
+            this.Printer1.Location = new System.Drawing.Point(120, 46);
+            this.Printer1.Margin = new System.Windows.Forms.Padding(2);
             this.Printer1.Name = "Printer1";
-            this.Printer1.Size = new System.Drawing.Size(415, 23);
+            this.Printer1.Size = new System.Drawing.Size(312, 20);
             this.Printer1.TabIndex = 7;
             // 
             // Printer2
             // 
             this.Printer2.FormattingEnabled = true;
-            this.Printer2.Location = new System.Drawing.Point(756, 58);
+            this.Printer2.Location = new System.Drawing.Point(567, 46);
+            this.Printer2.Margin = new System.Windows.Forms.Padding(2);
             this.Printer2.Name = "Printer2";
-            this.Printer2.Size = new System.Drawing.Size(415, 23);
+            this.Printer2.Size = new System.Drawing.Size(312, 20);
             this.Printer2.TabIndex = 6;
             // 
             // Select_Template2
             // 
-            this.Select_Template2.Location = new System.Drawing.Point(756, 12);
+            this.Select_Template2.Location = new System.Drawing.Point(567, 10);
+            this.Select_Template2.Margin = new System.Windows.Forms.Padding(2);
             this.Select_Template2.Name = "Select_Template2";
-            this.Select_Template2.Size = new System.Drawing.Size(415, 25);
+            this.Select_Template2.Size = new System.Drawing.Size(312, 21);
             this.Select_Template2.TabIndex = 5;
             // 
             // Debug_print
             // 
-            this.Debug_print.Location = new System.Drawing.Point(1010, 99);
+            this.Debug_print.Location = new System.Drawing.Point(758, 79);
+            this.Debug_print.Margin = new System.Windows.Forms.Padding(2);
             this.Debug_print.Name = "Debug_print";
-            this.Debug_print.Size = new System.Drawing.Size(93, 25);
+            this.Debug_print.Size = new System.Drawing.Size(70, 20);
             this.Debug_print.TabIndex = 105;
             this.Debug_print.Text = "调试打印";
             this.Debug_print.UseVisualStyleBackColor = true;
@@ -321,9 +335,10 @@
             // 
             // open_template2
             // 
-            this.open_template2.Location = new System.Drawing.Point(608, 12);
+            this.open_template2.Location = new System.Drawing.Point(456, 10);
+            this.open_template2.Margin = new System.Windows.Forms.Padding(2);
             this.open_template2.Name = "open_template2";
-            this.open_template2.Size = new System.Drawing.Size(127, 25);
+            this.open_template2.Size = new System.Drawing.Size(95, 20);
             this.open_template2.TabIndex = 4;
             this.open_template2.Text = "选择模板2";
             this.open_template2.UseVisualStyleBackColor = true;
@@ -334,11 +349,11 @@
             this.CB_ZhiDan.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CB_ZhiDan.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.CB_ZhiDan.FormattingEnabled = true;
-            this.CB_ZhiDan.ItemHeight = 15;
-            this.CB_ZhiDan.Location = new System.Drawing.Point(160, 99);
-            this.CB_ZhiDan.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.CB_ZhiDan.ItemHeight = 12;
+            this.CB_ZhiDan.Location = new System.Drawing.Point(120, 79);
+            this.CB_ZhiDan.Margin = new System.Windows.Forms.Padding(2);
             this.CB_ZhiDan.Name = "CB_ZhiDan";
-            this.CB_ZhiDan.Size = new System.Drawing.Size(415, 23);
+            this.CB_ZhiDan.Size = new System.Drawing.Size(312, 20);
             this.CB_ZhiDan.TabIndex = 3;
             this.CB_ZhiDan.SelectedIndexChanged += new System.EventHandler(this.CB_ZhiDan_SelectedIndexChanged);
             // 
@@ -346,10 +361,11 @@
             // 
             this.label35.AutoSize = true;
             this.label35.BackColor = System.Drawing.Color.Transparent;
-            this.label35.Location = new System.Drawing.Point(-1, 60);
+            this.label35.Location = new System.Drawing.Point(-1, 48);
+            this.label35.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label35.Name = "label35";
-            this.label35.Padding = new System.Windows.Forms.Padding(20, 2, 20, 2);
-            this.label35.Size = new System.Drawing.Size(168, 19);
+            this.label35.Padding = new System.Windows.Forms.Padding(15, 2, 15, 2);
+            this.label35.Size = new System.Drawing.Size(131, 16);
             this.label35.TabIndex = 2;
             this.label35.Text = "选择模板1打印机:";
             // 
@@ -357,10 +373,11 @@
             // 
             this.label33.AutoSize = true;
             this.label33.BackColor = System.Drawing.Color.Transparent;
-            this.label33.Location = new System.Drawing.Point(597, 60);
+            this.label33.Location = new System.Drawing.Point(448, 48);
+            this.label33.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label33.Name = "label33";
-            this.label33.Padding = new System.Windows.Forms.Padding(20, 2, 20, 2);
-            this.label33.Size = new System.Drawing.Size(168, 19);
+            this.label33.Padding = new System.Windows.Forms.Padding(15, 2, 15, 2);
+            this.label33.Size = new System.Drawing.Size(131, 16);
             this.label33.TabIndex = 2;
             this.label33.Text = "选择模板2打印机:";
             // 
@@ -368,20 +385,21 @@
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Location = new System.Drawing.Point(36, 101);
+            this.label1.Location = new System.Drawing.Point(27, 81);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Padding = new System.Windows.Forms.Padding(20, 2, 20, 2);
-            this.label1.Size = new System.Drawing.Size(130, 19);
+            this.label1.Padding = new System.Windows.Forms.Padding(15, 2, 15, 2);
+            this.label1.Size = new System.Drawing.Size(101, 16);
             this.label1.TabIndex = 2;
             this.label1.Text = "选择制单号:";
             // 
             // open_template1
             // 
             this.open_template1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.open_template1.Location = new System.Drawing.Point(12, 12);
-            this.open_template1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.open_template1.Location = new System.Drawing.Point(9, 10);
+            this.open_template1.Margin = new System.Windows.Forms.Padding(2);
             this.open_template1.Name = "open_template1";
-            this.open_template1.Size = new System.Drawing.Size(127, 25);
+            this.open_template1.Size = new System.Drawing.Size(95, 20);
             this.open_template1.TabIndex = 1;
             this.open_template1.Text = "选择模板1";
             this.open_template1.UseVisualStyleBackColor = false;
@@ -389,17 +407,17 @@
             // 
             // Select_Template1
             // 
-            this.Select_Template1.Location = new System.Drawing.Point(160, 12);
-            this.Select_Template1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Select_Template1.Location = new System.Drawing.Point(120, 10);
+            this.Select_Template1.Margin = new System.Windows.Forms.Padding(2);
             this.Select_Template1.Name = "Select_Template1";
-            this.Select_Template1.Size = new System.Drawing.Size(415, 25);
+            this.Select_Template1.Size = new System.Drawing.Size(312, 21);
             this.Select_Template1.TabIndex = 0;
             // 
             // splitContainer3
             // 
             this.splitContainer3.BackColor = System.Drawing.Color.Linen;
-            this.splitContainer3.Location = new System.Drawing.Point(3, 2);
-            this.splitContainer3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.splitContainer3.Location = new System.Drawing.Point(2, 2);
+            this.splitContainer3.Margin = new System.Windows.Forms.Padding(2);
             this.splitContainer3.Name = "splitContainer3";
             // 
             // splitContainer3.Panel1
@@ -466,7 +484,8 @@
             // 
             this.splitContainer3.Panel2.AllowDrop = true;
             this.splitContainer3.Panel2.BackColor = System.Drawing.Color.Linen;
-            this.splitContainer3.Panel2.Controls.Add(this.NoUpdateIMEI);
+            this.splitContainer3.Panel2.Controls.Add(this.UpdataSimByImei);
+            this.splitContainer3.Panel2.Controls.Add(this.UpdateIMEIBySim);
             this.splitContainer3.Panel2.Controls.Add(this.label23);
             this.splitContainer3.Panel2.Controls.Add(this.GLB_SN);
             this.splitContainer3.Panel2.Controls.Add(this.Tempalte2Num);
@@ -506,64 +525,72 @@
             this.splitContainer3.Panel2.Controls.Add(this.Re_RemindInputName);
             this.splitContainer3.Panel2.Controls.Add(this.label27);
             this.splitContainer3.Panel2.Controls.Add(this.RemindInputName);
-            this.splitContainer3.Size = new System.Drawing.Size(1690, 709);
-            this.splitContainer3.SplitterDistance = 553;
+            this.splitContainer3.Size = new System.Drawing.Size(1268, 567);
+            this.splitContainer3.SplitterDistance = 557;
+            this.splitContainer3.SplitterWidth = 3;
             this.splitContainer3.TabIndex = 0;
             // 
             // ICCID_prefix
             // 
-            this.ICCID_prefix.Location = new System.Drawing.Point(539, 470);
+            this.ICCID_prefix.Location = new System.Drawing.Point(404, 376);
+            this.ICCID_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.ICCID_prefix.Name = "ICCID_prefix";
             this.ICCID_prefix.ReadOnly = true;
-            this.ICCID_prefix.Size = new System.Drawing.Size(124, 25);
+            this.ICCID_prefix.Size = new System.Drawing.Size(94, 21);
             this.ICCID_prefix.TabIndex = 58;
             // 
             // Equipment_prefix
             // 
-            this.Equipment_prefix.Location = new System.Drawing.Point(539, 428);
+            this.Equipment_prefix.Location = new System.Drawing.Point(404, 342);
+            this.Equipment_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.Equipment_prefix.Name = "Equipment_prefix";
             this.Equipment_prefix.ReadOnly = true;
-            this.Equipment_prefix.Size = new System.Drawing.Size(124, 25);
+            this.Equipment_prefix.Size = new System.Drawing.Size(94, 21);
             this.Equipment_prefix.TabIndex = 57;
             // 
             // MAC_prefix
             // 
-            this.MAC_prefix.Location = new System.Drawing.Point(539, 384);
+            this.MAC_prefix.Location = new System.Drawing.Point(404, 307);
+            this.MAC_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.MAC_prefix.Name = "MAC_prefix";
             this.MAC_prefix.ReadOnly = true;
-            this.MAC_prefix.Size = new System.Drawing.Size(124, 25);
+            this.MAC_prefix.Size = new System.Drawing.Size(94, 21);
             this.MAC_prefix.TabIndex = 56;
             // 
             // ICCID_digits
             // 
-            this.ICCID_digits.Location = new System.Drawing.Point(452, 470);
+            this.ICCID_digits.Location = new System.Drawing.Point(339, 376);
+            this.ICCID_digits.Margin = new System.Windows.Forms.Padding(2);
             this.ICCID_digits.Name = "ICCID_digits";
             this.ICCID_digits.ReadOnly = true;
-            this.ICCID_digits.Size = new System.Drawing.Size(81, 25);
+            this.ICCID_digits.Size = new System.Drawing.Size(62, 21);
             this.ICCID_digits.TabIndex = 55;
             // 
             // Equipment_digits
             // 
-            this.Equipment_digits.Location = new System.Drawing.Point(452, 428);
+            this.Equipment_digits.Location = new System.Drawing.Point(339, 342);
+            this.Equipment_digits.Margin = new System.Windows.Forms.Padding(2);
             this.Equipment_digits.Name = "Equipment_digits";
             this.Equipment_digits.ReadOnly = true;
-            this.Equipment_digits.Size = new System.Drawing.Size(81, 25);
+            this.Equipment_digits.Size = new System.Drawing.Size(62, 21);
             this.Equipment_digits.TabIndex = 54;
             // 
             // MAC_digits
             // 
-            this.MAC_digits.Location = new System.Drawing.Point(452, 384);
+            this.MAC_digits.Location = new System.Drawing.Point(339, 307);
+            this.MAC_digits.Margin = new System.Windows.Forms.Padding(2);
             this.MAC_digits.Name = "MAC_digits";
             this.MAC_digits.ReadOnly = true;
-            this.MAC_digits.Size = new System.Drawing.Size(81, 25);
+            this.MAC_digits.Size = new System.Drawing.Size(62, 21);
             this.MAC_digits.TabIndex = 53;
             // 
             // updata_inline
             // 
             this.updata_inline.BackColor = System.Drawing.SystemColors.Control;
-            this.updata_inline.Location = new System.Drawing.Point(275, 514);
+            this.updata_inline.Location = new System.Drawing.Point(206, 411);
+            this.updata_inline.Margin = new System.Windows.Forms.Padding(2);
             this.updata_inline.Name = "updata_inline";
-            this.updata_inline.Size = new System.Drawing.Size(211, 36);
+            this.updata_inline.Size = new System.Drawing.Size(158, 29);
             this.updata_inline.TabIndex = 52;
             this.updata_inline.Text = "确定更改";
             this.updata_inline.UseVisualStyleBackColor = false;
@@ -572,464 +599,510 @@
             // 
             // VIP_prefix
             // 
-            this.VIP_prefix.Location = new System.Drawing.Point(539, 343);
+            this.VIP_prefix.Location = new System.Drawing.Point(404, 274);
+            this.VIP_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.VIP_prefix.Name = "VIP_prefix";
             this.VIP_prefix.ReadOnly = true;
-            this.VIP_prefix.Size = new System.Drawing.Size(124, 25);
+            this.VIP_prefix.Size = new System.Drawing.Size(94, 21);
             this.VIP_prefix.TabIndex = 51;
             // 
             // VIP_digits
             // 
-            this.VIP_digits.Location = new System.Drawing.Point(452, 343);
+            this.VIP_digits.Location = new System.Drawing.Point(339, 274);
+            this.VIP_digits.Margin = new System.Windows.Forms.Padding(2);
             this.VIP_digits.Name = "VIP_digits";
             this.VIP_digits.ReadOnly = true;
-            this.VIP_digits.Size = new System.Drawing.Size(81, 25);
+            this.VIP_digits.Size = new System.Drawing.Size(62, 21);
             this.VIP_digits.TabIndex = 50;
             // 
             // BAT_prefix
             // 
-            this.BAT_prefix.Location = new System.Drawing.Point(539, 225);
+            this.BAT_prefix.Location = new System.Drawing.Point(404, 180);
+            this.BAT_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.BAT_prefix.Name = "BAT_prefix";
             this.BAT_prefix.ReadOnly = true;
-            this.BAT_prefix.Size = new System.Drawing.Size(124, 25);
+            this.BAT_prefix.Size = new System.Drawing.Size(94, 21);
             this.BAT_prefix.TabIndex = 49;
             // 
             // BAT_digits
             // 
-            this.BAT_digits.Location = new System.Drawing.Point(452, 225);
+            this.BAT_digits.Location = new System.Drawing.Point(339, 180);
+            this.BAT_digits.Margin = new System.Windows.Forms.Padding(2);
             this.BAT_digits.Name = "BAT_digits";
             this.BAT_digits.ReadOnly = true;
-            this.BAT_digits.Size = new System.Drawing.Size(81, 25);
+            this.BAT_digits.Size = new System.Drawing.Size(62, 21);
             this.BAT_digits.TabIndex = 48;
             // 
             // SIM_prefix
             // 
-            this.SIM_prefix.Location = new System.Drawing.Point(539, 105);
+            this.SIM_prefix.Location = new System.Drawing.Point(404, 84);
+            this.SIM_prefix.Margin = new System.Windows.Forms.Padding(2);
             this.SIM_prefix.Name = "SIM_prefix";
             this.SIM_prefix.ReadOnly = true;
-            this.SIM_prefix.Size = new System.Drawing.Size(124, 25);
+            this.SIM_prefix.Size = new System.Drawing.Size(94, 21);
             this.SIM_prefix.TabIndex = 47;
             // 
             // SIM_digits
             // 
-            this.SIM_digits.Location = new System.Drawing.Point(452, 105);
+            this.SIM_digits.Location = new System.Drawing.Point(339, 84);
+            this.SIM_digits.Margin = new System.Windows.Forms.Padding(2);
             this.SIM_digits.Name = "SIM_digits";
             this.SIM_digits.ReadOnly = true;
-            this.SIM_digits.Size = new System.Drawing.Size(81, 25);
+            this.SIM_digits.Size = new System.Drawing.Size(62, 21);
             this.SIM_digits.TabIndex = 46;
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(320, 476);
+            this.label10.Location = new System.Drawing.Point(240, 381);
+            this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(137, 15);
+            this.label10.Size = new System.Drawing.Size(107, 12);
             this.label10.TabIndex = 45;
             this.label10.Text = "ICCID位数、前缀：";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(329, 433);
+            this.label6.Location = new System.Drawing.Point(247, 346);
+            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(127, 15);
+            this.label6.Size = new System.Drawing.Size(101, 12);
             this.label6.TabIndex = 45;
             this.label6.Text = "设备位数、前缀：";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(329, 390);
+            this.label5.Location = new System.Drawing.Point(247, 312);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(127, 15);
+            this.label5.Size = new System.Drawing.Size(101, 12);
             this.label5.TabIndex = 45;
             this.label5.Text = "蓝牙位数、前缀：";
             // 
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(336, 349);
+            this.label25.Location = new System.Drawing.Point(252, 279);
+            this.label25.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(121, 15);
+            this.label25.Size = new System.Drawing.Size(95, 12);
             this.label25.TabIndex = 45;
             this.label25.Text = "VIP位数、前缀：";
             // 
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(336, 232);
+            this.label24.Location = new System.Drawing.Point(252, 186);
+            this.label24.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(121, 15);
+            this.label24.Size = new System.Drawing.Size(95, 12);
             this.label24.TabIndex = 45;
             this.label24.Text = "BAT位数、前缀：";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(335, 112);
+            this.label4.Location = new System.Drawing.Point(251, 90);
+            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(121, 15);
+            this.label4.Size = new System.Drawing.Size(95, 12);
             this.label4.TabIndex = 45;
             this.label4.Text = "SIM位数、前缀：";
             // 
             // SN2_num
             // 
-            this.SN2_num.Location = new System.Drawing.Point(101, 104);
-            this.SN2_num.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SN2_num.Location = new System.Drawing.Point(76, 83);
+            this.SN2_num.Margin = new System.Windows.Forms.Padding(2);
             this.SN2_num.Name = "SN2_num";
             this.SN2_num.ReadOnly = true;
-            this.SN2_num.Size = new System.Drawing.Size(211, 25);
+            this.SN2_num.Size = new System.Drawing.Size(159, 21);
             this.SN2_num.TabIndex = 25;
             // 
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(15, 111);
+            this.label34.Location = new System.Drawing.Point(11, 89);
+            this.label34.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(83, 15);
+            this.label34.Size = new System.Drawing.Size(65, 12);
             this.label34.TabIndex = 44;
             this.label34.Text = "SN终止位：";
             // 
             // Remake
             // 
-            this.Remake.Location = new System.Drawing.Point(101, 470);
-            this.Remake.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Remake.Location = new System.Drawing.Point(76, 376);
+            this.Remake.Margin = new System.Windows.Forms.Padding(2);
             this.Remake.Name = "Remake";
             this.Remake.ReadOnly = true;
-            this.Remake.Size = new System.Drawing.Size(211, 25);
+            this.Remake.Size = new System.Drawing.Size(159, 21);
             this.Remake.TabIndex = 43;
             // 
             // IMEIRel
             // 
-            this.IMEIRel.Location = new System.Drawing.Point(101, 304);
-            this.IMEIRel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.IMEIRel.Location = new System.Drawing.Point(76, 243);
+            this.IMEIRel.Margin = new System.Windows.Forms.Padding(2);
             this.IMEIRel.Name = "IMEIRel";
             this.IMEIRel.ReadOnly = true;
-            this.IMEIRel.Size = new System.Drawing.Size(211, 25);
+            this.IMEIRel.Size = new System.Drawing.Size(159, 21);
             this.IMEIRel.TabIndex = 42;
             // 
             // VIP_num2
             // 
-            this.VIP_num2.Location = new System.Drawing.Point(452, 302);
-            this.VIP_num2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.VIP_num2.Location = new System.Drawing.Point(339, 242);
+            this.VIP_num2.Margin = new System.Windows.Forms.Padding(2);
             this.VIP_num2.Name = "VIP_num2";
             this.VIP_num2.ReadOnly = true;
-            this.VIP_num2.Size = new System.Drawing.Size(211, 25);
+            this.VIP_num2.Size = new System.Drawing.Size(159, 21);
             this.VIP_num2.TabIndex = 41;
             this.VIP_num2.Leave += new System.EventHandler(this.VIP_num2_Leave);
             // 
             // VIP_num1
             // 
-            this.VIP_num1.Location = new System.Drawing.Point(452, 263);
-            this.VIP_num1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.VIP_num1.Location = new System.Drawing.Point(339, 210);
+            this.VIP_num1.Margin = new System.Windows.Forms.Padding(2);
             this.VIP_num1.Name = "VIP_num1";
             this.VIP_num1.ReadOnly = true;
-            this.VIP_num1.Size = new System.Drawing.Size(211, 25);
+            this.VIP_num1.Size = new System.Drawing.Size(159, 21);
             this.VIP_num1.TabIndex = 40;
             this.VIP_num1.Leave += new System.EventHandler(this.VIP_num1_Leave);
             // 
             // BAT_num2
             // 
-            this.BAT_num2.Location = new System.Drawing.Point(452, 187);
-            this.BAT_num2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.BAT_num2.Location = new System.Drawing.Point(339, 150);
+            this.BAT_num2.Margin = new System.Windows.Forms.Padding(2);
             this.BAT_num2.Name = "BAT_num2";
             this.BAT_num2.ReadOnly = true;
-            this.BAT_num2.Size = new System.Drawing.Size(211, 25);
+            this.BAT_num2.Size = new System.Drawing.Size(159, 21);
             this.BAT_num2.TabIndex = 39;
             // 
             // BAT_num1
             // 
-            this.BAT_num1.Location = new System.Drawing.Point(452, 147);
-            this.BAT_num1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.BAT_num1.Location = new System.Drawing.Point(339, 118);
+            this.BAT_num1.Margin = new System.Windows.Forms.Padding(2);
             this.BAT_num1.Name = "BAT_num1";
             this.BAT_num1.ReadOnly = true;
-            this.BAT_num1.Size = new System.Drawing.Size(211, 25);
+            this.BAT_num1.Size = new System.Drawing.Size(159, 21);
             this.BAT_num1.TabIndex = 38;
             // 
             // SIM_num2
             // 
-            this.SIM_num2.Location = new System.Drawing.Point(452, 64);
-            this.SIM_num2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SIM_num2.Location = new System.Drawing.Point(339, 51);
+            this.SIM_num2.Margin = new System.Windows.Forms.Padding(2);
             this.SIM_num2.Name = "SIM_num2";
             this.SIM_num2.ReadOnly = true;
-            this.SIM_num2.Size = new System.Drawing.Size(211, 25);
+            this.SIM_num2.Size = new System.Drawing.Size(159, 21);
             this.SIM_num2.TabIndex = 37;
             // 
             // SIM_num1
             // 
-            this.SIM_num1.Location = new System.Drawing.Point(452, 25);
-            this.SIM_num1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SIM_num1.Location = new System.Drawing.Point(339, 20);
+            this.SIM_num1.Margin = new System.Windows.Forms.Padding(2);
             this.SIM_num1.Name = "SIM_num1";
             this.SIM_num1.ReadOnly = true;
-            this.SIM_num1.Size = new System.Drawing.Size(211, 25);
+            this.SIM_num1.Size = new System.Drawing.Size(159, 21);
             this.SIM_num1.TabIndex = 36;
             // 
             // IMEI_num2
             // 
-            this.IMEI_num2.Location = new System.Drawing.Point(101, 384);
-            this.IMEI_num2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.IMEI_num2.Location = new System.Drawing.Point(76, 307);
+            this.IMEI_num2.Margin = new System.Windows.Forms.Padding(2);
             this.IMEI_num2.Name = "IMEI_num2";
             this.IMEI_num2.ReadOnly = true;
-            this.IMEI_num2.Size = new System.Drawing.Size(211, 25);
+            this.IMEI_num2.Size = new System.Drawing.Size(159, 21);
             this.IMEI_num2.TabIndex = 35;
             // 
             // IMEI_num1
             // 
-            this.IMEI_num1.Location = new System.Drawing.Point(101, 346);
-            this.IMEI_num1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.IMEI_num1.Location = new System.Drawing.Point(76, 277);
+            this.IMEI_num1.Margin = new System.Windows.Forms.Padding(2);
             this.IMEI_num1.Name = "IMEI_num1";
             this.IMEI_num1.ReadOnly = true;
-            this.IMEI_num1.Size = new System.Drawing.Size(211, 25);
+            this.IMEI_num1.Size = new System.Drawing.Size(159, 21);
             this.IMEI_num1.TabIndex = 34;
             // 
             // SoftwareVersion
             // 
-            this.SoftwareVersion.Location = new System.Drawing.Point(101, 428);
-            this.SoftwareVersion.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SoftwareVersion.Location = new System.Drawing.Point(76, 342);
+            this.SoftwareVersion.Margin = new System.Windows.Forms.Padding(2);
             this.SoftwareVersion.Name = "SoftwareVersion";
             this.SoftwareVersion.ReadOnly = true;
-            this.SoftwareVersion.Size = new System.Drawing.Size(211, 25);
+            this.SoftwareVersion.Size = new System.Drawing.Size(159, 21);
             this.SoftwareVersion.TabIndex = 33;
             // 
             // ProductNo
             // 
-            this.ProductNo.Location = new System.Drawing.Point(101, 263);
-            this.ProductNo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ProductNo.Location = new System.Drawing.Point(76, 210);
+            this.ProductNo.Margin = new System.Windows.Forms.Padding(2);
             this.ProductNo.Name = "ProductNo";
             this.ProductNo.ReadOnly = true;
-            this.ProductNo.Size = new System.Drawing.Size(211, 25);
+            this.ProductNo.Size = new System.Drawing.Size(159, 21);
             this.ProductNo.TabIndex = 32;
             // 
             // Weight
             // 
-            this.Weight.Location = new System.Drawing.Point(101, 220);
-            this.Weight.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Weight.Location = new System.Drawing.Point(76, 176);
+            this.Weight.Margin = new System.Windows.Forms.Padding(2);
             this.Weight.Name = "Weight";
             this.Weight.ReadOnly = true;
-            this.Weight.Size = new System.Drawing.Size(211, 25);
+            this.Weight.Size = new System.Drawing.Size(159, 21);
             this.Weight.TabIndex = 30;
             // 
             // Color
             // 
-            this.Color.Location = new System.Drawing.Point(101, 180);
-            this.Color.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Color.Location = new System.Drawing.Point(76, 144);
+            this.Color.Margin = new System.Windows.Forms.Padding(2);
             this.Color.Name = "Color";
             this.Color.ReadOnly = true;
-            this.Color.Size = new System.Drawing.Size(211, 25);
+            this.Color.Size = new System.Drawing.Size(159, 21);
             this.Color.TabIndex = 29;
             // 
             // ProductDate
             // 
-            this.ProductDate.Location = new System.Drawing.Point(101, 142);
-            this.ProductDate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.ProductDate.Location = new System.Drawing.Point(76, 114);
+            this.ProductDate.Margin = new System.Windows.Forms.Padding(2);
             this.ProductDate.Name = "ProductDate";
             this.ProductDate.ReadOnly = true;
-            this.ProductDate.Size = new System.Drawing.Size(211, 25);
+            this.ProductDate.Size = new System.Drawing.Size(159, 21);
             this.ProductDate.TabIndex = 28;
             // 
             // SN1_num
             // 
-            this.SN1_num.Location = new System.Drawing.Point(101, 65);
-            this.SN1_num.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SN1_num.Location = new System.Drawing.Point(76, 52);
+            this.SN1_num.Margin = new System.Windows.Forms.Padding(2);
             this.SN1_num.Name = "SN1_num";
             this.SN1_num.ReadOnly = true;
-            this.SN1_num.Size = new System.Drawing.Size(211, 25);
+            this.SN1_num.Size = new System.Drawing.Size(159, 21);
             this.SN1_num.TabIndex = 24;
             // 
             // SoftModel
             // 
-            this.SoftModel.Location = new System.Drawing.Point(101, 25);
-            this.SoftModel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SoftModel.Location = new System.Drawing.Point(76, 20);
+            this.SoftModel.Margin = new System.Windows.Forms.Padding(2);
             this.SoftModel.Name = "SoftModel";
             this.SoftModel.ReadOnly = true;
-            this.SoftModel.Size = new System.Drawing.Size(211, 25);
+            this.SoftModel.Size = new System.Drawing.Size(159, 21);
             this.SoftModel.TabIndex = 23;
             // 
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(55, 477);
+            this.label22.Location = new System.Drawing.Point(41, 382);
+            this.label22.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(52, 15);
+            this.label22.Size = new System.Drawing.Size(41, 12);
             this.label22.TabIndex = 20;
             this.label22.Text = "备注：";
             // 
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(15, 311);
+            this.label21.Location = new System.Drawing.Point(11, 249);
+            this.label21.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(84, 15);
+            this.label21.Size = new System.Drawing.Size(65, 12);
             this.label21.TabIndex = 19;
             this.label21.Text = "IMEI绑定：";
             // 
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(366, 308);
+            this.label20.Location = new System.Drawing.Point(274, 246);
+            this.label20.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(91, 15);
+            this.label20.Size = new System.Drawing.Size(71, 12);
             this.label20.TabIndex = 18;
             this.label20.Text = "VIP终止位：";
             // 
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(366, 270);
+            this.label19.Location = new System.Drawing.Point(274, 216);
+            this.label19.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(91, 15);
+            this.label19.Size = new System.Drawing.Size(71, 12);
             this.label19.TabIndex = 17;
             this.label19.Text = "VIP起始位：";
             // 
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(366, 194);
+            this.label18.Location = new System.Drawing.Point(274, 155);
+            this.label18.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(91, 15);
+            this.label18.Size = new System.Drawing.Size(71, 12);
             this.label18.TabIndex = 16;
             this.label18.Text = "BAT终止位：";
             // 
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(366, 155);
+            this.label17.Location = new System.Drawing.Point(274, 124);
+            this.label17.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(91, 15);
+            this.label17.Size = new System.Drawing.Size(71, 12);
             this.label17.TabIndex = 15;
             this.label17.Text = "BAT起始位：";
             // 
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(366, 71);
+            this.label16.Location = new System.Drawing.Point(274, 57);
+            this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(91, 15);
+            this.label16.Size = new System.Drawing.Size(71, 12);
             this.label16.TabIndex = 14;
             this.label16.Text = "SIM终止位：";
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(366, 33);
+            this.label15.Location = new System.Drawing.Point(274, 26);
+            this.label15.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(91, 15);
+            this.label15.Size = new System.Drawing.Size(71, 12);
             this.label15.TabIndex = 13;
             this.label15.Text = "SIM起始位：";
             // 
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(7, 392);
+            this.label14.Location = new System.Drawing.Point(5, 314);
+            this.label14.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(99, 15);
+            this.label14.Size = new System.Drawing.Size(77, 12);
             this.label14.TabIndex = 12;
             this.label14.Text = "IMEI终止位：";
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(7, 353);
+            this.label13.Location = new System.Drawing.Point(5, 282);
+            this.label13.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(99, 15);
+            this.label13.Size = new System.Drawing.Size(77, 12);
             this.label13.TabIndex = 11;
             this.label13.Text = "IMEI起始位：";
             // 
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(17, 435);
+            this.label12.Location = new System.Drawing.Point(13, 348);
+            this.label12.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(82, 15);
+            this.label12.Size = new System.Drawing.Size(65, 12);
             this.label12.TabIndex = 10;
             this.label12.Text = "软件版本：";
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(37, 269);
+            this.label11.Location = new System.Drawing.Point(28, 215);
+            this.label11.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(60, 15);
+            this.label11.Size = new System.Drawing.Size(47, 12);
             this.label11.TabIndex = 9;
             this.label11.Text = "生产号:";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(47, 227);
+            this.label9.Location = new System.Drawing.Point(35, 182);
+            this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(52, 15);
+            this.label9.Size = new System.Drawing.Size(41, 12);
             this.label9.TabIndex = 7;
             this.label9.Text = "重量：";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(47, 187);
+            this.label8.Location = new System.Drawing.Point(35, 150);
+            this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(52, 15);
+            this.label8.Size = new System.Drawing.Size(41, 12);
             this.label8.TabIndex = 6;
             this.label8.Text = "颜色：";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(17, 148);
+            this.label7.Location = new System.Drawing.Point(13, 118);
+            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(82, 15);
+            this.label7.Size = new System.Drawing.Size(65, 12);
             this.label7.TabIndex = 5;
             this.label7.Text = "生产日期：";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 72);
+            this.label3.Location = new System.Drawing.Point(12, 58);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(83, 15);
+            this.label3.Size = new System.Drawing.Size(65, 12);
             this.label3.TabIndex = 1;
             this.label3.Text = "SN起始位：";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 32);
+            this.label2.Location = new System.Drawing.Point(12, 26);
+            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 15);
+            this.label2.Size = new System.Drawing.Size(65, 12);
             this.label2.TabIndex = 0;
             this.label2.Text = "软件型号：";
             // 
-            // NoUpdateIMEI
+            // UpdataSimByImei
             // 
-            this.NoUpdateIMEI.AutoSize = true;
-            this.NoUpdateIMEI.Location = new System.Drawing.Point(544, 25);
-            this.NoUpdateIMEI.Name = "NoUpdateIMEI";
-            this.NoUpdateIMEI.Size = new System.Drawing.Size(106, 19);
-            this.NoUpdateIMEI.TabIndex = 137;
-            this.NoUpdateIMEI.Text = "不更新IMEI";
-            this.NoUpdateIMEI.UseVisualStyleBackColor = true;
+            this.UpdataSimByImei.AutoSize = true;
+            this.UpdataSimByImei.Location = new System.Drawing.Point(408, 47);
+            this.UpdataSimByImei.Name = "UpdataSimByImei";
+            this.UpdataSimByImei.Size = new System.Drawing.Size(114, 16);
+            this.UpdataSimByImei.TabIndex = 138;
+            this.UpdataSimByImei.Text = "根据IMEI更新SIM";
+            this.UpdataSimByImei.UseVisualStyleBackColor = true;
+            this.UpdataSimByImei.Click += new System.EventHandler(this.UpdataSimByImei_Click);
+            // 
+            // UpdateIMEIBySim
+            // 
+            this.UpdateIMEIBySim.AutoSize = true;
+            this.UpdateIMEIBySim.Location = new System.Drawing.Point(408, 20);
+            this.UpdateIMEIBySim.Margin = new System.Windows.Forms.Padding(2);
+            this.UpdateIMEIBySim.Name = "UpdateIMEIBySim";
+            this.UpdateIMEIBySim.Size = new System.Drawing.Size(114, 16);
+            this.UpdateIMEIBySim.TabIndex = 137;
+            this.UpdateIMEIBySim.Text = "根据SIM更新IMEI";
+            this.UpdateIMEIBySim.UseVisualStyleBackColor = true;
+            this.UpdateIMEIBySim.Click += new System.EventHandler(this.UpdateIMEIBySim_Click);
             // 
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(288, 215);
+            this.label23.Location = new System.Drawing.Point(216, 172);
+            this.label23.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(83, 15);
+            this.label23.Size = new System.Drawing.Size(65, 12);
             this.label23.TabIndex = 136;
             this.label23.Text = "关联表SN：";
             // 
             // GLB_SN
             // 
-            this.GLB_SN.Location = new System.Drawing.Point(267, 235);
+            this.GLB_SN.Location = new System.Drawing.Point(200, 188);
+            this.GLB_SN.Margin = new System.Windows.Forms.Padding(2);
             this.GLB_SN.Name = "GLB_SN";
             this.GLB_SN.ReadOnly = true;
-            this.GLB_SN.Size = new System.Drawing.Size(203, 25);
+            this.GLB_SN.Size = new System.Drawing.Size(153, 21);
             this.GLB_SN.TabIndex = 135;
             // 
             // Tempalte2Num
             // 
-            this.Tempalte2Num.Location = new System.Drawing.Point(603, 236);
+            this.Tempalte2Num.Location = new System.Drawing.Point(452, 189);
+            this.Tempalte2Num.Margin = new System.Windows.Forms.Padding(2);
             this.Tempalte2Num.Name = "Tempalte2Num";
-            this.Tempalte2Num.Size = new System.Drawing.Size(99, 25);
+            this.Tempalte2Num.Size = new System.Drawing.Size(75, 21);
             this.Tempalte2Num.TabIndex = 134;
             this.Tempalte2Num.Text = "1";
             this.Tempalte2Num.Leave += new System.EventHandler(this.Tempalte2Num_Leave);
@@ -1039,20 +1112,22 @@
             this.reminder.BackColor = System.Drawing.Color.Linen;
             this.reminder.Font = new System.Drawing.Font("宋体", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.reminder.ForeColor = System.Drawing.Color.Red;
-            this.reminder.Location = new System.Drawing.Point(33, 435);
+            this.reminder.Location = new System.Drawing.Point(25, 348);
+            this.reminder.Margin = new System.Windows.Forms.Padding(2);
             this.reminder.Multiline = true;
             this.reminder.Name = "reminder";
             this.reminder.ReadOnly = true;
             this.reminder.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.reminder.Size = new System.Drawing.Size(669, 251);
+            this.reminder.Size = new System.Drawing.Size(503, 202);
             this.reminder.TabIndex = 133;
             this.reminder.WordWrap = false;
             // 
             // Tempalte1Num
             // 
-            this.Tempalte1Num.Location = new System.Drawing.Point(499, 236);
+            this.Tempalte1Num.Location = new System.Drawing.Point(374, 189);
+            this.Tempalte1Num.Margin = new System.Windows.Forms.Padding(2);
             this.Tempalte1Num.Name = "Tempalte1Num";
-            this.Tempalte1Num.Size = new System.Drawing.Size(99, 25);
+            this.Tempalte1Num.Size = new System.Drawing.Size(75, 21);
             this.Tempalte1Num.TabIndex = 131;
             this.Tempalte1Num.Text = "1";
             this.Tempalte1Num.Leave += new System.EventHandler(this.Tempalte1Num_Leave);
@@ -1060,35 +1135,39 @@
             // label38
             // 
             this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(517, 215);
+            this.label38.Location = new System.Drawing.Point(388, 172);
+            this.label38.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(143, 15);
+            this.label38.Size = new System.Drawing.Size(113, 12);
             this.label38.TabIndex = 130;
             this.label38.Text = "模板1、2打印份数：";
             // 
             // ShowSN
             // 
-            this.ShowSN.Location = new System.Drawing.Point(33, 236);
+            this.ShowSN.Location = new System.Drawing.Point(25, 189);
+            this.ShowSN.Margin = new System.Windows.Forms.Padding(2);
             this.ShowSN.Name = "ShowSN";
             this.ShowSN.ReadOnly = true;
-            this.ShowSN.Size = new System.Drawing.Size(203, 25);
+            this.ShowSN.Size = new System.Drawing.Size(153, 21);
             this.ShowSN.TabIndex = 129;
             // 
             // label37
             // 
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(46, 215);
+            this.label37.Location = new System.Drawing.Point(34, 172);
+            this.label37.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(38, 15);
+            this.label37.Size = new System.Drawing.Size(29, 12);
             this.label37.TabIndex = 128;
             this.label37.Text = "SN号";
             // 
             // choose_reprint
             // 
             this.choose_reprint.AutoSize = true;
-            this.choose_reprint.Location = new System.Drawing.Point(502, 151);
+            this.choose_reprint.Location = new System.Drawing.Point(376, 121);
+            this.choose_reprint.Margin = new System.Windows.Forms.Padding(2);
             this.choose_reprint.Name = "choose_reprint";
-            this.choose_reprint.Size = new System.Drawing.Size(18, 17);
+            this.choose_reprint.Size = new System.Drawing.Size(15, 14);
             this.choose_reprint.TabIndex = 125;
             this.choose_reprint.UseVisualStyleBackColor = true;
             this.choose_reprint.Click += new System.EventHandler(this.choose_reprint_Click);
@@ -1098,9 +1177,10 @@
             this.ParamDownload.AutoSize = true;
             this.ParamDownload.Checked = true;
             this.ParamDownload.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ParamDownload.Location = new System.Drawing.Point(412, 95);
+            this.ParamDownload.Location = new System.Drawing.Point(309, 76);
+            this.ParamDownload.Margin = new System.Windows.Forms.Padding(2);
             this.ParamDownload.Name = "ParamDownload";
-            this.ParamDownload.Size = new System.Drawing.Size(74, 19);
+            this.ParamDownload.Size = new System.Drawing.Size(60, 16);
             this.ParamDownload.TabIndex = 123;
             this.ParamDownload.Text = "查参数";
             this.ParamDownload.UseVisualStyleBackColor = true;
@@ -1111,9 +1191,10 @@
             this.WriteImei.AutoSize = true;
             this.WriteImei.Checked = true;
             this.WriteImei.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WriteImei.Location = new System.Drawing.Point(291, 95);
+            this.WriteImei.Location = new System.Drawing.Point(218, 76);
+            this.WriteImei.Margin = new System.Windows.Forms.Padding(2);
             this.WriteImei.Name = "WriteImei";
-            this.WriteImei.Size = new System.Drawing.Size(74, 19);
+            this.WriteImei.Size = new System.Drawing.Size(60, 16);
             this.WriteImei.TabIndex = 122;
             this.WriteImei.Text = "查写号";
             this.WriteImei.UseVisualStyleBackColor = true;
@@ -1124,9 +1205,10 @@
             this.Couple.AutoSize = true;
             this.Couple.Checked = true;
             this.Couple.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Couple.Location = new System.Drawing.Point(170, 95);
+            this.Couple.Location = new System.Drawing.Point(128, 76);
+            this.Couple.Margin = new System.Windows.Forms.Padding(2);
             this.Couple.Name = "Couple";
-            this.Couple.Size = new System.Drawing.Size(74, 19);
+            this.Couple.Size = new System.Drawing.Size(60, 16);
             this.Couple.TabIndex = 121;
             this.Couple.Text = "查耦合";
             this.Couple.UseVisualStyleBackColor = true;
@@ -1137,9 +1219,10 @@
             this.AutoTest.AutoSize = true;
             this.AutoTest.Checked = true;
             this.AutoTest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AutoTest.Location = new System.Drawing.Point(44, 95);
+            this.AutoTest.Location = new System.Drawing.Point(33, 76);
+            this.AutoTest.Margin = new System.Windows.Forms.Padding(2);
             this.AutoTest.Name = "AutoTest";
-            this.AutoTest.Size = new System.Drawing.Size(74, 19);
+            this.AutoTest.Size = new System.Drawing.Size(60, 16);
             this.AutoTest.TabIndex = 120;
             this.AutoTest.Text = "查功能";
             this.AutoTest.UseVisualStyleBackColor = true;
@@ -1148,9 +1231,10 @@
             // NoPaper
             // 
             this.NoPaper.AutoSize = true;
-            this.NoPaper.Location = new System.Drawing.Point(412, 59);
+            this.NoPaper.Location = new System.Drawing.Point(309, 47);
+            this.NoPaper.Margin = new System.Windows.Forms.Padding(2);
             this.NoPaper.Name = "NoPaper";
-            this.NoPaper.Size = new System.Drawing.Size(104, 19);
+            this.NoPaper.Size = new System.Drawing.Size(84, 16);
             this.NoPaper.TabIndex = 119;
             this.NoPaper.Text = "不打印贴纸";
             this.NoPaper.UseVisualStyleBackColor = true;
@@ -1159,9 +1243,10 @@
             // choose_Equipment
             // 
             this.choose_Equipment.AutoSize = true;
-            this.choose_Equipment.Location = new System.Drawing.Point(291, 59);
+            this.choose_Equipment.Location = new System.Drawing.Point(218, 47);
+            this.choose_Equipment.Margin = new System.Windows.Forms.Padding(2);
             this.choose_Equipment.Name = "choose_Equipment";
-            this.choose_Equipment.Size = new System.Drawing.Size(104, 19);
+            this.choose_Equipment.Size = new System.Drawing.Size(84, 16);
             this.choose_Equipment.TabIndex = 118;
             this.choose_Equipment.Text = "关联设备号";
             this.choose_Equipment.UseVisualStyleBackColor = true;
@@ -1170,9 +1255,10 @@
             // choose_mac
             // 
             this.choose_mac.AutoSize = true;
-            this.choose_mac.Location = new System.Drawing.Point(170, 59);
+            this.choose_mac.Location = new System.Drawing.Point(128, 47);
+            this.choose_mac.Margin = new System.Windows.Forms.Padding(2);
             this.choose_mac.Name = "choose_mac";
-            this.choose_mac.Size = new System.Drawing.Size(104, 19);
+            this.choose_mac.Size = new System.Drawing.Size(84, 16);
             this.choose_mac.TabIndex = 117;
             this.choose_mac.Text = "关联蓝牙号";
             this.choose_mac.UseVisualStyleBackColor = true;
@@ -1181,9 +1267,10 @@
             // choose_iccid
             // 
             this.choose_iccid.AutoSize = true;
-            this.choose_iccid.Location = new System.Drawing.Point(44, 59);
+            this.choose_iccid.Location = new System.Drawing.Point(33, 47);
+            this.choose_iccid.Margin = new System.Windows.Forms.Padding(2);
             this.choose_iccid.Name = "choose_iccid";
-            this.choose_iccid.Size = new System.Drawing.Size(99, 19);
+            this.choose_iccid.Size = new System.Drawing.Size(78, 16);
             this.choose_iccid.TabIndex = 116;
             this.choose_iccid.Text = "关联ICCID";
             this.choose_iccid.UseVisualStyleBackColor = true;
@@ -1191,92 +1278,102 @@
             // 
             // EquipmentStart
             // 
-            this.EquipmentStart.Location = new System.Drawing.Point(501, 374);
+            this.EquipmentStart.Location = new System.Drawing.Point(376, 299);
+            this.EquipmentStart.Margin = new System.Windows.Forms.Padding(2);
             this.EquipmentStart.Name = "EquipmentStart";
             this.EquipmentStart.ReadOnly = true;
-            this.EquipmentStart.Size = new System.Drawing.Size(203, 25);
+            this.EquipmentStart.Size = new System.Drawing.Size(153, 21);
             this.EquipmentStart.TabIndex = 115;
             this.EquipmentStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.EquipmentStart_KeyPress);
             // 
             // MACStart
             // 
-            this.MACStart.Location = new System.Drawing.Point(267, 374);
+            this.MACStart.Location = new System.Drawing.Point(200, 299);
+            this.MACStart.Margin = new System.Windows.Forms.Padding(2);
             this.MACStart.Name = "MACStart";
             this.MACStart.ReadOnly = true;
-            this.MACStart.Size = new System.Drawing.Size(203, 25);
+            this.MACStart.Size = new System.Drawing.Size(153, 21);
             this.MACStart.TabIndex = 114;
             this.MACStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MACStart_KeyPress);
             // 
             // ICCIDStart
             // 
-            this.ICCIDStart.Location = new System.Drawing.Point(33, 374);
+            this.ICCIDStart.Location = new System.Drawing.Point(25, 299);
+            this.ICCIDStart.Margin = new System.Windows.Forms.Padding(2);
             this.ICCIDStart.Name = "ICCIDStart";
             this.ICCIDStart.ReadOnly = true;
-            this.ICCIDStart.Size = new System.Drawing.Size(203, 25);
+            this.ICCIDStart.Size = new System.Drawing.Size(153, 21);
             this.ICCIDStart.TabIndex = 113;
             this.ICCIDStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ICCIDStart_KeyPress);
             // 
             // NoCheckCode
             // 
             this.NoCheckCode.AutoSize = true;
-            this.NoCheckCode.Location = new System.Drawing.Point(412, 25);
+            this.NoCheckCode.Location = new System.Drawing.Point(309, 20);
+            this.NoCheckCode.Margin = new System.Windows.Forms.Padding(2);
             this.NoCheckCode.Name = "NoCheckCode";
-            this.NoCheckCode.Size = new System.Drawing.Size(119, 19);
+            this.NoCheckCode.Size = new System.Drawing.Size(96, 16);
             this.NoCheckCode.TabIndex = 112;
             this.NoCheckCode.Text = "不打印校验码";
             this.NoCheckCode.UseVisualStyleBackColor = true;
             // 
             // BATStart
             // 
-            this.BATStart.Location = new System.Drawing.Point(499, 303);
+            this.BATStart.Location = new System.Drawing.Point(374, 242);
+            this.BATStart.Margin = new System.Windows.Forms.Padding(2);
             this.BATStart.Name = "BATStart";
             this.BATStart.ReadOnly = true;
-            this.BATStart.Size = new System.Drawing.Size(203, 25);
+            this.BATStart.Size = new System.Drawing.Size(153, 21);
             this.BATStart.TabIndex = 111;
             this.BATStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.BATStart_KeyPress);
             // 
             // label36
             // 
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(514, 353);
+            this.label36.Location = new System.Drawing.Point(386, 282);
+            this.label36.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label36.Name = "label36";
-            this.label36.Size = new System.Drawing.Size(112, 15);
+            this.label36.Size = new System.Drawing.Size(89, 12);
             this.label36.TabIndex = 110;
             this.label36.Text = "请输入设备号：";
             // 
             // label32
             // 
             this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(280, 353);
+            this.label32.Location = new System.Drawing.Point(210, 282);
+            this.label32.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label32.Name = "label32";
-            this.label32.Size = new System.Drawing.Size(112, 15);
+            this.label32.Size = new System.Drawing.Size(89, 12);
             this.label32.TabIndex = 110;
             this.label32.Text = "请输入蓝牙号：";
             // 
             // label30
             // 
             this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(46, 353);
+            this.label30.Location = new System.Drawing.Point(34, 282);
+            this.label30.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(122, 15);
+            this.label30.Size = new System.Drawing.Size(95, 12);
             this.label30.TabIndex = 110;
             this.label30.Text = "请输入ICCID号：";
             // 
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(517, 283);
+            this.label26.Location = new System.Drawing.Point(388, 226);
+            this.label26.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(106, 15);
+            this.label26.Size = new System.Drawing.Size(83, 12);
             this.label26.TabIndex = 110;
             this.label26.Text = "请输入BAT号：";
             // 
             // choose_bat
             // 
             this.choose_bat.AutoSize = true;
-            this.choose_bat.Location = new System.Drawing.Point(291, 25);
+            this.choose_bat.Location = new System.Drawing.Point(218, 20);
+            this.choose_bat.Margin = new System.Windows.Forms.Padding(2);
             this.choose_bat.Name = "choose_bat";
-            this.choose_bat.Size = new System.Drawing.Size(83, 19);
+            this.choose_bat.Size = new System.Drawing.Size(66, 16);
             this.choose_bat.TabIndex = 109;
             this.choose_bat.Text = "关联BAT";
             this.choose_bat.UseVisualStyleBackColor = true;
@@ -1285,9 +1382,10 @@
             // choose_vip
             // 
             this.choose_vip.AutoSize = true;
-            this.choose_vip.Location = new System.Drawing.Point(170, 25);
+            this.choose_vip.Location = new System.Drawing.Point(128, 20);
+            this.choose_vip.Margin = new System.Windows.Forms.Padding(2);
             this.choose_vip.Name = "choose_vip";
-            this.choose_vip.Size = new System.Drawing.Size(83, 19);
+            this.choose_vip.Size = new System.Drawing.Size(66, 16);
             this.choose_vip.TabIndex = 107;
             this.choose_vip.Text = "关联VIP";
             this.choose_vip.UseVisualStyleBackColor = true;
@@ -1296,9 +1394,10 @@
             // choose_sim
             // 
             this.choose_sim.AutoSize = true;
-            this.choose_sim.Location = new System.Drawing.Point(44, 25);
+            this.choose_sim.Location = new System.Drawing.Point(33, 20);
+            this.choose_sim.Margin = new System.Windows.Forms.Padding(2);
             this.choose_sim.Name = "choose_sim";
-            this.choose_sim.Size = new System.Drawing.Size(83, 19);
+            this.choose_sim.Size = new System.Drawing.Size(66, 16);
             this.choose_sim.TabIndex = 106;
             this.choose_sim.Text = "关联SIM";
             this.choose_sim.UseVisualStyleBackColor = true;
@@ -1306,65 +1405,69 @@
             // 
             // VIPStart
             // 
-            this.VIPStart.Location = new System.Drawing.Point(267, 303);
+            this.VIPStart.Location = new System.Drawing.Point(200, 242);
+            this.VIPStart.Margin = new System.Windows.Forms.Padding(2);
             this.VIPStart.Name = "VIPStart";
             this.VIPStart.ReadOnly = true;
-            this.VIPStart.Size = new System.Drawing.Size(203, 25);
+            this.VIPStart.Size = new System.Drawing.Size(153, 21);
             this.VIPStart.TabIndex = 102;
             this.VIPStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.VIPStart_KeyPress);
             // 
             // label31
             // 
             this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(280, 283);
+            this.label31.Location = new System.Drawing.Point(210, 226);
+            this.label31.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(106, 15);
+            this.label31.Size = new System.Drawing.Size(83, 12);
             this.label31.TabIndex = 18;
             this.label31.Text = "请输入VIP号：";
             // 
             // SIMStart
             // 
-            this.SIMStart.Location = new System.Drawing.Point(33, 302);
+            this.SIMStart.Location = new System.Drawing.Point(25, 242);
+            this.SIMStart.Margin = new System.Windows.Forms.Padding(2);
             this.SIMStart.Name = "SIMStart";
             this.SIMStart.ReadOnly = true;
-            this.SIMStart.Size = new System.Drawing.Size(203, 25);
+            this.SIMStart.Size = new System.Drawing.Size(153, 21);
             this.SIMStart.TabIndex = 101;
             this.SIMStart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SIMStart_KeyPress);
             // 
             // label29
             // 
             this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(46, 281);
+            this.label29.Location = new System.Drawing.Point(34, 225);
+            this.label29.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(106, 15);
+            this.label29.Size = new System.Drawing.Size(83, 12);
             this.label29.TabIndex = 14;
             this.label29.Text = "请输入SIM号：";
             // 
             // Re_IMEINum
             // 
-            this.Re_IMEINum.Location = new System.Drawing.Point(499, 175);
-            this.Re_IMEINum.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Re_IMEINum.Location = new System.Drawing.Point(374, 140);
+            this.Re_IMEINum.Margin = new System.Windows.Forms.Padding(2);
             this.Re_IMEINum.Name = "Re_IMEINum";
             this.Re_IMEINum.ReadOnly = true;
-            this.Re_IMEINum.Size = new System.Drawing.Size(203, 25);
+            this.Re_IMEINum.Size = new System.Drawing.Size(153, 21);
             this.Re_IMEINum.TabIndex = 11;
             this.Re_IMEINum.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Re_IMEINum_KeyPress);
             // 
             // PrintDate
             // 
-            this.PrintDate.Location = new System.Drawing.Point(267, 175);
-            this.PrintDate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.PrintDate.Location = new System.Drawing.Point(200, 140);
+            this.PrintDate.Margin = new System.Windows.Forms.Padding(2);
             this.PrintDate.Name = "PrintDate";
-            this.PrintDate.Size = new System.Drawing.Size(203, 25);
+            this.PrintDate.Size = new System.Drawing.Size(153, 21);
             this.PrintDate.TabIndex = 10;
             this.PrintDate.Leave += new System.EventHandler(this.PrintDate_Leave);
             // 
             // IMEI_Start
             // 
-            this.IMEI_Start.Location = new System.Drawing.Point(33, 175);
-            this.IMEI_Start.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.IMEI_Start.Location = new System.Drawing.Point(25, 140);
+            this.IMEI_Start.Margin = new System.Windows.Forms.Padding(2);
             this.IMEI_Start.Name = "IMEI_Start";
-            this.IMEI_Start.Size = new System.Drawing.Size(203, 25);
+            this.IMEI_Start.Size = new System.Drawing.Size(153, 21);
             this.IMEI_Start.TabIndex = 100;
             this.IMEI_Start.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.IMEI_Start_KeyPress);
             // 
@@ -1372,27 +1475,30 @@
             // 
             this.Re_RemindInputName.AutoSize = true;
             this.Re_RemindInputName.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Re_RemindInputName.Location = new System.Drawing.Point(517, 152);
+            this.Re_RemindInputName.Location = new System.Drawing.Point(388, 122);
+            this.Re_RemindInputName.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Re_RemindInputName.Name = "Re_RemindInputName";
-            this.Re_RemindInputName.Size = new System.Drawing.Size(144, 15);
+            this.Re_RemindInputName.Size = new System.Drawing.Size(113, 12);
             this.Re_RemindInputName.TabIndex = 9;
             this.Re_RemindInputName.Text = "请输入重打IMEI号：";
             // 
             // label27
             // 
             this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(288, 153);
+            this.label27.Location = new System.Drawing.Point(216, 122);
+            this.label27.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(82, 15);
+            this.label27.Size = new System.Drawing.Size(65, 12);
             this.label27.TabIndex = 8;
             this.label27.Text = "打印日期：";
             // 
             // RemindInputName
             // 
             this.RemindInputName.AutoSize = true;
-            this.RemindInputName.Location = new System.Drawing.Point(41, 153);
+            this.RemindInputName.Location = new System.Drawing.Point(31, 122);
+            this.RemindInputName.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.RemindInputName.Name = "RemindInputName";
-            this.RemindInputName.Size = new System.Drawing.Size(122, 15);
+            this.RemindInputName.Size = new System.Drawing.Size(95, 12);
             this.RemindInputName.TabIndex = 0;
             this.RemindInputName.Text = "*请输入IMEI号：";
             // 
@@ -1405,13 +1511,13 @@
             // 
             // Color_Box
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Linen;
-            this.ClientSize = new System.Drawing.Size(1700, 900);
+            this.ClientSize = new System.Drawing.Size(1275, 720);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Color_Box";
             this.Text = "彩盒贴打印";
             this.Load += new System.EventHandler(this.Color_Box_Load);
@@ -1550,6 +1656,7 @@
         private System.Windows.Forms.TextBox Tempalte2Num;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.TextBox GLB_SN;
-        private System.Windows.Forms.CheckBox NoUpdateIMEI;
+        private System.Windows.Forms.CheckBox UpdateIMEIBySim;
+        private System.Windows.Forms.CheckBox UpdataSimByImei;
     }
 }
