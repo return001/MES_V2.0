@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCP2CP", "MFCP2CP.vcxproj", "{A9CC8593-4844-4A9F-A4BB-4371940E5330}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCP1LD", "..\MFCP1LD\MFCP1LD.vcxproj", "{5D321C93-F305-476F-B31C-CC48A42FDC84}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -22,12 +20,6 @@ Global
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|Win32.Build.0 = Release|Win32
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|Win32.Deploy.0 = Release|Win32
 		{A9CC8593-4844-4A9F-A4BB-4371940E5330}.Release|x64.ActiveCfg = Release|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Debug|Win32.Build.0 = Debug|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Debug|x64.ActiveCfg = Debug|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Release|Win32.ActiveCfg = Release|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Release|Win32.Build.0 = Release|Win32
-		{5D321C93-F305-476F-B31C-CC48A42FDC84}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

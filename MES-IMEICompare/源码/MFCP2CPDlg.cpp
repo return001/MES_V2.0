@@ -1150,7 +1150,10 @@ void CMFCP2CPDlg::OnBnClickedLockButton()
 			OnBnClickedSavebindButton();
 			OnBnClickedSavesyllableButton();
 			OtherEnableWindow(TRUE);
-			RelationEnableWindow(TRUE);
+			if (m_caihejudgeCheck.GetCheck() == 0)
+			{
+				RelationEnableWindow(TRUE);
+			}
 			ImeiInputEnableWindow(FALSE);
 			SetDlgItemText(IDC_LOCK_BUTTON, L"锁定");
 			LockFlag = FALSE;
@@ -1177,7 +1180,7 @@ void CMFCP2CPDlg::OnBnClickedLockButton()
 		_variant_t Syllabletempvt;
 		CString Syllabletemp;
 		SyllablestrSql = L"";//先重置一下
-		notype = BindMap.size();
+		notype = SyllableMap.size();
 
 		//根据MAP的长度来决定循环次数
 		for (SyllableIter = CMFCP2CPDlg::SyllableMap.begin(); SyllableIter != CMFCP2CPDlg::SyllableMap.end(); SyllableIter++)
@@ -1455,7 +1458,10 @@ void CMFCP2CPDlg::OnCbnSelchangeZhidanCombo()
 	strno1 = L"NULL";
 	strno2 = L"NULL";
 	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
-	RelationEnableWindow(TRUE);
+	if (m_caihejudgeCheck.GetCheck() == 0)
+	{
+		RelationEnableWindow(TRUE);
+	}
 	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
 	CleanSyllableCheck();
 	CleanBindCheck();
@@ -1477,7 +1483,10 @@ void CMFCP2CPDlg::OnCbnSelendokZhidanCombo()
 	strno1 = L"NULL";
 	strno2 = L"NULL";
 	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
-	RelationEnableWindow(TRUE);
+	if (m_caihejudgeCheck.GetCheck() == 0)
+	{
+		RelationEnableWindow(TRUE);
+	}
 	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
 	CleanSyllableCheck();
 	CleanBindCheck();
@@ -1547,7 +1556,10 @@ void CMFCP2CPDlg::OnCbnKillfocusZhidanCombo()
 		return;
 	}
 	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
-	RelationEnableWindow(TRUE);
+	if (m_caihejudgeCheck.GetCheck() == 0)
+	{
+		RelationEnableWindow(TRUE);
+	}
 	//GetDlgItem(IDC_IMEI1_EDIT)->EnableWindow(TRUE);
 	//GetDlgItem(IDC_IMEI2_EDIT)->EnableWindow(TRUE);
 }
