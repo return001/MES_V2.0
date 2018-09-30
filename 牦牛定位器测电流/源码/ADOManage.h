@@ -42,7 +42,7 @@ public:
 
 	//测试结果表：
 	//测试后将结果以及RID等插入到数据库,若已测试过但失败的更新结果为1
-	void TestResultInsertSql(CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage, CString TestResult);
+	void TestResultInsertSql(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage11, CString SleepAverage12, CString TestResult);
 	//根据RID查找数据，找到并且测试结果为通过的则返回0，前端需提示已测试通过；查不到数据或者查到但是测试结果为不通过的则返回1，前端往下继续测试
 	int CheckTestResultByRid(CString Rid);
 

@@ -24,7 +24,8 @@ bool PowerOn();
 //全局变量
 extern CString Currentper[5];//存放五次电流
 extern float StandbyAverage;//待机电流平均值
-extern float SleepAverage;//睡眠电流平均值
+extern float SleepAverage1;//睡眠电流平均值
+extern float SleepAverage2;//睡眠电流平均值
 extern int CommandCount;//指令发送数量
 extern int CommandSendInterval;//指令发送间隔
 extern int CommandReadInterval;//指令读取间隔
@@ -61,6 +62,12 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	//获取本机信息变量和函数
+	CString m_pcnameEdit;
+	CString m_pcipEdit;
+
+	int GetLocalHostIPName(CString &sLocalName, CString &sIpAddress);
+
 	/*控件使能变量以及函数*/
 	BOOL ConnectFlag;//机型、串口和连接标志位
 	
@@ -90,8 +97,8 @@ public:
 	CString m_Port1RidValue;
 	CEdit m_SleepUpControl;
 	float m_SleepUpValue;
-	CEdit m_SleepCuControl;
-	CString m_SleepCuValue;
+	CEdit m_SleepCuControl1;
+	CString m_SleepCuValue1;
 	CEdit m_SleepDownControl;
 	float m_SleepDownValue;
 
@@ -103,7 +110,9 @@ public:
 	int CloseCom(HANDLE handler);//关闭串口
 	void GetCommPort(CComboBox *pComboBox, CString &ComNo);//获取当前串口号
 	void FindCommPort(CComboBox *pComboBox, CString &ComNo, int PortNO);//从注册表中寻找串口号
+	BOOL JudgeEu();//判断电流
 
+	afx_msg void OnCbnSelchangeModelCombo();
 	afx_msg void OnBnClickedModelconfigButton();
 	afx_msg void OnBnClickedPort1connectButton();
 	afx_msg void OnCbnKillfocusModelCombo();
@@ -121,8 +130,14 @@ public:
 	void RestPort1Thread();//重置线程变量
 	void SetPort1EditEmpty();//清除窗口
 
+
 	/*数据库模块变量以及函数*/
 
+	//插入语句
+	BOOL DBInsertOperation(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage1, CString SleepAverage2, CString TestResult);
+	//判断RID是否重复
+	int DBJudgeOperation(CString Rid);
+	
 	afx_msg void OnBnClickedDbconfigButton();
 
 
@@ -138,8 +153,6 @@ public:
 	/*其它函数以及变量*/
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
-
-
-	afx_msg void OnCbnSelchangeModelCombo();
-
+	CString m_SleepCuValue2;
+	CEdit m_SleepCuControl2;
 };

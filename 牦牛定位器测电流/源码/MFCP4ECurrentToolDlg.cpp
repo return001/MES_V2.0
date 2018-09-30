@@ -26,6 +26,9 @@ static char InstrName[] = "GPIB0::23::INSTR";//设备连接PC的串口名
 #define new DEBUG_NEW
 #endif
 
+//系统消息函数宏定义
+#define WM_MainFontControl WM_USER+1306        //字体提示消息循环
+
 //全局变量
 map<int, CString> CMFCP4ECurrentToolDlg::CommandMap;//存放所要发送的指令
 map<int, CString> CMFCP4ECurrentToolDlg::CommandReplyMap;//存放指令的回复
@@ -33,12 +36,14 @@ map<int, CString> CMFCP4ECurrentToolDlg::CommandReplyMap;//存放指令的回复
 int CommandCount;//指令发送数量
 int CommandSendInterval;//指令发送间隔
 int CommandReadInterval;//指令读取间隔
-int StandbyInterval=18000;//待机等待时间
-int SleepInterval=18000;//睡眠等待时间
+int StandbyInterval=15000;//待机等待时间
+int SleepInterval=15000;//睡眠等待时间
+int Sleep2Interval = 6000;//睡眠等待时间
 CString Port1LogName;//日志文件名
 CString Currentper[5];//存放五次电流
 float StandbyAverage;//待机电流平均值
-float SleepAverage;//睡眠电流平均值
+float SleepAverage1;//睡眠电流平均值1
+float SleepAverage2;//睡眠电流平均值2
 
 volatile BOOL s_bExit;
 volatile BOOL m_MainConrtolFlag;//主控线程标志位
@@ -49,7 +54,7 @@ volatile BOOL m_Port1SendFlag1;
 volatile BOOL m_Port1SendFlag2;
 volatile BOOL m_Port1ReadFlag1;
 volatile BOOL m_Port1ReadFlag2;
-volatile BOOL m_Port1ReadFlagEnd2;
+volatile BOOL m_Port1ReadFlagEnd1;
 
 static bool OutputEnable = false;//不知道干嘛用的
 uintptr_t* VisaNameOut = 0;//串口号
@@ -97,9 +102,10 @@ CMFCP4ECurrentToolDlg::CMFCP4ECurrentToolDlg(CWnd* pParent /*=NULL*/)
 	, m_StandbyDownValue(0)
 	, m_Port1RidValue(_T(""))
 	, m_SleepUpValue(0)
-	, m_SleepCuValue(_T(""))
+	, m_SleepCuValue1(_T(""))
 	, m_SleepDownValue(0)
 	, ConnectFlag(FALSE)
+	, m_SleepCuValue2(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -120,10 +126,12 @@ void CMFCP4ECurrentToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_PORT1RID_EDIT, m_Port1RidValue);
 	DDX_Control(pDX, IDC_SLEEPUP_EDIT, m_SleepUpControl);
 	DDX_Text(pDX, IDC_SLEEPUP_EDIT, m_SleepUpValue);
-	DDX_Control(pDX, IDC_SLEEPCU_EDIT, m_SleepCuControl);
-	DDX_Text(pDX, IDC_SLEEPCU_EDIT, m_SleepCuValue);
+	DDX_Control(pDX, IDC_SLEEPCU1_EDIT, m_SleepCuControl1);
+	DDX_Text(pDX, IDC_SLEEPCU1_EDIT, m_SleepCuValue1);
 	DDX_Control(pDX, IDC_SLEEPDOWN_EDIT, m_SleepDownControl);
 	DDX_Text(pDX, IDC_SLEEPDOWN_EDIT, m_SleepDownValue);
+	DDX_Text(pDX, IDC_SLEEPCU2_EDIT, m_SleepCuValue2);
+	DDX_Control(pDX, IDC_SLEEPCU2_EDIT, m_SleepCuControl2);
 }
 
 BEGIN_MESSAGE_MAP(CMFCP4ECurrentToolDlg, CDialogEx)
@@ -139,6 +147,7 @@ BEGIN_MESSAGE_MAP(CMFCP4ECurrentToolDlg, CDialogEx)
 	ON_CBN_KILLFOCUS(IDC_MODEL_COMBO, &CMFCP4ECurrentToolDlg::OnCbnKillfocusModelCombo)
 	ON_CBN_SELENDOK(IDC_MODEL_COMBO, &CMFCP4ECurrentToolDlg::OnCbnSelendokModelCombo)
 	ON_CBN_DROPDOWN(IDC_PORT1_COMBO, &CMFCP4ECurrentToolDlg::OnCbnDropdownPort1Combo)
+	ON_MESSAGE(WM_MainFontControl, &CMFCP4ECurrentToolDlg::MainFontControl)
 	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
@@ -178,6 +187,15 @@ BOOL CMFCP4ECurrentToolDlg::OnInitDialog()
 	//初始化机型下拉框
 	InitModelDBOperation();
 
+	//将ini配置文件信息的东西读出来
+	int intervaltime;
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("StandbyInterval"), 15000, _T(".\\SystemInfo.ini"));
+	StandbyInterval = intervaltime;//待机等待时间
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval1"), 15000, _T(".\\SystemInfo.ini"));
+	SleepInterval = intervaltime;//睡眠1等待时间
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
+	Sleep2Interval = intervaltime;//睡眠2等待时间
+
 	//初始化串口列表
 	FindCommPort((CComboBox*)GetDlgItem(IDC_PORT1_COMBO), Port1No, 1);
 
@@ -186,6 +204,11 @@ BOOL CMFCP4ECurrentToolDlg::OnInitDialog()
 
 	//字体初始化
 	fontinit();
+
+	//初始化本机信息
+	GetLocalHostIPName(m_pcnameEdit, m_pcipEdit);//调用函数获得IP和计算机名称
+	SetDlgItemText(IDC_PCIP_EDIT, m_pcipEdit);//将计算机的名称显示在名称控件中
+	SetDlgItemText(IDC_PCNAME_EDIT, m_pcnameEdit);//将计算机的IP显示在IP控件中
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -391,6 +414,15 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"断开");
 		InitEnableWindows(FALSE);
 		ConnectFlag = TRUE;
+
+		//先将ini配置文件信息的东西读出来
+		int intervaltime;
+		intervaltime=GetPrivateProfileInt(_T("IntertvalTime"), _T("StandbyInterval"), 15000, _T(".\\SystemInfo.ini"));
+		StandbyInterval = intervaltime;//待机等待时间
+		intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval1"), 15000, _T(".\\SystemInfo.ini"));
+		SleepInterval = intervaltime;//睡眠1等待时间
+		intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
+		Sleep2Interval = intervaltime;//睡眠2等待时间
 
 		//开启线程
 		ConfMeas(InstrName, CurrRange, VisaNameOut);
@@ -616,8 +648,9 @@ UINT SendPort1Thread(LPVOID lpParam)
 	//一直test，看看串口有没有连接上
 PortTest:
 	//先初始化一些变量
-	StandbyAverage=0;
-	SleepAverage=0;
+	StandbyAverage = 0;
+	SleepAverage1 = 0;
+	SleepAverage2 = 0;
 	for (int i = 0; i < 5; i++)
 	{
 		Currentper[i]=L"";
@@ -631,13 +664,6 @@ PortTest:
 
 	//同时开启读线程
 	dlg->DWThread = AfxBeginThread(ReadPort1Thread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
-
-	//if (RePortAbnomal == TRUE)//这里是如果出现异常插拔，就先停顿个2秒才继续往下跑
-	//{
-	//	Sleep(2000);
-	//}
-
-	//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"等待连接");
 
 	do
 	{
@@ -654,13 +680,17 @@ PortTest:
 
 	if (m_MainConrtolFlag == FALSE)
 	{
-		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Stop, NULL);//显示提示
+		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
 		return 0;
 	}
 	dlg->SetPort1EditEmpty();
-	dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"已连接，测试待机电流中");
+
+	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Connected, NULL);//显示提示
 
 //	RePortAbnomal = FALSE;
+
+	m_Port1ReadFlagEnd1 = TRUE;
 
 	PurgeComm(dlg->Port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//连接上了就开始测待机电流
@@ -708,8 +738,8 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
+								::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+								//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
 								reportfailflag = FALSE;
 							}
 							reporttestcount = 0;
@@ -718,8 +748,8 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常插拔");
+								::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+								//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常插拔");
 								reportfailflag = FALSE;
 								/*RePortAbnomal = TRUE;*/
 							}
@@ -742,10 +772,64 @@ PortTest:
 				m_Port1ReadFlag = FALSE;
 				goto PortTest;
 			}
-			count++;
-			Sleep(CommandSendInterval);//指令发送间隔
-		} while (m_Port1SendFlag);
-	}
+			Sleep(100);
+			//if (m_Port1ReadFlagEnd1 == FALSE)
+			//{
+			//	m_Port1SendFlag = FALSE;
+			//	m_Port1ReadFlag = FALSE;
+
+			//	if (count == CommandCount)//设定指令发送多少次
+			//	{
+			//		//一直进入发送test指令，如果检测不到，那代表它已经断开了
+			//		BOOL reporttestflag = TRUE, reportfailflag = TRUE;
+			//		int reporttestcount = 0;
+			//		char reportteststr[100];
+			//		memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+			//		DWORD reporttestreadreal = 0, reporttestdwBytesWrite, reporttestdwErrorFlags;
+			//		BOOL reporttestbReadStat, reporttestbWriteStat;
+			//		CString reportteststrread, reportteststrcommand = CMFCP4ECurrentToolDlg::CommandMap[0] + L"\r\n";
+			//		COMSTAT reporttestComStat;
+
+			//		ClearCommError(dlg->Port1handler, &reporttestdwErrorFlags, &reporttestComStat);
+
+			//		do
+			//		{
+			//			reporttestbWriteStat = WriteFile(dlg->Port1handler, CT2A(reportteststrcommand), reportteststrcommand.GetLength(), &reporttestdwBytesWrite, NULL);
+
+			//			Sleep(90);
+			//			reporttestbReadStat = ReadFile(dlg->Port1handler, reportteststr, 100, &reporttestreadreal, 0);
+			//			if (reporttestbReadStat)
+			//			{
+			//				reportteststrread = reportteststr;
+			//				if (reportteststrread.Find(CMFCP4ECurrentToolDlg::CommandReplyMap[0]) >= 0)
+			//				{
+			//					if (reportfailflag == TRUE)
+			//					{
+			//						//::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+			//						//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
+			//						reportfailflag = FALSE;
+			//					}
+			//					reporttestcount = 0;
+			//				}
+			//			}
+			//			reporttestcount++;
+			//			if (reporttestcount == 5)
+			//			{
+			//				reporttestflag = FALSE;
+			//			}
+			//			Sleep(10);
+			//			memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+			//			dlg->PrintLog(L"发:" + reportteststrcommand, 1);
+			//			PurgeComm(dlg->Port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+			//		} while (reporttestflag);
+			//		goto PortTest;
+			//	}
+			//}
+				count++;
+				Sleep(CommandSendInterval);//指令发送间隔
+			} while (m_Port1SendFlag);
+		}
+	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Standbytest, NULL);//显示提示
 
 	//第一次是读待机电流
 	Sleep(StandbyInterval);//停顿十秒
@@ -753,13 +837,15 @@ PortTest:
 	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
 	if (_isnan(StandbyAverage))
 	{
-		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常电流值，请检查电流测试仪器！！！");
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_StandbyFail, NULL);//显示提示
+		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常电流值，请检查电流测试仪器！");
 		goto PortTest;
 	}
 	else
 	{
 		CString standbyStr;
-		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"待机电流已测！请重启设备！");
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_StandbySuccess, NULL);//显示提示
+		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"待机电流已测！请重启设备！");
 		standbyStr.Format(L"%.3f", StandbyAverage);
 		dlg->SetDlgItemText(IDC_STANDBYCU_EDIT, standbyStr);
 	}
@@ -790,7 +876,8 @@ PortTest:
 		Sleep(2000);
 	} while (m_Port1SendFlag);
 
-	dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试睡眠电流中！");
+	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Sleeptest1, NULL);//显示提示
+	//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试睡眠电流中！");
 
 	PurgeComm(dlg->Port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
 	//连接到了就开始测试睡眠电流
@@ -803,7 +890,7 @@ PortTest:
 		}
 		else if (i == 2)
 		{
-			dlg->CommandNo = i+1;//然后发SLEEP指令
+			dlg->CommandNo = 3;//然后发SLEEP指令
 		}
 		strcommand = CMFCP4ECurrentToolDlg::CommandMap[dlg->CommandNo] + L"\r\n";
 		ClearCommError(dlg->Port1handler, &dwErrorFlags, &ComStat);
@@ -845,8 +932,8 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
+								::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+								//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
 								reportfailflag = FALSE;
 							}
 							reporttestcount = 0;
@@ -855,8 +942,8 @@ PortTest:
 						{
 							if (reportfailflag == TRUE)
 							{
-
-								dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常插拔");
+								::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+								//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常插拔");
 								reportfailflag = FALSE;
 								/*RePortAbnomal = TRUE;*/
 							}
@@ -886,33 +973,68 @@ PortTest:
 
 	//第二次是读睡眠电流
 	Sleep(SleepInterval);//停顿15秒
-	SleepAverage = Current() * 1000;
+	SleepAverage1 = Current() * 1000;
 	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
-	if (_isnan(StandbyAverage) || _isnan(SleepAverage))
+	if (_isnan(SleepAverage1))
 	{
-		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常电流值，请检查电流测试仪器！！！");
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_SleepFail, NULL);//显示提示
+		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常电流值，请检查电流测试仪器！！！");
 		goto PortTest;
 	}
 	else
 	{
-		CString sleepStr;
-		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"PASS！请连接下一台机子！");
-		sleepStr.Format(L"%.3f", SleepAverage);
-		dlg->SetDlgItemText(IDC_SLEEPCU_EDIT, sleepStr);
+		CString sleepStr1;
+		sleepStr1.Format(L"%.3f", SleepAverage1);
+		dlg->SetDlgItemText(IDC_SLEEPCU1_EDIT, sleepStr1);
 	}
 
+	//先停个4秒，提示重新上电
+	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Sleeptest2, NULL);//显示提示
+	Sleep(2000);
 
-	////发重启指令
-	//strcommand = dlg->CommandWriteUnit(6);
-	//ClearCommError(dlg->Port1handler, &dwErrorFlags, &ComStat);
-	//bWriteStat = WriteFile(dlg->Port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
-	//dlg->PrintLog(L"发:" + strcommand,1);
+	//提示读第二次睡眠电流
+	//::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Sleeptest2, NULL);//显示提示
+
+	//第三次也是读睡眠电流
+	Sleep(Sleep2Interval);//停顿6秒
+	SleepAverage2 = Current() * 1000;
+	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+	if (_isnan(SleepAverage2))
+	{
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_SleepFail, NULL);//显示提示
+		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常电流值，请检查电流测试仪器！！！");
+		goto PortTest;
+	}
+	else
+	{
+		CString sleepStr2;
+		sleepStr2.Format(L"%.3f", SleepAverage2);
+		dlg->SetDlgItemText(IDC_SLEEPCU2_EDIT, sleepStr2);
+	}
+
+	CString RIDstr;
+	dlg->GetDlgItemText(IDC_PORT1RID_EDIT, RIDstr);
+	//判断最终结果
+	BOOL Result,DBIntermission;
+	Result = dlg->JudgeEu();
+    //测试通过时插入正确结果
+	if (Result==TRUE)
+	{
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Success, NULL);
+		//dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, L"", dlg->m_StandbyCuValue, L"", dlg->m_SleepCuValue1, dlg->m_SleepCuValue2, L"1");
+	}
+	//测试失败时插入失败结果
+	else if (Result == FALSE)
+	{
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Fail, NULL);
+		//dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, L"", dlg->m_StandbyCuValue, L"", dlg->m_SleepCuValue1, dlg->m_SleepCuValue2, L"0");
+	}
+
 
 	if (m_MainConrtolFlag == FALSE)
 	{
 
 		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
-
 		return 0;
 	}
 	Sleep(1500);
@@ -937,7 +1059,7 @@ UINT ReadPort1Thread(LPVOID lpParam)
 	CString strread;
 	CString strcount, strcounttemp;//放RID和IMEI用
 	CString strtemp;
-	int findcount1, findcount2, Reflag;//切割读出来的字符串用
+	int findcount1, findcount2;//切割读出来的字符串用
 
 	m_Port1ReadFlag = TRUE;;//全局变量，如果等于FALSE的时候，while就会跳出循环，然后退出这个线程
 
@@ -949,6 +1071,7 @@ UINT ReadPort1Thread(LPVOID lpParam)
 		{
 			strread = str;
 			strtemp = CMFCP4ECurrentToolDlg::CommandReplyMap[dlg->CommandNo];
+			dlg->PrintLog(L"收:" + strread, 1);
 			if ((findcount1 = strread.Find(strtemp)) >= 0)
 			{
 				//读RID
@@ -961,6 +1084,15 @@ UINT ReadPort1Thread(LPVOID lpParam)
 					{
 						strcount.Replace(LPCTSTR(" "), LPCTSTR(""));
 						dlg->SetDlgItemText(IDC_PORT1RID_EDIT, strcount);
+
+						////判断RID是否重复
+						//int RIDflag;
+						//RIDflag=dlg->DBJudgeOperation(strcount);
+						//if (RIDflag == 0)
+						//{
+						//	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Alreadtest, NULL);
+						//	m_Port1ReadFlagEnd1 = FALSE;
+						//}
 					}
 					else if (strcount == "")
 					{
@@ -987,7 +1119,7 @@ void CMFCP4ECurrentToolDlg::RestPort1Thread()
 	m_Port1SendFlag2 = TRUE;
 	m_Port1ReadFlag1 = TRUE;
 	m_Port1ReadFlag2 = TRUE;
-	m_Port1ReadFlagEnd2 = TRUE;
+	m_Port1ReadFlagEnd1 = TRUE;
 }
 
 //清空RID和电流编辑框
@@ -995,7 +1127,41 @@ void CMFCP4ECurrentToolDlg::SetPort1EditEmpty()
 {
 	SetDlgItemText(IDC_PORT1RID_EDIT, L"");
 	SetDlgItemText(IDC_STANDBYCU_EDIT, L"");
-	SetDlgItemText(IDC_SLEEPCU_EDIT, L"");
+	SetDlgItemText(IDC_SLEEPCU1_EDIT, L"");
+	SetDlgItemText(IDC_SLEEPCU2_EDIT, L"");
+}
+
+//判断电流
+BOOL CMFCP4ECurrentToolDlg::JudgeEu()
+{
+	CString StandbyCuStr, SleepCuStr1, SleepCuStr2;
+	float StandbyCuF, SleepCuF1, SleepCuF2;
+
+	//判断待机电流
+	GetDlgItemText(IDC_STANDBYCU_EDIT, StandbyCuStr);
+	StandbyCuF = _ttof(StandbyCuStr);
+	if (StandbyCuF <= m_StandbyDownValue||StandbyCuF > m_StandbyUpValue)
+	{
+		return FALSE;
+	}
+	
+	//判断睡眠电流1
+	GetDlgItemText(IDC_SLEEPCU1_EDIT, SleepCuStr1);
+	SleepCuF1 = _ttof(SleepCuStr1);
+	if (SleepCuF1 <= m_SleepDownValue || SleepCuF1 > m_SleepUpValue)
+	{
+		return FALSE;
+	}
+
+	//判断睡眠电流2
+	GetDlgItemText(IDC_SLEEPCU2_EDIT, SleepCuStr2);
+	SleepCuF2 = _ttof(SleepCuStr2);
+	if (SleepCuF2 < m_SleepDownValue || SleepCuF2 > m_SleepUpValue)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 
@@ -1084,7 +1250,7 @@ double Current()
 	{
 		//仪器初始化
 		ConfMeas(InstrName, CurrRange, VisaNameOut);
-		Sleep(1000);
+		Sleep(400);
 		CMeas(InstrName, CMeasValue, CMeasValid);
 
 		if ((bool)CMeasInit)
@@ -1107,6 +1273,29 @@ double Current()
 
 
 /*数据库模块*/
+//插入语句
+BOOL CMFCP4ECurrentToolDlg::DBInsertOperation(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage1, CString SleepAverage2, CString TestResult)
+{
+	ADOManage adomanageUpdate;
+	adomanageUpdate.ConnSQL();
+	adomanageUpdate.TestResultInsertSql(ECIP, Rid, StandbyCurrent, StandbyAverage, SleepCurrent, SleepAverage1, SleepAverage2, TestResult);
+	adomanageUpdate.CloseAll();
+	return TRUE;
+}
+
+//判断RID是否重复
+int CMFCP4ECurrentToolDlg::DBJudgeOperation(CString Rid)
+{
+	ADOManage adomanageJudge;
+	CString RIDstr;
+	int judgeflag;
+	GetDlgItemText(IDC_PORT1RID_EDIT,RIDstr);
+	adomanageJudge.ConnSQL();
+	judgeflag = adomanageJudge.CheckTestResultByRid(RIDstr);
+	adomanageJudge.CloseAll();
+	return judgeflag;
+}
+
 //数据库配置按钮
 void CMFCP4ECurrentToolDlg::OnBnClickedDbconfigButton()
 {
@@ -1208,9 +1397,69 @@ CString CMFCP4ECurrentToolDlg::GetLogTime()
 
 /*字体以及颜色处理函数*/
 //字体更改的消息循环
-afx_msg LRESULT MainFontControl(WPARAM wParam, LPARAM lParam)
+afx_msg LRESULT CMFCP4ECurrentToolDlg::MainFontControl(WPARAM wParam, LPARAM lParam)
 {
-
+	switch (wParam)
+	{
+	case Main_Hint1_Ready:
+		PrintLog(L"等待连接\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"等待连接");
+		break;
+	case Main_Hint1_Connected:
+		PrintLog(L"设备已经连接，读取RID中！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"设备已经连接，读取RID中...");
+		break;
+	case Main_Hint1_Stop:
+		PrintLog(L"停止\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		break;
+	case Main_Hint1_StandbySuccess:
+		PrintLog(L"待机电流已测！请按键！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"待机电流已测！请按键！");
+		break;
+	case Main_Hint1_StandbyFail:
+		PrintLog(L"读取到非正常待机电流，请检查电流测试仪器！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常待机电流，请检查电流测试仪器！");
+		break;
+	case Main_Hint1_SleepSuccess:
+		PrintLog(L"第一次睡眠电流已测！请重新上电！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"第一次睡眠电流已测！请重新上电！");
+		break;
+	case Main_Hint1_SleepFail:
+		PrintLog(L"读取到非正常睡眠电流，请检查电流测试仪器！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"读取到非正常睡眠电流，请检查电流测试仪器！");
+		break;
+	case Main_Hint1_Success:
+		PrintLog(L"PASS！请连接下一台机子！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"PASS！请连接下一台机子！");
+		break;
+	case Main_Hint1_Fail:
+		PrintLog(L"FAIL！请连接下一台机子！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"FAIL！请连接下一台机子！");
+		break;
+	case Main_Hint1_Standbytest:
+		PrintLog(L"测试待机电流中，请等待数秒\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试待机电流中，请等待数秒");
+		break;
+	case Main_Hint1_Sleeptest1:
+		PrintLog(L"测试第一次睡眠电流中，请等待数秒\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试第一次睡眠电流中，请等待数秒");
+		break;
+	case Main_Hint1_Sleeptest2:
+		PrintLog(L"测试第二次睡眠电流中，请重新重新上电并等待数秒\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试第二次睡眠电流中，请重新重新上电并等待数秒");
+		break;
+	case Main_Hint1_AbnomalFail:
+		PrintLog(L"异常失败，等待重新连接！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常失败，等待重新连接！");
+		break;
+	case Main_Hint1_Alreadtest:
+		PrintLog(L"该机已测！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"该机已测！");
+	default:
+		break;
+	}
+	return 0;
 }
 
 //初始化字体
@@ -1220,20 +1469,25 @@ void CMFCP4ECurrentToolDlg::fontinit()
 	editfont.CreatePointFont(200, L"黑体");
 
 	GetDlgItem(IDC_STANDBYCU_EDIT)->SetFont(&editfont);
-	GetDlgItem(IDC_SLEEPCU_EDIT)->SetFont(&editfont);
+	GetDlgItem(IDC_SLEEPCU1_EDIT)->SetFont(&editfont);
+	GetDlgItem(IDC_SLEEPCU2_EDIT)->SetFont(&editfont);
 	GetDlgItem(IDC_PORT1HINT_STATIC)->SetFont(&staticHint1font);
 }
 
+//颜色变化
 HBRUSH CMFCP4ECurrentToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
 
 	// TODO:  在此更改 DC 的任何特性
 	CString str1;
+	CString StandbyCuStr, SleepCuStr1, SleepCuStr2;
+	float StandbyCuF, SleepCuF1, SleepCuF2;
+
 	if (pWnd->GetDlgCtrlID() == IDC_PORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
-		if (str1 == "待机电流已测！请重启设备！")
+		if (str1 == "待机电流已测！请按键！" || str1 == "测试第二次睡眠电流中，请重新重新上电并等待数秒")
 		{
 			m_brush.CreateSolidBrush(RGB(255, 165, 0));
 			pDC->SetBkColor(RGB(255, 165, 0));
@@ -1244,6 +1498,13 @@ HBRUSH CMFCP4ECurrentToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		{
 			m_brush.CreateSolidBrush(RGB(50, 205, 50));
 			pDC->SetBkColor(RGB(50, 205, 50));
+			pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+			return m_brush;
+		}
+		else if (str1 == "FAIL！请连接下一台机子！" || str1 == "异常失败，等待重新连接！" || str1.Find(L"非正常") >= 0 || str1 == "该机已测！")
+		{
+			m_brush.CreateSolidBrush(RGB(255, 0, 0));
+			pDC->SetBkColor(RGB(255, 0, 0));
 			pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
 			return m_brush;
 		}
@@ -1263,12 +1524,121 @@ HBRUSH CMFCP4ECurrentToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		//	pDC->SelectObject(&staticReHintfont);
 		//}
 	}
+	else if (pWnd->GetDlgCtrlID() == IDC_STANDBYCU_EDIT)
+	{
+		GetDlgItemText(IDC_STANDBYCU_EDIT, StandbyCuStr);
+		if (StandbyCuStr != "")
+		{
+			StandbyCuF = _ttof(StandbyCuStr);
+			if (StandbyCuF > m_StandbyDownValue&&StandbyCuF <= m_StandbyUpValue)
+			{
+				m_brush.CreateSolidBrush(RGB(50, 205, 50));
+				pDC->SetBkColor(RGB(50, 205, 50));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+			else
+			{
+				m_brush.CreateSolidBrush(RGB(255, 0, 0));
+				pDC->SetBkColor(RGB(255, 0, 0));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+		}
+	}
+	else if (pWnd->GetDlgCtrlID() == IDC_SLEEPCU1_EDIT)
+	{
+		GetDlgItemText(IDC_SLEEPCU1_EDIT, SleepCuStr1);
+		if (SleepCuStr1 != "")
+		{
+			SleepCuF1 = _ttof(SleepCuStr1);
+			if (SleepCuF1 > m_SleepDownValue&&SleepCuF1 <= m_SleepUpValue)
+			{
+				m_brush.CreateSolidBrush(RGB(50, 205, 50));
+				pDC->SetBkColor(RGB(50, 205, 50));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+			else
+			{
+				m_brush.CreateSolidBrush(RGB(255, 0, 0));
+				pDC->SetBkColor(RGB(255, 0, 0));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+		}
+	}
+	else if (pWnd->GetDlgCtrlID() == IDC_SLEEPCU2_EDIT)
+	{
+		GetDlgItemText(IDC_SLEEPCU2_EDIT, SleepCuStr2);
+		if (SleepCuStr2 != "")
+		{
+			SleepCuF2 = _ttof(SleepCuStr2);
+			if (SleepCuF2 > m_SleepDownValue&&SleepCuF2 <= m_SleepUpValue)
+			{
+				m_brush.CreateSolidBrush(RGB(50, 205, 50));
+				pDC->SetBkColor(RGB(50, 205, 50));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+			else
+			{
+				m_brush.CreateSolidBrush(RGB(255, 0, 0));
+				pDC->SetBkColor(RGB(255, 0, 0));
+				pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
+				return m_brush;
+			}
+		}
+	}
+
 	// TODO:  如果默认的不是所需画笔，则返回另一个画笔
 	return hbr;
 }
 
 
 /*其它函数*/
+//获取本机IP和地址
+int CMFCP4ECurrentToolDlg::GetLocalHostIPName(CString &sLocalName, CString &sIpAddress)
+{
+	char szLocalName[256];//定义
+	WSADATA wsaData;//定义套接字存储变量
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) == 0)//<span class="con">windows初始化socket网络库，申请2，0的版本，windows socket编程必<img class="selectsearch-hide" id="selectsearch-icon" alt="搜索" src="http://img.baidu.com/img/iknow/qb/select-search.png" />须先初始化。如果出错,则返回0</span>
+	{
+		if (gethostname(szLocalName, sizeof(szLocalName)) != 0)//产生错误
+		{
+			sLocalName = _T("没有取得");
+			WSACleanup();
+			return GetLastError();
+		}
+		else
+		{
+			sLocalName = szLocalName;//用sLocalName变量存储获得的计算机名称
+			struct hostent FAR * lpHostEnt = gethostbyname(CStringA(sLocalName));
+			if (lpHostEnt == NULL)//错误
+			{
+				sIpAddress = _T("");
+				WSACleanup();
+				return GetLastError();
+			}
+			LPSTR lpAddr = lpHostEnt->h_addr_list[0];//获取IP地址
+			if (lpAddr)
+			{
+				struct in_addr inAddr;
+				memmove(&inAddr, lpAddr, 4);
+				sIpAddress = inet_ntoa(inAddr);//转换为标准格式
+				if (sIpAddress.IsEmpty())
+				{
+					sIpAddress = _T("没有取得");
+					WSACleanup();
+					return 1;
+				}
+			}
+		}
+	}
+	WSACleanup();//清空套接字初始化变量
+	return 0;
+}
+
 //确定按钮
 void CMFCP4ECurrentToolDlg::OnBnClickedOk()
 {
@@ -1288,7 +1658,4 @@ void CMFCP4ECurrentToolDlg::OnBnClickedCancel()
 
 	CDialogEx::OnCancel();
 }
-
-
-
 

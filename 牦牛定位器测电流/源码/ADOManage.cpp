@@ -227,6 +227,81 @@ _RecordsetPtr ADOManage::MOBAN(CString str1, CString str2)
 
 }
 
+//测试后将结果以及RID等插入到数据库,若已测试过但失败的更新结果为1
+void ADOManage::TestResultInsertSql(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage1, CString SleepAverage2, CString TestResult)
+{
+	//初始化Recordset指针
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//参数
+	_variant_t Affectline;
+	int AffectLine = 0;
+	CString strSql;
+	int TResult;
+
+	//判断该Rid是否测试通过
+	strSql = _T("SELECT *FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + Rid + _T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+	//为真就代表没查出任何数据
+	if (m_pRecordSet->adoEOF)
+	{
+		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("](ECIP,Rid,StandbyCurrent,StandbyAverage,SleepCurrent,SleepAverage1,SleepAverage2,TestResult,TestTime)values('") + ECIP + _T("','") + Rid + _T("','")
+			+ StandbyCurrent + _T("', '") + StandbyAverage + _T("', '") + SleepCurrent + _T("', '") + SleepAverage1 + _T("','") + SleepAverage2 + _T("','") + TestResult + _T("','") + GetTime() + _T("')");//具体执行的SQL语句
+		try
+		{
+			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+		}
+		catch (_com_error &e)
+		{
+			e.Description();
+			//AfxMessageBox(e.Description());/*打印出异常原因*/
+		}
+	}
+	//查出了数据
+	else if (!m_pRecordSet->adoEOF) {
+		//判断之前的测试结果是否为0
+		TResult = m_pRecordSet->GetCollect("TestResult");
+		if (TResult == 0)
+		{
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET TestResult = '1',ECIP ='") + ECIP + _T("',StandbyCurrent = '") + StandbyCurrent + _T("',StandbyAverage = '") + StandbyAverage + _T("',SleepCurrent ='") + SleepCurrent + _T("',SleepAverage1='") + SleepAverage1 + _T("',SleepAverage2 ='") + SleepAverage1 + _T("' Where Rid ='") + Rid + _T("'");
+			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+		}
+	}
+}
+
+//根据RID查找数据，找到并且测试结果为通过的则返回0，前端需提示已测试通过；查不到数据或者查到但是测试结果为不通过的则返回1，前端往下继续测试
+int ADOManage::CheckTestResultByRid(CString Rid)
+{
+	//初始化Recordset指针
+	m_pRecordSet.CreateInstance(__uuidof(Recordset));
+	//参数
+	_variant_t Affectline;
+	int AffectLine = 0;
+	CString strSql;
+	int TResult;
+
+	//根据Rid查找数据库
+	strSql = _T("SELECT *FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("] WHERE [RID]='") + Rid + _T("'");
+	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+	//为真就代表没查出任何数据
+	if (m_pRecordSet->adoEOF)
+	{
+		return 1;
+	}
+	//查出了数据
+	else if (!m_pRecordSet->adoEOF) {
+		//判断之前的测试结果是否为0
+		TResult = m_pRecordSet->GetCollect("TestResult");
+		if (TResult == 0)
+		{
+			return 1;
+		}
+		else if (TResult == 1)
+		{
+			return 0;
+		}
+	}
+}
+
 //添加配置信息
 void ADOManage::ConfigInsertSql(CString ModelName, float StandbyUp, float StandbyDown, float SleepUP, float SleepDown, CString TestCommand, CString TestCommandReply, CString RidCommand, CString RidCommandReply, CString StandbyCommand, CString StandbyCommandReply, CString SleepCommand, CString SleepCommandReply, int Count, int ReadTime, int WriteTime)
 {
@@ -236,7 +311,6 @@ void ADOManage::ConfigInsertSql(CString ModelName, float StandbyUp, float Standb
 	_variant_t Affectline;
 	int AffectLine = 0;
 	CString strSql;
-	int TResult;
 
 	//根据机型名称查找数据库
 	strSql = _T("SELECT *FROM [") + m_Firstdbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [ModelName]='") + ModelName + _T("'");
