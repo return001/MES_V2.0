@@ -20,7 +20,7 @@
 #include "Keysight34461A.h"
 #pragma comment(lib,"IT6400.lib")
 #pragma comment(lib,"Keysight34461A.lib")
-static char InstrName[] = "GPIB0::23::INSTR";//设备连接PC的串口名
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,10 +40,15 @@ int StandbyInterval=15000;//待机等待时间
 int SleepInterval=15000;//睡眠等待时间
 int Sleep2Interval = 6000;//睡眠等待时间
 CString Port1LogName;//日志文件名
-CString Currentper[5];//存放五次电流
+CString StandbyFiveCurrent;//存放五次待机电流
+CString SleepFiveCurrent1;//存放五次第一次睡眠电流
+CString SleepFiveCurrent2;//存放五次第二次睡眠电流
+CString TempFiveCurrent;//存放五次临时电流
 float StandbyAverage;//待机电流平均值
 float SleepAverage1;//睡眠电流平均值1
 float SleepAverage2;//睡眠电流平均值2
+char InstrName[20] = "GPIB0::5::INSTR";//设备连接PC的串口名
+int TestCurrentCount=3;//电流测试次数
 
 volatile BOOL s_bExit;
 volatile BOOL m_MainConrtolFlag;//主控线程标志位
@@ -403,6 +408,18 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 			return;
 		}
 
+		//判断电源是否启动
+		BOOL PowerFlag=TRUE;
+		PowerFlag=PowerOn();
+		if (PowerFlag==FALSE)
+		{
+			SetRicheditText(L"电压设置不成功", 1);
+			PrintLog(L"电压设置不成功", 1);
+			MessageBox(L"提示，请查看电压设置是否正确！",L"提示信息",NULL);
+			return;
+		}
+
+		//判断串口有没有开启成功
 		Port1handler = InitCom(Port1No);
 		if (Port1handler == NULL)
 		{
@@ -410,6 +427,8 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 			PrintLog(L"开启串口失败", 1);
 			return;
 		}
+
+
 
 		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"断开");
 		InitEnableWindows(FALSE);
@@ -423,7 +442,13 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 		SleepInterval = intervaltime;//睡眠1等待时间
 		intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
 		Sleep2Interval = intervaltime;//睡眠2等待时间
-
+		
+		//要将CString转化成数组
+		CString str;
+		GetPrivateProfileString(_T("OrtherConfig"), _T("InstrName"), _T(""), str.GetBuffer(20), 20, _T(".\\SystemInfo.ini"));
+		strcpy(InstrName, CStringA(str)); //向数组复制数据
+		str.ReleaseBuffer();
+		
 		//开启线程
 		ConfMeas(InstrName, CurrRange, VisaNameOut);
 		s_bExit = FALSE;
@@ -449,6 +474,11 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 
 		s_bExit = TRUE;
 		m_MainConrtolFlag = FALSE;
+		m_Port1SendFlag1 = FALSE;
+		m_Port1SendFlag2 = FALSE;
+		m_Port1ReadFlag1 = FALSE;
+		m_Port1ReadFlag2 = FALSE;
+		m_Port1ReadFlagEnd1 = FALSE;
 	}
 }
 
@@ -645,16 +675,24 @@ UINT SendPort1Thread(LPVOID lpParam)
 	//放指令用变量
 	CString strcommand;
 
+	//其它通用变量
+	CString standbyStr,sleepStr1,sleepStr2;
+
 	//一直test，看看串口有没有连接上
 PortTest:
+	//将连接按钮置为可选
+	dlg->GetDlgItem(IDC_PORT1CONNECT_BUTTON)->EnableWindow(TRUE);
 	//先初始化一些变量
 	StandbyAverage = 0;
 	SleepAverage1 = 0;
 	SleepAverage2 = 0;
-	for (int i = 0; i < 5; i++)
-	{
-		Currentper[i]=L"";
-	}
+	standbyStr = L"";
+	sleepStr1 = L""; 
+	sleepStr2 = L"";
+	StandbyFiveCurrent = L"";
+	SleepFiveCurrent1 = L"";
+	SleepFiveCurrent2 = L"";
+
 	m_Port1SendFlag = TRUE;
 	dlg->CommandNo = 0;
 	strcommand = CMFCP4ECurrentToolDlg::CommandMap[dlg->CommandNo] + L"\r\n";
@@ -677,6 +715,9 @@ PortTest:
 		}
 		Sleep(2000);
 	} while (m_Port1SendFlag);
+
+	//将连接按钮置为可选
+	dlg->GetDlgItem(IDC_PORT1CONNECT_BUTTON)->EnableWindow(FALSE);
 
 	if (m_MainConrtolFlag == FALSE)
 	{
@@ -773,68 +814,106 @@ PortTest:
 				goto PortTest;
 			}
 			Sleep(100);
-			//if (m_Port1ReadFlagEnd1 == FALSE)
-			//{
-			//	m_Port1SendFlag = FALSE;
-			//	m_Port1ReadFlag = FALSE;
+			count++;
+			Sleep(CommandSendInterval);//指令发送间隔
+		} while (m_Port1SendFlag);
+	}
 
-			//	if (count == CommandCount)//设定指令发送多少次
-			//	{
-			//		//一直进入发送test指令，如果检测不到，那代表它已经断开了
-			//		BOOL reporttestflag = TRUE, reportfailflag = TRUE;
-			//		int reporttestcount = 0;
-			//		char reportteststr[100];
-			//		memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
-			//		DWORD reporttestreadreal = 0, reporttestdwBytesWrite, reporttestdwErrorFlags;
-			//		BOOL reporttestbReadStat, reporttestbWriteStat;
-			//		CString reportteststrread, reportteststrcommand = CMFCP4ECurrentToolDlg::CommandMap[0] + L"\r\n";
-			//		COMSTAT reporttestComStat;
+	//如果RID重复，而且机子还连接着，就让程序一直卡在这里不要从头开始
+	if (m_Port1ReadFlagEnd1 == FALSE)
+	{
+		m_Port1SendFlag = FALSE;
+		m_Port1ReadFlag = FALSE;
 
-			//		ClearCommError(dlg->Port1handler, &reporttestdwErrorFlags, &reporttestComStat);
+		//一直进入发送test指令，如果检测不到，那代表它已经断开了
+		BOOL reporttestflag = TRUE, reportfailflag = TRUE;
+		int reporttestcount = 0;
+		char reportteststr[100];
+		memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+		DWORD reporttestreadreal = 0, reporttestdwBytesWrite, reporttestdwErrorFlags;
+		BOOL reporttestbReadStat, reporttestbWriteStat;
+		CString reportteststrread, reportteststrcommand = CMFCP4ECurrentToolDlg::CommandMap[0] + L"\r\n";
+		COMSTAT reporttestComStat;
 
-			//		do
-			//		{
-			//			reporttestbWriteStat = WriteFile(dlg->Port1handler, CT2A(reportteststrcommand), reportteststrcommand.GetLength(), &reporttestdwBytesWrite, NULL);
+		ClearCommError(dlg->Port1handler, &reporttestdwErrorFlags, &reporttestComStat);
 
-			//			Sleep(90);
-			//			reporttestbReadStat = ReadFile(dlg->Port1handler, reportteststr, 100, &reporttestreadreal, 0);
-			//			if (reporttestbReadStat)
-			//			{
-			//				reportteststrread = reportteststr;
-			//				if (reportteststrread.Find(CMFCP4ECurrentToolDlg::CommandReplyMap[0]) >= 0)
-			//				{
-			//					if (reportfailflag == TRUE)
-			//					{
-			//						//::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
-			//						//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
-			//						reportfailflag = FALSE;
-			//					}
-			//					reporttestcount = 0;
-			//				}
-			//			}
-			//			reporttestcount++;
-			//			if (reporttestcount == 5)
-			//			{
-			//				reporttestflag = FALSE;
-			//			}
-			//			Sleep(10);
-			//			memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
-			//			dlg->PrintLog(L"发:" + reportteststrcommand, 1);
-			//			PurgeComm(dlg->Port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
-			//		} while (reporttestflag);
-			//		goto PortTest;
-			//	}
-			//}
-				count++;
-				Sleep(CommandSendInterval);//指令发送间隔
-			} while (m_Port1SendFlag);
-		}
+		do
+		{
+			reporttestbWriteStat = WriteFile(dlg->Port1handler, CT2A(reportteststrcommand), reportteststrcommand.GetLength(), &reporttestdwBytesWrite, NULL);
+
+			Sleep(90);
+			reporttestbReadStat = ReadFile(dlg->Port1handler, reportteststr, 100, &reporttestreadreal, 0);
+			if (reporttestbReadStat)
+			{
+				reportteststrread = reportteststr;
+				if (reportteststrread.Find(CMFCP4ECurrentToolDlg::CommandReplyMap[0]) >= 0)
+				{
+					if (reportfailflag == TRUE)
+					{
+						//::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalFail, NULL);//显示提示
+						//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"失败待重启");
+						reportfailflag = FALSE;
+					}
+					reporttestcount = 0;
+				}
+			}
+			reporttestcount++;
+			if (reporttestcount == 5)
+			{
+				reporttestflag = FALSE;
+			}
+			Sleep(10);
+			memset(reportteststr, 0, sizeof(reportteststr) / sizeof(reportteststr[0]));
+			dlg->PrintLog(L"发:" + reportteststrcommand, 1);
+			PurgeComm(dlg->Port1handler, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_TXABORT);
+		} while (reporttestflag);
+		m_Port1ReadFlag = FALSE;
+		Sleep(500);
+		goto PortTest;
+	}
+
 	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Standbytest, NULL);//显示提示
 
 	//第一次是读待机电流
 	Sleep(StandbyInterval);//停顿十秒
-	StandbyAverage = Current() * 1000;
+	CurrRange = 0.001;
 	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+	Sleep(10);
+
+	//给三次机会，只要其中某次读到的电流在指定范围之内就算通过，否则的话就返回test指令那里
+	for (int i = 0; i < TestCurrentCount; i++)
+	{
+		StandbyAverage = Current() * 1000;
+
+		//先看一下电流是否异常
+		if (_isnan(StandbyAverage))
+		{
+			::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_StandbyFail, NULL);
+			goto PortTest;
+		}
+
+		//然后判断电流范围，正常的话就直接break出去，假设范围不对又是第三次测试，那就直接报电流值错误然后跳回test指令
+		if (StandbyAverage > dlg->m_StandbyDownValue&&StandbyAverage <= dlg->m_StandbyUpValue)
+		{
+			break;
+		}
+		else if (i==2)
+		{
+			::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalCurrent, NULL);
+			standbyStr.Format(L"%.3f", StandbyAverage);
+			dlg->SetDlgItemText(IDC_STANDBYCU_EDIT, standbyStr);
+			CurrRange = 3;
+			ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+		    goto PortTest;
+		}
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_WaitReTest, NULL);
+		Sleep(10);
+	}
+
+	CurrRange = 3;
+	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+
+	//显示成功
 	if (_isnan(StandbyAverage))
 	{
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_StandbyFail, NULL);//显示提示
@@ -843,9 +922,9 @@ PortTest:
 	}
 	else
 	{
-		CString standbyStr;
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_StandbySuccess, NULL);//显示提示
 		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"待机电流已测！请重启设备！");
+		StandbyFiveCurrent=TempFiveCurrent;
 		standbyStr.Format(L"%.3f", StandbyAverage);
 		dlg->SetDlgItemText(IDC_STANDBYCU_EDIT, standbyStr);
 	}
@@ -890,7 +969,7 @@ PortTest:
 		}
 		else if (i == 2)
 		{
-			dlg->CommandNo = 3;//然后发SLEEP指令
+			dlg->CommandNo = i + 1;//然后发SLEEP指令
 		}
 		strcommand = CMFCP4ECurrentToolDlg::CommandMap[dlg->CommandNo] + L"\r\n";
 		ClearCommError(dlg->Port1handler, &dwErrorFlags, &ComStat);
@@ -973,7 +1052,41 @@ PortTest:
 
 	//第二次是读睡眠电流
 	Sleep(SleepInterval);//停顿15秒
-	SleepAverage1 = Current() * 1000;
+	CurrRange = 0.001;
+	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+	Sleep(10);
+
+	//给三次机会，只要其中某次读到的电流在指定范围之内就算通过，否则的话就返回test指令那里
+	for (int i = 0; i < TestCurrentCount; i++)
+	{
+		SleepAverage1 = Current() * 1000;
+
+		//先看一下电流是否异常
+		if (_isnan(SleepAverage1))
+		{
+			::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_SleepFail, NULL);
+			goto PortTest;
+		}
+
+		//然后判断电流范围，正常的话就直接break出去，假设范围不对又是第三次测试，那就直接报电流值错误然后跳回test指令
+		if (SleepAverage1 > dlg->m_SleepDownValue&&SleepAverage1 <= dlg->m_SleepUpValue)
+		{
+			break;
+		}
+		else if (i == 2)
+		{
+			sleepStr1.Format(L"%.3f", SleepAverage1);
+			dlg->SetDlgItemText(IDC_SLEEPCU1_EDIT, sleepStr1);
+			::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_AbnomalCurrent, NULL);
+			CurrRange = 3;
+			ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+			goto PortTest;
+		}
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_WaitReTest, NULL);
+		Sleep(10);
+	}
+
+	CurrRange = 3;
 	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
 	if (_isnan(SleepAverage1))
 	{
@@ -983,9 +1096,9 @@ PortTest:
 	}
 	else
 	{
-		CString sleepStr1;
 		sleepStr1.Format(L"%.3f", SleepAverage1);
 		dlg->SetDlgItemText(IDC_SLEEPCU1_EDIT, sleepStr1);
+		SleepFiveCurrent1 = TempFiveCurrent;
 	}
 
 	//先停个4秒，提示重新上电
@@ -997,7 +1110,32 @@ PortTest:
 
 	//第三次也是读睡眠电流
 	Sleep(Sleep2Interval);//停顿6秒
-	SleepAverage2 = Current() * 1000;
+	CurrRange = 0.001;
+	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
+	Sleep(10);
+
+	//给三次机会，只要其中某次读到的电流在指定范围之内就算通过，否则的话就返回test指令那里
+	for (int i = 0; i < TestCurrentCount; i++)
+	{
+		SleepAverage2 = Current() * 1000;
+
+		//先看一下电流是否异常
+		if (_isnan(SleepAverage2))
+		{
+			::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_SleepFail, NULL);
+			goto PortTest;
+		}
+
+		//然后判断电流范围，正常的话就直接break出去，假设范围不对又是第三次测试，那就直接报电流值错误然后跳回test指令
+		if (SleepAverage2 > dlg->m_SleepDownValue&&SleepAverage2 <= dlg->m_SleepUpValue)
+		{
+			break;
+		}
+		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_WaitReTest, NULL);
+		Sleep(10);
+	}
+
+	CurrRange = 3;
 	ConfMeas(InstrName, CurrRange, VisaNameOut);//初始化仪器，确保仪器处于我们设定的状态
 	if (_isnan(SleepAverage2))
 	{
@@ -1007,27 +1145,37 @@ PortTest:
 	}
 	else
 	{
-		CString sleepStr2;
 		sleepStr2.Format(L"%.3f", SleepAverage2);
 		dlg->SetDlgItemText(IDC_SLEEPCU2_EDIT, sleepStr2);
+		SleepFiveCurrent2 = TempFiveCurrent;
 	}
 
-	CString RIDstr;
+	CString RIDstr,tempStandbyStr, tempSleepStr1, tempSleepStr2;
 	dlg->GetDlgItemText(IDC_PORT1RID_EDIT, RIDstr);
+	dlg->GetDlgItemText(IDC_STANDBYCU_EDIT,tempStandbyStr);
+	dlg->GetDlgItemText(IDC_SLEEPCU1_EDIT, tempSleepStr1);
+	dlg->GetDlgItemText(IDC_SLEEPCU2_EDIT, tempSleepStr2);
+
 	//判断最终结果
 	BOOL Result,DBIntermission;
 	Result = dlg->JudgeEu();
+
+
+
     //测试通过时插入正确结果
 	if (Result==TRUE)
 	{
+
+
+
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Success, NULL);
-		//dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, L"", dlg->m_StandbyCuValue, L"", dlg->m_SleepCuValue1, dlg->m_SleepCuValue2, L"1");
+		dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, StandbyFiveCurrent, tempStandbyStr, SleepFiveCurrent1, tempSleepStr1, SleepFiveCurrent2, tempSleepStr2, L"1");
 	}
 	//测试失败时插入失败结果
 	else if (Result == FALSE)
 	{
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Fail, NULL);
-		//dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, L"", dlg->m_StandbyCuValue, L"", dlg->m_SleepCuValue1, dlg->m_SleepCuValue2, L"0");
+		dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, StandbyFiveCurrent, tempStandbyStr, SleepFiveCurrent1, tempSleepStr1, SleepFiveCurrent2, tempSleepStr2, L"0");
 	}
 
 
@@ -1065,7 +1213,7 @@ UINT ReadPort1Thread(LPVOID lpParam)
 
 	do
 	{
-		Sleep(CommandSendInterval);//指令读间隔
+		Sleep(CommandReadInterval);//指令读间隔
 		bReadStat = ReadFile(dlg->Port1handler, str, 199, &readreal, 0);
 		if (bReadStat)
 		{
@@ -1085,14 +1233,14 @@ UINT ReadPort1Thread(LPVOID lpParam)
 						strcount.Replace(LPCTSTR(" "), LPCTSTR(""));
 						dlg->SetDlgItemText(IDC_PORT1RID_EDIT, strcount);
 
-						////判断RID是否重复
-						//int RIDflag;
-						//RIDflag=dlg->DBJudgeOperation(strcount);
-						//if (RIDflag == 0)
-						//{
-						//	::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Alreadtest, NULL);
-						//	m_Port1ReadFlagEnd1 = FALSE;
-						//}
+						//判断RID是否重复
+						int RIDflag;
+						RIDflag=dlg->DBJudgeOperation(strcount);
+						if (RIDflag == 0)
+						{
+							::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Alreadtest, NULL);
+							m_Port1ReadFlagEnd1 = FALSE;
+						}
 					}
 					else if (strcount == "")
 					{
@@ -1189,7 +1337,7 @@ bool PowerOn()
 	LVBoolean VoltMeasInit = false;
 	LVBoolean *VMeasValid = &VoltMeasInit;//电压测试值
 
-	float CSetValue = 0.3;
+	float CSetValue = 3;
 	LVBoolean CSetInit = false;
 	LVBoolean* CSetValid = &CSetInit;//电流预设值设置
 
@@ -1211,22 +1359,35 @@ double average(vector<double>::const_iterator begin, vector<double>::const_itera
 	SYSTEMTIME time;
 	CString strTime;
 	GetLocalTime(&time);
-	strTime.Format(_T("%d/%d/%d %02d:%02d:%02d"), time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
+	strTime.Format(_T("%d/%d/%d-%02d:%02d:%02d"), time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
 
 
 	double currAverage;
 	double sum = 0;
 	int i = 0;
 	CString currstr;
+	TempFiveCurrent = "";
+	
 	while (begin != end)
 	{
-		Currentper[i];
+		//计算五次电流总和
 		sum = sum + (*begin);
-		currstr.Format(strTime + _T("CU:%3f"), (*begin));
-		Currentper[i] = currstr;
+		
+		//保存每次读到的电流值
+		currstr.Format(strTime + _T(" 电流值%d:%3f"), i+1, (*begin)*1000);
+		if (i == 0)
+		{
+			TempFiveCurrent = currstr;
+		}
+		else 
+		{
+			TempFiveCurrent = TempFiveCurrent + L"," + currstr;
+		}
+		
 		begin++;
 		i++;
 	}
+	
 	currAverage = sum / elementsNum;
 	return currAverage;
 }
@@ -1274,12 +1435,12 @@ double Current()
 
 /*数据库模块*/
 //插入语句
-BOOL CMFCP4ECurrentToolDlg::DBInsertOperation(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage1, CString SleepAverage2, CString TestResult)
+BOOL CMFCP4ECurrentToolDlg::DBInsertOperation(CString ECIP, CString Rid, CString StandbyFiveCurrent, CString StandbyAverage, CString SleepFiveCurrent1, CString SleepAverage1, CString SleepFiveCurrent2, CString SleepAverage2, CString TestResult)
 {
-	ADOManage adomanageUpdate;
-	adomanageUpdate.ConnSQL();
-	adomanageUpdate.TestResultInsertSql(ECIP, Rid, StandbyCurrent, StandbyAverage, SleepCurrent, SleepAverage1, SleepAverage2, TestResult);
-	adomanageUpdate.CloseAll();
+	ADOManage adomanageInsert;
+	adomanageInsert.ConnSQL();
+	adomanageInsert.TestResultInsertSql(ECIP, Rid, StandbyFiveCurrent, StandbyAverage, SleepFiveCurrent1, SleepAverage1, SleepFiveCurrent1, SleepAverage2, TestResult);
+	adomanageInsert.CloseAll();
 	return TRUE;
 }
 
@@ -1446,16 +1607,25 @@ afx_msg LRESULT CMFCP4ECurrentToolDlg::MainFontControl(WPARAM wParam, LPARAM lPa
 		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试第一次睡眠电流中，请等待数秒");
 		break;
 	case Main_Hint1_Sleeptest2:
-		PrintLog(L"测试第二次睡眠电流中，请重新重新上电并等待数秒\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试第二次睡眠电流中，请重新重新上电并等待数秒");
+		PrintLog(L"测试第二次睡眠电流中，请重新上电并等待数秒\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"测试第二次睡眠电流中，请重新上电并等待数秒");
 		break;
 	case Main_Hint1_AbnomalFail:
 		PrintLog(L"异常失败，等待重新连接！\r\n", 1);
 		SetDlgItemText(IDC_PORT1HINT_STATIC, L"异常失败，等待重新连接！");
 		break;
 	case Main_Hint1_Alreadtest:
-		PrintLog(L"该机已测！\r\n", 1);
-		SetDlgItemText(IDC_PORT1HINT_STATIC, L"该机已测！");
+		PrintLog(L"该机已测！请接入下一台机子！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"该机已测！请接入下一台机子！");
+		break;
+	case Main_Hint1_AbnomalCurrent:
+		PrintLog(L"电流值超出范围！请连接下一台机子！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"电流值超出范围！请连接下一台机子！");
+		break;
+	case Main_Hint1_WaitReTest:
+		PrintLog(L"电流波动，重测中！\r\n", 1);
+		SetDlgItemText(IDC_PORT1HINT_STATIC, L"电流波动，重测中！");
+		break;
 	default:
 		break;
 	}
@@ -1487,7 +1657,7 @@ HBRUSH CMFCP4ECurrentToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if (pWnd->GetDlgCtrlID() == IDC_PORT1HINT_STATIC)
 	{
 		GetDlgItemText(IDC_PORT1HINT_STATIC, str1);
-		if (str1 == "待机电流已测！请按键！" || str1 == "测试第二次睡眠电流中，请重新重新上电并等待数秒")
+		if (str1 == "待机电流已测！请按键！" || str1 == "测试第二次睡眠电流中，请重新上电并等待数秒")
 		{
 			m_brush.CreateSolidBrush(RGB(255, 165, 0));
 			pDC->SetBkColor(RGB(255, 165, 0));
@@ -1501,7 +1671,7 @@ HBRUSH CMFCP4ECurrentToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色
 			return m_brush;
 		}
-		else if (str1 == "FAIL！请连接下一台机子！" || str1 == "异常失败，等待重新连接！" || str1.Find(L"非正常") >= 0 || str1 == "该机已测！")
+		else if (str1 == "FAIL！请连接下一台机子！" || str1 == "异常失败，等待重新连接！" || str1.Find(L"非正常") >= 0 || str1 == "该机已测！"||str1=="电流值超出范围！请连接下一台机子！"||str1=="该机已测！请接入下一台机子！")
 		{
 			m_brush.CreateSolidBrush(RGB(255, 0, 0));
 			pDC->SetBkColor(RGB(255, 0, 0));

@@ -40,11 +40,13 @@ public:
 	//非通用函数
 	_RecordsetPtr MOBAN(CString str1, CString str2);//模版函数
 
+
 	//测试结果表：
 	//测试后将结果以及RID等插入到数据库,若已测试过但失败的更新结果为1
-	void TestResultInsertSql(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage11, CString SleepAverage12, CString TestResult);
+	void TestResultInsertSql(CString ECIP, CString Rid, CString StandbyFiveCurrent, CString StandbyAverage, CString SleepFiveCurrent1, CString SleepAverage1, CString SleepFiveCurrent2, CString SleepAverage2, CString TestResult);
 	//根据RID查找数据，找到并且测试结果为通过的则返回0，前端需提示已测试通过；查不到数据或者查到但是测试结果为不通过的则返回1，前端往下继续测试
 	int CheckTestResultByRid(CString Rid);
+
 
 	//配置表：
 	//添加配置信息
@@ -57,6 +59,7 @@ public:
 	void ConfigUpdataSql(CString ModelName, float StandbyUp, float StandbyDown, float SleepUP, float SleepDown, CString TestCommand, CString TestCommandReply, CString RidCommand, CString RidCommandReply, CString StandbyCommand, CString StandbyCommandReply, CString SleepCommand, CString SleepCommandReply, int Count, int ReadTime, int WriteTime);
 	//根据机型删除整条数据
 	void DeleteConfigByModelNameSql(CString ModelName);
+
 
 	//通用函数
 	CString GetTime();//获取当前系统时间

@@ -22,7 +22,10 @@ double Current();
 bool PowerOn();
 
 //全局变量
-extern CString Currentper[5];//存放五次电流
+extern CString TempFiveCurrent;//存放五次临时电流
+extern CString StandbyFiveCurrent;//存放五次待机电流
+extern CString SleepFiveCurrent1;//存放五次第一次睡眠电流
+extern CString SleepFiveCurrent2;//存放五次第二次睡眠电流
 extern float StandbyAverage;//待机电流平均值
 extern float SleepAverage1;//睡眠电流平均值
 extern float SleepAverage2;//睡眠电流平均值
@@ -34,7 +37,8 @@ extern int SleepInterval;//睡眠等待时间
 extern int StandbyInterval;//待机等待时间
 extern int SleepInterval;//睡眠等待时间
 extern CString Port1LogName;//日志文件名
-
+extern char InstrName[20];//设备连接PC的串口名
+extern int TestCurrentCount;//电流测试次数
 
 
 // CMFCP4ECurrentToolDlg 对话框
@@ -134,7 +138,7 @@ public:
 	/*数据库模块变量以及函数*/
 
 	//插入语句
-	BOOL DBInsertOperation(CString ECIP, CString Rid, CString StandbyCurrent, CString StandbyAverage, CString SleepCurrent, CString SleepAverage1, CString SleepAverage2, CString TestResult);
+	BOOL DBInsertOperation(CString ECIP, CString Rid, CString StandbyFiveCurrent, CString StandbyAverage, CString SleepFiveCurrent1, CString SleepAverage1, CString SleepFiveCurrent2,CString SleepAverage2, CString TestResult);
 	//判断RID是否重复
 	int DBJudgeOperation(CString Rid);
 	
