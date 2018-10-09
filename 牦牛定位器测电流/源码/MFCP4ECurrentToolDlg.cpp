@@ -49,6 +49,7 @@ float SleepAverage1;//睡眠电流平均值1
 float SleepAverage2;//睡眠电流平均值2
 char InstrName[20] = "GPIB0::5::INSTR";//设备连接PC的串口名
 int TestCurrentCount=3;//电流测试次数
+BOOL RIDJudgeFlag = TRUE;//重测标志位，TRUE为开放重测，FALSE为不开放重测
 
 volatile BOOL s_bExit;
 volatile BOOL m_MainConrtolFlag;//主控线程标志位
@@ -111,6 +112,9 @@ CMFCP4ECurrentToolDlg::CMFCP4ECurrentToolDlg(CWnd* pParent /*=NULL*/)
 	, m_SleepDownValue(0)
 	, ConnectFlag(FALSE)
 	, m_SleepCuValue2(_T(""))
+	, DWThread(NULL)
+	, DRThread(NULL)
+	, MainThread(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -137,6 +141,7 @@ void CMFCP4ECurrentToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SLEEPDOWN_EDIT, m_SleepDownValue);
 	DDX_Text(pDX, IDC_SLEEPCU2_EDIT, m_SleepCuValue2);
 	DDX_Control(pDX, IDC_SLEEPCU2_EDIT, m_SleepCuControl2);
+	DDX_Control(pDX, IDC_RIDTESTENBLE_CHECK, m_RidTestEnbleCheck);
 }
 
 BEGIN_MESSAGE_MAP(CMFCP4ECurrentToolDlg, CDialogEx)
@@ -154,6 +159,7 @@ BEGIN_MESSAGE_MAP(CMFCP4ECurrentToolDlg, CDialogEx)
 	ON_CBN_DROPDOWN(IDC_PORT1_COMBO, &CMFCP4ECurrentToolDlg::OnCbnDropdownPort1Combo)
 	ON_MESSAGE(WM_MainFontControl, &CMFCP4ECurrentToolDlg::MainFontControl)
 	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_RIDTESTENBLE_CHECK, &CMFCP4ECurrentToolDlg::OnBnClickedRidtestenbleCheck)
 END_MESSAGE_MAP()
 
 
@@ -193,13 +199,8 @@ BOOL CMFCP4ECurrentToolDlg::OnInitDialog()
 	InitModelDBOperation();
 
 	//将ini配置文件信息的东西读出来
-	int intervaltime;
-	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("StandbyInterval"), 15000, _T(".\\SystemInfo.ini"));
-	StandbyInterval = intervaltime;//待机等待时间
-	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval1"), 15000, _T(".\\SystemInfo.ini"));
-	SleepInterval = intervaltime;//睡眠1等待时间
-	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
-	Sleep2Interval = intervaltime;//睡眠2等待时间
+	GetIniConfig();//获取配置文件
+
 
 	//初始化串口列表
 	FindCommPort((CComboBox*)GetDlgItem(IDC_PORT1_COMBO), Port1No, 1);
@@ -275,6 +276,41 @@ void CMFCP4ECurrentToolDlg::InitEnableWindows(BOOL choose)
 	GetDlgItem(IDC_MODELCONFIG_BUTTON)->EnableWindow(choose);
 	GetDlgItem(IDC_MODEL_COMBO)->EnableWindow(choose);
 	GetDlgItem(IDC_PORT1_COMBO)->EnableWindow(choose);
+	GetDlgItem(IDC_RIDTESTENBLE_CHECK)->EnableWindow(choose);
+}
+
+//获取配置文件
+void CMFCP4ECurrentToolDlg::GetIniConfig()
+{
+	//将ini配置文件信息的东西读出来
+	int intervaltime;
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("StandbyInterval"), 15000, _T(".\\SystemInfo.ini"));
+	StandbyInterval = intervaltime;//待机等待时间
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval1"), 15000, _T(".\\SystemInfo.ini"));
+	SleepInterval = intervaltime;//睡眠1等待时间
+	intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
+	Sleep2Interval = intervaltime;//睡眠2等待时间
+
+	//要将CString转化成数组
+	CString str;
+	GetPrivateProfileString(_T("OrtherConfig"), _T("InstrName"), _T(""), str.GetBuffer(20), 20, _T(".\\SystemInfo.ini"));
+	strcpy(InstrName, CStringA(str)); //向数组复制数据
+	str.ReleaseBuffer();
+
+	//重测与否
+	int initemp;
+	initemp = GetPrivateProfileInt(_T("OrtherConfig"), _T("RIDJudgeFlag"), 2, _T(".\\SystemInfo.ini"));
+	if (initemp != 2)
+	{
+		RIDJudgeFlag = initemp;
+		m_RidTestEnbleCheck.SetCheck(RIDJudgeFlag);
+	}
+	else if (initemp == 2)
+	{
+		m_RidTestEnbleCheck.SetCheck(RIDJudgeFlag);
+	}
+	OnBnClickedRidtestenbleCheck();
+
 }
 
 /*初始化模块*/
@@ -428,27 +464,13 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 			return;
 		}
 
-
-
 		SetDlgItemText(IDC_PORT1CONNECT_BUTTON, L"断开");
 		InitEnableWindows(FALSE);
 		ConnectFlag = TRUE;
 
 		//先将ini配置文件信息的东西读出来
-		int intervaltime;
-		intervaltime=GetPrivateProfileInt(_T("IntertvalTime"), _T("StandbyInterval"), 15000, _T(".\\SystemInfo.ini"));
-		StandbyInterval = intervaltime;//待机等待时间
-		intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval1"), 15000, _T(".\\SystemInfo.ini"));
-		SleepInterval = intervaltime;//睡眠1等待时间
-		intervaltime = GetPrivateProfileInt(_T("IntertvalTime"), _T("SleepInterval2"), 6000, _T(".\\SystemInfo.ini"));
-		Sleep2Interval = intervaltime;//睡眠2等待时间
-		
-		//要将CString转化成数组
-		CString str;
-		GetPrivateProfileString(_T("OrtherConfig"), _T("InstrName"), _T(""), str.GetBuffer(20), 20, _T(".\\SystemInfo.ini"));
-		strcpy(InstrName, CStringA(str)); //向数组复制数据
-		str.ReleaseBuffer();
-		
+		GetIniConfig();//获取配置文件
+
 		//开启线程
 		ConfMeas(InstrName, CurrRange, VisaNameOut);
 		s_bExit = FALSE;
@@ -479,6 +501,24 @@ void CMFCP4ECurrentToolDlg::OnBnClickedPort1connectButton()
 		m_Port1ReadFlag1 = FALSE;
 		m_Port1ReadFlag2 = FALSE;
 		m_Port1ReadFlagEnd1 = FALSE;
+	}
+}
+
+//点击可重测复选框
+void CMFCP4ECurrentToolDlg::OnBnClickedRidtestenbleCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+
+	//获取控件目前状态，如果为1就代表选中，则将标志位设置为TRUE
+	if (m_RidTestEnbleCheck.GetCheck())
+	{
+		RIDJudgeFlag = TRUE;
+		WritePrivateProfileString(_T("OrtherConfig"), _T("RIDJudgeFlag"), L"1", _T(".\\SystemInfo.ini"));
+	}
+	else if (!m_RidTestEnbleCheck.GetCheck())
+	{
+		RIDJudgeFlag = FALSE;
+		WritePrivateProfileString(_T("OrtherConfig"), _T("RIDJudgeFlag"), L"0", _T(".\\SystemInfo.ini"));
 	}
 }
 
@@ -644,7 +684,7 @@ UINT MainControlThread(LPVOID lpParam)
 	CMFCP4ECurrentToolDlg* dlg;
 	dlg = (CMFCP4ECurrentToolDlg*)lpParam;
 
-	dlg->DWThread = AfxBeginThread(SendPort1Thread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);//开启发送指令线程
+	//dlg->DWThread = AfxBeginThread(SendPort1Thread, dlg, THREAD_PRIORITY_NORMAL, 0, 0, NULL);//开启发送指令线程
 
 	//如果没有被停止，那就一直去开启test线程
 	while (m_MainConrtolFlag)
@@ -705,14 +745,15 @@ PortTest:
 
 	do
 	{
-		dlg->PrintLog(L"发:" + strcommand,1);
-		dlg->SetRicheditText(L"发:" + strcommand, 0);
-		bWriteStat = WriteFile(dlg->Port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		if (s_bExit == TRUE)
 		{
 			dlg->RestPort1Thread();
+			dlg->DWThread = NULL;
 			return 0;
 		}
+		dlg->PrintLog(L"发:" + strcommand,1);
+		dlg->SetRicheditText(L"发:" + strcommand, 0);
+		bWriteStat = WriteFile(dlg->Port1handler, CT2A(strcommand), strcommand.GetLength(), &dwBytesWrite, NULL);
 		Sleep(2000);
 	} while (m_Port1SendFlag);
 
@@ -723,6 +764,7 @@ PortTest:
 	{
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Stop, NULL);//显示提示
 		//dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		dlg->DWThread = NULL;
 		return 0;
 	}
 	dlg->SetPort1EditEmpty();
@@ -795,7 +837,6 @@ PortTest:
 								/*RePortAbnomal = TRUE;*/
 							}
 						}
-						reporttestcount = 0;
 					}
 					reporttestcount++;
 					if (reporttestcount == 5)
@@ -811,6 +852,7 @@ PortTest:
 				Sleep(100);
 				m_Port1SendFlag = FALSE;
 				m_Port1ReadFlag = FALSE;
+				Sleep(100);
 				goto PortTest;
 			}
 			Sleep(100);
@@ -950,6 +992,7 @@ PortTest:
 		if (s_bExit == TRUE)
 		{
 			dlg->RestPort1Thread();
+			dlg->DWThread = NULL;
 			return 0;
 		}
 		Sleep(2000);
@@ -1027,7 +1070,6 @@ PortTest:
 								/*RePortAbnomal = TRUE;*/
 							}
 						}
-						reporttestcount = 0;
 					}
 					reporttestcount++;
 					if (reporttestcount == 5)
@@ -1043,6 +1085,7 @@ PortTest:
 				Sleep(100);
 				m_Port1SendFlag = FALSE;
 				m_Port1ReadFlag = FALSE;
+				Sleep(100);
 				goto PortTest;
 			}
 			count++;
@@ -1160,14 +1203,9 @@ PortTest:
 	BOOL Result,DBIntermission;
 	Result = dlg->JudgeEu();
 
-
-
     //测试通过时插入正确结果
 	if (Result==TRUE)
 	{
-
-
-
 		::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Success, NULL);
 		dlg->DBInsertOperation(dlg->m_pcipEdit, RIDstr, StandbyFiveCurrent, tempStandbyStr, SleepFiveCurrent1, tempSleepStr1, SleepFiveCurrent2, tempSleepStr2, L"1");
 	}
@@ -1181,8 +1219,8 @@ PortTest:
 
 	if (m_MainConrtolFlag == FALSE)
 	{
-
 		dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"停止");
+		dlg->DWThread = NULL;
 		return 0;
 	}
 	Sleep(1500);
@@ -1233,14 +1271,18 @@ UINT ReadPort1Thread(LPVOID lpParam)
 						strcount.Replace(LPCTSTR(" "), LPCTSTR(""));
 						dlg->SetDlgItemText(IDC_PORT1RID_EDIT, strcount);
 
-						//判断RID是否重复
-						int RIDflag;
-						RIDflag=dlg->DBJudgeOperation(strcount);
-						if (RIDflag == 0)
+						if (RIDJudgeFlag == FALSE)
 						{
-							::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Alreadtest, NULL);
-							m_Port1ReadFlagEnd1 = FALSE;
+							//判断RID是否重复
+							int RIDflag;
+							RIDflag = dlg->DBJudgeOperation(strcount);
+							if (RIDflag == 0)
+							{
+								::PostMessage(dlg->m_hWnd, WM_MainFontControl, Main_Hint1_Alreadtest, NULL);
+								m_Port1ReadFlagEnd1 = FALSE;
+							}
 						}
+
 					}
 					else if (strcount == "")
 					{
@@ -1381,7 +1423,7 @@ double average(vector<double>::const_iterator begin, vector<double>::const_itera
 		}
 		else 
 		{
-			TempFiveCurrent = TempFiveCurrent + L"," + currstr;
+			TempFiveCurrent = TempFiveCurrent + L"，" + currstr;
 		}
 		
 		begin++;
@@ -1828,4 +1870,6 @@ void CMFCP4ECurrentToolDlg::OnBnClickedCancel()
 
 	CDialogEx::OnCancel();
 }
+
+
 

@@ -227,6 +227,7 @@ _RecordsetPtr ADOManage::MOBAN(CString str1, CString str2)
 
 }
 
+
 //测试后将结果以及RID等插入到数据库,若已测试过但失败的更新结果为1
 void ADOManage::TestResultInsertSql(CString ECIP, CString Rid, CString StandbyFiveCurrent, CString StandbyAverage, CString SleepFiveCurrent1, CString SleepAverage1, CString SleepFiveCurrent2, CString SleepAverage2, CString TestResult)
 {
@@ -244,8 +245,8 @@ void ADOManage::TestResultInsertSql(CString ECIP, CString Rid, CString StandbyFi
 	//为真就代表没查出任何数据
 	if (m_pRecordSet->adoEOF)
 	{
-		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("](ECIP,Rid,StandbyFiveCurrent,StandbyAverage,SleepFiveCurrent1,SleepAverage1,SleepFiveCurrent2,SleepAverage2,TestResult,TestTime)values('") + ECIP + _T("','") + Rid + _T("','")
-			+ StandbyFiveCurrent + _T("', '") + StandbyAverage + _T("', '") + SleepFiveCurrent1 + _T("', '") + SleepAverage1 + _T("','") + SleepFiveCurrent2 + _T("', '") +SleepAverage2 + _T("','") + TestResult + _T("','") + GetTime() + _T("')");//具体执行的SQL语句
+		strSql = _T("insert into[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("](ECIP,Rid,StandbyFiveCurrent,StandbyAverage,SleepFiveCurrent1,SleepAverage1,SleepFiveCurrent2,SleepAverage2,TestResult,TestTime,ReTestNum)values('") + ECIP + _T("','") + Rid + _T("','")
+			+ StandbyFiveCurrent + _T("', '") + StandbyAverage + _T("', '") + SleepFiveCurrent1 + _T("', '") + SleepAverage1 + _T("','") + SleepFiveCurrent2 + _T("', '") + SleepAverage2 + _T("','") + TestResult + _T("','") + GetTime() + _T("','0')");//具体执行的SQL语句
 		try
 		{
 			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
@@ -262,7 +263,12 @@ void ADOManage::TestResultInsertSql(CString ECIP, CString Rid, CString StandbyFi
 		TResult = m_pRecordSet->GetCollect("TestResult");
 		if (TResult == 0)
 		{
-			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET TestResult = '1',ECIP ='") + ECIP + _T("',StandbyCurrent = '") + StandbyFiveCurrent + _T("',StandbyAverage = '") + StandbyAverage + _T("',SleepFiveCurrent1 ='") + SleepFiveCurrent1 + _T("',SleepAverage1='") + SleepAverage1 + _T("',SleepFiveCurrent2 ='") + SleepFiveCurrent2 + _T("',SleepAverage2 ='") + SleepAverage2 + _T("' Where Rid ='") + Rid + _T("'");
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET TestResult = '") + TestResult + _T("',ECIP ='") + ECIP + _T("',StandbyFiveCurrent = '") + StandbyFiveCurrent + _T("',StandbyAverage = '") + StandbyAverage + _T("',SleepFiveCurrent1 ='") + SleepFiveCurrent1 + _T("',SleepAverage1='") + SleepAverage1 + _T("',SleepFiveCurrent2 ='") + SleepFiveCurrent2 + _T("',SleepAverage2 ='") + SleepAverage2 + _T("' Where Rid ='") + Rid + _T("'");
+			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+		}
+		else if (TResult == 1) 
+		{
+			strSql = _T("UPDATE[") + m_Firstdbname + _T("].[dbo].[") + m_Firstformname + _T("]") + _T("SET ECIP ='") + ECIP + _T("',StandbyFiveCurrent = '") + StandbyFiveCurrent + _T("',StandbyAverage = '") + StandbyAverage + _T("',SleepFiveCurrent1 ='") + SleepFiveCurrent1 + _T("',SleepAverage1='") + SleepAverage1 + _T("',SleepFiveCurrent2 ='") + SleepFiveCurrent2 + _T("',SleepAverage2 ='") + SleepAverage2 + _T("',ReTestNum = ReTestNum + 1,ReTestTime ='") + GetTime() + _T("'Where Rid ='") + Rid + _T("'");
 			m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 		}
 	}

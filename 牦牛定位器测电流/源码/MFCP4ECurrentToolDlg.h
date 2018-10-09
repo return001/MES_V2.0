@@ -107,6 +107,7 @@ public:
 	float m_SleepDownValue;
 
 	void fontinit();//初始化字体
+	void GetIniConfig();//获取配置文件
 	afx_msg LRESULT MainFontControl(WPARAM wParam, LPARAM lParam);//字体更改的消息循环
 	void InitModelDBOperation();//初始化机型下拉框
 	void FindModelDBOperation();//查找机型配置
@@ -159,4 +160,6 @@ public:
 	afx_msg void OnBnClickedCancel();
 	CString m_SleepCuValue2;
 	CEdit m_SleepCuControl2;
+	CButton m_RidTestEnbleCheck;
+	afx_msg void OnBnClickedRidtestenbleCheck();
 };
