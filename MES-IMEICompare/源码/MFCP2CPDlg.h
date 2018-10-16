@@ -10,6 +10,10 @@
 
 using namespace std;
 
+
+/*全局变量*/
+extern BOOL Imei3Flag;
+
 //extern int SyllableArray[8];
 //extern int BindArray[6];
 
@@ -48,6 +52,8 @@ public:
 	CStatic m_imei1Static;
 	CString m_imei1Edit;
 	CString m_imei2Edit;
+	CString m_imei3Edit;
+	CButton m_OpenImei3EditCheck;
 	CButton m_couplingCheck;
 	CButton m_writenumCheck;
 	CButton m_downloadCheck;
@@ -55,8 +61,11 @@ public:
 	BOOL LockFlag;//锁定标志位
 
 	void RelationEnableWindow(BOOL chose);//使字段和绑定控件使能
+	void ChImei3EnableWindow(BOOL chose);//使不判断彩盒和开启IMEI编辑框控件使能
 	void OtherEnableWindow(BOOL chose);//使订单配置、不判断彩盒、数据库配置控件使能
 	void ImeiInputEnableWindow(BOOL chose);//使IMEI输入框控件使能
+	void SetEditEmpty();//将编辑框置为空
+	void CleanImei3Check();//清除IMEI复选框
 
 	//字体变量与函数操作
 public:
@@ -76,6 +85,7 @@ public:
 	CButton m_batSyllableCheck;
 	CButton m_macSyllableCheck;
 	CButton m_equipmentSyllableCheck;
+	CButton m_rfidSyllableCheck;
 
 	afx_msg void OnBnClickedSavesyllableButton();
 	afx_msg void OnBnClickedReadsyllableButton();
@@ -87,6 +97,7 @@ public:
 	afx_msg void OnBnClickedIccidsyllableCheck();
 	afx_msg void OnBnClickedEquipmentsyllableCheck();
 	afx_msg void OnBnClickedMacsyllableCheck();
+	afx_msg void OnBnClickedRfidsyllableCheck();
 
 	void CleanSyllableCheck();//清除字段选择复选框
 
@@ -97,6 +108,7 @@ public:
 	CButton m_batBindCheck;
 	CButton m_macBindCheck;
 	CButton m_equipmentBindCheck;
+	CButton m_rfidBindCheck;
 
 	afx_msg void OnBnClickedSavebindButton();
 	afx_msg void OnBnClickedReadbindButton();
@@ -106,6 +118,7 @@ public:
 	afx_msg void OnBnClickedIccidbindCheck();
 	afx_msg void OnBnClickedMacbindCheck();
 	afx_msg void OnBnClickedEquipmentbindCheck();
+	afx_msg void OnBnClickedRfidbindCheck();
 
 	void CleanBindCheck();//清除绑定复选框
 
@@ -122,7 +135,7 @@ public:
 	CString strpcip, strpcname;//主机名称和ip
 	int notype;//代表目前要扫的类型
 	CString notypename[8];//里面放着IMEI、VIP等字符串 注意，notypename目前因为需求更改而被废弃掉，但因为它属于核心逻辑的东西，不好随意改，目前不会对程序有影响，所以暂时保留。
-	CString strno1,strno2;//存放其它扫描类型的值，比如选中SN时，里面放着的就是SN号
+	CString strno1,strno2,strno3;//存放其它扫描类型的值，比如选中SN时，里面放着的就是SN号
 	CString strzhidan;//存放当前选中的制单号
 	int chjudgeflag;//彩盒复选框的标志
 	CString strimeistart, strimeiend;//IMEI起始和结束
@@ -137,6 +150,8 @@ public:
 	void Readsyllable(BOOL CheckEx);//读取字段选择
 	void Savebind();//保存绑定选择
 	void Readbind(BOOL CheckEx);//读取绑定选择
+	void Saveconfig();//保存一些配置
+	void Readconfig();//读取一些配置
 
 
     //其它函数
@@ -175,4 +190,7 @@ public:
 	afx_msg void OnBnClickedChjudgeCheck();
 
 	afx_msg void OnBnClickedLockButton();
+	afx_msg void OnBnClickedOpenimei3editCheck();
+
+	afx_msg void OnEnSetfocusImei1Edit();
 };
