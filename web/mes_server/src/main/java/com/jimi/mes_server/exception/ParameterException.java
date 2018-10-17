@@ -8,6 +8,11 @@ package com.jimi.mes_server.exception;
  */
 public class ParameterException extends RuntimeException {
 
+	/**
+	 * serialVersionUID : TODO
+	 */
+	private static final long serialVersionUID = 9126756886746598454L;
+
 	public ParameterException(String message) {
 		super(message);
 	}

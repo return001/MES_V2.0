@@ -27,13 +27,13 @@ public class SelectService {
 	 * @param filter 按字段筛选，支持<, >, >,=, <=, !=, =，多个字段请用&隔开
 	 * @return Page对象
 	 */
-	public Page<Record> select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+	public Page<Record> select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
 		StringBuffer sql = new StringBuffer();
 		List<String> questionValues = new ArrayList<>();
 		createFrom(table, sql);
 		createWhere(filter, questionValues, sql);
 		createOrderBy(ascBy, descBy, sql);
-		return paginateAndFillWhereValues(pageNo, pageSize, sql, questionValues);
+		return paginateAndFillWhereValues(pageNo, pageSize, sql, questionValues, type);
 	}
 	
 	
@@ -98,15 +98,52 @@ public class SelectService {
 	}
 
 
-	private Page<Record> paginateAndFillWhereValues(Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
+	private Page<Record> paginateAndFillWhereValues(Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues, Integer type) {
 		if((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
 			throw new ParameterException("ascBy and descBy must be provided at the same time");
 		}
 		if(pageNo == null && pageSize == null) {
-			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+			if(type != null) {
+				switch(type)
+				{
+				case 0:
+					return Db.use("db1").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				case 1:
+					return Db.use("db2").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				case 2:
+					return Db.use("db2").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				case 3:
+					return Db.use("db3").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				case 4:
+					return Db.use("db3").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				default:
+					break;				
+				}
+			}else {
+				return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+			}
 		}else {
-			return Db.paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+			if(type != null) {
+				switch(type)
+				{
+				case 0:
+					return Db.use("db1").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				case 1:
+					return Db.use("db2").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				case 2:
+					return Db.use("db2").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				case 3:
+					return Db.use("db3").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				case 4:
+					return Db.use("db3").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				default:
+					break;
+				}
+			}else {
+				return Db.paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+			}
 		}
+		return null;
 	}
 	
 }

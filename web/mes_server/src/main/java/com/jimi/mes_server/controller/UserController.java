@@ -25,8 +25,8 @@ public class UserController extends Controller  {
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 	
 	
-	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
+		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}
 	
 	
