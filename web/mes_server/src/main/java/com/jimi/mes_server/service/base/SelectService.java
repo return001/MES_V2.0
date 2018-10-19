@@ -117,9 +117,9 @@ public class SelectService {
 				case 4:
 					return Db.use("db3").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 				default:
-					break;				
+					break;
 				}
-			}else {
+			}else {				
 				return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 			}
 		}else {

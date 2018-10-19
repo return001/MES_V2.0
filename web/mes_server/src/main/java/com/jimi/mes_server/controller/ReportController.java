@@ -27,7 +27,7 @@ public class ReportController extends Controller {
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
 
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
-		renderJson(ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, type)));
+		renderJson(ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, null)));
 	}
 
 	
@@ -63,21 +63,6 @@ public class ReportController extends Controller {
 			}
 		}
 		renderNull();
-	}
-
-	
-	/**
-	 * @author HCJ 创建绑定关系
-	 * @param dataRelativeSheet
-	 * @date 2018年10月13日 下午8:57:03
-	 */
-	@Access({ "SuperAdmin" })
-	public void createRelativeSheet(@Para("") DataRelativeSheet dataRelativeSheet) {
-		if (reportService.createRelativeSheet(dataRelativeSheet)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
 	}
 
 	

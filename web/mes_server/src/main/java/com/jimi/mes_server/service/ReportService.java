@@ -1,6 +1,7 @@
 package com.jimi.mes_server.service;
 
 import java.io.OutputStream;
+import java.util.Date;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
@@ -52,27 +53,16 @@ public class ReportService extends SelectService{
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);
 	}
-
-
-	public boolean createRelativeSheet(DataRelativeSheet dataRelativeSheet) {
-		if(dataRelativeSheet.getTestTime() == null || dataRelativeSheet.getIMEI1() == null) {
-			throw new ParameterException("only create the dataRelativeSheet have the TestTime and IMEI1");
-		}
-		DataRelativeSheet sheet = DataRelativeSheet.dao.findById(dataRelativeSheet.getIMEI1());
-		if (sheet != null) {
-			throw new ParameterException("only create the dataRelativeSheet once");
-		}		
-		return dataRelativeSheet.save();
-	}
-	
+		
 	
 	public boolean updateRelativeSheet(DataRelativeSheet dataRelativeSheet) {
-		if(dataRelativeSheet.getTestTime() == null || dataRelativeSheet.getIMEI1() == null) {
-			throw new ParameterException("only update the dataRelativeSheet have the TestTime and IMEI1");
+		if(dataRelativeSheet.getIMEI1() == null) {
+			throw new ParameterException("only update the dataRelativeSheet have the IMEI1");
 		}
 		DataRelativeSheet sheet = DataRelativeSheet.dao.findById(dataRelativeSheet.getIMEI1());
 		if (sheet == null) {
-			throw new ParameterException("only update the dataRelativeSheet exist");
+			dataRelativeSheet.setTestTime(new Date());
+			return dataRelativeSheet.save();
 		}		
 		return dataRelativeSheet.update();
 	}
