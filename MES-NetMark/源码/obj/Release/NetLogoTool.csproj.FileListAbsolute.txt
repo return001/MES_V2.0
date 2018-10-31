@@ -1,0 +1,11 @@
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\bin\Release\NetLogoTool.exe.config
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\bin\Release\NetLogoTool.exe
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\bin\Release\NetLogoTool.pdb
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.Form1.resources
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.login.resources
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.Properties.Resources.resources
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csproj.GenerateResource.cache
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csproj.CoreCompileInputs.cache
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.exe
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.pdb
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csprojAssemblyReference.cache
