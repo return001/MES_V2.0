@@ -9,6 +9,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.mes_server.exception.ParameterException;
 
+
 /**
  * 通用查询业务层
  * <br>
@@ -16,7 +17,7 @@ import com.jimi.mes_server.exception.ParameterException;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class SelectService {
-
+	
 	/**
 	 * 分页查询，支持筛选和排序
 	 * @param table 提供可读的表名
@@ -37,6 +38,16 @@ public class SelectService {
 	}
 	
 	
+	public Page<Record> select(String resultSet, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		StringBuffer sql = new StringBuffer();
+		List<String> questionValues = new ArrayList<>();
+		sql.append(resultSet.substring(resultSet.indexOf("FROM")));
+		createWhere(filter, questionValues, sql);
+		createOrderBy(ascBy, descBy, sql);
+		return paginateAndFillWhereValues(resultSet, pageNo, pageSize, sql, questionValues);
+	}
+	
+	
 	private void createFrom(String table, StringBuffer sql) {
 		//表名非空判断
 		if(table == null) {
@@ -53,7 +64,7 @@ public class SelectService {
 		}
 		throw new ParameterException("not a readable table");
 	}
-
+	
 	
 	private void createWhere(String filter, List<String> questionValues, StringBuffer sql) {
 		//判断filter存在与否
@@ -119,7 +130,7 @@ public class SelectService {
 				default:
 					break;
 				}
-			}else {				
+			}else {	
 				return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 			}
 		}else {
@@ -144,6 +155,19 @@ public class SelectService {
 			}
 		}
 		return null;
+	}
+	
+	
+	private Page<Record> paginateAndFillWhereValues( String resultSet, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
+		if ((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
+			throw new ParameterException("pageNo and pageSize must be provided at the same time");
+		}
+		if (pageNo == null && pageSize == null) {
+			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), resultSet, sql.toString(), questionValues.toArray());
+		} else {
+			System.out.println(sql.toString());
+			return Db.paginate(pageNo, pageSize, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
+		}
 	}
 	
 }

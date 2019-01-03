@@ -1,6 +1,7 @@
 package com.jimi.mes_server.model.base;
 
 import com.jfinal.plugin.activerecord.Model;
+
 import com.jfinal.plugin.activerecord.IBean;
 
 /**
@@ -99,4 +100,12 @@ public abstract class BaseGpsUser<M extends BaseGpsUser<M>> extends Model<M> imp
 		return get("InService");
 	}
 
+	public M setDeletePermission(java.lang.String DeletePermission) {
+		set("DeletePermission", DeletePermission);
+		return (M)this;
+	}
+	
+	public java.lang.String getDeletePermission() {
+		return getStr("DeletePermission");
+	}
 }

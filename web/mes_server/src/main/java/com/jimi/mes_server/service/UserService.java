@@ -53,8 +53,8 @@ public class UserService extends SelectService{
 		user.keep("UserId","UserDes","UserType","UserTestPlan","InService");
 		return user.update();
 	}
-
-
+	
+	
 	private void checkUserTypeAndTestPlan(GpsUser user) {
 		String userType =  user.getUserType();
 		if(GpsUsertype.dao.find(userTypeSql, userType).size() == 0) {

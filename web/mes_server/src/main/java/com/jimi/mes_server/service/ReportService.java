@@ -1,13 +1,23 @@
 package com.jimi.mes_server.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.jfinal.aop.Enhancer;
+import com.jfinal.kit.PropKit;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.SqlPara;
+import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.DataRelativeSheet;
+import com.jimi.mes_server.service.base.DeleteService;
 import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.ExcelHelper;
 
@@ -18,43 +28,168 @@ import com.jimi.mes_server.util.ExcelHelper;
 public class ReportService extends SelectService{
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+	private static DeleteService deleteService = Enhancer.enhance(DeleteService.class);
+	private static DeleteHistoryService deleteHistoryService = new DeleteHistoryService();
+	
+	private static final String SELECT_DATARELATIVESHEET_AND_PRINTPARAM = "SELECT DataRelativeSheet.sN AS DataRelativeSheet_SN,DataRelativeSheet.iMEI1 AS DataRelativeSheet_IMEI1,DataRelativeSheet.iMEI2 AS DataRelativeSheet_IMEI2,DataRelativeSheet.iMEI3 AS DataRelativeSheet_IMEI3,DataRelativeSheet.iMEI4 AS DataRelativeSheet_IMEI4,DataRelativeSheet.iMEI5 AS DataRelativeSheet_IMEI5,DataRelativeSheet.iMEI6 AS DataRelativeSheet_IMEI6,DataRelativeSheet.iMEI7 AS DataRelativeSheet_IMEI7,DataRelativeSheet.iMEI8 AS DataRelativeSheet_IMEI8,DataRelativeSheet.iMEI9 AS DataRelativeSheet_IMEI9,DataRelativeSheet.iMEI10 AS DataRelativeSheet_IMEI10,DataRelativeSheet.iMEI11 AS DataRelativeSheet_IMEI11,DataRelativeSheet.iMEI12 AS DataRelativeSheet_IMEI12,DataRelativeSheet.iMEI13 AS DataRelativeSheet_IMEI13,DataRelativeSheet.zhiDan AS DataRelativeSheet_ZhiDan,DataRelativeSheet.testTime AS DataRelativeSheet_TestTime,DataRelativeSheet.simEffectiveDate AS DataRelativeSheet_SimEffectiveDate,Gps_ManuPrintParam.sN AS GpsManuprintparam_SN,Gps_ManuPrintParam.zhiDan AS GpsManuprintparam_ZhiDan,Gps_ManuPrintParam.softModel AS GpsManuprintparam_SoftModel,Gps_ManuPrintParam.js_Templatepath AS GpsManuprintparam_JsTemplatepath,Gps_ManuPrintParam.js_Refirstprinttime AS GpsManuprintparam_JsRefirstprinttime,Gps_ManuPrintParam.js_Reendprinttime AS GpsManuprintparam_JsReendprinttime,Gps_ManuPrintParam.ch_Templatepath1 AS GpsManuprintparam_ChTemplatepath1,Gps_ManuPrintParam.ch_Templatepath2 AS GpsManuprintparam_ChTemplatepath2,Gps_ManuPrintParam.ch_Refirstprinttime AS GpsManuprintparam_ChRefirstprinttime,Gps_ManuPrintParam.ch_Reendprinttime AS GpsManuprintparam_ChReendprinttime,Gps_ManuPrintParam.ch_Reprintnum AS GpsManuprintparam_ChReprintnum,Gps_ManuPrintParam.iCCID AS GpsManuprintparam_ICCID,Gps_ManuPrintParam.mAC AS GpsManuprintparam_MAC,Gps_ManuPrintParam.equipment AS GpsManuprintparam_Equipment,Gps_ManuPrintParam.rFID AS GpsManuprintparam_RFID,Gps_ManuPrintParam.iD AS GpsManuprintparam_ID,Gps_ManuPrintParam.iMEI AS GpsManuprintparam_IMEI,Gps_ManuPrintParam.sIM AS GpsManuprintparam_SIM,Gps_ManuPrintParam.vIP AS GpsManuprintparam_VIP,Gps_ManuPrintParam.bAT AS GpsManuprintparam_BAT,Gps_ManuPrintParam.remark AS GpsManuprintparam_Remark,Gps_ManuPrintParam.js_Printtime AS GpsManuprintparam_JsPrinttime,Gps_ManuPrintParam.js_Reprintnum AS GpsManuprintparam_JsReprintnum,Gps_ManuPrintParam.ch_Printtime AS GpsManuprintparam_ChPrinttime,Gps_ManuPrintParam.userName AS GpsManuprintparam_UserName,Gps_ManuPrintParam.version AS GpsManuprintparam_Version,Gps_ManuPrintParam.iMEIStart AS GpsManuprintparam_IMEIStart,Gps_ManuPrintParam.iMEIEnd AS GpsManuprintparam_IMEIEnd,Gps_ManuPrintParam.iMEIRel AS GpsManuprintparam_IMEIRel FROM DataRelativeSheet JOIN Gps_ManuPrintParam  ON DataRelativeSheet.IMEI1 = Gps_ManuPrintParam.IMEI";
 	
 	
-	public void download(String table, String ascBy, String descBy, String filter, OutputStream output, String fileName) throws Exception {
-		Page<Record> records = daoService.select(table, null, null, ascBy, descBy, filter, null);
-		ExcelHelper helper = ExcelHelper.create(true);
+	/**
+	 * 导出列表
+	 * @param table
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @param type
+	 * @param response
+	 * @throws Exception
+	 */
+	public void download(String table, String ascBy, String descBy, String filter, Integer type, HttpServletResponse response) throws Exception {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		Page<Record> records = null;
+		if (table.equals("Gps_ManuSimDataParam")) {
+			records = selectGpsManuSimDataParam(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter);
+		}else if (table.equals("Gps_ManuPrintParam")) {
+			records = selectGpsManuPrintParam(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter);
+		}else {
+			records = daoService.select(table, null, null, ascBy, descBy, filter, type);
+		}
+		int size = records.getTotalRow();
+		String fileName = table + "_" + simpleDateFormat.format(new Date()) + "_" + size + ".xls";
+		response.reset();
+		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
+		response.setContentType("application/vnd.ms-excel");
+		OutputStream output = response.getOutputStream();
+		ExcelHelper helper = ExcelHelper.create(false);
 		String[] field = null;
 		String[] head = null;
 		if (table.equals("Gps_AutoTest_Result") || table.equals("Gps_AutoTest_Result2") || table.equals("Gps_AutoTest_Result3") || table.equals("Gps_CoupleTest_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark"};
-			head =  new String[] { "序号", "SN号", "IMEI号", "制单号", "机型", "软件版本", "结果", "测试员", "测试电脑", "测试配置", "测试时间", "备注"};			
+			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark"};
 		}else if(table.equals("Gps_CartonBoxTwenty_Result")) {
 			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer"};
-			head =  new String[] { "序号", "箱号", "IMEI号", "制单号", "机型", "软件版本", "生产编码", "颜色", "Qty", "重量", "日期", "TACInfo", "公司名称", "测试人员", "测试时间", "备注1", "备注2", "备注3", "备注4", "备注5", "电脑名称"};
+			head = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer"};
 		}else if(table.equals("Gps_ManuLdParam")) {
 			field = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime"};
-			head =  new String[] { "序号", "镭雕成功时间", "主机IP", "制单号", "IMEI号", "递增SN号", "ICCID卡串号", "SIM卡号", "VIP号", "电池号", "设备号", "蓝牙号", "软件型号", "版本号", "备注", "镭雕结果", "此IMEI号重镭次数", "最后重镭时间"};
+			head = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime"};
 		}else if(table.equals("Gps_ManuPrintParam")) {			
 			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment"};
-			head =  new String[] { "序号", "制单号", "打印IMEI", "IMEI起始位", "IMEI终止位", "递增SN", "IMEI绑定关系", "SIM卡号", "服务卡号", "电池号", "软件型号", "软件版本", "备注", "机身贴打印时间", "机身贴模板路径", "机身贴重打次数", "机身贴首次重打次数", "机身贴末次重打次数", "用户名", "彩盒打印时间", "彩盒贴模板路径1", "彩盒贴模板路径2", "彩盒贴重打次数", "彩盒贴首次重打时间", "彩盒贴末次重打时间", "ICCID号", "蓝牙号", "设备号"};
+			head = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment"};
 		}else if(table.equals("Gps_TestResult")) {
 			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult"};
-			head =  new String[] { "序号", "序列号", "IMEI号", "软件型号", "版本号", "功能2测试位", "耦合测试位", "IMEI号烧写测试位", "参数下载测试位", "功能1测试位", "总测试位", "SMT自动测试结果", "制单号", "记录时间", "CPResult"};
+			head = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult"};
 		}else if(table.equals("DataRelativeSheet")) {
 			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate"};
-			head =  new String[] { "序列号SN", "IMEI号", "递增SN号", "SIM卡号", "ICCID卡串号", "密码", "蓝牙MAC", "设备号", "服务卡号", "电池序列号", "第二个锁ID", "IMEI11", "IMEI12", "制单号", "测试时间", "Sim卡最迟激活日期"};
+			head = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate"};
 		}else if(table.equals("GpsSMT_TcData") || table.equals("GpsTcData")) {
 			field = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11"};
-			head =  new String[] { "序号", "SN号", "定位方式", "GpsDb信息_1", "GpsDb信息_2", "GpsDb信息_3", "GpsDb信息_4", "GpsDb信息_5", "GpsDb信息_6", "GpsDb信息_7", "GpsDb信息_8", "GpsDb信息_9", "GpsDb信息_10", "GpsDb信息_11", "GpsDb信息_12"};
+			head = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11"};
 		}else if(table.equals("Gps_OperRecord")) {
 			field = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo"};
-			head =  new String[] { "序号", "操作用户", "操作事项", "操作时间", "OperDemo"};
+			head = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo"};
+		}else if (table.equals("DataRelativeUnique")) {
+			field = new String[] {"DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime"};
+			head = new String[] {"DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime"};
+		}else if (table.equals("Gps_ManuCpParam")) {
+			field = new String[] {"ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR"};
+			head = new String[] {"ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR"};
+		}else if (table.equals("NetMarkIMEI")) {
+			field = new String[] {"Id", "NetMark", "IMEI", "PrintCount", "SN"};
+			head = new String[] {"Id", "NetMark", "IMEI", "PrintCount", "SN"};
+		}else if (table.equals("Gps_ManuSimDataParam")) {
+			field = new String[] {"ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount"};
+			head = new String[] {"ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount"};
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);
 	}
-		
 	
+	
+	/**
+	 * 备份删除记录
+	 * @param table
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @param type
+	 * @throws Exception
+	 */
+	public void backup(String table, String ascBy, String descBy, String filter, Integer type) throws Exception {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+		Page<Record> records = null;
+		//判断表格名，选取恰当的查询方法
+		if (table.equals("Gps_ManuSimDataParam")) {
+			records = selectGpsManuSimDataParam(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter);
+		}else if (table.equals("Gps_ManuPrintParam")) {
+			records = selectGpsManuPrintParam(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter);
+		}else {
+			records = daoService.select(table, null, null, ascBy, descBy, filter, type);
+		}
+		int size = records.getTotalRow();
+		Date time = new Date();
+		String fileName = table + "_" + simpleDateFormat.format(time) + "_" + size + ".xls";
+		System.err.println(fileName);
+		ExcelHelper helper = ExcelHelper.create(false);
+		File dir = new File(getFilePath());
+		if (!dir.exists() || !dir.isDirectory()) {
+			dir.mkdirs();
+		}
+		File file = new File(getFilePath() + fileName);
+		if (file.exists()) {
+			file.delete();
+		}
+		file.createNewFile();
+		OutputStream output = new FileOutputStream(file);
+		String[] field = null;
+		String[] head = null;
+		if (table.equals("Gps_AutoTest_Result") || table.equals("Gps_AutoTest_Result2") || table.equals("Gps_AutoTest_Result3") || table.equals("Gps_CoupleTest_Result")) {
+			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark"};
+			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark"};
+		}else if(table.equals("Gps_CartonBoxTwenty_Result")) {
+			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer"};
+			head = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer"};
+		}else if(table.equals("Gps_ManuLdParam")) {
+			field = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime"};
+			head = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime"};
+		}else if(table.equals("Gps_ManuPrintParam")) {			
+			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment"};
+			head = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment"};
+		}else if(table.equals("Gps_TestResult")) {
+			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult"};
+			head = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult"};
+		}else if(table.equals("DataRelativeSheet")) {
+			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate"};
+			head = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate"};
+		}else if(table.equals("GpsSMT_TcData") || table.equals("GpsTcData")) {
+			field = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11"};
+			head = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11"};
+		}else if(table.equals("Gps_OperRecord")) {
+			field = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo"};
+			head = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo"};
+		}else if (table.equals("DataRelativeUnique")) {
+			field = new String[] {"DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime"};
+			head = new String[] {"DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime"};
+		}else if (table.equals("Gps_ManuCpParam")) {
+			field = new String[] {"ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR"};
+			head = new String[] {"ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR"};
+		}else if (table.equals("NetMarkIMEI")) {
+			field = new String[] {"Id", "NetMark", "IMEI", "PrintCount", "SN"};
+			head = new String[] {"Id", "NetMark", "IMEI", "PrintCount", "SN"};
+		}else if (table.equals("Gps_ManuSimDataParam")) {
+			field = new String[] {"ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount"};
+			head = new String[] {"ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount"};
+		}
+		helper.fill(records.getList(), fileName, field, head);
+		helper.write(output, true);
+		deleteHistoryService.add(fileName, file.getAbsolutePath(), time);
+	}
+	
+	
+	/**
+	 * 更新DataRelativeSheet
+	 * @param dataRelativeSheet
+	 * @return
+	 */
 	public boolean updateRelativeSheet(DataRelativeSheet dataRelativeSheet) {
 		if(dataRelativeSheet.getIMEI1() == null) {
 			throw new ParameterException("only update the dataRelativeSheet have the IMEI1");
@@ -63,9 +198,101 @@ public class ReportService extends SelectService{
 		if (sheet == null) {
 			dataRelativeSheet.setTestTime(new Date());
 			return dataRelativeSheet.save();
-		}		
+		}
 		return dataRelativeSheet.update();
 	}
 	
 	
+	public Page<Record> selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		return daoService.select(SELECT_DATARELATIVESHEET_AND_PRINTPARAM, pageNo, pageSize, ascBy, descBy, filter);
+	}
+	
+	
+	public Page<Record> selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		SqlPara sqlPara = new SqlPara();
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT * FROM Gps_ManuPrintParam");
+		if (!filter.equals("")) {
+			sql.append(" where " + filter);
+		}
+		createOrderBy(ascBy, descBy, sql);
+		sqlPara.setSql(sql.toString());
+		System.err.println(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+	
+	
+	public Page<Record> selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		SqlPara sqlPara = new SqlPara();
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT * FROM Gps_ManuSimDataParam");
+		if (!filter.equals("")) {
+			sql.append(" where " + filter);
+		}
+		createOrderBy(ascBy, descBy, sql);
+		sqlPara.setSql(sql.toString());
+		System.err.println(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+	
+	
+	public void delete(String table, String filter, Integer type) {
+		try {
+			backup(table, null, null, filter, type);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new OperationException("备份数据失败，删除失败");
+		}
+		deleteService.delete(table, filter, type);
+	}
+	
+	
+	public void deleteGpsManuPrintParam(String filter){
+		String table = "Gps_ManuPrintParam";
+		try {
+			backup(table, null, null, filter, null);
+		} catch (Exception e) {
+			throw new OperationException("备份数据失败，删除失败");
+		}
+		String sql = null;
+		if (!filter.equals("")) {
+			sql = "delete from " + table + " where " + filter;
+		}else {
+			throw new OperationException("请填写删除条件");
+		}
+		deleteService.delete(sql);
+	}
+	
+	
+	public void deleteGpsManuSimDataParam(String filter){
+		String table = "Gps_ManuSimDataParam";
+		try {
+			backup(table, null, null, filter, null);
+		} catch (Exception e) {
+			throw new OperationException("备份数据失败，删除失败");
+		}
+		String sql = null;
+		if (!filter.equals("")) {
+			sql = "delete from " + table + " where " + filter;
+		}else {
+			throw new OperationException("请填写删除条件");
+		}
+		deleteService.delete(sql);
+	}
+	
+	
+	private void createOrderBy(String ascBy, String descBy, StringBuffer sql) {
+		if(ascBy != null && descBy != null ) {
+			throw new ParameterException("ascBy and descBy can not be provided at the same time");
+		}else if(ascBy != null) {
+			sql.append(" ORDER BY " + ascBy + " ASC ");
+		}else if(descBy != null){
+			sql.append(" ORDER BY " + descBy + " DESC ");
+		}
+	}
+	
+	
+	private String getFilePath() {
+		return "D:" + File.separator + "back" + File.separator;
+	}
 }

@@ -14,6 +14,7 @@ import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
+import com.jimi.mes_server.controller.DeleteHistoryController;
 import com.jimi.mes_server.controller.OrderController;
 import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
@@ -121,6 +122,7 @@ public class MesConfig extends JFinalConfig {
 		me.add("/user", UserController.class);
 		me.add("/redTea", RedTeaController.class);
 		me.add("/test", TestController.class);
+		me.add("/history", DeleteHistoryController.class);
 	}
 	
 	
