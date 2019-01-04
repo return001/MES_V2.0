@@ -1,0 +1,55 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: WriteIMEI - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Debug/WriteIMEI.res" /d "_DEBUG" "F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEI.rc"" 
+Creating temporary file "F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C1.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/WriteIMEI.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\ColReadOnlyEdit.cpp"
+"F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEI.cpp"
+"F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEIDlg.cpp"
+]
+Creating command line "cl.exe @F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C1.tmp" 
+Creating temporary file "F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C2.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/WriteIMEI.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\StdAfx.cpp"
+]
+Creating command line "cl.exe @F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C2.tmp" 
+Creating temporary file "F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C3.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:"Debug/WriteIMEI.pdb" /debug /machine:I386 /out:"Debug/WriteIMEI.exe" /pdbtype:sept 
+".\Debug\ColReadOnlyEdit.obj"
+".\Debug\StdAfx.obj"
+".\Debug\WriteIMEI.obj"
+".\Debug\WriteIMEIDlg.obj"
+".\Debug\WriteIMEI.res"
+]
+Creating command line "link.exe @F:\DOCUME~1\libinc\LOCALS~1\Temp\RSP12C3.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+ColReadOnlyEdit.cpp
+WriteIMEI.cpp
+WriteIMEIDlg.cpp
+F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEIDlg.cpp(326) : warning C4018: '!=' : signed/unsigned mismatch
+F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEIDlg.cpp(376) : warning C4018: '!=' : signed/unsigned mismatch
+F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEIDlg.cpp(430) : warning C4018: '!=' : signed/unsigned mismatch
+F:\Documents and Settings\libinc\桌面\15983221IMEIWriter\SN_IMEI Writer\WriteIMEIDlg.cpp(483) : warning C4018: '!=' : signed/unsigned mismatch
+Generating Code...
+Linking...
+
+
+
+<h3>Results</h3>
+WriteIMEI.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

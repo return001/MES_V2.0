@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>MultComTest</ProjectName>
+    <ProjectGuid>{47CE7E6B-84AC-4F4C-918C-D7FE6EC95A08}</ProjectGuid>
+    <RootNamespace>WriteIMEI</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/WriteIMEI.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\\.\Common\Printer;././/Common//MTK_INCLUDE;.\\.\Common\Include;.\\.\Common\LeadCore\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/WriteIMEI.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>PhoneCommand.lib;META_DLL.lib;SPMETA_DLL.lib;META_APP.lib;brom.lib;eboot.lib;SLA_Challenge.lib;FlashtoolLib.lib;USBSwitchDLLibrary.lib;xboot.lib;visa32.lib;KeyboardHook.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release/MultComTest.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>.\\.\Common\Bin;.\\.\Common\MTK_LIB;.\\.\Common\LeadCore\lib;.\\.\Common\HOOK;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ProgramDatabaseFile>.\Release/WriteIMEI.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/WriteIMEI.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/WriteIMEI.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\\.\Common\Printer;.\\.\Common\Include;.\\.\Common\LeadCore\Include;.//Common//MTK_INCLUDE;./././/Common//MTK_INCLUDE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Debug/WriteIMEI.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>PhoneCommand.lib;META_DLL.lib;SPMETA_DLL.lib;META_APP.lib;brom.lib;eboot.lib;SLA_Challenge.lib;FlashtoolLib.lib;USBSwitchDLLibrary.lib;xboot.lib;visa32.lib;KeyboardHook.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug/MultComTest.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>.\\.\Common\Bin;.\\.\Common\MTK_LIB;.\\.\Common\LeadCore\lib;.\\.\Common\HOOK;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/WriteIMEI.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/WriteIMEI.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ActiveSock.cpp" />
+    <ClCompile Include="AdoInterface.cpp" />
+    <ClCompile Include="bartender.cpp" />
+    <ClCompile Include="BT_Addr_Setting.cpp" />
+    <ClCompile Include="ColReadOnlyEdit.cpp" />
+    <ClCompile Include="ComboListCtrl.cpp" />
+    <ClCompile Include="Common\Printer\ConvertCHN.cpp" />
+    <ClCompile Include="CSpreadSheet.cpp" />
+    <ClCompile Include="DataBase.cpp" />
+    <ClCompile Include="DeleteDB_Data_Confirm.cpp" />
+    <ClCompile Include="FlatHeaderCtrl.cpp" />
+    <ClCompile Include="FunctionContext.cpp" />
+    <ClCompile Include="IMEIWrite_MulAT.cpp" />
+    <ClCompile Include="IniFile.cpp" />
+    <ClCompile Include="InPlaceCombo.cpp" />
+    <ClCompile Include="InPlaceEdit.cpp" />
+    <ClCompile Include="JPGUnion\BasicUse.cpp" />
+    <ClCompile Include="JPGUnion\BjfProcess.cpp" />
+    <ClCompile Include="JPGUnion\CombineImages.cpp" />
+    <ClCompile Include="JPGUnion\PictureProcess.cpp" />
+    <ClCompile Include="LeadcoreChip.cpp" />
+    <ClCompile Include="LibincStory.cpp" />
+    <ClCompile Include="Login.cpp" />
+    <ClCompile Include="Login2.cpp" />
+    <ClCompile Include="Login3.cpp" />
+    <ClCompile Include="md5.cpp" />
+    <ClCompile Include="PackingPrint.cpp" />
+    <ClCompile Include="Para1.cpp" />
+    <ClCompile Include="PictureEx.cpp" />
+    <ClCompile Include="RadioTest\CSRBTHostControl.cpp" />
+    <ClCompile Include="ReportCtrl.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TagsBatchPrint.cpp" />
+    <ClCompile Include="ThumbnailBox.cpp" />
+    <ClCompile Include="ThumbnailBoxDlg.cpp" />
+    <ClCompile Include="UDP.cpp" />
+    <ClCompile Include="UserSetting.cpp" />
+    <ClCompile Include="WriteIMEI.cpp" />
+    <ClCompile Include="WriteIMEIDlg.cpp" />
+    <ClCompile Include="yxyDES.cpp" />
+    <ClCompile Include="ZebraPrinter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WriteIMEI.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ActiveSock.h" />
+    <ClInclude Include="AdoInterface.h" />
+    <ClInclude Include="bartender.h" />
+    <ClInclude Include="BT_Addr_Setting.h" />
+    <ClInclude Include="ColReadOnlyEdit.h" />
+    <ClInclude Include="ComboListCtrl.h" />
+    <ClInclude Include="Common\Printer\ConvertCHN.h" />
+    <ClInclude Include="CSpreadSheet.h" />
+    <ClInclude Include="DataBase.h" />
+    <ClInclude Include="DeleteDB_Data_Confirm.h" />
+    <ClInclude Include="EventWrapper.h" />
+    <ClInclude Include="FlatHeaderCtrl.h" />
+    <ClInclude Include="FunctionContext.h" />
+    <ClInclude Include="IMEIWrite_MulAT.h" />
+    <ClInclude Include="IniFile.h" />
+    <ClInclude Include="InPlaceCombo.h" />
+    <ClInclude Include="InPlaceEdit.h" />
+    <ClInclude Include="ISocketStream.h" />
+    <ClInclude Include="JPGUnion\BasicUse.h" />
+    <ClInclude Include="JPGUnion\BjfProcess.h" />
+    <ClInclude Include="JPGUnion\CombineImages.h" />
+    <ClInclude Include="JPGUnion\PictureProcess.h" />
+    <ClInclude Include="LeadcoreChip.h" />
+    <ClInclude Include="LibincStory.h" />
+    <ClInclude Include="Login.h" />
+    <ClInclude Include="Login2.h" />
+    <ClInclude Include="Login3.h" />
+    <ClInclude Include="md5.h" />
+    <ClInclude Include="PackingPrint.h" />
+    <ClInclude Include="Para1.h" />
+    <ClInclude Include="PhoneCommand.h" />
+    <ClInclude Include="PictureEx.h" />
+    <ClInclude Include="ReportCtrl.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="TagsBatchPrint.h" />
+    <ClInclude Include="ThumbnailBox.h" />
+    <ClInclude Include="ThumbnailBoxDlg.h" />
+    <ClInclude Include="UDP.h" />
+    <ClInclude Include="UserSetting.h" />
+    <ClInclude Include="WriteIMEI.h" />
+    <ClInclude Include="WriteIMEIDlg.h" />
+    <ClInclude Include="yxyDES.h" />
+    <ClInclude Include="ZebraPrinter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\1.bmp" />
+    <Image Include="res\2.bmp" />
+    <Image Include="res\2222.ico" />
+    <Image Include="res\AutoTest.bmp" />
+    <Image Include="res\AutoTest2.bmp" />
+    <Image Include="res\bitmap4.bmp" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\ihuan.gif" />
+    <Image Include="res\katong14.bmp" />
+    <Image Include="res\professsional.bmp" />
+    <Image Include="res\professsional2.bmp" />
+    <Image Include="res\professsional3.bmp" />
+    <Image Include="res\PS.ico" />
+    <Image Include="res\S.bmp" />
+    <Image Include="res\WriteIMEI.ico" />
+    <Image Include="res\Y.bmp" />
+    <Image Include="res\德赛.bmp" />
+    <Image Include="res\德赛2.bmp" />
+    <Image Include="res\联代.bmp" />
+    <Image Include="res\钥匙.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="res\wave1.bin" />
+    <None Include="res\WriteIMEI.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="res\QQQQ.wav" />
+    <Media Include="res\REC_fail.wav" />
+    <Media Include="res\REC_success.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ResizableLib\ResizableLib.vcxproj">
+      <Project>{1788120b-507a-48c1-9903-8301dde3d17b}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="WriteIMEI.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

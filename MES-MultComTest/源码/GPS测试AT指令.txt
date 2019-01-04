@@ -1,0 +1,22 @@
+AT^GT_CM=RELAY_L   继电器吸合RELAY_L_OK
+RELAY_L
+
+
+AT^GT_CM=RELAY_H    继电器断开RELAY_H_OK
+RELAY_H
+
+
+AT^GT_CM=_SYS,B     152功能测试
+Abnormal number of restarts:5
+Recorded the cause of the restart list:
+2015-06-09 12:32:31 128;
+2015-06-09 12:12:03 128;
+2015-06-09 11:51:35 128;
+2015-06-09 11:31:08 128;
+2015-06-09 11:10:40 128;
+2015-06-09 10:50:12 128;
+1970-01-01 00:00:00 0;
+
+T^GT_CM=BMT    电池电压
+charge in, vBat=4.13V,iChr=0.20A,vChr=4.79V
+

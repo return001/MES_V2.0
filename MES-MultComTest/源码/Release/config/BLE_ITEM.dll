@@ -1,0 +1,44 @@
+[BLE]
+失败立即停止=true@@重试次数@@3@@IDLE
+串口响应等待=false@@1@@ONm@@ON->一直打开
+配置1=false@@老化后测试@@170@@总是(3000)
+配置2=true@@AT^GT_CM=TEST**TEST_OK@@7@@GPS卫星数量
+开始=false@@Start@@NULL@@NULL
+关闭GPS测试DL300=true@@GPSTC_OFF@@NULL@@AT^GT_CM=GPSTC,0
+GPS冷启动=true@@GPSCOLD_OK@@NULL@@AT^GT_CM=GPSCOLD
+GPS关闭=true@@GPS off@@NULL@@AT^GT_CM=PCBA,GPS,OFF
+GPS开启=true@@GPS on@@NULL@@AT^GT_CM=PCBA,GPS,ON
+定位时间=true@@FSTTIME@@待定@@AT^GT_CM=FSTTIME
+芯片ID=true@@RID@@项目名称不可变@@AT^GT_CM=ID,1
+IMEI检查=true@@OK@@项目名称不可变@@AT+EGMR=0,7
+软件版本=true@@GT06E@@项目名称不可变@@AT^GT_CM=VERSION
+查看域名=true@@www.coo@@NULL@@AT^GT_CM=SCXSZ
+SIM检测=true@@ESIMS: 1@@NULL@@AT+ESIMS
+拨打电话=true@@OK@@NULL@@ATD112;
+挂断电话=true@@OK@@NULL@@ATH
+信号强度=true@@+CSQ:@@有值@@AT+CSQ
+开启喇叭=true@@SPEAKER_ON_OK@@NULL@@AT^GT_CM=SPEAKER_ON
+关闭喇叭=true@@SPEAKER_OFF_OK@@NULL@@AT^GT_CM=SPEAKER_OFF
+继电器吸合复位=true@@RELAY_H_OK@@NULL@@AT^GT_CM=RELAY_H
+继电器吸合DL200=true@@ACC_H@@NULL@@AT^GT_CM=RELAY_L
+152功能测试=true@@Abnormal number of restarts:@@1,19,@@AT^GT_CM=_SYS,B
+电池电压DL500=true@@charge in@@4.6,4.8,   0.2,0.5,   4.8,5.1,@@AT^GT_CM=BMT
+继电器断开DL200=true@@ACC_L@@NULL@@AT^GT_CM=RELAY_H
+断外电=true@@output H ok@@NULL@@AT^GT_CM=PCBA,GPIO,7,H
+校准补偿=true@@118_109@@NULL@@AT^GT_CM=ADC_BC,12,0.4
+对比电压DL200=true@@no charge@@11.85,12.15,@@AT^GT_CM=PCBA,PMU,EXT
+恢复外电=true@@GPIO-7 output L ok@@NULL@@AT^GT_CM=PCBA,GPIO,7,L
+确认外电=true@@charge in,@@NULL@@AT^GT_CM=BMT
+开蜂鸣器DL500=true@@MIC Voice OK@@NULL@@AT^GT_CM=MIC,5,300
+关麦克=false@@MIC NOT Ready!@@NULL@@AT^GT_CM=MIC,2,600
+灯亮=true@@LED ON#@@NULL@@AT^GT_CM=TEST
+灯灭=true@@LED OFF#@@NULL@@AT^GT_CM=TEST
+打开GPS测试DL1000=true@@GPGSV@@35,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60, 40,60,@@AT^GT_CM=GPSTC
+关闭GPS测试DL500=true@@GPSTC_OFF@@NULL@@AT^GT_CM=GPSTC,0
+SOS按键DL500=true@@KEY_ON@@NULL@@AT^GT_CM=TEST
+按键1=true@@EINT:11,LEVEL:0,KEY_ON@@NULL@@AT^GT_CM=TEST
+震动=true@@SENSOR_OK@@NULL@@AT^GT_CM=TEST
+改Link=true@@OK@@NULL@@AT^GT_CM=LINK,6
+查Link=true@@LINK:6@@NULL@@AT^GT_CM=LINK
+恢复出厂设置=false@@118_109@@NULL@@IDLE
+按键2DL300=true@@118_109@@NULL@@IDLE
