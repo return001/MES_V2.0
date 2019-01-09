@@ -28,9 +28,11 @@ import com.jimi.mes_server.util.TokenBox;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class ReportController extends Controller {
-
-	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+	
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
+	
+	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+	
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
 	/*
 	 * public static void main(String[] args) { PropKit.use("properties.ini");
@@ -43,18 +45,49 @@ public class ReportController extends Controller {
 	 */
 
 
+	/**
+	 * 根据表名和其他条件查询数据库
+	 * @param table
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @param type
+	 */
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		ResultUtil result = ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, type));
 		renderJson(result);
 	}
 
 
+	/**
+	 * 根据条件查询DataRelativeSheet表
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 */
 	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter));
 		renderJson(result);
 	}
 
 
+	/**
+	 * 根据条件查询Gps_ManuPrintParam表
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param printType
+	 */
 	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -84,6 +117,19 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件查询Gps_ManuSimDataParam
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param rID
+	 */
 	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -108,6 +154,12 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件删除数据库记录
+	 * @param table
+	 * @param filter
+	 * @param type
+	 */
 	@Access({"SuperAdmin", "admin"})
 	public void delete(String table, String filter, Integer type) {
 		if (table.equals("Gps_ManuCpParam")) {
@@ -123,9 +175,9 @@ public class ReportController extends Controller {
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
 		}
-		String[] deltePermissions = user.getDeletePermission().split(",");
-		for (int i = 0; i < deltePermissions.length; i++) {
-			if (deltePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
+		String[] deletePermissions = user.getDeletePermission().split(",");
+		for (int i = 0; i < deletePermissions.length; i++) {
+			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
 				reportService.delete(table, filter, type);
 				renderJson(ResultUtil.succeed());
 				return;
@@ -135,6 +187,15 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件删除Gps_ManuPrintParam表记录
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param printType
+	 */
 	@Access({"SuperAdmin", "admin"})
 	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -170,9 +231,9 @@ public class ReportController extends Controller {
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
 		}
-		String[] deltePermissions = user.getDeletePermission().split(",");
-		for (int i = 0; i < deltePermissions.length; i++) {
-			if (deltePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
+		String[] deletePermissions = user.getDeletePermission().split(",");
+		for (int i = 0; i < deletePermissions.length; i++) {
+			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
 				reportService.deleteGpsManuPrintParam(filter);
 				renderJson(ResultUtil.succeed());
 				return ;
@@ -183,6 +244,15 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件删除Gps_ManuSimDataParam记录
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param rID
+	 */
 	@Access({"SuperAdmin", "admin"})
 	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -214,9 +284,9 @@ public class ReportController extends Controller {
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
 		}
-		String[] deltePermissions = user.getDeletePermission().split(",");
-		for (int i = 0; i < deltePermissions.length; i++) {
-			if (deltePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
+		String[] deletePermissions = user.getDeletePermission().split(",");
+		for (int i = 0; i < deletePermissions.length; i++) {
+			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
 				reportService.deleteGpsManuSimDataParam(filter);
 				renderJson(ResultUtil.succeed());
 				return;
@@ -256,6 +326,17 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件下载Gps_ManuPrintParam表记录
+	 * @param ascBy
+	 * @param descBy
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param printType
+	 */
 	@Access({"SuperAdmin"})
 	public void downloadGpsManuPrintParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String filter = "";
@@ -300,6 +381,17 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据条件下载Gps_ManuSimDataParam表记录
+	 * @param ascBy
+	 * @param descBy
+	 * @param startIMEI
+	 * @param endIMEI
+	 * @param zhiDan
+	 * @param startTime
+	 * @param endTime
+	 * @param rID
+	 */
 	@Access({"SuperAdmin"})
 	public void downloadGpsManuSimDataParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String filter = "";
@@ -355,6 +447,12 @@ public class ReportController extends Controller {
 	}
 
 
+	/**
+	 * 根据模板转换时间为字符串
+	 * @param time
+	 * @param pattern
+	 * @return
+	 */
 	private static String formatDateToString(Date time, String pattern) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 		String timeString = simpleDateFormat.format(time);

@@ -22,3 +22,21 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 /web/mes_server/target/tomcat/logs
+web/mes_server/.classpath
+web/mes_server/.gitignore
+web/mes_server/.project
+web/mes_server/.settings/org.eclipse.core.resources.prefs
+web/mes_server/.settings/org.eclipse.wst.validation.prefs
+web/mes_server/.settings/org.eclipse.wst.common.project.facet.core.xml
+web/mes_server/.settings/org.eclipse.wst.common.project.facet.core.prefs.xml
+web/mes_server/.settings/org.eclipse.wst.common.component
+web/mes_server/.settings/org.eclipse.m2e.core.prefs
+web/mes_server/.settings/org.eclipse.jdt.core.prefs
+web/mes_server/bin/target/m2e-wtp/web-resources/META-INF/maven/com.jimi/mes_server/pom.properties
+web/mes_server/bin/target/m2e-wtp/web-resources/META-INF/MANIFEST.MF
+web/mes_server/bin/target/classes/properties.ini
+web/mes_server/bin/target/classes/log4j.properties
+web/mes_server/bin/src/main/resources/properties.ini
+web/mes_server/bin/src/main/webapp/WEB-INF/web.xml
+web/mes_server/bin/target/m2e-wtp/web-resources/META-INF/maven/com.jimi/mes_server/pom.xml
+web/mes_server/bin/pom.xml

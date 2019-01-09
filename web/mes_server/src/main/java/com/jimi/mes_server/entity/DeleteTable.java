@@ -1,5 +1,13 @@
 package com.jimi.mes_server.entity;
 
+
+/**
+ * 可删除表枚举类
+ * @type DeleteTable
+ * @Company 几米物联技术有限公司-自动化部
+ * @author 汤如杰
+ * @date 2019年1月8日
+ */
 public enum DeleteTable {
 	
 	DataRelativeSheet("DataRelativeSheet",0),

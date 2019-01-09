@@ -9,6 +9,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletResponse;
 
 import com.jfinal.aop.Enhancer;
+import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
@@ -203,11 +204,29 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 根据条件查询DataRelativeSheet
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @return
+	 */
 	public Page<Record> selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		return daoService.select(SELECT_DATARELATIVESHEET_AND_PRINTPARAM, pageNo, pageSize, ascBy, descBy, filter);
 	}
 	
 	
+	/**
+	 * 根据条件查询Gps_ManuPrintParam
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @return
+	 */
 	public Page<Record> selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		SqlPara sqlPara = new SqlPara();
 		StringBuffer sql = new StringBuffer();
@@ -222,6 +241,15 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 根据条件查询Gps_ManuSimDataParam
+	 * @param pageNo
+	 * @param pageSize
+	 * @param ascBy
+	 * @param descBy
+	 * @param filter
+	 * @return
+	 */
 	public Page<Record> selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		SqlPara sqlPara = new SqlPara();
 		StringBuffer sql = new StringBuffer();
@@ -236,6 +264,12 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 根据条件删除并备份记录
+	 * @param table
+	 * @param filter
+	 * @param type
+	 */
 	public void delete(String table, String filter, Integer type) {
 		try {
 			backup(table, null, null, filter, type);
@@ -247,6 +281,10 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 根据条件删除并备份表Gps_ManuPrintParam记录
+	 * @param filter
+	 */
 	public void deleteGpsManuPrintParam(String filter){
 		String table = "Gps_ManuPrintParam";
 		try {
@@ -264,6 +302,10 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 根据条件删除并备份表Gps_ManuSimDataParam记录
+	 * @param filter
+	 */
 	public void deleteGpsManuSimDataParam(String filter){
 		String table = "Gps_ManuSimDataParam";
 		try {
@@ -292,7 +334,11 @@ public class ReportService extends SelectService{
 	}
 	
 	
+	/**
+	 * 获取备份文件存储路径
+	 * @return
+	 */
 	private String getFilePath() {
-		return "D:" + File.separator + "back" + File.separator;
+		return PathKit.getWebRootPath() + File.separator + "backup" + File.separator;
 	}
 }
