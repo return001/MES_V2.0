@@ -67,7 +67,6 @@
           };
           let that = this;
           axiosFetch(options).then(response => {
-            console.log("jksahdcaksjch");
             if(response.data){
              let result = response.data.result;
               if(result === 200){

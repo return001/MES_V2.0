@@ -11,7 +11,7 @@
   import Qs from 'qs'
   import {axiosFetch} from "../../../../utils/fetchData";
   import {mapGetters, mapActions} from 'vuex'
-  import {setRouterConfig, routerUrl} from "../../../../config/orderApiConfig";
+  import {getOrderConfig, orderSelectUrl} from "../../../../config/orderApiConfig";
   import EditOptions from './EditOptions';
   import EditPanel from './EditPanel';
   import {errHandler} from "../../../../utils/errorHandler";
@@ -57,7 +57,7 @@
         this.setLoading(true);
         if (route.query.type) {
           let options = {
-            url: routerUrl,
+            url: orderSelectUrl,
             data: {
               pageNo: 1,
               pageSize: 20,
@@ -94,7 +94,7 @@
       },
       thisFetch: function (opt) {
         let options = {
-          url: routerUrl,
+          url: orderSelectUrl,
           data: {
             pageNo: 1,
             pageSize: 20,
@@ -104,7 +104,7 @@
         this.fetchData(options)
       },
       fetchData: function (options) {
-        let routerConfig = setRouterConfig('order_manage');
+        let routerConfig = getOrderConfig('order_manage');
         this.columns = routerConfig.data.dataColumns;
         if (!this.isPending) {
           this.isPending = true;
@@ -165,7 +165,7 @@
       },
       dataFilter: function () {
         let options = {
-          url: routerUrl,
+          url: orderSelectUrl,
           data: {
             descBy: 'ProductDate'
           }

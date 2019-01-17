@@ -21,3 +21,6 @@ export const setEditData = (state, editData) => {
 export const setCopyData = (state, copyData) => {
   state.copyData = copyData
 };
+export const setTestType = (state, testType) => {
+  state.testType = testType
+};

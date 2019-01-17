@@ -3,8 +3,17 @@
     <div class="form-area col">
       <div class="options-area">
         <div class="form-row">
+          <div v-for="item in queryOptions" class="row no-gutters pl-3 pr-3">
+            <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
+          </div>
           <div class="form-group row align-items-end">
-            <button type="button" class="btn btn-primary ml-3" @click="addUser">添加用户</button>
+            <button type="button" class="btn btn-primary ml-3 mr-4" @click="addUser">添加用户</button>
+          </div>
+          <div class="form-group row align-items-end">
+            <div class="btn btn-secondary ml-3 mr-4" @click="initForm">清空条件</div>
+          </div>
+          <div class="form-group row align-items-end">
+            <div class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</div>
           </div>
         </div>
       </div>
@@ -19,7 +28,7 @@
               </div>
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="user-pwd" class="col-form-label">密码:</label>
-                <input type="password" id="user-pwd" class="form-control" v-model="userData.userPwd">
+                <input type="password" id="user-pwd" class="form-control" v-model="userData.userPwd" autocomplete="off">
               </div>
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="user-des" class="col-form-label">用户描述:</label>
@@ -72,13 +81,61 @@
           userType: '',
           userTestPlan: ''
         },
-        isPending: false
+        isPending: false,
+        queryOptions: [
+          {
+            id: 'UserName',
+            name: '用户名',
+            model: '',
+            type: 'text'
+          },
+          {
+            id: 'InService',
+            name: '是否启用',
+            model: '',
+            type: 'select',
+            list: [
+              {
+                value: false,
+                string: '禁用状态'
+              },
+              {
+                value: true,
+                string: '启用状态'
+              }
+            ]
+          }
+        ],
       }
     },
     components: {
+      'text-comp': {
+        props: ['opt', 'callback'],
+        template: '<div class="form-group col pr-3"">\n' +
+        '           <label :for="opt.id">{{opt.name}}：</label>\n' +
+        '           <input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback" autocomplete="off">\n' +
+        '          </div>'
+      },
+      'select-comp': {
+        props: ['opt'],
+        template: '<div class="row">\n' +
+        '      <div class="form-group col pr-3">\n' +
+        '        <label :for="opt.id">{{opt.name}}：</label>\n' +
+        '        <select :id="opt.id" v-model="opt.model" class="custom-select">\n' +
+        '          <option value="" disabled>请选择</option>\n' +
+        '          <option :value="item.value"  v-for="item in opt.list">{{item.string}}</option>\n' +
+        '        </select>\n' +
+        '      </div>\n' +
+        '    </div>'
+      },
       UserDetails
     },
     methods: {
+      initForm: function () {
+        this.queryOptions.map(item => {
+          item.model = "";
+        })
+      },
       addUser: function () {
         this.isAdding = true;
       },
@@ -117,7 +174,47 @@
             return;
           }
         }
-        console.log(this.userData.map())
+      },
+      createQueryString: function () {
+        this.queryString = "";
+        this.copyQueryOptions = this.queryOptions.filter((item) => {
+          if (!(item.model === "")) {
+            return true;
+          }
+        });
+
+        this.copyQueryOptions.map((item, index) => {
+          if (item.type === 'text' || item.type === 'select') {
+            if (_.trim(item.model) !== "") {
+              if (index === 0) {
+                this.queryString += (item.id + "=" + _.trim(item.model))
+              } else {
+                this.queryString += ("&" + item.id + "=" + _.trim(item.model))
+              }
+
+            } else {
+              this.setLoading(false)
+            }
+          }
+
+        })
+      },
+      fetchData: function () {
+        let options = {
+          path: '/users',
+          query: {}
+        };
+        if (this.queryString !== "") {
+          options.query.filter = this.queryString
+        }
+
+        this.$router.push('_empty');
+        this.$router.replace(options)
+
+      },
+      thisFetch: function () {
+        this.createQueryString();
+        this.fetchData()
       }
     }
   }

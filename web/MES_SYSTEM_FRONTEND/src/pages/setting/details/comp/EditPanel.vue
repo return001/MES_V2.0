@@ -436,13 +436,14 @@
 
 <style scoped>
   .edit-panel-container {
-    position: absolute;
+    position: fixed;
     /*display: flex;*/
     /*align-items: center;*/
     /*justify-content: center;*/
     /*height: 100%;*/
-    margin-bottom: 20px;
+    padding: 20px;
     width: 100%;
+    height: 100%;
     left: 0;
     top: 0;
     background: rgba(0, 0, 0, 0.1);
@@ -457,5 +458,23 @@
     border-radius: 10px;
     box-shadow: 3px 3px 20px 1px #bbb;
     padding: 30px 60px 10px 60px;
+    overflow: scroll;
+    scroll-snap-type: inline;
+  }
+  .edit-panel::-webkit-scrollbar {
+    width: 10px;
+    height: 1px;
+  }
+
+  .edit-panel::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
+    background: rgba(54, 54, 54, 0.14);
+  }
+
+  .edit-panel::-webkit-scrollbar-track {
+    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
+    border-radius: 10px;
+    background: #EDEDED;
   }
 </style>

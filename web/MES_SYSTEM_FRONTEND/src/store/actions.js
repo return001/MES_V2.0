@@ -22,3 +22,6 @@ export const setEditData = ({commit}, editData) => {
 export const setCopyData = ({commit}, copyData) => {
   commit('setCopyData', copyData)
 };
+export const setTestType = ({commit}, testType) => {
+  commit('setTestType', testType)
+};

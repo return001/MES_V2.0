@@ -13,3 +13,7 @@ export const userAddUrl = url + '/mes_server/user/add';
 export const userQueryUrl = url + '/mes_server/user/select';
 
 export const redTeaUrl = url + '/mes_server/redTea/findCId';
+
+export const tableDownloadUrl = url + '/mes_server/report/download';
+
+export const relationUpdateUrl = url + '/mes_server/report/updateRelativeSheet';

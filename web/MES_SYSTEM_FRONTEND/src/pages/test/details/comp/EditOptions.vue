@@ -1,4 +1,4 @@
-<!--订单编辑页面中的操作栏项目-->
+<!--测试编辑页面中的操作栏项目-->
 <template>
   <div class="edit-options form-row">
     <div class="btn pl-1 pr-1" title="编辑" data-placement="top" @click="editThis(row)">
@@ -7,72 +7,75 @@
     <div class="btn pl-1 pr-1" title="复制" @click="copyFrom(row)">
       <icon name="copy" scale="1.8"></icon>
     </div>
-    <div class="btn pl-1 pr-1" title="状态" @click="editStatus(row)">
-      <icon name="menu" scale="1.8"></icon>
-    </div>
-    <div class="btn pl-1 pr-1" title="绑定关系" @click="isCreatingRel = !isCreatingRel">
-      <icon name="bind" scale="1.8"></icon>
+    <div class="btn pl-1 pr-1" title="作废" @click="delData(row)">
+      <icon name="cancel" scale="1.8"></icon>
     </div>
     <transition name="fade">
-      <create-relation v-if="isCreatingRel" :data="row"/>
-    </transition>
-    <transition name="fade">
-      <div class="status-panel" v-if="isStatusPanel">
+      <div class="status-panel" v-if="isDeletePanel">
         <div class="status-panel-container form-row flex-column justify-content-between">
-          <div class="form-row">
-            <label for="status-select" class="col-form-label">状态更改:</label>
-            <select id="status-select" class="custom-select"
-                    v-model="thisRow.Status">
-              <option value="" disabled>请选择</option>
-              <option value="0">未开始</option>
-              <option value="1">进行中</option>
-              <option value="2">已完成</option>
-              <option value="3">已作废</option>
-            </select>
-          </div>
-          <div class="dropdown-divider"></div>
+          <h4>是否作废该测试配置？</h4>
           <div class="form-row justify-content-around">
-            <a class="btn btn-secondary col mr-1 text-white" @click="isStatusPanel = !isStatusPanel">取消</a>
-            <a class="btn btn-primary col ml-1 text-white" @click="statusSubmit">提交</a>
+            <a class="btn btn-secondary col mr-1 text-white" @click="isDeletePanel = !isDeletePanel">取消</a>
+            <a class="btn btn-primary col ml-1 text-white" @click="submitDel">确认</a>
           </div>
         </div>
       </div>
     </transition>
+    <!--<div class="btn pl-1 pr-1" title="状态" @click="editStatus(row)">-->
+    <!--<icon name="menu" scale="1.8"></icon>-->
+    <!--</div>-->
+    <!--<transition name="fade">-->
+    <!--<div class="status-panel" v-if="isStatusPanel">-->
+    <!--<div class="status-panel-container form-row flex-column justify-content-between">-->
+    <!--<div class="form-row">-->
+    <!--<label for="status-select" class="col-form-label">状态更改:</label>-->
+    <!--<select id="status-select" class="custom-select"-->
+    <!--v-model="thisRow.Status">-->
+    <!--<option value="" disabled>请选择</option>-->
+    <!--<option value="0">未开始</option>-->
+    <!--<option value="1">进行中</option>-->
+    <!--<option value="2">已完成</option>-->
+    <!--<option value="3">已作废</option>-->
+    <!--</select>-->
+    <!--</div>-->
+    <!--<div class="dropdown-divider"></div>-->
+    <!--<div class="form-row justify-content-around">-->
+    <!--<a class="btn btn-secondary col mr-1 text-white" @click="isStatusPanel = !isStatusPanel">取消</a>-->
+    <!--<a class="btn btn-primary col ml-1 text-white" @click="statusSubmit">提交</a>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</transition>-->
   </div>
 
 </template>
 
 <script>
-  import Bus from '@/utils/eventBus'
-  import CreateRelation from '../comp/CreateRelation'
-  import {mapActions} from 'vuex'
-  import {getOrderConfig, orderSelectUrl} from "../../../../config/orderApiConfig";
+  import {mapActions, mapGetters} from 'vuex'
+  import {getTestConfig, testOperUrl, testSelectUrl} from "../../../../config/testApiConfig";
   import {orderOperUrl} from "../../../../config/orderApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
   import {errHandler} from "../../../../utils/errorHandler";
 
   export default {
     name: "Options",
-    components: {
-      CreateRelation
-    },
+    components: {},
     data() {
       return {
         isStatusPanel: false,
         thisRow: {},
-        isCreatingRel: false
+        isDeletePanel: false,
+        isPending: false
       }
     },
     props: ['row'],
-    mounted(){
-      Bus.$on('closeRelPanel', (val) => {
-        this.isCreatingRel = val;
-      })
+    computed: {
+      ...mapGetters(['testType'])
     },
     methods: {
       ...mapActions(['setEditing', 'setEditData', 'setCopyData']),
       editThis: function (val) {
-        let options = getOrderConfig('order_manage').data.dataColumns;
+        let options = getTestConfig('test_manage').data.dataColumns;
         let formData = [];
         options.map((item, index) => {
           if (item.field) {
@@ -89,7 +92,7 @@
         this.setEditing(true);
       },
       copyFrom: function (val) {
-        let options = getOrderConfig('order_manage').data.dataColumns;
+        let options = getTestConfig('test_manage').data.dataColumns;
         let formData = [];
         options.map((item, index) => {
           if (item.field) {
@@ -149,8 +152,38 @@
           })
         }
       },
-      createRelation: function (row) {
-        console.log(row)
+      delData: function (val) {
+        this.isDeletePanel = true;
+        this.thisRow = val
+      },
+      submitDel: function () {
+        if (!this.isPending) {
+          this.isPending = true;
+          let url = testOperUrl + '/cancel';
+          let options = {
+            url: url,
+            data: {
+              key: this.thisRow.SoftWare,
+              type: this.testType
+            }
+          };
+          axiosFetch(options).then((response) => {
+            if (response.data.result === 200) {
+              this.$alertSuccess('作废成功');
+              this.isStatusPanel = false;
+              this.thisRow = {};
+              let tempUrl = this.$route.fullPath;
+              //console.log(this.$route.url)
+              this.$router.replace('/_empty');
+              this.$router.replace(tempUrl)
+            } else {
+              errHandler(response.data.result)
+            }
+            this.isPending = false
+          }).catch(err => {
+            this.$alertDanger(err)
+          })
+        }
       }
     }
   }
@@ -179,9 +212,11 @@
     box-shadow: 3px 3px 20px 1px #bbb;
     padding: 30px 60px 10px 60px;
   }
+
   .fade-enter-active, .fade-leave-active {
     transition: opacity .5s;
   }
+
   .fade-enter, .fade-leave-to {
     opacity: 0;
   }

@@ -13,7 +13,8 @@ const state = {
   routerIn: 'table',
   isEditing: false,
   editData: [],
-  copyData: []
+  copyData: [],
+  testType: -1
 };
 
 const store = new Vuex.Store({

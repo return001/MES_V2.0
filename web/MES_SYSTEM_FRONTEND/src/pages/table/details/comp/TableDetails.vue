@@ -10,8 +10,9 @@
 <script>
   import {axiosFetch} from "../../../../utils/fetchData";
   import {mapGetters, mapActions} from 'vuex'
-  import {setRouterConfig, routerUrl} from "../../../../config/tableApiConfig";
+  import {setRouterConfig, tableSelectUrl} from "../../../../config/tableApiConfig";
   import {errHandler} from "../../../../utils/errorHandler";
+  import router from "../../../../router";
 
   export default {
     name: "Details",
@@ -36,9 +37,6 @@
       }
     },
     created() {
-      this.init();
-      this.thisFetch(this.$route.query);
-      this.thisRouter = this.$route.query.type;
     },
     computed: {
       ...mapGetters([
@@ -52,7 +50,7 @@
         this.setLoading(true);
         if (route.query.type) {
           let options = {
-            url: routerUrl,
+            url: tableSelectUrl,
             data: {
               table: route.query.type,
               pageNo: 1,
@@ -60,9 +58,11 @@
             }
           };
           this.fetchData(options);
+          this.setTableRouter(route.query.type);
           this.thisRouter = route.query.type;
         } else if (route.query.data) {
           this.fetchData(route.query);
+          this.setTableRouter(route.query.data.table);
           this.thisRouter = route.query.data.table;
 
         }
@@ -76,7 +76,17 @@
         deep: true
       }
     },
-    mounted: function () {
+    mounted () {
+      console.log("mounted")
+      this.init();
+      if (this.$route.query.type) {
+        this.thisFetch(this.$route.query);
+        this.setTableRouter(this.$route.query.type);
+        this.thisRouter = this.$route.query.type;
+      } else {
+        this.$router.push('/table')
+
+      }
     },
     methods: {
       ...mapActions(['setTableRouter', 'setLoading']),
@@ -90,7 +100,7 @@
       },
       thisFetch: function (opt) {
         let options = {
-          url: routerUrl,
+          url: tableSelectUrl,
           data: {
             table: opt.type,
             pageNo: 1,
@@ -100,14 +110,29 @@
         this.fetchData(options)
       },
       fetchData: function (options) {
-        let routerConfig = setRouterConfig(options.data.table);
+        console.log(options)
+        let thisTable = options.data.table;
+        //从配置文件获取路由参数
+        let routerConfig = setRouterConfig(thisTable);
         this.columns = routerConfig.data.dataColumns;
-        if (!(options.data.table === 'Gps_OperRecord'
-          || options.data.table === 'GpsTcData'
-          || options.data.table === 'GpsSMT_TcData')) {
-          options.data.descBy = 'TestTime'
-        } else if (options.data.table === 'Gps_OperRecord') {
-          options.data.descBy = 'OperTime'
+
+        //根据不同页面修正参数
+        switch (thisTable) {
+          case 'Gps_AutoTest_Result':
+          case 'Gps_AutoTest_Result2':
+          case 'Gps_AutoTest_Result3':
+          case 'Gps_CoupleTest_Result':
+            options.data.descBy = 'TestTime'; break;
+          case 'Gps_OperRecord':
+            options.data.descBy = 'OperTime'; break;
+          case 'Gps_ManuLdParam':
+            options.data.descBy = 'LDTime'; break;
+          case 'JS_PrintTime':
+            options.data.descBy = 'JS_PrintTime';
+            options.data.table = 'Gps_ManuPrintParam'; break; //修正机身/彩盒帖打印表
+          case 'CH_PrintTime':
+            options.data.descBy = 'CH_PrintTime';
+            options.data.table = 'Gps_ManuPrintParam'; break; //修正机身/彩盒帖打印表
         }
         if (!this.isPending) {
           this.isPending = true;
@@ -137,7 +162,7 @@
       },
       dataFilter: function () {
         let options = {
-          url: routerUrl,
+          url: tableSelectUrl,
           data: {
             table: this.thisRouter,
           }

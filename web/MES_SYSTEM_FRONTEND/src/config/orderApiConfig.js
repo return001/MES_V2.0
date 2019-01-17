@@ -6,10 +6,10 @@ if (process.env.NODE_ENV === 'production') {
   url = window.g.LOCAL_URL
 }
 export const orderOperUrl = url + '/mes_server/order';
-export const routerUrl = url + "/mes_server/order/select";
+export const orderSelectUrl = url + "/mes_server/order/select";
 
 //export const routerUrl = "http://10.10.11.109:8080/mes_server/order/select";
-export const setRouterConfig = (name) => {
+export const getOrderConfig = (name) => {
   if (name === 'order_manage') {
     return {
       data: ROUTER_CONFIG.OrderManage
@@ -30,7 +30,7 @@ const ROUTER_CONFIG = {
     dataColumns: [
       {field: 'Id', title: '序号', visible: false},
       {field: 'showId', title: '序号', colStyle: {'width': '70px'}},
-      {title: '操作', tdComp: 'EditOptions', colStyle: {'width': '100px'}},
+      {title: '操作', tdComp: 'EditOptions', colStyle: {'width': '120px'}},
       {field: 'ShowStatus', title: '状态', colStyle: {'width': '80px'}},
       {field: 'Status', title: '状态', colStyle: {'width': '80px'}, visible: false},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '130px'}, notNull: true},
@@ -82,26 +82,4 @@ const ROUTER_CONFIG = {
   },
 
 
-}
-/*
-* [TACInfo] varchar(50) NOT NULL ,
-[CompanyName] varchar(50) NULL ,
-[Remark1] varchar(50) NULL ,
-[Remark2] varchar(50) NULL ,
-[Remark3] varchar(50) NULL ,
-[Remark4] varchar(50) NULL ,
-[Remark5] varchar(50) NULL ,
-[Status] int NOT NULL ,
-[_MASK_FROM_V2] timestamp NOT NULL ,
-[JST_template] varchar(255) NULL ,
-[CHT_template1] varchar(255) NULL ,
-[CHT_template2] varchar(255) NULL ,
-[BAT_prefix] varchar(50) NULL ,
-[BAT_digits] varchar(50) NULL ,
-[SIM_prefix] varchar(50) NULL ,
-[SIM_digits] varchar(50) NULL ,
-[VIP_prefix] varchar(50) NULL ,
-[VIP_digits] varchar(50) NULL ,
-[ICCID_prefix] varchar(50) NULL ,
-[ICCID_digits] varchar(50) NULL ,
-[IMEIPrints] varchar(255) NULL */
+};

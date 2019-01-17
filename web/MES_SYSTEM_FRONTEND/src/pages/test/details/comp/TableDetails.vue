@@ -1,3 +1,4 @@
+<!--订单配置页面表单-->
 <template>
   <div class="main-details mt-1 mb-3">
     <datatable
@@ -5,17 +6,21 @@
     ></datatable>
   </div>
 </template>
-
 <script>
-  import {userAddUrl, userUpdateUrl, userQueryUrl} from "../../../config/globalUrl";
+  import Qs from 'qs'
+  import {axiosFetch} from "../../../../utils/fetchData";
   import {mapGetters, mapActions} from 'vuex'
-  import {axiosFetch} from "../../../utils/fetchData";
-  import {errHandler} from "../../../utils/errorHandler";
-  import UserOperation from "./UserOperation"
+  import {getTestConfig, testSelectUrl} from "../../../../config/testApiConfig";
+  import EditOptions from './EditOptions';
+  import EditPanel from './EditPanel';
+  import {errHandler} from "../../../../utils/errorHandler";
+
   export default {
-    name: "UserDetails",
+    name: "Details",
+    props: ['row'],
     components: {
-      UserOperation
+      EditOptions,
+      EditPanel
     },
     data() {
       return {
@@ -24,58 +29,50 @@
           'word-break': 'break-all',
           'table-layout': 'fixed',
           'white-space': 'pre-wrap'
+
         },
         HeaderSettings: false,
-        pageSizeOptions: [20, 40],
+        pageSizeOptions: [20, 40, 80, 100],
         data: [],
-        columns: [
-          {field: 'UserId', title: 'UUID', colStyle: {'width': '100px'}},
-          {field: 'UserName', title: '用户名', colStyle: {'width': '100px'}},
-          {field: 'UserType', title: '用户类型', colStyle: {'width': '100px'}},
-          {field: 'LoginTime', title: '最后一次登录时间', colStyle: {'width': '100px'}},
-          {field: 'InService', title: '是否启用', colStyle:{'width': '100px'}},
-          {title: '操作', tdComp: 'UserOperation', colStyle: {'width': '100px'}}
-
-        ],
+        //srcData: [],
+        columns: [],
         total: 0,
         query: {"limit": 20, "offset": 0},
-        isPending: false,
-        filter: ''
+        isPending: false
       }
     },
     created() {
       this.init();
-    },
-    mounted () {
       this.thisFetch(this.$route.query)
+    },
+    computed: {
+      ...mapGetters([
+        'testType'
+      ]),
 
     },
     watch: {
       $route: function (route) {
-        //this.thisFetch(val.query)
+        this.init();
         this.setLoading(true);
-        if (route.query.filter) {
+        if (route.query.type) {
           let options = {
-            url: userQueryUrl,
+            url: testSelectUrl,
             data: {
-              table: 'Gps_User',
               pageNo: 1,
               pageSize: 20,
-              filter: route.query.filter
+              descBy: 'RecordTime',
+              type: route.query.type
             }
           };
           this.fetchData(options)
+        } else if (!route.query.data) {
+          this.thisFetch(route.query)
         } else {
-          let options = {
-            url: userQueryUrl,
-            data: {
-              table: 'Gps_User',
-              pageNo: 1,
-              pageSize: 20
-            }
-          };
-          this.fetchData(options)
+          this.fetchData(route.query)
         }
+
+
       },
       query: {
         handler(query) {
@@ -85,44 +82,53 @@
         deep: true
       }
     },
+    mounted: function () {
+    },
     methods: {
-      ...mapActions(['setLoading']),
+      ...mapActions(['setTableRouter', 'setLoading']),
       init: function () {
         this.data = [];
+        //this.srcData = [];
+        this.columns = [];
         this.total = 0;
         this.query = {"limit": 20, "offset": 0}
       },
       thisFetch: function (opt) {
         let options = {
-          url: userQueryUrl,
+          url: testSelectUrl,
           data: {
-            table: 'Gps_User',
             pageNo: 1,
-            pageSize: 20
+            pageSize: 20,
+            descBy: 'RecordTime',
+            type: opt.type
           }
         };
-        this.fetchData(options);
+        this.fetchData(options)
       },
-      fetchData: function (opt) {
+      fetchData: function (options) {
+        let routerConfig = getTestConfig('test_manage');
+        this.columns = routerConfig.data.dataColumns;
         if (!this.isPending) {
           this.isPending = true;
-          axiosFetch(opt).then(response => {
-            this.isPending = false;
+          axiosFetch(options).then(response => {
             this.setLoading(false);
+            this.isPending = false;
             if (response.data.result === 200) {
+              //this.srcData = response.data.data.list;
+              //this.data = response.data.data.list.slice(this.query.offset, this.query.offset + this.query.limit);
               this.data = response.data.data.list;
-              this.total = response.data.data.totalRow;
-            } else if (response.data.result === 412) {
-              this.$alertWarning(response.data.data);
+              this.data.map((item, index) => {
+                item.showId = index + 1 + this.query.offset;
+              });
+              this.total = response.data.data.totalRow
             } else {
-              this.isPending = false;
               errHandler(response.data.result)
             }
           })
             .catch(err => {
               this.isPending = false;
               console.log(JSON.stringify(err));
-              alert('请求超时，清刷新重试')
+              this.$alertDanger('请求超时，清刷新重试')
             })
         } else {
           this.setLoading(false)
@@ -130,14 +136,15 @@
       },
       dataFilter: function () {
         let options = {
-          url: userQueryUrl,
+          url: testSelectUrl,
           data: {
-            table: 'Gps_User'
+            type: this.testType,
+            descBy: 'RecordTime'
           }
         };
         options.data.pageNo = this.query.offset / this.query.limit + 1;
         options.data.pageSize = this.query.limit;
-        this.fetchData(options);
+        this.fetchData(options)
       }
     }
   }
@@ -151,4 +158,5 @@
     padding: 10px;
     min-height: 500px;
   }
+
 </style>

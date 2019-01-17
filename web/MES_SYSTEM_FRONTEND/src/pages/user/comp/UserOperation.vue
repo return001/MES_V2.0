@@ -16,6 +16,10 @@
               <input type="text" id="user-des" class="form-control" v-model="userData.userDes">
             </div>
             <div class="form-row col-6 pl-2 pr-2">
+              <label for="user-pwd" class="col-form-label">密码:</label>
+              <input type="password" id="user-pwd" class="form-control" v-model="userData.userPwd" autocomplete="off">
+            </div>
+            <div class="form-row col-6 pl-2 pr-2">
               <label for="type-select" class="col-form-label">用户类型:</label>
               <select id="type-select" class="custom-select" v-model="userData.userType">
                 <option value="" disabled selected>请选择</option>
@@ -69,6 +73,7 @@
         userData: {
           userId: '',
           userDes: '',
+          userPwd: '',
           userType: '',
           userTestPlan: '',
           inService: ''
@@ -85,16 +90,24 @@
         this.userData.userId = val.UserId;
         this.userData.userDes = val.UserDes;
         this.userData.userType = val.UserType;
+        this.userData.userPwd = val.UserPwd;
         this.userData.userTestPlan = val.UserTestPlan;
         this.userData.inService = val.InService ? "1" : "0";
       },
       updateSubmit: function () {
         if (!this.isPending) {
           this.isPending = true;
+          for (let i in this.userData) {
+            this.userData[i] = _.trim(this.userData[i])
+          }
+          this.tempPwd = _.trim(this.tempPwd);
           let options = {
             url: userUpdateUrl,
             data: this.userData
           };
+          if (options.data.password === this.tempPwd) {
+            delete options.data.password
+          }
           axiosFetch(options).then(response => {
             this.isPending = false;
             if (response.data.result === 200) {

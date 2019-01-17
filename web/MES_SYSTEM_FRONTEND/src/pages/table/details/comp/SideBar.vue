@@ -19,7 +19,7 @@
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTestResult" aria-expanded="false"
              aria-controls="collapseTestResult">各工位测试结果</a>
         </div>
-        <div class="collapse" id="collapseTestResult">
+        <div class="collapse show" id="collapseTestResult">
           <div v-for="data in testResultLib" @click="toggleState(data.name)">
             <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
@@ -30,14 +30,14 @@
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseBindResult" aria-expanded="false"
              aria-controls="collapseBindResult">绑定结果</a>
         </div>
-        <div class="collapse" id="collapseBindResult">
+        <div class="collapse show" id="collapseBindResult">
           <div v-for="data in bindResultLib" @click="toggleState(data.name)">
             <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
         </div>
         <!--卡通结果-->
-        <div class="sidebar-title">
+       <!-- <div class="sidebar-title">
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseCartonResult"
              aria-expanded="false" aria-controls="collapseCartonResult">卡通结果</a>
         </div>
@@ -46,14 +46,24 @@
             <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
-        </div>
+        </div>-->
         <!--操作记录-->
         <div class="sidebar-title">
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#operationRecord" aria-expanded="false"
              aria-controls="operationRecord">操作记录</a>
         </div>
-        <div class="collapse" id="operationRecord">
+        <div class="collapse show" id="operationRecord">
           <div v-for="data in operationRecord" @click="toggleState(data.name)">
+            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
+
+          </div>
+        </div>
+        <div class="sidebar-title">
+          <a class="subtitle" draggable="false" data-toggle="collapse" href="#totalRecord" aria-expanded="false"
+             aria-controls="operationRecord">总结果</a>
+        </div>
+        <div class="collapse show" id="totalRecord">
+          <div v-for="data in totalRecord" @click="toggleState(data.name)">
             <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
 
           </div>
@@ -93,14 +103,19 @@
         //测试结果的子类
         testResultLib: [
           {
-            type: "Gps_AutoTest_Result2",
+            type: "Gps_AutoTest_Result",
             link: "/table/details",
             name: "SMT功能测试"
           },
           {
-            type: "Gps_AutoTest_Result",
+            type: "Gps_AutoTest_Result2",
             link: "/table/details",
-            name: "组装功能测试"
+            name: "组装功能测试1"
+          },
+          {
+            type: "Gps_AutoTest_Result3",
+            link: "/table/details",
+            name: "组装功能测试2"
           },
           {
             type: "Gps_CoupleTest_Result",
@@ -112,19 +127,40 @@
             link: "/table/details",
             name: "软件参数下载"
           },
+          {
+            type: "Gps_CartonBoxTwenty_Result",
+            link: "/table/details",
+            name: "卡通结果"
+          },
+          {
+            type: "Gps_ManuLdParam",
+            link: "/table/details",
+            name: "镭雕数据记录"
+          },
+          {
+            type: "JS_PrintTime",
+            link: "/table/details",
+            name: "机身打印结果"
+          },
+          {
+            type: "CH_PrintTime",
+            link: "/table/details",
+            name: "彩盒帖打印结果"
+          }
+
           // {
           //   type: "",
           //   link: "/",
           //   name: "绑定结果总报表"
           // }
         ],
-        cartonResultLib: [
-          {
-            type: "Gps_CartonBoxTwenty_Result",
-            link: "/table/details",
-            name: "卡通结果"
-          }
-        ],
+        // cartonResultLib: [
+        //   {
+        //     type: "Gps_CartonBoxTwenty_Result",
+        //     link: "/table/details",
+        //     name: "卡通结果"
+        //   }
+        // ],
         operationRecord: [
           {
             type: "Gps_OperRecord",
@@ -132,22 +168,19 @@
             name: "操作记录"
           }
         ],
+        totalRecord: [
+          {
+            type: "Gps_TestResult",
+            link: "/table/details",
+            name: "总结果"
+          }
+        ],
         //绑定结果的子类
         bindResultLib: [
           {
-            type: "DataRelative_BAT",
-            link: "/table/details",
-            name: "电池绑定"
-          },
-          {
-            type: "DataRelative_VIP",
-            link: "/table/details",
-            name: "VIP绑定"
-          },
-          {
             type: "DataRelativeSheet",
             link: "/table/details",
-            name: "SIM绑定"
+            name: "绑定关系查询"
           },
           // {
           //   type: "",
@@ -184,8 +217,6 @@
             query: {
               type: obj.type
             }
-          }, () => {
-
           })
         }
       }

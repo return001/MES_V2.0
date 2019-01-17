@@ -1,4 +1,4 @@
-<!--订单配置页面顶部条件过滤栏-->
+<!--测试配置页面顶部条件过滤栏-->
 
 <template>
   <div class="options-area">
@@ -7,7 +7,7 @@
         <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
       </div>
       <div class="form-group row align-items-end">
-        <div class="btn btn-secondary ml-3 mr-4" @click="initForm('order_manage')">清空条件</div>
+        <div class="btn btn-secondary ml-3 mr-4" @click="initForm('test_manage')">清空条件</div>
       </div>
       <div class="form-group row align-items-end">
         <div class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</div>
@@ -21,7 +21,7 @@
 
 <script>
   import {mapGetters, mapActions} from 'vuex';
-  import {getOrderConfig, orderSelectUrl} from "../../../../config/orderApiConfig";
+  import {getTestConfig, testSelectUrl} from "../../../../config/testApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
   import {Datetime} from 'vue-datetime'
   import 'vue-datetime/dist/vue-datetime.css'
@@ -60,16 +60,15 @@
         queryOptions: [],
         copyQueryOptions: [],
         queryString: "",
-        isDownloading: false
       }
     },
     mounted: function () {
-        this.initForm('order_manage')
+      this.initForm('test_manage')
 
     },
     computed: {
       ...mapGetters([
-        'tableRouterApi'
+        'testType'
       ]),
     },
     watch: {
@@ -78,9 +77,9 @@
       // }
     },
     methods: {
-      ...mapActions(['setLoading','setEditing', 'setEditData']),
+      ...mapActions(['setLoading', 'setEditing', 'setEditData']),
       initForm: function (opt) {
-        let routerConfig = getOrderConfig(opt);
+        let routerConfig = getTestConfig(opt);
         this.queryOptions = JSON.parse(JSON.stringify(routerConfig.data.queryOptions));
       },
       createQueryString: function () {
@@ -125,23 +124,22 @@
       },
       fetchData: function () {
         let options = {
-          url: orderSelectUrl,
+          url: testSelectUrl,
           data: {
             pageNo: 1,
             pageSize: 20,
-            descBy: 'ProductDate'
+            type: this.testType,
+            descBy: 'RecordTime'
           }
         };
-        if (this.queryString !== ""){
+        if (this.queryString !== "") {
           options.data.filter = this.queryString
         }
         //this.setTableRouter(obj.type);
-        this.$router.push('/_empty');
+        //this.$router.push('/_empty');
         this.$router.replace({
-          path: '/setting/order_manage',
+          path: '/test/test_manage',
           query: options
-        }, () => {
-          this.setLoading(true);
         })
 
       },

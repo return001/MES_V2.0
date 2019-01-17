@@ -22,4 +22,6 @@ export const editData = (state) => {
 export const copyData = (state) => {
   return state.copyData
 };
-
+export const testType = (state) => {
+  return state.testType
+};

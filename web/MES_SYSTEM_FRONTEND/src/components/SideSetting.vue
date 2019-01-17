@@ -4,19 +4,25 @@
     <div class="setting-container">
       <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')">
         <div class="setting-icon">
-          <icon name="table" scale="1.6" style="color: #fff;"></icon>
+          <icon name="table" scale="2.2" style="color: #fff;"></icon>
         </div>
         <span>报表</span>
       </div>
       <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')">
         <div class="setting-icon">
-          <icon name="toggles" scale="1.6" style="color: #fff;"></icon>
+          <icon name="toggles" scale="2.2" style="color: #fff;"></icon>
         </div>
-        <span>配置</span>
+        <span>订单</span>
+      </div>
+      <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')">
+        <div class="setting-icon">
+          <icon name="test" scale="2.2" style="color: #fff;"></icon>
+        </div>
+        <span>测试</span>
       </div>
       <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')">
         <div class="setting-icon">
-          <icon name="toggles" scale="1.6" style="color: #fff;"></icon>
+          <icon name="tea" scale="2.2" style="color: #fff;"></icon>
         </div>
         <span>红茶</span>
       </div>
@@ -27,13 +33,13 @@
         <div class="icon-container " :class="activeItem === 'users' ? 'icon-active' : ''"
              @click="initData('users')">
           <div class="setting-icon">
-            <icon name="users" scale="1.6" style="color: #fff;"></icon>
+            <icon name="users" scale="2.2" style="color: #fff;"></icon>
           </div>
           <span>用户</span>
         </div>
         <div class="icon-container" @click="logout">
           <div class="setting-icon">
-            <icon name="power" scale="1.6" style="color: #fff;"></icon>
+            <icon name="power" scale="2.2" style="color: #fff;"></icon>
           </div>
           <span>登出</span>
         </div>
@@ -56,14 +62,27 @@
       }
     },
     watch: {
-      // $route: function (val) {
-      //   console.log(val.path)
-      //   //this.activeItem = val.path
-      // }
+      $route: function (val) {
+        if (val.path !== '/') {
+          let tempPath = val.path.slice(1);
+          let index = tempPath.indexOf('/');
+          if (index > -1) {
+            this.activeItem = tempPath.slice(0, tempPath.indexOf('/'))
+          } else {
+            this.activeItem = tempPath
+          }
+        }
+      }
     },
     mounted() {
       if (this.$route.path !== '/') {
-        this.activeItem = this.$route.path.slice(1)
+        let tempPath = this.$route.path.slice(1);
+        let index = tempPath.indexOf('/');
+        if (index > -1) {
+          this.activeItem = tempPath.slice(0, tempPath.indexOf('/'))
+        } else {
+          this.activeItem = tempPath
+        }
       }
     },
     computed: {
@@ -96,7 +115,8 @@
           if (res.data.result === 200 || res.data.result === 400) {
             this.setLoginToken('');
             localStorage.removeItem('token');
-            window.location.href = '/mes_system/#/login'
+            window.location.href = '/mes_system/#/login';
+            this.$alertSuccess("登出成功");
           } else {
             errHandler(res.data.result)
           }
@@ -128,9 +148,9 @@
 
   .setting-icon {
     border-radius: 7px;
-    width: 28px;
-    height: 28px;
-    background: #ffb85b;
+    width: 36px;
+    height: 36px;
+    background: #FFBA45;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,7 +176,8 @@
   }
 
   .setting-container .icon-active {
-    border-left: #a4efff 3px solid;
-    background: #4f97ff;
+    border-left: #FFBA45 4px solid;
+    /*background: rgba(78, 152, 255, 0.63);*/
+    background-color: #4f97ff;
   }
 </style>
