@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="ActiveSock.cpp" />
     <ClCompile Include="AdoInterface.cpp" />
+    <ClCompile Include="Aes.cpp" />
     <ClCompile Include="bartender.cpp" />
     <ClCompile Include="BT_Addr_Setting.cpp" />
     <ClCompile Include="ColReadOnlyEdit.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="TagsBatchPrint.cpp" />
     <ClCompile Include="ThumbnailBox.cpp" />
     <ClCompile Include="ThumbnailBoxDlg.cpp" />
+    <ClCompile Include="TServerScoket.cpp" />
     <ClCompile Include="UDP.cpp" />
     <ClCompile Include="UserSetting.cpp" />
     <ClCompile Include="WriteIMEI.cpp" />
@@ -202,6 +204,7 @@
   <ItemGroup>
     <ClInclude Include="ActiveSock.h" />
     <ClInclude Include="AdoInterface.h" />
+    <ClInclude Include="Aes.h" />
     <ClInclude Include="bartender.h" />
     <ClInclude Include="BT_Addr_Setting.h" />
     <ClInclude Include="ColReadOnlyEdit.h" />
@@ -234,10 +237,12 @@
     <ClInclude Include="PictureEx.h" />
     <ClInclude Include="ReportCtrl.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SocketArrayList.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TagsBatchPrint.h" />
     <ClInclude Include="ThumbnailBox.h" />
     <ClInclude Include="ThumbnailBoxDlg.h" />
+    <ClInclude Include="TServerScoket.h" />
     <ClInclude Include="UDP.h" />
     <ClInclude Include="UserSetting.h" />
     <ClInclude Include="WriteIMEI.h" />

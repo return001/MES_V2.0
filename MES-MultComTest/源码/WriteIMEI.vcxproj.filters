@@ -144,6 +144,12 @@
     <ClCompile Include="JPGUnion\PictureProcess.cpp">
       <Filter>PicUnion</Filter>
     </ClCompile>
+    <ClCompile Include="TServerScoket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Aes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WriteIMEI.rc">
@@ -282,6 +288,15 @@
     </ClInclude>
     <ClInclude Include="JPGUnion\PictureProcess.h">
       <Filter>PicUnion</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketArrayList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TServerScoket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Aes.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

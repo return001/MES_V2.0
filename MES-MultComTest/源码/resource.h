@@ -394,6 +394,8 @@
 #define IDC_BLUETOOTH_CHECK             1223
 #define IDC_SCANDATA_EDIT               1224
 #define IDC_SCANDATA_STATIC             1225
+#define IDC_RESETBLE_BUTTON             1226
+#define IDC_DongleBle_CHECK             1227
 #define ID_FRESH_32771                  32771
 #define ID_EIDT_32772                   32772
 #define ID_32772                        32772
@@ -414,7 +416,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        176
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1226
+#define _APS_NEXT_CONTROL_VALUE         1228
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

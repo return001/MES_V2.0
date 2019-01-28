@@ -92,9 +92,9 @@ BOOL CLogin3::ConnecDB(CString m_server, CString m_db, CString m_user, CString m
 		{
 			if (g_ADCTFlag == 1)
 			{
-				AfxMessageBox("连接数据库失败，请检查数据库，当前程序立即关闭");
 				HWND ADCTHwnd = NULL;
 				ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
+				MessageBox(_T("连接数据库失败，请检查数据库，当前程序立即关闭！"), _T("Warning"), MB_SYSTEMMODAL | MB_ICONEXCLAMATION | MB_OK);
 				::PostMessage(ADCTHwnd, WM_USER + 1001, 3, 99);
 				OnCancel();
 				return FALSE;

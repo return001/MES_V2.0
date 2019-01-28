@@ -16,6 +16,10 @@
 
 #include <deque>
 
+#include "TServerScoket.h"
+
+#include "Aes.h"
+
 // IMEIWrite_MulAT 对话框
 #define THREAD_NUM 16
 #define PORTS_NUM 48
@@ -150,7 +154,7 @@ public:
 	BOOL OPen_Serial_Port(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL OPen_Serial_PortReadConstant(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL CheckConnect_Thread(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
-	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3);
+	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0);//因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
 
 	void LogShow_exchange(CEdit* m_Result,CEdit* Final_Result_Control,int State,CString Msg_Log,int HandleNum,CString Category="-1",CString ChipRfIDbg=""); //重点看
 	bool IMEI_Function_Judge(int i,CString IMEI_FT_Item,char* Serial_Order_Return,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
@@ -582,7 +586,6 @@ public:
 
 	//三合一新增功能
 	
-
 	/*进程通讯相关的*/
 	protected:
 		afx_msg LRESULT MSG_GetSimpleMessage(WPARAM wParam, LPARAM lParam);//获取自定义消息用的系统消息函数
@@ -612,6 +615,7 @@ public:
 
 	/*整机测试新增功能*/
 
+    //注意：耳标研发部门自己设计的蓝牙透传，与Dongle蓝牙适配器不适用
 	public:
 		int OrderNumber;//蓝牙指令条数
 		int MacIntercept;//MAC地址取后几位
@@ -632,7 +636,7 @@ public:
 
 		BOOL GetBluetoothCheckValue;//蓝牙复选框变量
 
-
+		afx_msg void OnBnClickedResetbleButton();//重置蓝牙配置的标志位，使得蓝牙可以重新获取配置
 		afx_msg void OnBnClickedBluetoothCheck();//蓝牙复选框点击函数
 		void GetBleOrder();//获取蓝牙配置文件里的指令同时初始化整机测试的变量
 		void BleStartPortTest(CString MACStr);//根据ComFreeDeq队列的第一位来开始某个端口
@@ -643,4 +647,58 @@ public:
 		void BluetoothHint(int PortNo, CString str);//整机测试串口提示用的函数
 		void BluetoothDisconnect(int PortNo);//蓝牙断开函数
 
+
+	/*Dongle蓝牙适配器透传模块*/
+
+	//注意：Dongle蓝牙适配器与耳标研发部门自己设计的蓝牙透传不通用
+	public:
+		CString DongleInfo[16][2];//存放MAC地址和令牌
+		CString DongleInitCommand[16];//Dongle蓝牙适配器初始化指令，预设16个指令位
+		CString DongleSPCommand[4][2];//Dongle蓝牙适配器特殊指令，0为连接指令，1为断开指令，3为获取令牌指令
+		int DongleSpCommandSleepTime[4];//Dongle蓝牙适配器特殊指令对应的等待时间
+		int DongleInitCommandNumber;//初始化指令条数
+
+		BOOL GetDongleCheckValue;//Dongle蓝牙复选框变量
+		BOOL DongleConnectFlag[16];//Dongle蓝牙适配器连接标识
+		BOOL DongleCheckRssiFlag[16];//Dongle蓝牙适配器检测强度标识，用来测试完后判断蓝牙是否被拿走
+		int DongleConnectCount[16];//Dongle蓝牙适配器达到一定连接次数后需重置一下，清缓存
+	
+
+
+		int DongleSleepTime;//蓝牙停顿时间
+		int DongleConnectRssi, DongleDisonnectRssi;//蓝牙连接强度和蓝牙断开强度
+		int DongleSDURTime;//蓝牙扫描时间
+
+
+		BOOL DongleInit(int HandleNum);//初始化蓝牙
+		void DongleInitSetting();//蓝牙设置（变量等）初始化，读ini文件
+		BOOL DongleScan(int HandleNum,int RssiStr);//蓝牙自动扫描连接
+		BOOL DongleConnect(int HandleNum);//连接蓝牙
+		BOOL DongleDisConnect(int HandleNum);//断开蓝牙
+
+		CString DongleValueAnalyze(CString CommandName,CString CommandValue);//对蓝牙返回值进行解析
+		int DongleCommandNameToInt(CString CommandName);//对特殊转换进行一个包装处理
+
+		CString DongleUnixTimeToDatatime(CString str);//时间戳Unix timestamp转换
+		CString DongleHexToASCII(CString str);//字符串十六进制转ASCII码
+		CString DongleTemperatureToCString(CString str);//计算温度
+		int HexToDec(CString str);//十六进制转十进制
+		CString StampToDatetime(time_t nSrc);//整形转换成时间戳
+		BYTE * IMEIWrite_MulAT::CStrToByte(int len, CString str);//CString转Byte
+
+		CString Encrypt(CString plainText);//加密函数
+		CString Decrypt(CString plainText);//解密函数
+
+		CEdit *m_ResultArray[16];
+		CEdit *Final_Result_ControlArray[16];
+
+		/*网络摄像头新增功能*/
+
+	public:
+		typedef TServerScoket *PServer;
+		PServer SocketServer[8];//声明一个Socket类指针数组
+		UINT SocketServerPort[8];//Socket类的端口号
+		CString SocketServerPicName[8];//网络摄像头图片名字，也可当文件夹名字，图片存放路径为：.//图片缓存/日期/端口号/图片名字
+
+		afx_msg void OnBnClickedDonglebleCheck();
 };

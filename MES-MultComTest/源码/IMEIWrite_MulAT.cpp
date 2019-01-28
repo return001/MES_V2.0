@@ -20,9 +20,7 @@ BOOL HEX2JPG3(CString str,CString& m_sPath,CString NightDay,int HandleNum,CStrin
 #include <wtypes.h>
 #include <string.h>
 #include <algorithm>
-
-
-
+#include "Aes.h"
 extern "C" int _imp___vsnprintf(
 	char *buffer,
 	size_t count,
@@ -40,6 +38,8 @@ extern "C" int _imp___vsnprintf(
 
 //三合一全局变量
 map<CString, int>IMEIWrite_MulAT::PortStatusMap;
+
+unsigned char key[] = { 0x20, 0x57, 0x2f, 0x52, 0x36, 0x4b, 0x3f, 0x47, 0x30, 0x50, 0x41, 0x58, 0x11, 0x63, 0x2d, 0x2b };
 
 //图的一个根据值找到键的方法，模板类函数的定义和声明要放在同一个文件中
 template<typename _MapType>
@@ -86,11 +86,12 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 , GetBluetoothCheckValue(FALSE)
 , BLEGetSettingFlag(-1)
 , BLEGetSettingEndFlag(0)
+, GetDongleCheckValue(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	GdiplusStartup(&m_GdiplusToken, &m_GdiplusStartupInput, NULL);
 
-	//如果是三合一，这四个都要设置为FALSE
+	//如果是三合一，这四个都要默认为FALSE
 	if (g_ADCTFlag == 1)
 	{
 		CheckSMTChoose = FALSE;
@@ -99,6 +100,66 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		PicStaticChoose = FALSE;
 	}
 
+	//为Socket类指针生成实例和对初始化相关的变量
+	for (int k = 0; k < 8; k++)
+	{
+		SocketServer[k] = new TServerScoket();
+		SocketServerPort[k] = 10460 + k;
+	}
+	SocketServerPicName[0] = _T("Port1");
+	SocketServerPicName[1] = _T("Port2");
+	SocketServerPicName[2] = _T("Port3");
+	SocketServerPicName[3] = _T("Port4");
+	SocketServerPicName[4] = _T("Port5");
+	SocketServerPicName[5] = _T("Port6");
+	SocketServerPicName[6] = _T("Port7");
+	SocketServerPicName[7] = _T("Port8");
+	
+
+	//m_ResultArray和Final_Result_ControlArray都是为了方便传日志用的
+	m_ResultArray[0] = &m_Result1;
+	m_ResultArray[1] = &m_Result2;
+	m_ResultArray[2] = &m_Result3;
+	m_ResultArray[3] = &m_Result4;
+	m_ResultArray[4] = &m_Result5;
+	m_ResultArray[5] = &m_Result6;
+	m_ResultArray[6] = &m_Result7;
+	m_ResultArray[7] = &m_Result8;
+	m_ResultArray[8] = &m_Result9;
+	m_ResultArray[9] = &m_Result10;
+	m_ResultArray[10] = &m_Result11;
+	m_ResultArray[11] = &m_Result12;
+	m_ResultArray[12] = &m_Result13;
+	m_ResultArray[13] = &m_Result14;
+	m_ResultArray[14] = &m_Result15;
+	m_ResultArray[15] = &m_Result16;
+
+	Final_Result_ControlArray[0] = &Final_Result_Control1;
+	Final_Result_ControlArray[1] = &Final_Result_Control2;
+	Final_Result_ControlArray[2] = &Final_Result_Control3;
+	Final_Result_ControlArray[3] = &Final_Result_Control4;
+	Final_Result_ControlArray[4] = &Final_Result_Control5;
+	Final_Result_ControlArray[5] = &Final_Result_Control6;
+	Final_Result_ControlArray[6] = &Final_Result_Control7;
+	Final_Result_ControlArray[7] = &Final_Result_Control8;
+	Final_Result_ControlArray[8] = &Final_Result_Control9;
+	Final_Result_ControlArray[9] = &Final_Result_Control10;
+	Final_Result_ControlArray[10] = &Final_Result_Control11;
+	Final_Result_ControlArray[11] = &Final_Result_Control12;
+	Final_Result_ControlArray[12] = &Final_Result_Control13;
+	Final_Result_ControlArray[13] = &Final_Result_Control14;
+	Final_Result_ControlArray[14] = &Final_Result_Control15;
+	Final_Result_ControlArray[15] = &Final_Result_Control16;
+
+	//Dongle蓝牙一些标志位和参数进行初始化
+	for (int i = 0; i < 16; i++)
+	{
+		DongleConnectFlag[i] = FALSE;
+		DongleConnectCount[i] = 0;
+		DongleCheckRssiFlag[i] = FALSE;
+		DongleInfo[i][0] = "";
+		DongleInfo[i][1] = "";
+	}
 }
 
 IMEIWrite_MulAT::~IMEIWrite_MulAT()
@@ -252,6 +313,7 @@ void IMEIWrite_MulAT::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO57, WIFI_RSSILimit);
 	DDX_Check(pDX, IDC_CHECK44, PicStaticChoose);
 	DDX_Check(pDX, IDC_BLUETOOTH_CHECK, GetBluetoothCheckValue);
+	DDX_Check(pDX, IDC_DongleBle_CHECK, GetDongleCheckValue);
 }
 
 
@@ -350,6 +412,8 @@ BEGIN_MESSAGE_MAP(IMEIWrite_MulAT, CResizableDialog)
 	ON_WM_COPYDATA()
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_BLUETOOTH_CHECK, &IMEIWrite_MulAT::OnBnClickedBluetoothCheck)
+	ON_BN_CLICKED(IDC_RESETBLE_BUTTON, &IMEIWrite_MulAT::OnBnClickedResetbleButton)
+	ON_BN_CLICKED(IDC_DongleBle_CHECK, &IMEIWrite_MulAT::OnBnClickedDonglebleCheck)
 END_MESSAGE_MAP()
 
 
@@ -483,6 +547,7 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	AddAnchor(IDC_SCANDATA_STATIC, TOP_LEFT);
 	AddAnchor(IDC_BUTTON3, TOP_LEFT);
 	AddAnchor(IDC_BUTTON25, TOP_LEFT);
+	AddAnchor(IDC_RESETBLE_BUTTON, TOP_LEFT);
 	AddAnchor(IDC_STATICCONFIG, TOP_LEFT);
 
 	AddAnchor(IDC_STATICCPU2, TOP_LEFT);
@@ -506,6 +571,7 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	AddAnchor(IDC_CHECK42, TOP_CENTER);
 	AddAnchor(IDC_CHECK44, TOP_CENTER);
 	AddAnchor(IDC_BLUETOOTH_CHECK, TOP_CENTER);
+	AddAnchor(IDC_DongleBle_CHECK, TOP_CENTER);
 	AddAnchor(IDC_CHECK43, TOP_LEFT4);//AddAnchor(IDC_CHECK43, TOP_CENTER);
 
 	AddAnchor(IDC_STATICSUCCOUNT, TOP_CENTER);
@@ -1645,19 +1711,28 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 	int i;
 
 
-	//write "AT"
-	for (i = 0; i<3; i++)
+	//因为加入了Dongle蓝牙链接，所以这里要分情况，蓝牙链接的时候应该发送AT+RADD?指令
+	if (GetDongleCheckValue == FALSE)
 	{
-		command.Empty();
-		if (CPUChoose == FALSE)
+		//write "AT"
+		for (i = 0; i < 3; i++)
 		{
-			if (paraArray[3].Low_Limit_Value != "")
+			command.Empty();
+			if (CPUChoose == FALSE)
 			{
-				int pos = paraArray[3].Low_Limit_Value.Find("**");
-				if (pos >= 0)
+				if (paraArray[3].Low_Limit_Value != "")
 				{
-					command = paraArray[3].Low_Limit_Value.Left(pos) + "\r\n";
-					ReturnOK = paraArray[3].Low_Limit_Value.Mid(pos + 2);
+					int pos = paraArray[3].Low_Limit_Value.Find("**");
+					if (pos >= 0)
+					{
+						command = paraArray[3].Low_Limit_Value.Left(pos) + "\r\n";
+						ReturnOK = paraArray[3].Low_Limit_Value.Mid(pos + 2);
+					}
+					else
+					{
+						command.Format("AT^GT_CM=TEST\r\n");
+						ReturnOK = "TEST_OK";
+					}
 				}
 				else
 				{
@@ -1667,62 +1742,252 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 			}
 			else
 			{
-				command.Format("AT^GT_CM=TEST\r\n");
+				//////
+				CString CpuOrderTemp = "AT01a#^GT_CM=TEST";
+				CpuOrderTemp = CpuOrderTemp.Mid(2);
+				MD5 mb;
+				mb.update(CpuOrderTemp, strlen(CpuOrderTemp));
+				CString CpuOrderMD5 = (mb.toString()).c_str();
+
+				command = "AT" + CpuOrderTemp + CpuOrderMD5.Left(2) + "\r\n";
 				ReturnOK = "TEST_OK";
+				/////
 			}
-		}
-		else
-		{
-			//////
-			CString CpuOrderTemp = "AT01a#^GT_CM=TEST";
-			CpuOrderTemp = CpuOrderTemp.Mid(2);
-			MD5 mb;
-			mb.update(CpuOrderTemp, strlen(CpuOrderTemp));
-			CString CpuOrderMD5 = (mb.toString()).c_str();
-
-			command = "AT" + CpuOrderTemp + CpuOrderMD5.Left(2) + "\r\n";
-			ReturnOK = "TEST_OK";
-			/////
-		}
 
 
-		if (ReturnOK == "")
-			ReturnOK = "\r";
-		buffer = command.GetBuffer(command.GetLength());
-		bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
-		if (dwBytesWritten != command.GetLength())
-		{
-			Sleep(500);
-			continue;
-		}
-
-		CString WaitTimeCS;
-		int wpos = paraArray[3].showName.Find("DL");
-		if (wpos != -1)
-			WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
-		else
-			WaitTimeCS = "0";
-		//receive response
-		Sleep(300 + atoi(WaitTimeCS));
-		memset(buf, 0, sizeof(buf));
-		buffer = buf;
-		bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
-		if (dwBytesRead != 0)
-		{
-			//p=strstr(buffer,"\r");
-			//p=strstr(buffer,"TEST_OK");
-			p = strstr(buffer, (LPSTR)(LPCTSTR)ReturnOK);
-			if (p)
+			if (ReturnOK == "")
+				ReturnOK = "\r";
+			buffer = command.GetBuffer(command.GetLength());
+			bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+			if (dwBytesWritten != command.GetLength())
 			{
-				timeout = 0;
-				break;
+				Sleep(500);
+				continue;
+			}
+
+			CString WaitTimeCS;
+			int wpos = paraArray[3].showName.Find("DL");
+			if (wpos != -1)
+				WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
+			else
+				WaitTimeCS = "0";
+			//receive response
+			Sleep(300 + atoi(WaitTimeCS));
+			memset(buf, 0, sizeof(buf));
+			buffer = buf;
+			bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
+			if (dwBytesRead != 0)
+			{
+				//p=strstr(buffer,"\r");
+				//p=strstr(buffer,"TEST_OK");
+				p = strstr(buffer, (LPSTR)(LPCTSTR)ReturnOK);
+				if (p)
+				{
+					timeout = 0;
+					break;
+				}
+			}
+			Sleep(100);
+		}
+	}
+	else if (GetDongleCheckValue == TRUE)
+	{
+		//write "AT"
+		if (StopSign[HandleNum] == TRUE&&DongleInfo[HandleNum][0]=="")
+		{
+			DongleDisConnect(HandleNum);
+			for (i = 0; i < 3; i++)
+			{
+				command.Empty();
+
+				command = "AT";
+				ReturnOK = "OK";
+
+				buffer = command.GetBuffer(command.GetLength());
+				bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+				if (dwBytesWritten != command.GetLength())
+				{
+					Sleep(500);
+					continue;
+				}
+
+				CString WaitTimeCS;
+				int wpos = paraArray[3].showName.Find("DL");
+				if (wpos != -1)
+					WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
+				else
+					WaitTimeCS = "0";
+				//receive response
+				Sleep(300 + atoi(WaitTimeCS));
+				memset(buf, 0, sizeof(buf));
+				buffer = buf;
+				bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
+				if (dwBytesRead != 0)
+				{
+					p = strstr(buffer, (LPSTR)(LPCTSTR)ReturnOK);
+					if (p)
+					{
+						timeout = 0;
+						break;
+					}
+				}
+				Sleep(100);
 			}
 		}
-		Sleep(100);
+		else if (StopSign[HandleNum] == FALSE)
+		{
+			if (DongleConnectFlag[HandleNum] == TRUE)
+			{
+				//Dongle高速蓝牙适配器开始之后在这里进行连接和判断是否连接成功
+				//if (DongleInfo[HandleNum][0] != "")
+				//{
+				//	DongleDisConnect(HandleNum);
+				//}
+				DongleDisConnect(HandleNum);
+				Sleep(500);
+				DongleScan(HandleNum, DongleConnectRssi);
+			}
+
+			//有两种情况，一种是普通的检测蓝牙是否连接，另一种成功或者失败后检测蓝牙是否被拿走
+			if (DongleCheckRssiFlag[HandleNum] == FALSE)
+			{
+				for (i = 0; i < 3; i++)
+				{
+					command.Empty();
+
+					command = "AT+RADD?";
+					if (DongleInfo[HandleNum][0] == "")
+						break;
+					ReturnOK = "OK+Get:0x" + DongleInfo[HandleNum][0];
+
+					buffer = command.GetBuffer(command.GetLength());
+					bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+					if (dwBytesWritten != command.GetLength())
+					{
+						Sleep(500);
+						continue;
+					}
+
+					CString WaitTimeCS;
+					int wpos = paraArray[3].showName.Find("DL");
+					if (wpos != -1)
+						WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
+					else
+						WaitTimeCS = "0";
+					//receive response
+					Sleep(300 + atoi(WaitTimeCS));
+					memset(buf, 0, sizeof(buf));
+					buffer = buf;
+					bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
+					if (dwBytesRead != 0)
+					{
+						p = strstr(buffer, (LPSTR)(LPCTSTR)ReturnOK);
+						if (p)
+						{
+							timeout = 0;
+							break;
+						}
+					}
+					Sleep(100);
+				}
+			}
+			else if (DongleCheckRssiFlag[HandleNum] == TRUE)
+			{
+				for (i = 0; i < 3; i++)
+				{
+					command.Empty();
+
+					command = "AT+RSSI?";
+					if (DongleInfo[HandleNum][0] == "")
+						break;
+					ReturnOK = "RSSI Cancelled";
+
+					buffer = command.GetBuffer(command.GetLength());
+					bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+					if (dwBytesWritten != command.GetLength())
+					{
+						Sleep(500);
+						continue;
+					}
+
+					Sleep(2500);
+					
+					//再发一次，AT+RSSI?发两次才能取消读强度的操作，不然会一直读
+					buffer = command.GetBuffer(command.GetLength());
+					bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+					if (dwBytesWritten != command.GetLength())
+					{
+						Sleep(500);
+						continue;
+					}
+					Sleep(1500);
+					CString WaitTimeCS;
+					int wpos = paraArray[3].showName.Find("DL");
+					if (wpos != -1)
+						WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
+					else
+						WaitTimeCS = "0";
+					//receive response
+					Sleep(300 + atoi(WaitTimeCS));
+					memset(buf, 0, sizeof(buf));
+					buffer = buf;
+					bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
+					if (dwBytesRead != 0)
+					{
+			
+						p = strstr(buffer, (LPSTR)(LPCTSTR)ReturnOK);
+						CString RssiCheckStr(buffer), RssiStr = "RSSI(dB): ";
+						int RssiInt = RssiCheckStr.Find(RssiStr), ReturnInt = RssiCheckStr.Find(ReturnOK);
+
+
+						//强度检测的时候，只有当强度比DongleDisonnectRssi设定的强度强的时候才返回TRUE，读到空、强度比DongleDisonnectRssi弱等情况都返回FALSE来断开连接
+						if (RssiInt == -1 || ReturnInt == -1 || RssiCheckStr.Find("RSSI Start") == -1)
+						{
+							timeout = 1;
+							break;
+						}
+						else if (RssiInt != -1)
+						{
+							CString RssiVauleStr;
+							int RssiVauleInt;
+							if (ReturnInt != -1)
+							{
+								RssiInt=RssiCheckStr.Find(RssiStr, ReturnInt - 16);//读取最后一个信号强度
+								RssiVauleStr = RssiCheckStr.Mid(RssiInt + 10, RssiCheckStr.Find("\r\n", RssiInt) - RssiInt - 10);
+								RssiVauleInt = _ttoi(RssiVauleStr);
+								if (RssiVauleInt > DongleDisonnectRssi)
+								{
+									timeout = 0;
+									break;
+								}
+								else if (RssiVauleInt <= DongleDisonnectRssi)
+								{
+									timeout = 1;
+									break;
+								}
+							}
+						}
+
+						timeout = 1;
+						break;
+					}
+					Sleep(100);
+				}
+			}
+
+		}
 	}
+
+	DongleConnectFlag[HandleNum] = FALSE;//重置Dongle蓝牙连接标识
+	DongleCheckRssiFlag[HandleNum] = FALSE;//重置Dongle蓝牙检测RSSI标识
 
 	if (timeout == 1)													//check if failed
 	{
+		if (GetDongleCheckValue == TRUE)//记得断开蓝牙
+		{
+			DongleDisConnect(HandleNum);
+		}
+
 		if (hPort[HandleNum] != NULL)
 			CloseHandle(hPort[HandleNum]);									//打开串口时，接收失败
 		hPort[HandleNum] = NULL;
@@ -1731,7 +1996,6 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 	//make sure rx data cleaned
 	Sleep(100);
 	bReadStatus = ReadFile(hPort[HandleNum], buffer, 256, &dwBytesRead, NULL);
-
 
 	return TRUE;														//返回TRUE，打开串口正常
 }
@@ -1918,7 +2182,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_PortReadConstant(CComboBox* m_Port, CComboBox*
 
 	return TRUE;														//返回TRUE，打开串口正常
 }
-char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime)//通过串口发送命令
+char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime,int HexFlag)//通过串口发送命令
 {
 	int Vaule_Return_Count = -1;															//参数的个数
 	BOOL bReadStatus, bWriteStat;
@@ -1941,56 +2205,156 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 	{
 		//send command
 		command.Empty();
-		command = strCommand_Vaule + "\r\n";//拼接命令
 
-		buffer = command.GetBuffer(command.GetLength());
-		bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
-		if (dwBytesWritten != command.GetLength())
+		//发送字符串
+		if (HexFlag == 0)
 		{
-			Sleep(300);
-			continue;
-		}
-
-		//receive response
-		Sleep(atoi(paraArray[1].Low_Limit_Value) + WaitTime);
-		CString Port_Temp = "";//串口读取数据 的缓存HexGroupToString
-		for (int r = 0; r<6; r++)
-		{
-			memset(buf, 0, sizeof(buf));
-			buffer = buf;
-			bReadStatus = ReadFile(hPort[HandleNum], buffer, 512, &dwBytesRead, NULL);//bReadStatus = ReadFile( hPort[HandleNum], buffer, PICDATAMAX, &dwBytesRead, NULL);//Send_Serial_Order
-			if (dwBytesRead != 0)
+			command = strCommand_Vaule;
+			//Dongle高速蓝牙适配器不需要\r\n
+			if (GetDongleCheckValue == FALSE)
 			{
-				if (strstr(EndSign, "NULL"))
-					p = strstr(buffer, "\r");
-				else
-					p = strstr(buffer, EndSign);
+				command = strCommand_Vaule + "\r\n";//拼接命令
+			}
 
-				strCommand_Vaule_Return = Port_Temp + CString(buffer);
-				if ((p) || (strCommand_Vaule_Return.Find(EndSign) != -1))//if((p)||(Port_Temp.Find(EndSign)!=-1))
+			buffer = command.GetBuffer(command.GetLength());
+			bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
+			if (dwBytesWritten != command.GetLength())
+			{
+				Sleep(300);
+				continue;
+			}
+
+			//receive response
+			Sleep(atoi(paraArray[1].Low_Limit_Value) + WaitTime);
+			CString Port_Temp = "";//串口读取数据 的缓存HexGroupToString
+			for (int r = 0; r < 6; r++)
+			{
+				memset(buf, 0, sizeof(buf));
+				buffer = buf;
+				bReadStatus = ReadFile(hPort[HandleNum], buffer, 512, &dwBytesRead, NULL);//bReadStatus = ReadFile( hPort[HandleNum], buffer, PICDATAMAX, &dwBytesRead, NULL);//Send_Serial_Order
+				if (dwBytesRead != 0)
 				{
-					CString  selPort;
-					selPort = strCommand_Vaule_Return;
+					if (strstr(EndSign, "NULL"))
+						p = strstr(buffer, "\r");
+					else
+						p = strstr(buffer, EndSign);
 
-					Vaule_Return_Count_CS[HandleNum] = selPort;
+					strCommand_Vaule_Return = Port_Temp + CString(buffer);
+					if ((p) || (strCommand_Vaule_Return.Find(EndSign) != -1))//if((p)||(Port_Temp.Find(EndSign)!=-1))
+					{
+						CString  selPort;
+						selPort = strCommand_Vaule_Return;
 
-					*Vaule_Return = "Analysis_SUCCESS";
-					return "Analysis_SUCCESS";
+						Vaule_Return_Count_CS[HandleNum] = selPort;
+
+						*Vaule_Return = "Analysis_SUCCESS";
+						return "Analysis_SUCCESS";
+					}
+					else
+					{
+						Port_Temp += CString(buffer);
+						Sleep(200 * r);
+						continue;
+					}
 				}
 				else
 				{
-					Port_Temp += CString(buffer);
 					Sleep(200 * r);
 					continue;
 				}
 			}
-			else
+		}
+		//发送十六进制数据
+		else if (HexFlag == 1)
+		{
+			//先转十六进制
+			command = (strCommand_Vaule + DongleInfo[HandleNum][1] + _T("00000000000000000000000000000000")).Left(32);//指令+令牌，然后截取32位
+			int len = command.GetLength() / 2;
+			BYTE *pBData = new BYTE[len];
+			pBData = CStrToByte(len, Encrypt(command));
+
+			//发送十六进制数据
+			bWriteStat = WriteFile(hPort[HandleNum], (LPVOID)pBData, len, &dwBytesWritten, NULL);
+
+			if (dwBytesWritten != len)
 			{
-				Sleep(200 * r);
+				Sleep(300);
 				continue;
 			}
-		}
 
+			//receive response
+
+			unsigned char str[32];
+
+			CString CommandReturn;
+			CString CommandEndSign, CommandEndSignTemp;//十六进制的返回值需要切割
+			int CommandCut[2];//需要对返回值进行截取
+
+			//返回值格式例子：060201,(7,20)
+			CommandEndSignTemp = EndSign;
+			CommandEndSign = CommandEndSignTemp.Left(CommandEndSignTemp.Find(","));
+			CommandEndSignTemp = CommandEndSignTemp.Right(CommandEndSignTemp.GetLength() - CommandEndSignTemp.Find(",") - 2);
+			CommandEndSignTemp = CommandEndSignTemp.Left(CommandEndSignTemp.GetLength() - 1);
+			CommandCut[0] = atoi(CommandEndSignTemp.Left(CommandEndSignTemp.Find(",")));
+			CommandCut[1] = atoi(CommandEndSignTemp.Right(CommandEndSignTemp.GetLength() - CommandEndSignTemp.Find(",") - 1));
+
+			Sleep(atoi(paraArray[1].Low_Limit_Value) + WaitTime);
+			CString Port_Temp = "";//串口读取数据 的缓存HexGroupToString
+			for (int r = 0; r < 6; r++)
+			{
+			    memset(str, 0, sizeof(str) / sizeof(str[0]));
+				bReadStatus = ReadFile(hPort[HandleNum], str, 32, &dwBytesRead, NULL);//bReadStatus = ReadFile( hPort[HandleNum], buffer, PICDATAMAX, &dwBytesRead, NULL);//Send_Serial_Order
+				if (dwBytesRead != 0)
+				{
+					//if (strstr(EndSign, "NULL"))
+					//	p = strstr(str, "\r");
+					//else
+					//	p = strstr(str, EndSign);
+					CString charVtemp1, charVtemp2, charVtemp3;
+					BYTE x[32];
+					CHAR *tempC;
+					for (int i = 0; i < 16; i++)
+					{
+						charVtemp1.Format(_T("%02X"), (unsigned char)str[i]);
+						charVtemp3 += charVtemp1;
+					}
+					CommandReturn = Decrypt(charVtemp3);
+					strCommand_Vaule_Return = CommandReturn;
+
+					if (strCommand_Vaule_Return.Find(CommandEndSign) != -1)//if((p)||(Port_Temp.Find(EndSign)!=-1))
+					{
+						CString  selPort;
+						selPort = strCommand_Vaule_Return;
+
+						//对指令进行截取,注意，协议里指令是从1开始算起，Mid指令是从0算起,所以截取(7,20)应该是截取第6个到第19个字符
+						if (CommandCut[0] == CommandCut[1])
+						{
+							selPort = selPort.Mid(CommandCut[0] - 1, 1);//这里减一是因为Mid是从0开始算
+						}
+						else if (CommandCut[0] != CommandCut[1])
+						{
+							selPort = selPort.Mid(CommandCut[0] - 1, CommandCut[1] - CommandCut[0] + 1);//这里加一是因为要算上它自身
+						}
+
+						Vaule_Return_Count_CS[HandleNum] = selPort;
+
+						*Vaule_Return = "Analysis_SUCCESS";
+						return "Analysis_SUCCESS";
+					}
+					else
+					{
+						//Port_Temp += CString(buffer);
+						Sleep(200 * r);
+						continue;
+					}
+				}
+				else
+				{
+					Sleep(200 * r);
+					continue;
+				}
+			}
+		}
 	}
 	Vaule_Return_Count_CS[HandleNum] = strCommand_Vaule_Return;	//串口返回值
 	//CloseHandle(hPort[HandleNum]);							//成功后不关闭串口---发送完AT指令后
@@ -2213,7 +2577,8 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			CString VoiceMessage;
 			VoiceMessage.Format("%s已成功", HandleNumCS);
 			Voice_Speak(VoiceMessage);
-
+			Final_Result_Control->SetWindowTextA("已成功");
+			Final_Result_Control->UpdateWindow();
 			EnterCriticalSection(&SUCCFAILCOUNT);
 			SuccessCount++;
 			CString SuccessCountCS;
@@ -3097,12 +3462,15 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	}
 	return true;
 }
+
+//指令解析函数，此函数用于所有端口的指令测试，同时会对一些特殊指令进行解析
 BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CEdit* Data_Input_Control)
 {
 	//---------------------------11
 	CString PortType_CS;
 	PortType.GetWindowTextA(PortType_CS);
 	CTime showtime;
+	DongleConnectFlag[HandleNum] = TRUE;//打开Dongle蓝牙连接
 	while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) != TRUE)//
 	{
 		showtime = CTime::GetCurrentTime();
@@ -3114,6 +3482,7 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 			return FALSE;
 		if (showtime.GetSecond() % 5>2)
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "等待连接", HandleNum);
+		DongleConnectFlag[HandleNum] = TRUE;//打开Dongle蓝牙连接
 		//LogShow_exchange(m_Result,Final_Result_Control,0,"等待连接"+showtimeCS,HandleNum);
 		Sleep(1000);
 	}
@@ -3204,20 +3573,20 @@ GETPort:
 	}
 	else
 	{
-		if (OPen_Serial_Port(m_Port, m_Baud, HandleNum) == TRUE)//仅打开一次串口，后续保持一直打开
-		{
-			//打开串口成功
-			COM_State[HandleNum] = TRUE;
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "打开串口成功！\r\n", HandleNum);													//第一次显示“测试中”
-		}
-		else
-		{
-			//打开串口失败
-			COM_State[HandleNum] = FALSE;
-			LogShow_exchange(m_Result, Final_Result_Control, 128, "打开串口失败！\r\n", HandleNum);
-			//return FALSE;
-			goto OVERDONE;//打开串口失败
-		}
+			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum) == TRUE)//仅打开一次串口，后续保持一直打开
+			{
+				//打开串口成功
+				COM_State[HandleNum] = TRUE;
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "打开串口成功！\r\n", HandleNum);													//第一次显示“测试中”
+			}
+			else
+			{
+				//打开串口失败
+				COM_State[HandleNum] = FALSE;
+				LogShow_exchange(m_Result, Final_Result_Control, 128, "打开串口失败！\r\n", HandleNum);
+				//return FALSE;
+				goto OVERDONE;//打开串口失败
+			}
 	}
 	/////////////////////////////////////////////////
 
@@ -3391,6 +3760,9 @@ GETPort:
 				EnterCriticalSection(&WIFICOMMUNICATE[HandleNum]);
 				LogShow_exchange(m_Result, Final_Result_Control, 5, "上一次确认结束", HandleNum);
 				LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
+
+				//Soket图片从这里开始准备接收
+				//SocketServer[HandleNum]->OpenRecv(_T("123.jpg"));
 			}
 			else if ((paraArray[i].showName.Find("WIFI接收图片") != -1))
 			{
@@ -3605,7 +3977,7 @@ GETPort:
 				{
 					Final_Result_Control->SetFont(fontsp);
 					gColor[HandleNum] = RGB(205, 0, 205);
-					Final_Result_Control->SetWindowTextA(paraArray[i].showName);
+					Final_Result_Control->SetWindowTextA(paraArray[i].showName);	
 					Final_Result_Control->UpdateWindow();
 				}
 				if (Get_Wifi_Data(m_ResultPic, Final_Result_ControlPic, HandleNum, "", "RESET") != TRUE)
@@ -3679,10 +4051,35 @@ GETPort:
 				NewData.Format("%s%d", Ipaddress.Right(1), HandleNum);
 				PortOrder.Replace("XX", NewData);
 			}
-			Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS));
+			else if (paraArray[i].showName.Find("IP端口") != -1)//DC-09网络摄像头的IP端口
+			{
+				CString NewData;
+				NewData.Format("%s,%d", Ipaddress.Right(Ipaddress.GetLength()-4),SocketServerPort[HandleNum]);
+				PortOrder.Replace("IP端口", NewData);
+			}
+
 			CString Serial_Order_Return_CS_Show;
 
-			Serial_Order_Return_CS_Show = Vaule_Return_Count_CS[HandleNum];
+			//因为Dongle高速蓝牙依旧分为十六进制指令发送和AT指令发送，我们以MAC地址作为芯片ID时只能通过适配器的AT指令获取MAC地址
+			if (GetDongleCheckValue == FALSE || paraArray[i].showName.Find("芯片ID") != -1)
+			{
+				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS));
+
+				Serial_Order_Return_CS_Show = Vaule_Return_Count_CS[HandleNum];
+			}
+			else if (GetDongleCheckValue == TRUE)
+			{
+				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS),1);
+
+				Serial_Order_Return_CS_Show = DongleValueAnalyze(paraArray[i].showName, Vaule_Return_Count_CS[HandleNum]);//要去查一下是否需要进行特殊转换
+
+				//if (paraArray[i].showName.Find("软件版本") != -1)
+				//{
+				//	Serial_Order_Return_CS_Show = paraArray[i].High_Limit_Value + Serial_Order_Return_CS_Show;
+				//}
+			}
+
+		
 			LogShow_exchange(m_Result, Final_Result_Control, 5, "串口返回值:" + Serial_Order_Return_CS_Show, HandleNum);				//继续测试，状态不更新
 
 
@@ -3700,12 +4097,22 @@ GETPort:
 					Serial_Order_Return = Vaule_Return_Count_CS[HandleNum];
 					Judge_Return = IMEI_Function_Judge(i, paraArray[i].showName, (LPTSTR)(LPCTSTR)Serial_Order_Return, HandleNum, m_Result, Final_Result_Control);
 				}
+				//Socket接收图像在这里判断接收结束
+				//if(SocketServer[HandleNum]->m_RecvFlag==TRUE)
+				//{ 
+				//	BOOL i;
+				//	SocketServer[HandleNum]->CloseRecv();
+				//	if (SocketServer[HandleNum]->CreatePic() == FALSE)
+				//	{
+				//		LogShow_exchange(m_Result, Final_Result_Control, 128, "测试项目:" + paraArray[i].showName + "失败,图像创建失败，立即停止！！！", HandleNum);
+				//		goto OVERDONE;
+				//	}
+				//}
 				if (Judge_Return == true)
 				{
 					//结果达标
 					LogShow_exchange(m_Result, Final_Result_Control, 5, "测试项目:" + paraArray[i].showName + "达标！========该项测试成功", HandleNum);			//继续测试，状态不更新
 					All_Result[i] = 1;
-
 					/*
 					测试顺序
 					芯片ID
@@ -3734,6 +4141,17 @@ GETPort:
 										BleStopPortTest(HandleNum);
 									}
 
+									//Dongle高速蓝牙要记得断开
+									if (GetDongleCheckValue == TRUE)
+									{
+										//if (DongleInfo[HandleNum][0] != "")
+										//{
+										//	DongleDisConnect(HandleNum);
+										//	Sleep(3000);
+										//}
+										DongleConnectCount[HandleNum]++;
+									}
+
 									BOOL Return;
 									if (hPort[HandleNum] != NULL)
 										Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -3750,10 +4168,12 @@ GETPort:
 							}
 							if (SMT_Check == TRUE)LogShow_exchange(m_Result, Final_Result_Control, 2550, "成功", HandleNum);
 
-							if (g_ADCTFlag == FALSE)
+							if (g_ADCTFlag == FALSE)/*||GetDongleCheckValue==FALSE*/
 							{
+								DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 								while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) == TRUE)//
 								{
+									DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 									if (StopSign[HandleNum] == TRUE)
 										return FALSE;
 									Sleep(300);
@@ -3924,6 +4344,17 @@ GETPort:
 						BleStopPortTest(HandleNum);
 					}
 
+					//Dongle高速蓝牙要记得断开
+					if (GetDongleCheckValue == TRUE)
+					{
+						//if (DongleInfo[HandleNum][0] != "")
+						//{
+						//	DongleDisConnect(HandleNum);
+						//	Sleep(3000);
+						//}
+						DongleConnectCount[HandleNum]++;
+					}
+
 					BOOL Return;
 					if (hPort[HandleNum] != NULL)
 						Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -3945,16 +4376,20 @@ GETPort:
 			}
 			else
 			{
-				if (g_ADCTFlag == FALSE)
+				if (g_ADCTFlag == FALSE )/*|| GetDongleCheckValue==FALSE*/
 				{
+					DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 					while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) == TRUE)//
 					{
+						DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 						if (StopSign[HandleNum] == TRUE)
 							return FALSE;
 						Sleep(300);
 					}
 				}
 			}
+
+
 			EnableWindow_Start(HandleNum);
 			LogShow_exchange(m_Result, Final_Result_Control, 256, "循环开始", HandleNum);
 			return TRUE;
@@ -3984,6 +4419,17 @@ OVERDONE:
 				BleStopPortTest(HandleNum);
 			}
 
+			//Dongle高速蓝牙要记得断开
+			if (GetDongleCheckValue == TRUE)
+			{
+				//if (DongleInfo[HandleNum][0] != "")
+				//{
+				//	DongleDisConnect(HandleNum);
+				//	Sleep(3000);
+				//}
+				DongleConnectCount[HandleNum]++;
+			}
+
 			BOOL Return;
 			if (hPort[HandleNum] != NULL)
 				Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -4001,10 +4447,12 @@ OVERDONE:
 	//int FailRestart=0;
 
 
-	if (g_ADCTFlag == FALSE)
+	if (g_ADCTFlag == FALSE)/*||GetDongleCheckValue==FALSE*/
 	{
+		DongleCheckRssiFlag[HandleNum]=TRUE;//打开蓝牙检测信号强度标志
 		while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) == TRUE)//
 		{
+			DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 			//if(FailRestart>10)
 			if (StopSign[HandleNum] == TRUE)
 				return FALSE;
@@ -4012,6 +4460,8 @@ OVERDONE:
 			//FailRestart++;
 		}
 	}
+
+
 	EnableWindow_Start(HandleNum);
 	LogShow_exchange(m_Result, Final_Result_Control, 256, "循环开始", HandleNum);
 	return FALSE;
@@ -4068,6 +4518,7 @@ void IMEIWrite_MulAT::EnableWindow_ALL(BOOL Choose)
 	WorkStationControl.EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK39)->EnableWindow(Choose);
 	GetDlgItem(IDC_BLUETOOTH_CHECK)->EnableWindow(Choose);
+	GetDlgItem(IDC_DongleBle_CHECK)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK40)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK41)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK42)->EnableWindow(Choose);
@@ -4241,6 +4692,7 @@ void IMEIWrite_MulAT::EnableWindow_StartALL(BOOL Choose)
 		GetDlgItem(IDC_BUTTON19)->EnableWindow(Choose);
 		GetDlgItem(IDC_BUTTON21)->EnableWindow(Choose);
 		GetDlgItem(IDC_BUTTON23)->EnableWindow(Choose);
+		GetDlgItem(IDC_RESETBLE_BUTTON)->EnableWindow(Choose);
 
 		GetDlgItem(IDC_BUTTONSTOP7)->EnableWindow(Choose);
 		GetDlgItem(IDC_BUTTONSTOP8)->EnableWindow(Choose);
@@ -4904,22 +5356,43 @@ UINT static __cdecl WriteIMEIFunction1(LPVOID pParam)
 void IMEIWrite_MulAT::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	StopSign[0] = FALSE;
+	int ArraySign = 0;//一个数组标记，便于此函数一些数组的统一使用
+
+	StopSign[ArraySign] = FALSE;
 	StartA_Control.EnableWindow(FALSE);
-	Thread_Handle[0] = AfxBeginThread(WriteIMEIFunction1, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction1, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	SetTimer(32, 5000, NULL);
+
+	//开启网络摄像头SOCKET
+	if (GetPicChoose == TRUE)
+	{
+		SocketServer[ArraySign]->StartServer(SocketServerPort[0]);
+	}
+
+	//初始化Dongle蓝牙
+	if (GetDongleCheckValue == TRUE)
+	{
+		if (DongleConnectCount[ArraySign] == 10 || DongleConnectCount[ArraySign] == 0)
+		{
+			DongleConnectCount[ArraySign]=0;
+			DongleInit(ArraySign);
+		}
+	}
+
 }
 
 void IMEIWrite_MulAT::OnBnClickedButton2()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 0;//一个数组标记，便于此函数一些数组的统一使用
+
 	int HandleNum = 0;
 	LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
 	KillTimer(32);
-	StopSign[0] = TRUE;
+	StopSign[ArraySign] = TRUE;
 	Sleep(100);
 	int i = 0;
-	while (Thread_State[0] == TRUE)
+	while (Thread_State[ArraySign] == TRUE)
 	{
 		Sleep(STOPDELAY);
 		i++;
@@ -4929,18 +5402,16 @@ void IMEIWrite_MulAT::OnBnClickedButton2()
 	//COM_State[0]=FALSE;
 	LogShow_exchange(&m_Result1, &Final_Result_Control1, 250, "结束测试！！", 0);
 
-	int PortHandle = 0;
-
 	//停止时如果存在蓝牙连接就给蓝牙发送断开指令
-	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[PortHandle] == 1)
+	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[ArraySign] == 1)
 	{
-		BleGetSettingFlag[PortHandle] = 0;
-		BluetoothDisconnect(PortHandle);
+		BleGetSettingFlag[ArraySign] = 0;
+		BluetoothDisconnect(ArraySign);
 	}
 
 	if (0)
 	{
-		BOOL Return = CloseHandle(hPort[PortHandle]);				//测试成功后
+		BOOL Return = CloseHandle(hPort[ArraySign]);				//测试成功后
 		if (Return == TRUE)
 		{
 		}
@@ -4949,13 +5420,23 @@ void IMEIWrite_MulAT::OnBnClickedButton2()
 			AfxMessageBox("关闭失败！");												//关闭串口失败
 			return;
 		}
-		hPort[PortHandle] = NULL;
+		hPort[ArraySign] = NULL;
 	}
 
 	//停止时删除占用队列中对应的端口号
 	if (GetBluetoothCheckValue == TRUE || g_ADCTFlag == 1)
 	{
-		DeleteComoOccupancydDeq(0);
+		DeleteComoOccupancydDeq(ArraySign);
+	}
+
+	//关闭Socket服务器
+	SocketServer[ArraySign]->CloseRecv();
+	SocketServer[ArraySign]->StopServer();
+
+	//关闭Dongle蓝牙
+	if (GetDongleCheckValue == TRUE&&DongleInfo[ArraySign][0] != "")
+	{
+		DongleDisConnect(ArraySign);
 	}
 }
 
@@ -5044,6 +5525,7 @@ UINT static __cdecl WriteIMEIFunction2(LPVOID pParam)
 		{
 			Mead_Main_Win->SendADCTTestResult(str_Port, "0");
 		}
+		Mead_Main_Win->OnBnClickedButton15();
 	}
 	return 0;
 }
@@ -5051,20 +5533,41 @@ UINT static __cdecl WriteIMEIFunction2(LPVOID pParam)
 void IMEIWrite_MulAT::OnBnClickedButton14()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	StopSign[1] = FALSE;
+	int ArraySign = 1;//一个数组标记，便于此函数一些数组的统一使用
+
+	StopSign[ArraySign] = FALSE;
 	StartB_Control.EnableWindow(FALSE);
-	Thread_Handle[1] = AfxBeginThread(WriteIMEIFunction2, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction2, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+
+	//开启网络摄像头SOCKET
+	if (GetPicChoose == TRUE)
+	{
+		SocketServer[ArraySign]->StartServer(SocketServerPort[ArraySign]);
+	}
+
+
+	//初始化Dongle蓝牙
+	if (GetDongleCheckValue == TRUE)
+	{
+		if (DongleConnectCount[ArraySign] == 10 || DongleConnectCount[ArraySign] == 0)
+		{
+			DongleConnectCount[ArraySign] = 0;
+			DongleInit(ArraySign);
+		}
+	}
 }
 
 void IMEIWrite_MulAT::OnBnClickedButton15()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 1;//一个数组标记，便于此函数一些数组的统一使用
+
 	int HandleNum = 1;
 	LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
-	StopSign[1] = TRUE;
+	StopSign[ArraySign] = TRUE;
 	Sleep(100);
 	int i = 0;
-	while (Thread_State[1] == TRUE)
+	while (Thread_State[ArraySign] == TRUE)
 	{
 		Sleep(STOPDELAY);
 		i++;
@@ -5074,18 +5577,17 @@ void IMEIWrite_MulAT::OnBnClickedButton15()
 	//COM_State[1]=FALSE;
 	LogShow_exchange(&m_Result2, &Final_Result_Control2, 250, "结束测试！！", 1);
 
-	int PortHandle = 1;
 
 	//停止时如果存在蓝牙连接就给蓝牙发送断开指令
-	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[PortHandle] == 1)
+	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[ArraySign] == 1)
 	{
-		BleGetSettingFlag[PortHandle] = 0;
-		BluetoothDisconnect(PortHandle);
+		BleGetSettingFlag[ArraySign] = 0;
+		BluetoothDisconnect(ArraySign);
 	}
 
 	if (0)
 	{
-		BOOL Return = CloseHandle(hPort[PortHandle]);				//测试成功后
+		BOOL Return = CloseHandle(hPort[ArraySign]);				//测试成功后
 		if (Return == TRUE)
 		{
 		}
@@ -5094,12 +5596,22 @@ void IMEIWrite_MulAT::OnBnClickedButton15()
 			AfxMessageBox("关闭失败！");												//关闭串口失败
 			return;
 		}
-		hPort[PortHandle] = NULL;
+		hPort[ArraySign] = NULL;
 	}
 	//停止时删除占用队列中对应的端口号
 	if (GetBluetoothCheckValue == TRUE || g_ADCTFlag == 1)
 	{
-		DeleteComoOccupancydDeq(1);
+		DeleteComoOccupancydDeq(ArraySign);
+	}
+
+	//关闭Socket服务器
+	SocketServer[ArraySign]->CloseRecv();
+	SocketServer[ArraySign]->StopServer();
+
+	//关闭Dongle蓝牙
+	if (GetDongleCheckValue == TRUE&&DongleInfo[ArraySign][0]!="")
+	{
+		DongleDisConnect(ArraySign);
 	}
 }
 
@@ -5169,7 +5681,7 @@ UINT static __cdecl WriteIMEIFunction3(LPVOID pParam)
 	if (g_ADCTFlag == 1)
 	{
 		//如果是被强制停止了，那就直接返回，不要给主控程序发消息
-		if (Mead_Main_Win->StopSign[0] == TRUE)
+		if (Mead_Main_Win->StopSign[2] == TRUE)
 		{
 			return 0;
 		}
@@ -5184,26 +5696,48 @@ UINT static __cdecl WriteIMEIFunction3(LPVOID pParam)
 		{
 			Mead_Main_Win->SendADCTTestResult(str_Port, "0");
 		}
+		Mead_Main_Win->OnBnClickedButton17();
 	}
 	return 0;
 }
 void IMEIWrite_MulAT::OnBnClickedButton16()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	StopSign[2] = FALSE;
+	int ArraySign = 2;//一个数组标记，便于此函数一些数组的统一使用
+
+	StopSign[ArraySign] = FALSE;
 	StartC_Control.EnableWindow(FALSE);
-	Thread_Handle[2] = AfxBeginThread(WriteIMEIFunction3, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction3, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+
+	//开启网络摄像头SOCKET
+	if (GetPicChoose == TRUE)
+	{
+		SocketServer[ArraySign]->StartServer(SocketServerPort[ArraySign]);
+	}
+
+	//初始化Dongle蓝牙
+	if (GetDongleCheckValue == TRUE)
+	{
+		if (DongleConnectCount[ArraySign] == 10 || DongleConnectCount[ArraySign] == 0)
+		{
+			DongleConnectCount[ArraySign] = 0;
+			DongleInit(ArraySign);
+		}
+	}
+
 }
 
 void IMEIWrite_MulAT::OnBnClickedButton17()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 2;//一个数组标记，便于此函数一些数组的统一使用
+
 	int HandleNum = 2;
 	LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
-	StopSign[2] = TRUE;
+	StopSign[ArraySign] = TRUE;
 	Sleep(100);
 	int i = 0;
-	while (Thread_State[2] == TRUE)
+	while (Thread_State[ArraySign] == TRUE)
 	{
 		Sleep(STOPDELAY);
 		i++;
@@ -5213,18 +5747,17 @@ void IMEIWrite_MulAT::OnBnClickedButton17()
 	//COM_State[2]=FALSE;
 	LogShow_exchange(&m_Result3, &Final_Result_Control3, 250, "结束测试！！", 2);
 
-	int PortHandle = 2;
 
 	//停止时如果存在蓝牙连接就给蓝牙发送断开指令
-	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[PortHandle] == 1)
+	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[ArraySign] == 1)
 	{
-		BleGetSettingFlag[PortHandle] = 0;
-		BluetoothDisconnect(PortHandle);
+		BleGetSettingFlag[ArraySign] = 0;
+		BluetoothDisconnect(ArraySign);
 	}
 
 	if (0)
 	{
-		BOOL Return = CloseHandle(hPort[PortHandle]);				//测试成功后
+		BOOL Return = CloseHandle(hPort[ArraySign]);				//测试成功后
 		if (Return == TRUE)
 		{
 		}
@@ -5233,13 +5766,23 @@ void IMEIWrite_MulAT::OnBnClickedButton17()
 			AfxMessageBox("关闭失败！");												//关闭串口失败
 			return;
 		}
-		hPort[PortHandle] = NULL;
+		hPort[ArraySign] = NULL;
 	}
 
 	//停止时删除占用队列中对应的端口号
 	if (GetBluetoothCheckValue == TRUE || g_ADCTFlag == 1)
 	{
-		DeleteComoOccupancydDeq(2);
+		DeleteComoOccupancydDeq(ArraySign);
+	}
+
+	//关闭Socket服务器
+	SocketServer[ArraySign]->CloseRecv();
+	SocketServer[ArraySign]->StopServer();
+
+	//关闭Dongle蓝牙
+	if (GetDongleCheckValue == TRUE&&DongleInfo[ArraySign][0] != "")
+	{
+		DongleDisConnect(ArraySign);
 	}
 }
 
@@ -5310,7 +5853,7 @@ UINT static __cdecl WriteIMEIFunction4(LPVOID pParam)
 	if (g_ADCTFlag == 1)
 	{
 		//如果是被强制停止了，那就直接返回，不要给主控程序发消息
-		if (Mead_Main_Win->StopSign[0] == TRUE)
+		if (Mead_Main_Win->StopSign[3] == TRUE)
 		{
 			return 0;
 		}
@@ -5325,6 +5868,7 @@ UINT static __cdecl WriteIMEIFunction4(LPVOID pParam)
 		{
 			Mead_Main_Win->SendADCTTestResult(str_Port, "0");
 		}
+		Mead_Main_Win->OnBnClickedButton19();
 	}
 	return 0;
 }
@@ -5332,20 +5876,40 @@ UINT static __cdecl WriteIMEIFunction4(LPVOID pParam)
 void IMEIWrite_MulAT::OnBnClickedButton18()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	StopSign[3] = FALSE;
+	int ArraySign = 3;//一个数组标记，便于此函数一些数组的统一使用
+
+	StopSign[ArraySign] = FALSE;
 	StartD_Control.EnableWindow(FALSE);
-	Thread_Handle[3] = AfxBeginThread(WriteIMEIFunction4, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction4, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+
+	//开启网络摄像头SOCKET
+	if (GetPicChoose == TRUE)
+	{
+		SocketServer[ArraySign]->StartServer(SocketServerPort[ArraySign]);
+	}
+
+	//初始化Dongle蓝牙
+	if (GetDongleCheckValue == TRUE)
+	{
+		if (DongleConnectCount[ArraySign] == 10 || DongleConnectCount[ArraySign] == 0)
+		{
+			DongleConnectCount[ArraySign] = 0;
+			DongleInit(ArraySign);
+		}
+	}
 }
 
 void IMEIWrite_MulAT::OnBnClickedButton19()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 3;//一个数组标记，便于此函数一些数组的统一使用
+
 	int HandleNum = 3;
 	LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
-	StopSign[3] = TRUE;
+	StopSign[ArraySign] = TRUE;
 	Sleep(100);
 	int i = 0;
-	while (Thread_State[3] == TRUE)
+	while (Thread_State[ArraySign] == TRUE)
 	{
 		Sleep(STOPDELAY);
 		i++;
@@ -5355,18 +5919,17 @@ void IMEIWrite_MulAT::OnBnClickedButton19()
 	//COM_State[3]=FALSE;
 	LogShow_exchange(&m_Result4, &Final_Result_Control4, 250, "结束测试！！", 3);
 
-	int PortHandle = 3;
 
 	//停止时如果存在蓝牙连接就给蓝牙发送断开指令
-	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[PortHandle] == 1)
+	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[ArraySign] == 1)
 	{
-		BleGetSettingFlag[PortHandle] = 0;
-		BluetoothDisconnect(PortHandle);
+		BleGetSettingFlag[ArraySign] = 0;
+		BluetoothDisconnect(ArraySign);
 	}
 
 	if (0)
 	{
-		BOOL Return = CloseHandle(hPort[PortHandle]);				//测试成功后
+		BOOL Return = CloseHandle(hPort[ArraySign]);				//测试成功后
 		if (Return == TRUE)
 		{
 		}
@@ -5375,13 +5938,23 @@ void IMEIWrite_MulAT::OnBnClickedButton19()
 			AfxMessageBox("关闭失败！");												//关闭串口失败
 			return;
 		}
-		hPort[PortHandle] = NULL;
+		hPort[ArraySign] = NULL;
 	}
 
 	//停止时删除占用队列中对应的端口号
 	if (GetBluetoothCheckValue == TRUE || g_ADCTFlag == 1)
 	{
-		DeleteComoOccupancydDeq(3);
+		DeleteComoOccupancydDeq(ArraySign);
+	}
+
+	//关闭Socket服务器
+	SocketServer[ArraySign]->CloseRecv();
+	SocketServer[ArraySign]->StopServer();
+
+	//关闭Dongle蓝牙
+	if (GetDongleCheckValue == TRUE&&DongleInfo[ArraySign][0] != "")
+	{
+		DongleDisConnect(ArraySign);
 	}
 }
 
@@ -5450,20 +6023,40 @@ UINT static __cdecl WriteIMEIFunction5(LPVOID pParam)
 void IMEIWrite_MulAT::OnBnClickedButton20()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	StopSign[4] = FALSE;
+	int ArraySign = 4;//一个数组标记，便于此函数一些数组的统一使用
+
+	StopSign[ArraySign] = FALSE;
 	StartE_Control.EnableWindow(FALSE);
-	Thread_Handle[4] = AfxBeginThread(WriteIMEIFunction5, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction5, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
+
+	//开启网络摄像头SOCKET
+	if (GetPicChoose == TRUE)
+	{
+		SocketServer[ArraySign]->StartServer(SocketServerPort[ArraySign]);
+	}
+
+	//初始化Dongle蓝牙
+	if (GetDongleCheckValue == TRUE)
+	{
+		if (DongleConnectCount[ArraySign] == 10 || DongleConnectCount[ArraySign] == 0)
+		{
+			DongleConnectCount[ArraySign] = 0;
+			DongleInit(ArraySign);
+		}
+	}
 }
 
 void IMEIWrite_MulAT::OnBnClickedButton21()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 4;//一个数组标记，便于此函数一些数组的统一使用
+
 	int HandleNum = 4;
 	LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);
-	StopSign[4] = TRUE;
+	StopSign[ArraySign] = TRUE;
 	Sleep(100);
 	int i = 0;
-	while (Thread_State[4] == TRUE)
+	while (Thread_State[ArraySign] == TRUE)
 	{
 		Sleep(STOPDELAY);
 		i++;
@@ -5473,18 +6066,16 @@ void IMEIWrite_MulAT::OnBnClickedButton21()
 	//COM_State[4]=FALSE;
 	LogShow_exchange(&m_Result5, &Final_Result_Control5, 250, "结束测试！！", 4);
 
-	int PortHandle = 4;
-
 	//停止时如果存在蓝牙连接就给蓝牙发送断开指令
-	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[PortHandle] == 1)
+	if (GetBluetoothCheckValue == TRUE&&BleGetSettingFlag[ArraySign] == 1)
 	{
-		BleGetSettingFlag[PortHandle] = 0;
-		BluetoothDisconnect(PortHandle);
+		BleGetSettingFlag[ArraySign] = 0;
+		BluetoothDisconnect(ArraySign);
 	}
 
 	if (0)
 	{
-		BOOL Return = CloseHandle(hPort[PortHandle]);				//测试成功后
+		BOOL Return = CloseHandle(hPort[ArraySign]);				//测试成功后
 		if (Return == TRUE)
 		{
 		}
@@ -5493,13 +6084,23 @@ void IMEIWrite_MulAT::OnBnClickedButton21()
 			AfxMessageBox("关闭失败！");												//关闭串口失败
 			return;
 		}
-		hPort[PortHandle] = NULL;
+		hPort[ArraySign] = NULL;
 	}
 
 	//停止时删除占用队列中对应的端口号
 	if (GetBluetoothCheckValue == TRUE || g_ADCTFlag == 1)
 	{
-		DeleteComoOccupancydDeq(4);
+		DeleteComoOccupancydDeq(ArraySign);
+	}
+
+	//关闭Socket服务器
+	SocketServer[ArraySign]->CloseRecv();
+	SocketServer[ArraySign]->StopServer();
+
+	//关闭Dongle蓝牙
+	if (GetDongleCheckValue == TRUE&&DongleInfo[ArraySign][0] != "")
+	{
+		DongleDisConnect(ArraySign);
 	}
 }
 
@@ -7988,6 +8589,9 @@ BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CE
 		if (Barcode_Check == TRUE)
 		{
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库总表已经有，此机已经测试过！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！...", DataUpNum);
+			
+
+			
 			//三合一传递信息
 			if (g_ADCTFlag == TRUE)
 			{
@@ -8301,6 +8905,11 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 		BluetoothHint(0, "连接");
 	}
 
+	//Dongle蓝牙在这里初始化设置
+	if (GetDongleCheckValue == TRUE)
+	{
+		DongleInitSetting();
+	}
 
 	//如果是三合一的时候这段不执行，直接使用ADCT主控程序传来的版本号
 	if (g_ADCTFlag != 1)
@@ -8312,14 +8921,38 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 		}
 		if (OPen_Serial_Port(&m_Port1, &m_Baud1, 0) == TRUE)//OnGetWebSetting
 		{
+			//Dongle高速蓝牙适配器的时候在这里进行连接和初始化，连接失败就直接退出
+			if (GetDongleCheckValue == TRUE)
+			{
+			    DongleConnectFlag[0] = TRUE;
+				DongleInit(0);
+				if (DongleScan(0, -40) == FALSE)
+				{
+					AfxMessageBox("蓝牙连接失败，请检查透传模块与蓝牙设备");
+					goto WEBGETFAILE;
+				}
+			}
 		}
 		else
 		{
 			AfxMessageBox("打开串口失败");
 			goto WEBGETFAILE;
 		}
-		Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500);
 
+		//蓝牙适配器的时候读版本
+		if (GetDongleCheckValue == FALSE)
+		{
+			Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500);
+		}
+		else if (GetDongleCheckValue == TRUE)
+		{
+			Send_Serial_Order(&Serial_Order_Return, DongleSPCommand[3][0], 0, (LPSTR)(LPCTSTR)DongleSPCommand[3][1], "", DongleSpCommandSleepTime[3], 1);
+			if (Serial_Order_Return == "FAIL")
+				goto WEBGETFAILE;
+			CString VersionTemp = Vaule_Return_Count_CS[0];
+			DongleDisConnect(0);
+			Vaule_Return_Count_CS[0] = DongleValueAnalyze("字符转换", VersionTemp);//记住版本需要进行字符转换
+		}
 
 		/*
 		int pos=Vaule_Return_Count_CS[0].Find(':');
@@ -8430,6 +9063,10 @@ WEBGETFAILE:
 		BLEGetSettingFlag = -1;
 		MacScanEnbleFlag = TRUE;
 		BluetoothHint(0, "W");
+	}
+	if (GetDongleCheckValue == TRUE)
+	{
+		DongleDisConnect(0);
 	}
 
 	m_bVar = 0;
@@ -9211,6 +9848,10 @@ DWORD IMEIWrite_MulAT::CopyFileExLBC(CString strSrcPath, CString strDestPath, CS
 	return ERROR_SUCCESS;
 }
 
+
+/*图片处理模块*/
+/*网络摄像头追加新功能，包含Socket服务器功能和图像处理功能，其中Socket服务器功能代替原有的串口传输功能*/
+
 //获取图片数据
 BOOL IMEIWrite_MulAT::GetPicFunction_Thread(int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CThumbnailBoxDlg* picdlg, CString ChipRfIDbg, BOOL DayTimeStatep)//WriteIMEIFunction_Thread
 {
@@ -9540,8 +10181,8 @@ ERRORPRO:
 }
 
 
-
-BOOL IMEIWrite_MulAT::OPen_Pic_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum)		//打开图像端口OPen_ScanGun_Port
+//打开图像端口OPen_ScanGun_Port
+BOOL IMEIWrite_MulAT::OPen_Pic_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum)		
 {
 	CString sPort, sBaud;
 	int port, baud;
@@ -10035,6 +10676,7 @@ ERRORPRO:
 	return FALSE;
 }
 
+
 /***********************************************************************************
 fp:  源图片，jpg->bin数据
 out: 输出图片的Ascii码
@@ -10113,8 +10755,8 @@ BOOL IMEIWrite_MulAT::HEX2JPG()
 
 
 
-//Socket接收到的视频数据包，都存储到source.txt文件中，然后读这个文件，找FFD8和FFD9之间的数据，写入dest.jpg文件中；
-//从文本文件中读FFD8和FFD9之间的数据，保存到一张图片中
+/*Socket接收到的视频数据包，都存储到source.txt文件中，然后读这个文件，找FFD8和FFD9之间的数据，写入dest.jpg文件中；
+从文本文件中读FFD8和FFD9之间的数据，保存到一张图片中*/
 BOOL IMEIWrite_MulAT::HEX2JPG2()
 {
 	unsigned char chBuf[PICDATAMAX] = { 0 };
@@ -10256,7 +10898,6 @@ BOOL IMEIWrite_MulAT::HEX2JPG3(CString str, CString& m_sPath, CString NightDay, 
 	return TRUE;
 }
 
-
 // 16进制特殊字符转换
 BYTE IMEIWrite_MulAT::ConvertHexChar(BYTE ch)
 {
@@ -10299,7 +10940,6 @@ BYTE * IMEIWrite_MulAT::StrDecToCHex(int &length, CString str)
 
 	return h_data;
 }
-
 
 
 BOOL IMEIWrite_MulAT::Jpgunionjpg(CString szPathName1, CString szPathName2, CString strInfo, CString PicName, CString& strDestJpgName)
@@ -10381,29 +11021,44 @@ BOOL IMEIWrite_MulAT::Jpgunionjpg(CString szPathName1, CString szPathName2, CStr
 	//picProcess.ShowPicture(strDestBmpName,hwndStill);
 	return TRUE;
 }
+
+
+//Dongle蓝牙复选框
+void IMEIWrite_MulAT::OnBnClickedDonglebleCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+}
+
+//获取图片复选框
 void IMEIWrite_MulAT::OnBnClickedCheck41()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 }
 
+//后台确认复选框
 void IMEIWrite_MulAT::OnBnClickedCheck42()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 }
 
+//图稳复选框
 void IMEIWrite_MulAT::OnBnClickedCheck43()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 }
 
+//组装、SMT、研发测试下拉框
 void IMEIWrite_MulAT::OnCbnSelchangeCombo56()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 }
+
+
 
 
 /*三合一新增功能*/
@@ -10415,6 +11070,7 @@ afx_msg LRESULT IMEIWrite_MulAT::MSG_GetSimpleMessage(WPARAM wParam, LPARAM lPar
 	switch (wParam)
 	{
 	case 3:
+		exit(0);
 		break;
 	default:
 		break;
@@ -10613,6 +11269,10 @@ void IMEIWrite_MulAT::ADCTSetup(CString PortNo, INT CommandNo, CString message)
 		strcpy(copydataMsg->MessageChar, (LPCTSTR)"ALL");
 		UpdateData(FALSE);
 		break;
+	case 6:
+		OnClose();
+		strcpy(copydataMsg->MessageChar, (LPCTSTR)"ALL");
+		break;
 	default:
 		break;
 	}
@@ -10669,19 +11329,23 @@ LONG CallBackCrashHandler(EXCEPTION_POINTERS *pException)
 		IMEIWrite_MulAT imeidlg;
 		//AfxMessageBox("Exception");	//调用回调函数成功
 
-		CopyDataMSG *copydataMsg = new CopyDataMSG;
+		//CopyDataMSG *copydataMsg = new CopyDataMSG;
 
-		strcpy(copydataMsg->Port, (LPCTSTR)"ALL");
-		copydataMsg->MessageNum = 5;
-		strcpy(copydataMsg->MessageChar, (LPCTSTR)"98");
+		//strcpy(copydataMsg->Port, (LPCTSTR)"ALL");
+		//copydataMsg->MessageNum = 5;
+		//strcpy(copydataMsg->MessageChar, (LPCTSTR)"98");
 
-		imeidlg.MSG_SendCopyDataMessage(copydataMsg, 0);
+		//imeidlg.MSG_SendCopyDataMessage(copydataMsg, 0);
 
-		if (copydataMsg != NULL)
-		{
-			delete copydataMsg;
-			copydataMsg = NULL;
-		}
+		//if (copydataMsg != NULL)
+		//{
+		//	delete copydataMsg;
+		//	copydataMsg = NULL;
+		//}
+		HWND ADCTHwnd = NULL;
+		ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
+		::SendMessage(ADCTHwnd, WM_SimpleMessage, 3, 98);
+
 	}
 
 	return EXCEPTION_CONTINUE_SEARCH;//返回本回调函数的处理结果
@@ -10694,19 +11358,23 @@ void IMEIWrite_MulAT::OnClose()
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (g_ADCTFlag == 1)
 	{
-		CopyDataMSG *copydataMsg = new CopyDataMSG;
+		//CopyDataMSG *copydataMsg = new CopyDataMSG;
 
-		strcpy(copydataMsg->Port, (LPCTSTR)"ALL");
-		copydataMsg->MessageNum = 5;
-		strcpy(copydataMsg->MessageChar, (LPCTSTR)"99");
+		//strcpy(copydataMsg->Port, (LPCTSTR)"ALL");
+		//copydataMsg->MessageNum = 5;
+		//strcpy(copydataMsg->MessageChar, (LPCTSTR)"99");
 
-		MSG_SendCopyDataMessage(copydataMsg, 0);
+		//MSG_SendCopyDataMessage(copydataMsg, 0);
 
-		if (copydataMsg != NULL)
-		{
-			delete copydataMsg;
-			copydataMsg = NULL;
-		}
+		//if (copydataMsg != NULL)
+		//{
+		//	delete copydataMsg;
+		//	copydataMsg = NULL;
+		//}
+		HWND ADCTHwnd = NULL;
+		ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
+		::SendMessage(ADCTHwnd, WM_SimpleMessage, 3, 99);
+
 	}
 
 	CResizableDialog::OnClose();
@@ -10891,23 +11559,23 @@ int IMEIWrite_MulAT::StopPortTest(CString PortNo)
 		OnBnClickedButtonstop11();
 		break;
 	case 11:
-		if (Thread_State[PortStatusMap[PortNo]]] == TRUE)
+		if (Thread_State[PortStatusMap[PortNo]] == TRUE)
 		OnBnClickedButtonstop12();
 		break;
 	case 12:
-		if (Thread_State[PortStatusMap[PortNo]]] == TRUE)
+		if (Thread_State[PortStatusMap[PortNo]] == TRUE)
 		OnBnClickedButtonstop13();
 		break;
 	case 13:
-		if (Thread_State[PortStatusMap[PortNo]]] == TRUE)
+		if (Thread_State[PortStatusMap[PortNo]] == TRUE)
 		OnBnClickedButtonstop14();
 		break;
 	case 14:
-		if (Thread_State[PortStatusMap[PortNo]]] == TRUE)
+		if (Thread_State[PortStatusMap[PortNo]] == TRUE)
 		OnBnClickedButtonstop15();
 		break;
 	case 15:
-		if (Thread_State[PortStatusMap[PortNo]]] == TRUE)
+		if (Thread_State[PortStatusMap[PortNo]] == TRUE)
 		OnBnClickedButtonstop16();
 		break;
 	default:
@@ -11377,9 +12045,473 @@ void IMEIWrite_MulAT::BluetoothHint(int PortNo, CString str)
 	UpdateWindow();
 }
 
+//重置蓝牙配置的标志位，使得蓝牙可以重新获取配置
+void IMEIWrite_MulAT::OnBnClickedResetbleButton()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	BLEGetSettingFlag = -1;
+	BLEGetSettingEndFlag = 0;
+}
 
-/*摄像头新增功能，包含Socket服务器功能和图像处理功能*/
+
+/*Dongle蓝牙适配器,透传模块*/
+//初始化蓝牙
+BOOL IMEIWrite_MulAT::DongleInit(int HandleNum)
+{
+	CString Vaule_Return, strCommand_Vaule;
+	//CString Command[9]={"AT+DISCON","AT+RENEW","AT+BAUD4","AT+TXPW7","AT+SDUR3","AT+SERVFEE7","AT+CHTX36F5","AT+CHRX36F6","AT+RESET"};
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "重新初始化Dongle蓝牙中，请稍等", HandleNum);
+	
+	for (int i = 0; i < DongleInitCommandNumber; i++)
+		Send_Serial_Order(&Vaule_Return, DongleInitCommand[i], HandleNum, "", "", 200);
+
+	Sleep(DongleSleepTime);
+
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "Dongle蓝牙初始化完毕", HandleNum);
+	
+	return true;
+}
+
+//蓝牙设置（变量等）初始化，读ini文件
+void IMEIWrite_MulAT::DongleInitSetting()
+{
+	//蓝牙初始化指令
+	DongleInitCommandNumber = 6;
+
+	DongleInitCommand[0] = "AT+RENEW";
+	DongleInitCommand[1] = "AT+SDUR3";
+	DongleInitCommand[2] = "AT+SERVFEE7";
+	DongleInitCommand[3] = "AT+CHTX36F5";
+	DongleInitCommand[4] = "AT+CHRX36F6";
+	DongleInitCommand[5] = "AT+RESET";
+
+	//蓝牙设置
+	DongleConnectRssi = -40;
+	DongleDisonnectRssi = -60;
+	DongleSleepTime = 1500;
+	DongleSDURTime = 5000;
+
+	//蓝牙特殊指令设置
+	DongleSPCommand[0][0] = "AT+CON";
+	DongleSPCommand[0][1] = "Chars Found";
+	DongleSpCommandSleepTime[0] = 7500;
+	DongleSPCommand[1][0] = "AT+DISCON";
+	DongleSPCommand[1][1] = "LOST";
+	DongleSpCommandSleepTime[1] = 1000;
+	DongleSPCommand[2][0] = "06010101";
+	DongleSPCommand[2][1] = "0207,(7,20)";
+	DongleSpCommandSleepTime[2] = 1500;
+	DongleSPCommand[3][0] = "FBF60101";
+	DongleSPCommand[3][1] = "FBF701,(7,30)";
+	DongleSpCommandSleepTime[3] = 500;
+
+	CFileFind finder;
+	CString ValueStr, StrSetting = "InitSetting", StrValue;
+	int ValueInt;
 
 
+	BOOL ifFind = finder.FindFile(_T(".\\DongleBleSetting.ini"));
+	if (ifFind)
+	{
+		//蓝牙初始化指令
+		ValueInt = GetPrivateProfileInt(_T("DongleInitCommand"), _T("DongleInitCommandNumber"), 6, _T(".\\DongleBleSetting.ini"));
+		DongleInitCommandNumber = ValueInt;
+
+		for (int i = 0; i < DongleInitCommandNumber; i++)
+		{
+			StrSetting.Format("InitSetting%d", i);
+			GetPrivateProfileString(_T("DongleInitCommand"), StrSetting, _T(""), StrValue.GetBuffer(50), 50, _T(".\\DongleBleSetting.ini"));
+			DongleInitCommand[i] = StrValue;
+			StrValue.ReleaseBuffer();
+		}
 
 
+		//蓝牙设置
+		ValueInt = GetPrivateProfileInt(_T("DongleSetting"), _T("DongleConnectRssi"), -40, _T(".\\DongleBleSetting.ini"));
+		DongleConnectRssi = ValueInt;
+		ValueInt = GetPrivateProfileInt(_T("DongleSetting"), _T("DongleDisonnectRssi"), -60, _T(".\\DongleBleSetting.ini"));
+		DongleDisonnectRssi = ValueInt;
+		ValueInt = GetPrivateProfileInt(_T("DongleSetting"), _T("DongleSleepTime"), 1500, _T(".\\DongleBleSetting.ini"));
+		DongleSleepTime = ValueInt;
+		ValueInt = GetPrivateProfileInt(_T("DongleSetting"), _T("DongleSDURTime"), 5000, _T(".\\DongleBleSetting.ini"));
+		DongleSDURTime = ValueInt;
+
+
+		//蓝牙特殊指令设置
+		for (int i = 0; i < 4; i++)
+		{
+			StrSetting.Format("SPSetting%d", i);
+			GetPrivateProfileString(_T("DongleSPCommand"), StrSetting, _T(""), StrValue.GetBuffer(50), 50, _T(".\\DongleBleSetting.ini"));
+			StrValue.ReleaseBuffer();//不先releasebuffer的话，会导致left等函数无法使用。
+			DongleSPCommand[i][0] = StrValue.Left(StrValue.Find("@@"));
+			StrValue = StrValue.Right(StrValue.GetLength() - StrValue.Find("@@") - 2);
+			DongleSPCommand[i][1] = StrValue.Left(StrValue.Find("##"));
+			DongleSpCommandSleepTime[i] = _ttoi(StrValue.Right(StrValue.GetLength() - StrValue.Find("##") - 2));
+		}
+	}
+	return ;
+}
+
+//蓝牙自动扫描连接
+BOOL IMEIWrite_MulAT::DongleScan(int HandleNum, int RssiStr)
+{
+	CString Vaule_Return, strCommand_Vaule;
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "正在扫描蓝牙设备中，请稍等", HandleNum);
+	Send_Serial_Order(&Vaule_Return, "AT+SCAN?", HandleNum, "Devices Found:", "", DongleSDURTime);
+
+	if (Vaule_Return == "FAIL")
+	{
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "扫描失败！", HandleNum);
+		return FALSE;
+	}
+
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "扫描成功！", HandleNum);
+	//开始处理获取到的设备
+	CString BleTemp, InfoTemp, BleTime, BleInfo[20][3];
+
+	int InfoCut, CutTime, RSSICount=0,RSSIMAX=-100,RSSITemp;
+
+	BleTemp = Vaule_Return_Count_CS[HandleNum];
+	InfoCut = BleTemp.Find(_T("Devices Found:"));
+
+	//获取的设备数量
+	BleTime = BleTemp.Right(BleTemp.GetLength() - InfoCut - 14);
+	CutTime = atoi(CStringA(BleTime.TrimLeft(_T(" "))));
+
+	//把多余的信息处理掉
+	//BleTemp = BleTemp.Right(BleTemp.GetLength() - BleTemp.Find("Scanning..."));
+	//BleTemp = BleTemp.Left(BleTemp.Find(("\r\n"), BleTemp.Find("Devices Found:")));
+
+	//将获取的信息进行切割
+	BleTemp = BleTemp.Left(InfoCut);
+	BleTemp = BleTemp.Right(BleTemp.GetLength() - 11);
+
+
+	//将获取的信息放入数组中
+	for (int i = 0; i < CutTime; i++)
+	{
+		CString StrTemp;
+		StrTemp.Format(_T("\r\n%d: 0x"), i);
+		BleTemp = BleTemp.Right(BleTemp.GetLength() - BleTemp.Find(StrTemp) - 7);
+		InfoTemp = BleTemp.Left(BleTemp.Find(_T("\r\n")));
+		for (int j = 0; j < 3; j++)
+		{
+			int CutTemp;
+			CutTemp = InfoTemp.Find(_T(","));
+
+			//读到信号的时候就对比一下，找到信号最强的
+			if (j == 1)
+			{
+				RSSITemp = _ttoi(InfoTemp);
+				if (j == 1 && RSSITemp > RSSIMAX)
+				{
+					RSSIMAX = RSSITemp;
+					RSSICount = i;
+				}
+			}
+
+			if (CutTemp == -1)
+			{
+				BleInfo[i][j] = InfoTemp;
+				if (j != 2)
+				{
+					BleInfo[i][2] = _T("NULL");
+				}
+				break;
+			}
+			BleInfo[i][j] = InfoTemp.Left(InfoTemp.Find(_T(",")));
+			InfoTemp = InfoTemp.Right(InfoTemp.GetLength() - InfoTemp.Find(_T(",")) - 2);
+		}
+	}
+
+	//在规定范围内就连接
+	if (RSSIMAX >= RssiStr)
+	{
+		DongleInfo[HandleNum][0] = BleInfo[RSSICount][0];
+		if (DongleConnect(HandleNum) == FALSE)
+		{
+			return FALSE;
+		}
+		Sleep(DongleSleepTime);
+		return TRUE;
+	}
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "未能找到信号强度达标的蓝牙设备！", HandleNum);
+	return FALSE;
+}
+
+//连接蓝牙
+BOOL IMEIWrite_MulAT::DongleConnect(int HandleNum)
+{
+	CString Vaule_Return, strCommand_Vaule,Result;
+
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "连接蓝牙设备中，请稍等！", HandleNum);
+	
+	Send_Serial_Order(&Vaule_Return, DongleSPCommand[0][0] + DongleInfo[HandleNum][0], HandleNum, (LPSTR)(LPCTSTR)DongleSPCommand[0][1], "", DongleSpCommandSleepTime[0]);
+
+	if (Vaule_Return == "FAIL")
+	{
+		DongleInfo[HandleNum][0] = "";
+		DongleInfo[HandleNum][1] = "";
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "蓝牙设备连接失败！", HandleNum);
+		return FALSE;
+	}
+
+
+	//连接上之后获取令牌
+	Send_Serial_Order(&Vaule_Return, DongleSPCommand[2][0], HandleNum, (LPSTR)(LPCTSTR)DongleSPCommand[2][1], "", DongleSpCommandSleepTime[2], 1);
+
+	if (Vaule_Return == "FAIL")
+	{
+		DongleInfo[HandleNum][0] = "";
+		DongleInfo[HandleNum][1] = "";
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "令牌获取失败！", HandleNum);
+		DongleDisConnect(HandleNum);
+		return FALSE;
+	}
+
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "蓝牙设备连接成功！", HandleNum);
+	
+	DongleInfo[HandleNum][1] = Vaule_Return_Count_CS[HandleNum];
+	return TRUE;
+}
+
+//断开蓝牙
+BOOL IMEIWrite_MulAT::DongleDisConnect(int HandleNum)
+{
+	CString Vaule_Return, strCommand_Vaule;
+	Send_Serial_Order(&Vaule_Return, DongleSPCommand[1][0], HandleNum, (LPSTR)(LPCTSTR)DongleSPCommand[1][1], "", DongleSpCommandSleepTime[1]);
+	if (Vaule_Return == "FAIL")
+	{
+		return FALSE;
+	}
+	//Send_Serial_Order(&Vaule_Return, "AT + RESET", HandleNum, "RESET", "",1000);
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "蓝牙设备断开成功！", HandleNum);
+	
+	DongleInfo[HandleNum][0] = "";
+	DongleInfo[HandleNum][1] = "";
+	Sleep(DongleSleepTime);
+	return TRUE;
+}
+
+//对蓝牙返回值进行解析
+CString IMEIWrite_MulAT::DongleValueAnalyze(CString CommandName, CString CommandValue)
+{
+	CString StrTemp;
+	
+	//0不需要转换,1需要16进制转换,2需要字符转换,3需要温度转换,4需要时间戳转换
+	switch (DongleCommandNameToInt(CommandName))
+	{
+	case 0:
+		StrTemp=CommandValue;
+		break;
+	case 1:
+		StrTemp.Format("%d", HexToDec(CommandValue));
+		break;
+	case 2:
+		StrTemp = DongleHexToASCII(CommandValue);
+		break;
+	case 3:
+		StrTemp = DongleTemperatureToCString(CommandValue);
+		break;
+	case 4:
+		StrTemp = DongleUnixTimeToDatatime(CommandValue);
+		break;
+	}
+
+	return StrTemp;
+}
+
+//对特殊转换进行一个包装处理
+int IMEIWrite_MulAT::DongleCommandNameToInt(CString CommandName)
+{
+	if (CommandName.Find("十六进制") != -1)
+	{
+		return 1;
+	}
+	else if (CommandName.Find("字符转换") != -1)
+	{
+		return 2;
+	}
+	else if (CommandName.Find("温度转换") != -1)
+	{
+		return 3;
+	}
+	else if (CommandName.Find("时间转换") != -1)
+	{
+		return 4;
+	}
+
+	return 0;
+}
+
+/*这里的函数都是Dongle蓝牙适配器配套的产品进行数值转换用的*/
+
+//计算CT12温度
+CString IMEIWrite_MulAT::DongleTemperatureToCString(CString str)
+{
+	CString StrDot, StrC,StrTemp;
+	float FDot, FC;
+	StrC = str.Right(2);
+	FC = (float)HexToDec(StrC)*2.56;
+	StrDot = str.Left(2);
+	FDot = (float)HexToDec(StrDot) / 100;
+	StrTemp.Format("%.2f", FC + FDot);
+	return StrTemp;
+}
+
+//时间戳转换
+CString IMEIWrite_MulAT::DongleUnixTimeToDatatime(CString str)
+{
+	CString StrSub, StrTemp = "";
+	for (int i = 0; i < 4; i++)
+	{
+		StrSub = str.Left(8 - i * 2);
+		StrTemp = StrTemp + StrSub.Right(2);
+	}
+	return StampToDatetime(_tcstoul(StrTemp, NULL, 16));
+}
+
+//字符转换
+CString IMEIWrite_MulAT::DongleHexToASCII(CString str)
+{
+	CString StrSub1, StrSub2, StrTemp = "";
+	int IntSub, count;
+	count = str.GetLength() / 2;
+
+	for (int i = 0; i < count; i++)
+	{
+		StrSub1 = str.Left(2);
+		str = str.Right(str.GetLength() - 2);
+		IntSub = strtol(StrSub1, NULL, 16);
+		StrSub2.Format("%c", IntSub);
+		StrTemp += StrSub2;
+	}
+
+	return StrTemp;
+}
+
+//整形转换成时间戳
+CString IMEIWrite_MulAT::StampToDatetime(time_t nSrc)
+{
+	char *a = new char[50];
+	CString time;
+	struct tm p;
+	p = *localtime(&nSrc);
+	strftime(a, 1000, "%Y-%m-%d %H:%M:%S", &p);
+	time = CA2CT(a);
+	delete[]a;
+	return time;
+}
+
+//十六进制转十进制
+int IMEIWrite_MulAT::HexToDec(CString str)
+{
+	int n;
+	n = _tcstoul(str, NULL, 16);
+	return n;
+}
+
+//CString转Byte
+BYTE * IMEIWrite_MulAT::CStrToByte(int len, CString str)
+{
+	BYTE *Buf = new BYTE[len];
+	CString StrSub;
+	for (int iSrc = 0, iDst = 0; iDst<len; iSrc += 2, iDst++)
+	{
+		StrSub = str.Mid(iSrc, 2);
+		Buf[iDst] = (BYTE)_tcstoul(StrSub, NULL, 16);//16是十六进制的意思
+	}
+	return Buf;
+}
+
+/*Dongle蓝牙适配器配套的产品进行数值转换到这里过*/
+
+int byte2hex(const unsigned char *input, unsigned long inlen, unsigned char *output, unsigned long *outlen)
+{
+	static const char *num = "0123456789ABCDEF";
+	unsigned long i = 0;
+	unsigned char *p = output;
+	if (*outlen < inlen * 2)
+	{
+		*outlen = inlen * 2;
+		return -1;
+	}
+	for (i = 0; i < inlen; ++i)
+	{
+		*p++ = num[input[i] >> 4];
+		*p++ = num[input[i] & 0x0F];
+	}
+	*outlen = p - output;
+	return 0;
+}
+
+long hex2int(const string& hexStr)
+{
+	char *offset;
+	if (hexStr.length() > 2)
+	{
+		if (hexStr[0] == '0' && hexStr[1] == 'x')
+		{
+			return strtol(hexStr.c_str(), &offset, 0);
+		}
+	}
+	return strtol(hexStr.c_str(), &offset, 16);
+}
+
+//加密函数
+CString IMEIWrite_MulAT::Encrypt(CString plainText)
+{
+	AES_Init(key);
+	string dataTemp;
+	CString szSub;
+	unsigned char orgdata[16];
+	unsigned char outputT[16];
+	CString dataTempC;
+	CString dataTempCOut;
+
+	//for (int iSrc = 0, iDst = 0; iDst<16; iSrc += 2, iDst++)
+	//{
+	//	szSub = plainText.Mid(iSrc, 2);
+	//	orgdata[iDst] = (BYTE)_tcstoul(szSub, NULL, 16);
+	//}
+
+
+	for (int i = 0; i < 16; i++)
+	{
+		dataTemp = plainText.Mid(i * 2, 2);
+		orgdata[i] = hex2int(dataTemp);
+	}
+
+	AES_Encrypt(orgdata, outputT, 16, NULL);
+	for (int i = 0; i < 16; i++)
+	{
+		dataTempC.Format("%02X", outputT[i]);
+		dataTempCOut += dataTempC;
+	}
+	return dataTempCOut;
+}
+
+//解密函数
+CString IMEIWrite_MulAT::Decrypt(CString plainText)
+{
+	AES_Init(key);
+	string dataTemp;
+	unsigned char orgdata[16];
+	unsigned char outputT[16] = { 0 };
+	CString dataTempC;
+	CString dataTempCOut;
+
+	for (int i = 0; i < 16; i++)
+	{
+		dataTemp = plainText.Mid(i * 2, 2);
+		orgdata[i] = hex2int(dataTemp);
+	}
+
+	AES_Decrypt(outputT, orgdata, 16, NULL);
+	for (int i = 0; i < 16; i++)
+	{
+		dataTempC.Format("%02X", outputT[i]);
+		dataTempCOut += dataTempC;
+	}
+	return dataTempCOut;
+}
