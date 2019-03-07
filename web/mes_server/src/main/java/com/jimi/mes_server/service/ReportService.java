@@ -29,10 +29,12 @@ import com.jimi.mes_server.util.ExcelHelper;
 public class ReportService extends SelectService{
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+	
 	private static DeleteService deleteService = Enhancer.enhance(DeleteService.class);
+	
 	private static DeleteHistoryService deleteHistoryService = new DeleteHistoryService();
 	
-	private static final String SELECT_DATARELATIVESHEET_AND_PRINTPARAM = "SELECT DataRelativeSheet.sN AS DataRelativeSheet_SN,DataRelativeSheet.iMEI1 AS DataRelativeSheet_IMEI1,DataRelativeSheet.iMEI2 AS DataRelativeSheet_IMEI2,DataRelativeSheet.iMEI3 AS DataRelativeSheet_IMEI3,DataRelativeSheet.iMEI4 AS DataRelativeSheet_IMEI4,DataRelativeSheet.iMEI5 AS DataRelativeSheet_IMEI5,DataRelativeSheet.iMEI6 AS DataRelativeSheet_IMEI6,DataRelativeSheet.iMEI7 AS DataRelativeSheet_IMEI7,DataRelativeSheet.iMEI8 AS DataRelativeSheet_IMEI8,DataRelativeSheet.iMEI9 AS DataRelativeSheet_IMEI9,DataRelativeSheet.iMEI10 AS DataRelativeSheet_IMEI10,DataRelativeSheet.iMEI11 AS DataRelativeSheet_IMEI11,DataRelativeSheet.iMEI12 AS DataRelativeSheet_IMEI12,DataRelativeSheet.iMEI13 AS DataRelativeSheet_IMEI13,DataRelativeSheet.zhiDan AS DataRelativeSheet_ZhiDan,DataRelativeSheet.testTime AS DataRelativeSheet_TestTime,DataRelativeSheet.simEffectiveDate AS DataRelativeSheet_SimEffectiveDate,Gps_ManuPrintParam.sN AS GpsManuprintparam_SN,Gps_ManuPrintParam.zhiDan AS GpsManuprintparam_ZhiDan,Gps_ManuPrintParam.softModel AS GpsManuprintparam_SoftModel,Gps_ManuPrintParam.js_Templatepath AS GpsManuprintparam_JsTemplatepath,Gps_ManuPrintParam.js_Refirstprinttime AS GpsManuprintparam_JsRefirstprinttime,Gps_ManuPrintParam.js_Reendprinttime AS GpsManuprintparam_JsReendprinttime,Gps_ManuPrintParam.ch_Templatepath1 AS GpsManuprintparam_ChTemplatepath1,Gps_ManuPrintParam.ch_Templatepath2 AS GpsManuprintparam_ChTemplatepath2,Gps_ManuPrintParam.ch_Refirstprinttime AS GpsManuprintparam_ChRefirstprinttime,Gps_ManuPrintParam.ch_Reendprinttime AS GpsManuprintparam_ChReendprinttime,Gps_ManuPrintParam.ch_Reprintnum AS GpsManuprintparam_ChReprintnum,Gps_ManuPrintParam.iCCID AS GpsManuprintparam_ICCID,Gps_ManuPrintParam.mAC AS GpsManuprintparam_MAC,Gps_ManuPrintParam.equipment AS GpsManuprintparam_Equipment,Gps_ManuPrintParam.rFID AS GpsManuprintparam_RFID,Gps_ManuPrintParam.iD AS GpsManuprintparam_ID,Gps_ManuPrintParam.iMEI AS GpsManuprintparam_IMEI,Gps_ManuPrintParam.sIM AS GpsManuprintparam_SIM,Gps_ManuPrintParam.vIP AS GpsManuprintparam_VIP,Gps_ManuPrintParam.bAT AS GpsManuprintparam_BAT,Gps_ManuPrintParam.remark AS GpsManuprintparam_Remark,Gps_ManuPrintParam.js_Printtime AS GpsManuprintparam_JsPrinttime,Gps_ManuPrintParam.js_Reprintnum AS GpsManuprintparam_JsReprintnum,Gps_ManuPrintParam.ch_Printtime AS GpsManuprintparam_ChPrinttime,Gps_ManuPrintParam.userName AS GpsManuprintparam_UserName,Gps_ManuPrintParam.version AS GpsManuprintparam_Version,Gps_ManuPrintParam.iMEIStart AS GpsManuprintparam_IMEIStart,Gps_ManuPrintParam.iMEIEnd AS GpsManuprintparam_IMEIEnd,Gps_ManuPrintParam.iMEIRel AS GpsManuprintparam_IMEIRel FROM DataRelativeSheet JOIN Gps_ManuPrintParam  ON DataRelativeSheet.IMEI1 = Gps_ManuPrintParam.IMEI";
+	private static final String SELECT_DATARELATIVESHEET_AND_PRINTPARAM = "SELECT DataRelativeSheet.sN AS DataRelativeSheet_SN,DataRelativeSheet.iMEI1 AS DataRelativeSheet_IMEI1,DataRelativeSheet.iMEI2 AS DataRelativeSheet_IMEI2,DataRelativeSheet.iMEI3 AS DataRelativeSheet_IMEI3,DataRelativeSheet.iMEI4 AS DataRelativeSheet_IMEI4,DataRelativeSheet.iMEI5 AS DataRelativeSheet_IMEI5,DataRelativeSheet.iMEI6 AS DataRelativeSheet_IMEI6,DataRelativeSheet.iMEI7 AS DataRelativeSheet_IMEI7,DataRelativeSheet.iMEI8 AS DataRelativeSheet_IMEI8,DataRelativeSheet.iMEI9 AS DataRelativeSheet_IMEI9,DataRelativeSheet.iMEI10 AS DataRelativeSheet_IMEI10,DataRelativeSheet.iMEI11 AS DataRelativeSheet_IMEI11,DataRelativeSheet.iMEI12 AS DataRelativeSheet_IMEI12,DataRelativeSheet.iMEI13 AS DataRelativeSheet_IMEI13,DataRelativeSheet.zhiDan AS DataRelativeSheet_ZhiDan,DataRelativeSheet.testTime AS DataRelativeSheet_TestTime,DataRelativeSheet.simEffectiveDate AS DataRelativeSheet_SimEffectiveDate,Gps_ManuPrintParam.sN AS GpsManuprintparam_SN,Gps_ManuPrintParam.zhiDan AS GpsManuprintparam_ZhiDan,Gps_ManuPrintParam.softModel AS GpsManuprintparam_SoftModel,Gps_ManuPrintParam.js_Templatepath AS GpsManuprintparam_JS_TemplatePath,Gps_ManuPrintParam.js_Refirstprinttime AS GpsManuprintparam_JS_ReFirstPrintTime,Gps_ManuPrintParam.js_Reendprinttime AS GpsManuprintparam_JS_ReEndPrintTime,Gps_ManuPrintParam.ch_Templatepath1 AS GpsManuprintparam_CH_TemplatePath1,Gps_ManuPrintParam.ch_Templatepath2 AS GpsManuprintparam_CH_TemplatePath2,Gps_ManuPrintParam.ch_Refirstprinttime AS GpsManuprintparam_CH_ReFirstPrintTime,Gps_ManuPrintParam.ch_Reendprinttime AS GpsManuprintparam_CH_ReEndPrintTime,Gps_ManuPrintParam.ch_Reprintnum AS GpsManuprintparam_CH_RePrintNum,Gps_ManuPrintParam.iCCID AS GpsManuprintparam_ICCID,Gps_ManuPrintParam.mAC AS GpsManuprintparam_MAC,Gps_ManuPrintParam.equipment AS GpsManuprintparam_Equipment,Gps_ManuPrintParam.rFID AS GpsManuprintparam_RFID,Gps_ManuPrintParam.iD AS GpsManuprintparam_ID,Gps_ManuPrintParam.iMEI AS GpsManuprintparam_IMEI,Gps_ManuPrintParam.sIM AS GpsManuprintparam_SIM,Gps_ManuPrintParam.vIP AS GpsManuprintparam_VIP,Gps_ManuPrintParam.bAT AS GpsManuprintparam_BAT,Gps_ManuPrintParam.remark AS GpsManuprintparam_Remark,Gps_ManuPrintParam.js_Printtime AS GpsManuprintparam_JS_PrintTime,Gps_ManuPrintParam.js_Reprintnum AS GpsManuprintparam_JS_RePrintNum,Gps_ManuPrintParam.ch_Printtime AS GpsManuprintparam_CH_PrintTime,Gps_ManuPrintParam.userName AS GpsManuprintparam_UserName,Gps_ManuPrintParam.version AS GpsManuprintparam_Version,Gps_ManuPrintParam.iMEIStart AS GpsManuprintparam_IMEIStart,Gps_ManuPrintParam.iMEIEnd AS GpsManuprintparam_IMEIEnd,Gps_ManuPrintParam.iMEIRel AS GpsManuprintparam_IMEIRel FROM DataRelativeSheet JOIN Gps_ManuPrintParam  ON DataRelativeSheet.IMEI1 = Gps_ManuPrintParam.IMEI";
 	
 	
 	/**
@@ -213,8 +215,11 @@ public class ReportService extends SelectService{
 	 * @param filter
 	 * @return
 	 */
-	public Page<Record> selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		return daoService.select(SELECT_DATARELATIVESHEET_AND_PRINTPARAM, pageNo, pageSize, ascBy, descBy, filter);
+	public Page<Record> selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred){
+		if (isReferred) {
+			return daoService.select(SELECT_DATARELATIVESHEET_AND_PRINTPARAM, pageNo, pageSize, ascBy, descBy, filter);
+		}
+		return daoService.select("DataRelativeSheet", pageNo, pageSize, ascBy, descBy, filter, null);
 	}
 	
 	
@@ -320,6 +325,23 @@ public class ReportService extends SelectService{
 			throw new OperationException("请填写删除条件");
 		}
 		deleteService.delete(sql);
+	}
+	
+	
+	public void deleteByIds(String table, String filter, Integer type) {
+		if (filter == null || filter.trim().equals("")) {
+			throw new OperationException("请选择删除的记录");
+		}
+		String tempFilter = filter;
+		if (table.equals("Gps_ManuSimDataParam") || table.equals("Gps_ManuPrintParam")) {
+			tempFilter = filter.replace("#in#", " in ");
+		}
+		try {
+			backup(table, null, null, tempFilter, type);
+		} catch (Exception e) {
+			throw new OperationException("备份数据失败，删除失败");
+		}
+		deleteService.delete(table, filter, type);
 	}
 	
 	

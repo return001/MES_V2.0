@@ -69,8 +69,8 @@ public class ReportController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
-	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter));
+	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
+		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter, isReferred));
 		renderJson(result);
 	}
 
@@ -106,7 +106,7 @@ public class ReportController extends Controller {
 			String startTimeString = formatDateToString(startTime, "yyyy.MM.dd HH:mm:ss");
 			String endTimeString = formatDateToString(endTime, "yyyy.MM.dd HH:mm:ss");
 			if (printType == 0) {
-				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >=" + startTimeString + " and CH_PrintTime <= " + endTimeString + ")))";
+				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >= '" + startTimeString + "' and CH_PrintTime <= '" + endTimeString + "')))";
 			} else if (printType == 1) {
 				filter = filter + "(((JS_ReEndPrintTime >= '" + startTimeString + "' and JS_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReEndPrintTime is null) and (JS_ReFirstPrintTime >= '" + startTimeString + "' and JS_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReFirstPrintTime is null) and (JS_PrintTime >= '" + startTimeString + "' and JS_PrintTime <= '" + endTimeString + "')))";
 			}
@@ -165,6 +165,9 @@ public class ReportController extends Controller {
 		if (table.equals("Gps_ManuCpParam")) {
 			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
 		}
+		if (table.equals("Gps_CartonBoxTwenty_Result")) {
+			throw new OperationException("当前用户无权限删除");
+		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (user.getUserType().equals("SuperAdmin")) {
@@ -179,6 +182,42 @@ public class ReportController extends Controller {
 		for (int i = 0; i < deletePermissions.length; i++) {
 			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
 				reportService.delete(table, filter, type);
+				renderJson(ResultUtil.succeed());
+				return;
+			}
+		}
+		throw new OperationException("当前用户无权限删除");
+	}
+	
+	
+	/**
+	 * 根据条件删除数据库记录
+	 * @param table
+	 * @param filter
+	 * @param type
+	 */
+	@Access({"SuperAdmin", "admin"})
+	public void deleteByIds(String table, String filter, Integer type) {
+		if (table.equals("Gps_ManuCpParam")) {
+			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
+		}
+		if (table.equals("Gps_CartonBoxTwenty_Result")) {
+			throw new OperationException("当前用户无权限删除");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (user.getUserType().equals("SuperAdmin")) {
+			reportService.deleteByIds(table, filter, type);
+			renderJson(ResultUtil.succeed());
+			return ;
+		}
+		if (user.getDeletePermission() == null) {
+			throw new OperationException("当前用户无权限删除");
+		}
+		String[] deletePermissions = user.getDeletePermission().split(",");
+		for (int i = 0; i < deletePermissions.length; i++) {
+			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
+				reportService.deleteByIds(table, filter, type);
 				renderJson(ResultUtil.succeed());
 				return;
 			}
@@ -218,7 +257,7 @@ public class ReportController extends Controller {
 			String startTimeString = formatDateToString(startTime, "yyyy.MM.dd HH:mm:ss");
 			String endTimeString = formatDateToString(endTime, "yyyy.MM.dd HH:mm:ss");
 			if (printType == 0) {
-				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >=" + startTimeString + " and CH_PrintTime <= " + endTimeString + ")))";
+				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >= '" + startTimeString + "' and CH_PrintTime <= '" + endTimeString + "')))";
 			} else if (printType == 1) {
 				filter = filter + "(((JS_ReEndPrintTime >= '" + startTimeString + "' and JS_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReEndPrintTime is null) and (JS_ReFirstPrintTime >= '" + startTimeString + "' and JS_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReFirstPrintTime is null) and (JS_PrintTime >= '" + startTimeString + "' and JS_PrintTime <= '" + endTimeString + "')))";
 			}

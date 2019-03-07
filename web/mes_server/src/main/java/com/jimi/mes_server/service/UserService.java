@@ -42,7 +42,7 @@ public class UserService extends SelectService{
 		if(GpsUser.dao.find(uniqueCheckSql, user.getUserName()).size() != 0) {
 			throw new OperationException("user is already exist");
 		}
-		user.keep("UserName","UserDes","UserPwd","UserType","UserTestPlan");
+		user.keep("UserName","UserDes","UserPwd","UserType","UserTestPlan", "DeletePermission");
 		user.setUserPwd(MD5Util.MD5(user.getUserPwd()));
 		return user.save();
 	}
@@ -50,7 +50,7 @@ public class UserService extends SelectService{
 	
 	public boolean update(GpsUser user) {
 		checkUserTypeAndTestPlan(user);
-		user.keep("UserId","UserDes","UserType","UserTestPlan","InService");
+		user.keep("UserId","UserDes","UserType","UserTestPlan","InService", "DeletePermission");
 		return user.update();
 	}
 	

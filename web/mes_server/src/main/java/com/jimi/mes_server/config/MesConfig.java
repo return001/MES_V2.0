@@ -83,7 +83,7 @@ public class MesConfig extends JFinalConfig {
 			dp2 = new DruidPlugin(PropKit.get("d_url2"), PropKit.get("d_user"), PropKit.get("d_password"));
 			dp3 = new DruidPlugin(PropKit.get("d_url3"), PropKit.get("d_user"), PropKit.get("d_password"));
 			System.out.println("DateBase is in development envrionment");
-		}		
+		}
 		me.add(dp);
 		me.add(dp1);
 		me.add(dp2);

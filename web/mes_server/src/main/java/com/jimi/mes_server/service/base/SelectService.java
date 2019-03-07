@@ -18,6 +18,9 @@ import com.jimi.mes_server.exception.ParameterException;
  */
 public class SelectService {
 	
+	private final static String[] OPERATORS = {"#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#"};
+	
+	
 	/**
 	 * 分页查询，支持筛选和排序
 	 * @param table 提供可读的表名
@@ -67,37 +70,48 @@ public class SelectService {
 	
 	
 	private void createWhere(String filter, List<String> questionValues, StringBuffer sql) {
-		//判断filter存在与否
-		if(filter != null) {
+		// 判断filter存在与否
+		if (filter != null) {
 			sql.append(" WHERE ");
-			String[] whereUnits = filter.split("&");
+			String[] whereUnits = filter.split("#&#");
+
 			int index = 0;
-			for (String whereUnit: whereUnits) {
-				//分割键值与运算符
+			for (String whereUnit : whereUnits) {
+				// 分割键值与运算符
 				int operatorStartIndex = -1;
 				StringBuffer operator = new StringBuffer();
-				for (int i = 0; i < whereUnit.length(); i++) {
-					char c = whereUnit.charAt(i);
-					if(c == '>' || c == '<' || c == '=' || c == '!') {
-						operator.append(c);
-						if(operatorStartIndex == -1) {
-							operatorStartIndex = i;
-						}
+				int operationLength = 0;
+				int i = 0;
+				for (; i < OPERATORS.length; i++) {
+					operatorStartIndex = whereUnit.indexOf(OPERATORS[i]);
+					if (operatorStartIndex != -1) {
+						operationLength = OPERATORS[i].length();
+						operator.append(OPERATORS[i].substring(1, operationLength - 1));
+						break;
 					}
 				}
 				String key = whereUnit.substring(0, operatorStartIndex);
-				String value = whereUnit.substring(operatorStartIndex + operator.length(), whereUnit.length());
-				sql.append(key + operator.toString() +"? AND ");
-				questionValues.add(value);
-				if(index == whereUnits.length - 1) {
+				String value = whereUnit.substring(operatorStartIndex + operationLength, whereUnit.length());
+				if (operator.toString().equals("in")) {
+					sql.append(key + " " + operator.toString() + " " + value + " AND ");
+				}else {
+					sql.append(key + " " + operator.toString() + " ? AND ");
+				}
+				if (OPERATORS[i].equals("#like#")) {
+					questionValues.add("%" + value + "%");
+				} else if (!OPERATORS[i].equals("#in#")) {
+					questionValues.add(value);
+				}
+				if (index == whereUnits.length - 1) {
 					sql.delete(sql.lastIndexOf("AND"), sql.length());
 				}
 				index++;
 			}
+			System.out.println(sql + "  " + questionValues);
 		}
 	}
-
-
+	
+	
 	private void createOrderBy(String ascBy, String descBy, StringBuffer sql) {
 		if(ascBy != null && descBy != null) {
 			throw new ParameterException("ascBy and descBy can not be provided at the same time");
@@ -131,7 +145,12 @@ public class SelectService {
 					break;
 				}
 			}else {	
-				return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				try {
+					return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
 			}
 		}else {
 			if(type != null) {

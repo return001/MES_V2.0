@@ -624,10 +624,11 @@ public class ExcelHelper{
 				Sheet sheet = workbook.getSheetAt(i);
 				for (int j = 0; j < sheet.getRow(sheet.getLastRowNum()).getLastCellNum(); j++) {
 					sheet.autoSizeColumn(j);
-					sheet.setColumnWidth(j, sheet.getColumnWidth(j) + 4 *256);
 					//设置上限
 					if(sheet.getColumnWidth(j) >= 80 * 256) {
 						sheet.setColumnWidth(j, 80 * 256);
+					}else {
+						sheet.setColumnWidth(j, sheet.getColumnWidth(j) + 4 *256);
 					}
 				}
 			}
