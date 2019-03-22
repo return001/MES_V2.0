@@ -1,0 +1,3818 @@
+2016-07-22--08:25:30--->(2552): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:25:30--->(2552): Received 147 handshake bytes from client
+
+2016-07-22--08:25:30--->(2552): Exactly one buffer is present
+
+2016-07-22--08:25:30--->(2552): TLS version 1.2
+
+2016-07-22--08:25:30--->(2552): client_hello
+
+2016-07-22--08:25:30--->(2552): There are 55 bytes of extension data
+
+2016-07-22--08:25:30--->(2552): Extension Type 65281, length 1
+
+2016-07-22--08:25:30--->(2552): Server name list extension, length 8
+
+2016-07-22--08:25:30--->(2552):    Requested name "bz010"
+
+2016-07-22--08:25:30--->(2552): Extension Type 10, length 6
+
+2016-07-22--08:25:30--->(2552): Extension Type 11, length 2
+
+2016-07-22--08:25:30--->(2552): Extension Type 13, length 16
+
+2016-07-22--08:25:30--->(2552): Extensions exactly filled the header, as expected
+
+2016-07-22--08:25:30--->(2552): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--08:25:30--->(2552): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--08:25:30--->(2552): CryptAcquireContext of existing key container... 
+
+2016-07-22--08:25:30--->(2552): Success - container found
+
+2016-07-22--08:25:30--->(2552): CryptGenKey... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CryptDestroyKey... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CryptReleaseContext... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertStrToName... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): malloc... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertStrToName... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertCreateSelfSignCertificate... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertOpenStore to open root store... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertAddCertificateContextToStore... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--08:25:32--->(2552): Success, private key acquired
+
+2016-07-22--08:25:32--->(2552): free... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CryptReleaseContext... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): CertCloseStore... 
+
+2016-07-22--08:25:32--->(2552): Success
+
+2016-07-22--08:25:32--->(2552): Server certificate requested for bz010, found 
+
+2016-07-22--08:25:32--->(2552): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--08:25:32--->(2552): Handshake working so far, more packets required
+
+2016-07-22--08:25:32--->(2552): Unexpected scRet value 90312
+
+2016-07-22--08:25:32--->(2908): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:25:32--->(2908): Received 166 handshake bytes from client
+
+2016-07-22--08:25:32--->(2908): Whole buffer is present
+
+2016-07-22--08:25:32--->(2908): TLS version 1.2
+
+2016-07-22--08:25:32--->(2908): This handshake type (16) is not recognized
+
+2016-07-22--08:25:32--->(2908): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--08:25:32--->(2908): Handshake worked, no extra bytes received
+
+2016-07-22--08:25:48--->(2552): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:25:48--->(2552): Received 147 handshake bytes from client
+
+2016-07-22--08:25:48--->(2552): Exactly one buffer is present
+
+2016-07-22--08:25:48--->(2552): TLS version 1.2
+
+2016-07-22--08:25:48--->(2552): client_hello
+
+2016-07-22--08:25:48--->(2552): There are 55 bytes of extension data
+
+2016-07-22--08:25:48--->(2552): Extension Type 65281, length 1
+
+2016-07-22--08:25:48--->(2552): Server name list extension, length 8
+
+2016-07-22--08:25:48--->(2552):    Requested name "bz010"
+
+2016-07-22--08:25:48--->(2552): Extension Type 10, length 6
+
+2016-07-22--08:25:48--->(2552): Extension Type 11, length 2
+
+2016-07-22--08:25:48--->(2552): Extension Type 13, length 16
+
+2016-07-22--08:25:48--->(2552): Extensions exactly filled the header, as expected
+
+2016-07-22--08:25:48--->(2552): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--08:25:48--->(2552): Handshake working so far, more packets required
+
+2016-07-22--08:25:48--->(2552): Unexpected scRet value 90312
+
+2016-07-22--08:25:48--->(2552): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:25:48--->(2552): Received 166 handshake bytes from client
+
+2016-07-22--08:25:48--->(2552): Whole buffer is present
+
+2016-07-22--08:25:48--->(2552): TLS version 1.2
+
+2016-07-22--08:25:48--->(2552): This handshake type (16) is not recognized
+
+2016-07-22--08:25:48--->(2552): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--08:25:48--->(2552): Handshake worked, no extra bytes received
+
+2016-07-22--08:25:48--->(2908): Using the saved 69 bytes from client
+
+2016-07-22--08:25:48--->(2908): Decrypted message from client.
+
+2016-07-22--08:25:48--->(2908): Decrypted message has 14 bytes
+
+2016-07-22--08:25:48--->(2908): No extra ciphertext was read
+
+2016-07-22--08:25:48--->(2908): Plaintext message has 14 bytes
+
+2016-07-22--08:41:00--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:41:00--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--08:41:00--->(2388): Exactly one buffer is present
+
+2016-07-22--08:41:00--->(2388): TLS version 1.2
+
+2016-07-22--08:41:00--->(2388): client_hello
+
+2016-07-22--08:41:00--->(2388): There are 55 bytes of extension data
+
+2016-07-22--08:41:00--->(2388): Extension Type 65281, length 1
+
+2016-07-22--08:41:00--->(2388): Server name list extension, length 8
+
+2016-07-22--08:41:00--->(2388):    Requested name "kksPC"
+
+2016-07-22--08:41:00--->(2388): Extension Type 10, length 6
+
+2016-07-22--08:41:00--->(2388): Extension Type 11, length 2
+
+2016-07-22--08:41:00--->(2388): Extension Type 13, length 16
+
+2016-07-22--08:41:00--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--08:41:00--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--08:41:00--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--08:41:00--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--08:41:00--->(2388): Success - container found
+
+2016-07-22--08:41:00--->(2388): CryptGenKey... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CryptDestroyKey... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CryptReleaseContext... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertStrToName... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): malloc... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertStrToName... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--08:41:01--->(2388): Success, private key acquired
+
+2016-07-22--08:41:01--->(2388): free... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CryptReleaseContext... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): CertCloseStore... 
+
+2016-07-22--08:41:01--->(2388): Success
+
+2016-07-22--08:41:01--->(2388): Server certificate requested for kksPC, found 
+
+2016-07-22--08:41:01--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--08:41:01--->(2388): Handshake working so far, more packets required
+
+2016-07-22--08:41:01--->(2388): Unexpected scRet value 90312
+
+2016-07-22--08:41:01--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:41:01--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--08:41:01--->(2388): Whole buffer is present
+
+2016-07-22--08:41:01--->(2388): TLS version 1.2
+
+2016-07-22--08:41:01--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--08:41:01--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--08:41:01--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--08:41:01--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--08:41:01--->(2388): Decrypted message from client.
+
+2016-07-22--08:41:01--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--08:41:01--->(2388): No extra ciphertext was read
+
+2016-07-22--08:41:01--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--08:41:02--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:41:02--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--08:41:02--->(2388): Exactly one buffer is present
+
+2016-07-22--08:41:02--->(2388): TLS version 1.2
+
+2016-07-22--08:41:02--->(2388): client_hello
+
+2016-07-22--08:41:02--->(2388): There are 55 bytes of extension data
+
+2016-07-22--08:41:02--->(2388): Extension Type 65281, length 1
+
+2016-07-22--08:41:02--->(2388): Server name list extension, length 8
+
+2016-07-22--08:41:02--->(2388):    Requested name "kksPC"
+
+2016-07-22--08:41:02--->(2388): Extension Type 10, length 6
+
+2016-07-22--08:41:02--->(2388): Extension Type 11, length 2
+
+2016-07-22--08:41:02--->(2388): Extension Type 13, length 16
+
+2016-07-22--08:41:02--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--08:41:02--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--08:41:02--->(2388): Handshake working so far, more packets required
+
+2016-07-22--08:41:02--->(2388): Unexpected scRet value 90312
+
+2016-07-22--08:41:02--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:41:02--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--08:41:02--->(3076): Whole buffer is present
+
+2016-07-22--08:41:02--->(3076): TLS version 1.2
+
+2016-07-22--08:41:02--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--08:41:02--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--08:41:02--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--08:41:02--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--08:41:02--->(2388): Decrypted message from client.
+
+2016-07-22--08:41:02--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--08:41:02--->(2388): No extra ciphertext was read
+
+2016-07-22--08:41:02--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--08:46:18--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:46:18--->(2388): Received 150 handshake bytes from client
+
+2016-07-22--08:46:18--->(2388): Exactly one buffer is present
+
+2016-07-22--08:46:18--->(2388): TLS version 1.2
+
+2016-07-22--08:46:18--->(2388): client_hello
+
+2016-07-22--08:46:18--->(2388): There are 58 bytes of extension data
+
+2016-07-22--08:46:18--->(2388): Extension Type 65281, length 1
+
+2016-07-22--08:46:18--->(2388): Server name list extension, length 11
+
+2016-07-22--08:46:18--->(2388):    Requested name "eng-tm02"
+
+2016-07-22--08:46:18--->(2388): Extension Type 10, length 6
+
+2016-07-22--08:46:18--->(2388): Extension Type 11, length 2
+
+2016-07-22--08:46:18--->(2388): Extension Type 13, length 16
+
+2016-07-22--08:46:18--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--08:46:19--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--08:46:19--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--08:46:19--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--08:46:19--->(2388): Success - container found
+
+2016-07-22--08:46:19--->(2388): CryptGenKey... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CryptDestroyKey... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CryptReleaseContext... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertStrToName... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): malloc... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertStrToName... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--08:46:22--->(2388): Success, private key acquired
+
+2016-07-22--08:46:22--->(2388): free... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CryptReleaseContext... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): CertCloseStore... 
+
+2016-07-22--08:46:22--->(2388): Success
+
+2016-07-22--08:46:22--->(2388): Server certificate requested for eng-tm02, found 
+
+2016-07-22--08:46:22--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--08:46:22--->(2388): Handshake working so far, more packets required
+
+2016-07-22--08:46:22--->(2388): Unexpected scRet value 90312
+
+2016-07-22--08:46:22--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--08:46:22--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--08:46:22--->(2388): Whole buffer is present
+
+2016-07-22--08:46:22--->(2388): TLS version 1.2
+
+2016-07-22--08:46:22--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--08:46:22--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--08:46:22--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--08:46:22--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--08:46:22--->(3076): Decrypted message from client.
+
+2016-07-22--08:46:22--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--08:46:22--->(3076): No extra ciphertext was read
+
+2016-07-22--08:46:22--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--09:34:23--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--09:34:23--->(2388): Received 151 handshake bytes from client
+
+2016-07-22--09:34:23--->(2388): Exactly one buffer is present
+
+2016-07-22--09:34:23--->(2388): TLS version 1.2
+
+2016-07-22--09:34:23--->(2388): client_hello
+
+2016-07-22--09:34:23--->(2388): There are 59 bytes of extension data
+
+2016-07-22--09:34:23--->(2388): Extension Type 65281, length 1
+
+2016-07-22--09:34:23--->(2388): Server name list extension, length 12
+
+2016-07-22--09:34:23--->(2388):    Requested name "imei51-PC"
+
+2016-07-22--09:34:23--->(2388): Extension Type 10, length 6
+
+2016-07-22--09:34:23--->(2388): Extension Type 11, length 2
+
+2016-07-22--09:34:23--->(2388): Extension Type 13, length 16
+
+2016-07-22--09:34:23--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--09:34:23--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--09:34:23--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--09:34:23--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--09:34:23--->(2388): Success - container found
+
+2016-07-22--09:34:23--->(2388): CryptGenKey... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CryptDestroyKey... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CryptReleaseContext... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertStrToName... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): malloc... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertStrToName... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--09:34:26--->(2388): Success, private key acquired
+
+2016-07-22--09:34:26--->(2388): free... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CryptReleaseContext... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): CertCloseStore... 
+
+2016-07-22--09:34:26--->(2388): Success
+
+2016-07-22--09:34:26--->(2388): Server certificate requested for imei51-PC, found 
+
+2016-07-22--09:34:26--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--09:34:26--->(2388): Handshake working so far, more packets required
+
+2016-07-22--09:34:26--->(2388): Unexpected scRet value 90312
+
+2016-07-22--09:34:26--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--09:34:26--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--09:34:26--->(2388): Whole buffer is present
+
+2016-07-22--09:34:26--->(2388): TLS version 1.2
+
+2016-07-22--09:34:26--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--09:34:26--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--09:34:26--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--09:34:40--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--09:34:40--->(2388): Received 151 handshake bytes from client
+
+2016-07-22--09:34:40--->(2388): Exactly one buffer is present
+
+2016-07-22--09:34:40--->(2388): TLS version 1.2
+
+2016-07-22--09:34:40--->(2388): client_hello
+
+2016-07-22--09:34:40--->(2388): There are 59 bytes of extension data
+
+2016-07-22--09:34:40--->(2388): Extension Type 65281, length 1
+
+2016-07-22--09:34:40--->(2388): Server name list extension, length 12
+
+2016-07-22--09:34:40--->(2388):    Requested name "imei51-PC"
+
+2016-07-22--09:34:40--->(2388): Extension Type 10, length 6
+
+2016-07-22--09:34:40--->(2388): Extension Type 11, length 2
+
+2016-07-22--09:34:40--->(2388): Extension Type 13, length 16
+
+2016-07-22--09:34:40--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--09:34:40--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--09:34:40--->(2388): Handshake working so far, more packets required
+
+2016-07-22--09:34:40--->(2388): Unexpected scRet value 90312
+
+2016-07-22--09:34:40--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--09:34:40--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--09:34:40--->(3076): Whole buffer is present
+
+2016-07-22--09:34:40--->(3076): TLS version 1.2
+
+2016-07-22--09:34:40--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--09:34:40--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--09:34:40--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--09:34:40--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--09:34:40--->(2388): Decrypted message from client.
+
+2016-07-22--09:34:40--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--09:34:40--->(2388): No extra ciphertext was read
+
+2016-07-22--09:34:40--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--10:16:06--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--10:16:06--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--10:16:06--->(2388): Exactly one buffer is present
+
+2016-07-22--10:16:06--->(2388): TLS version 1.2
+
+2016-07-22--10:16:06--->(2388): client_hello
+
+2016-07-22--10:16:06--->(2388): There are 55 bytes of extension data
+
+2016-07-22--10:16:06--->(2388): Extension Type 65281, length 1
+
+2016-07-22--10:16:06--->(2388): Server name list extension, length 8
+
+2016-07-22--10:16:06--->(2388):    Requested name "kksPC"
+
+2016-07-22--10:16:06--->(2388): Extension Type 10, length 6
+
+2016-07-22--10:16:06--->(2388): Extension Type 11, length 2
+
+2016-07-22--10:16:06--->(2388): Extension Type 13, length 16
+
+2016-07-22--10:16:06--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--10:16:06--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--10:16:06--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--10:16:06--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--10:16:06--->(2388): Success - container found
+
+2016-07-22--10:16:06--->(2388): CryptGenKey... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CryptDestroyKey... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CryptReleaseContext... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertStrToName... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): malloc... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertStrToName... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--10:16:07--->(2388): Success, private key acquired
+
+2016-07-22--10:16:07--->(2388): free... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CryptReleaseContext... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): CertCloseStore... 
+
+2016-07-22--10:16:07--->(2388): Success
+
+2016-07-22--10:16:07--->(2388): Server certificate requested for kksPC, found 
+
+2016-07-22--10:16:07--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--10:16:07--->(2388): Handshake working so far, more packets required
+
+2016-07-22--10:16:07--->(2388): Unexpected scRet value 90312
+
+2016-07-22--10:16:07--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--10:16:07--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--10:16:07--->(2388): Whole buffer is present
+
+2016-07-22--10:16:07--->(2388): TLS version 1.2
+
+2016-07-22--10:16:07--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--10:16:07--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--10:16:07--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--10:16:07--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--10:16:07--->(2388): Decrypted message from client.
+
+2016-07-22--10:16:07--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--10:16:07--->(2388): No extra ciphertext was read
+
+2016-07-22--10:16:07--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--11:10:08--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--11:10:08--->(2388): Received 150 handshake bytes from client
+
+2016-07-22--11:10:08--->(2388): Exactly one buffer is present
+
+2016-07-22--11:10:08--->(2388): TLS version 1.2
+
+2016-07-22--11:10:08--->(2388): client_hello
+
+2016-07-22--11:10:08--->(2388): There are 58 bytes of extension data
+
+2016-07-22--11:10:08--->(2388): Extension Type 65281, length 1
+
+2016-07-22--11:10:08--->(2388): Server name list extension, length 11
+
+2016-07-22--11:10:08--->(2388):    Requested name "eng-tm02"
+
+2016-07-22--11:10:08--->(2388): Extension Type 10, length 6
+
+2016-07-22--11:10:08--->(2388): Extension Type 11, length 2
+
+2016-07-22--11:10:08--->(2388): Extension Type 13, length 16
+
+2016-07-22--11:10:08--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--11:10:08--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--11:10:08--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--11:10:08--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--11:10:08--->(2388): Success - container found
+
+2016-07-22--11:10:08--->(2388): CryptGenKey... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CryptDestroyKey... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CryptReleaseContext... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertStrToName... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): malloc... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertStrToName... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--11:10:13--->(2388): Success, private key acquired
+
+2016-07-22--11:10:13--->(2388): free... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CryptReleaseContext... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): CertCloseStore... 
+
+2016-07-22--11:10:13--->(2388): Success
+
+2016-07-22--11:10:13--->(2388): Server certificate requested for eng-tm02, found 
+
+2016-07-22--11:10:13--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--11:10:13--->(2388): Handshake working so far, more packets required
+
+2016-07-22--11:10:13--->(2388): Unexpected scRet value 90312
+
+2016-07-22--11:10:13--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--11:10:13--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--11:10:13--->(2388): Whole buffer is present
+
+2016-07-22--11:10:13--->(2388): TLS version 1.2
+
+2016-07-22--11:10:13--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--11:10:13--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--11:10:13--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--11:10:14--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--11:10:14--->(3076): Decrypted message from client.
+
+2016-07-22--11:10:14--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--11:10:14--->(3076): No extra ciphertext was read
+
+2016-07-22--11:10:14--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--11:16:27--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--11:16:27--->(2388): Received 173 handshake bytes from client
+
+2016-07-22--11:16:27--->(2388): Exactly one buffer is present
+
+2016-07-22--11:16:27--->(2388): TLS version 1.2
+
+2016-07-22--11:16:27--->(2388): client_hello
+
+2016-07-22--11:16:27--->(2388): There are 75 bytes of extension data
+
+2016-07-22--11:16:27--->(2388): Server name list extension, length 18
+
+2016-07-22--11:16:27--->(2388):    Requested name "QH-20150317RYUF"
+
+2016-07-22--11:16:27--->(2388): Extension Type 10, length 8
+
+2016-07-22--11:16:27--->(2388): Extension Type 11, length 2
+
+2016-07-22--11:16:27--->(2388): Extension Type 13, length 20
+
+2016-07-22--11:16:27--->(2388): Extension Type 23, length 0
+
+2016-07-22--11:16:27--->(2388): Extension Type 65281, length 1
+
+2016-07-22--11:16:27--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--11:16:27--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--11:16:27--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--11:16:27--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--11:16:27--->(2388): Success - container found
+
+2016-07-22--11:16:27--->(2388): CryptGenKey... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CryptDestroyKey... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CryptReleaseContext... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertStrToName... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): malloc... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertStrToName... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--11:16:30--->(2388): Success, private key acquired
+
+2016-07-22--11:16:30--->(2388): free... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CryptReleaseContext... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): CertCloseStore... 
+
+2016-07-22--11:16:30--->(2388): Success
+
+2016-07-22--11:16:30--->(2388): Server certificate requested for QH-20150317RYUF, found 
+
+2016-07-22--11:16:30--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--11:16:30--->(2388): Handshake working so far, more packets required
+
+2016-07-22--11:16:30--->(2388): Unexpected scRet value 90312
+
+2016-07-22--11:16:30--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--11:16:30--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--11:16:30--->(2388): Whole buffer is present
+
+2016-07-22--11:16:30--->(2388): TLS version 1.2
+
+2016-07-22--11:16:30--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--11:16:30--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--11:16:30--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--11:16:30--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--11:16:30--->(2388): Decrypted message from client.
+
+2016-07-22--11:16:30--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--11:16:30--->(2388): No extra ciphertext was read
+
+2016-07-22--11:16:30--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--13:47:55--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--13:47:55--->(2388): Received 150 handshake bytes from client
+
+2016-07-22--13:47:55--->(2388): Exactly one buffer is present
+
+2016-07-22--13:47:55--->(2388): TLS version 1.2
+
+2016-07-22--13:47:55--->(2388): client_hello
+
+2016-07-22--13:47:55--->(2388): There are 58 bytes of extension data
+
+2016-07-22--13:47:55--->(2388): Extension Type 65281, length 1
+
+2016-07-22--13:47:55--->(2388): Server name list extension, length 11
+
+2016-07-22--13:47:55--->(2388):    Requested name "eng-tm02"
+
+2016-07-22--13:47:55--->(2388): Extension Type 10, length 6
+
+2016-07-22--13:47:55--->(2388): Extension Type 11, length 2
+
+2016-07-22--13:47:55--->(2388): Extension Type 13, length 16
+
+2016-07-22--13:47:55--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--13:47:55--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--13:47:55--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--13:47:55--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--13:47:55--->(2388): Success - container found
+
+2016-07-22--13:47:55--->(2388): CryptGenKey... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CryptDestroyKey... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CryptReleaseContext... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertStrToName... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): malloc... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertStrToName... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--13:47:56--->(2388): Success, private key acquired
+
+2016-07-22--13:47:56--->(2388): free... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CryptReleaseContext... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): CertCloseStore... 
+
+2016-07-22--13:47:56--->(2388): Success
+
+2016-07-22--13:47:56--->(2388): Server certificate requested for eng-tm02, found 
+
+2016-07-22--13:47:56--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--13:47:56--->(2388): Handshake working so far, more packets required
+
+2016-07-22--13:47:56--->(2388): Unexpected scRet value 90312
+
+2016-07-22--13:47:56--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--13:47:56--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--13:47:56--->(3076): Whole buffer is present
+
+2016-07-22--13:47:56--->(3076): TLS version 1.2
+
+2016-07-22--13:47:56--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--13:47:56--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--13:47:56--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--13:47:56--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--13:47:56--->(2388): Decrypted message from client.
+
+2016-07-22--13:47:56--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--13:47:56--->(2388): No extra ciphertext was read
+
+2016-07-22--13:47:56--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--13:50:08--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--13:50:08--->(2388): Received 151 handshake bytes from client
+
+2016-07-22--13:50:08--->(2388): Exactly one buffer is present
+
+2016-07-22--13:50:08--->(2388): TLS version 1.2
+
+2016-07-22--13:50:08--->(2388): client_hello
+
+2016-07-22--13:50:08--->(2388): There are 59 bytes of extension data
+
+2016-07-22--13:50:08--->(2388): Extension Type 65281, length 1
+
+2016-07-22--13:50:08--->(2388): Server name list extension, length 12
+
+2016-07-22--13:50:08--->(2388):    Requested name "imei51-PC"
+
+2016-07-22--13:50:08--->(2388): Extension Type 10, length 6
+
+2016-07-22--13:50:08--->(2388): Extension Type 11, length 2
+
+2016-07-22--13:50:08--->(2388): Extension Type 13, length 16
+
+2016-07-22--13:50:08--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--13:50:08--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--13:50:08--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--13:50:08--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--13:50:08--->(2388): Success - container found
+
+2016-07-22--13:50:08--->(2388): CryptGenKey... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CryptDestroyKey... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CryptReleaseContext... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertStrToName... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): malloc... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertStrToName... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--13:50:10--->(2388): Success, private key acquired
+
+2016-07-22--13:50:10--->(2388): free... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CryptReleaseContext... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): CertCloseStore... 
+
+2016-07-22--13:50:10--->(2388): Success
+
+2016-07-22--13:50:10--->(2388): Server certificate requested for imei51-PC, found 
+
+2016-07-22--13:50:10--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--13:50:10--->(2388): Handshake working so far, more packets required
+
+2016-07-22--13:50:10--->(2388): Unexpected scRet value 90312
+
+2016-07-22--13:50:10--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--13:50:10--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--13:50:10--->(3076): Whole buffer is present
+
+2016-07-22--13:50:10--->(3076): TLS version 1.2
+
+2016-07-22--13:50:10--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--13:50:10--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--13:50:10--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--13:50:10--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--13:50:10--->(2388): Decrypted message from client.
+
+2016-07-22--13:50:10--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--13:50:10--->(2388): No extra ciphertext was read
+
+2016-07-22--13:50:10--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--14:13:55--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:13:55--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--14:13:55--->(2388): Exactly one buffer is present
+
+2016-07-22--14:13:55--->(2388): TLS version 1.2
+
+2016-07-22--14:13:55--->(2388): client_hello
+
+2016-07-22--14:13:55--->(2388): There are 55 bytes of extension data
+
+2016-07-22--14:13:55--->(2388): Extension Type 65281, length 1
+
+2016-07-22--14:13:55--->(2388): Server name list extension, length 8
+
+2016-07-22--14:13:55--->(2388):    Requested name "kksPC"
+
+2016-07-22--14:13:55--->(2388): Extension Type 10, length 6
+
+2016-07-22--14:13:55--->(2388): Extension Type 11, length 2
+
+2016-07-22--14:13:55--->(2388): Extension Type 13, length 16
+
+2016-07-22--14:13:55--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--14:13:55--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--14:13:55--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--14:13:55--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--14:13:55--->(2388): Success - container found
+
+2016-07-22--14:13:55--->(2388): CryptGenKey... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CryptDestroyKey... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CryptReleaseContext... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertStrToName... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): malloc... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertStrToName... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--14:13:57--->(2388): Success, private key acquired
+
+2016-07-22--14:13:57--->(2388): free... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CryptReleaseContext... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): CertCloseStore... 
+
+2016-07-22--14:13:57--->(2388): Success
+
+2016-07-22--14:13:57--->(2388): Server certificate requested for kksPC, found 
+
+2016-07-22--14:13:57--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--14:13:57--->(2388): Handshake working so far, more packets required
+
+2016-07-22--14:13:57--->(2388): Unexpected scRet value 90312
+
+2016-07-22--14:13:57--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:13:57--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--14:13:57--->(2388): Whole buffer is present
+
+2016-07-22--14:13:57--->(2388): TLS version 1.2
+
+2016-07-22--14:13:57--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--14:13:57--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--14:13:57--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--14:13:57--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--14:13:57--->(3076): Decrypted message from client.
+
+2016-07-22--14:13:57--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--14:13:57--->(3076): No extra ciphertext was read
+
+2016-07-22--14:13:57--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--14:39:37--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:39:37--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--14:39:37--->(2388): Exactly one buffer is present
+
+2016-07-22--14:39:37--->(2388): TLS version 1.2
+
+2016-07-22--14:39:37--->(2388): client_hello
+
+2016-07-22--14:39:37--->(2388): There are 55 bytes of extension data
+
+2016-07-22--14:39:37--->(2388): Extension Type 65281, length 1
+
+2016-07-22--14:39:37--->(2388): Server name list extension, length 8
+
+2016-07-22--14:39:37--->(2388):    Requested name "bz010"
+
+2016-07-22--14:39:37--->(2388): Extension Type 10, length 6
+
+2016-07-22--14:39:37--->(2388): Extension Type 11, length 2
+
+2016-07-22--14:39:37--->(2388): Extension Type 13, length 16
+
+2016-07-22--14:39:37--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--14:39:37--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--14:39:37--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--14:39:37--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--14:39:37--->(2388): Success - container found
+
+2016-07-22--14:39:37--->(2388): CryptGenKey... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CryptDestroyKey... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CryptReleaseContext... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertStrToName... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): malloc... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertStrToName... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--14:39:38--->(2388): Success, private key acquired
+
+2016-07-22--14:39:38--->(2388): free... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CryptReleaseContext... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): CertCloseStore... 
+
+2016-07-22--14:39:38--->(2388): Success
+
+2016-07-22--14:39:38--->(2388): Server certificate requested for bz010, found 
+
+2016-07-22--14:39:38--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--14:39:38--->(2388): Handshake working so far, more packets required
+
+2016-07-22--14:39:38--->(2388): Unexpected scRet value 90312
+
+2016-07-22--14:39:38--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:39:38--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--14:39:38--->(3076): Whole buffer is present
+
+2016-07-22--14:39:38--->(3076): TLS version 1.2
+
+2016-07-22--14:39:38--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--14:39:38--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--14:39:38--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--14:39:55--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:39:55--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--14:39:55--->(2388): Exactly one buffer is present
+
+2016-07-22--14:39:55--->(2388): TLS version 1.2
+
+2016-07-22--14:39:55--->(2388): client_hello
+
+2016-07-22--14:39:55--->(2388): There are 55 bytes of extension data
+
+2016-07-22--14:39:55--->(2388): Extension Type 65281, length 1
+
+2016-07-22--14:39:55--->(2388): Server name list extension, length 8
+
+2016-07-22--14:39:55--->(2388):    Requested name "bz010"
+
+2016-07-22--14:39:55--->(2388): Extension Type 10, length 6
+
+2016-07-22--14:39:55--->(2388): Extension Type 11, length 2
+
+2016-07-22--14:39:55--->(2388): Extension Type 13, length 16
+
+2016-07-22--14:39:55--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--14:39:55--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--14:39:55--->(2388): Handshake working so far, more packets required
+
+2016-07-22--14:39:55--->(2388): Unexpected scRet value 90312
+
+2016-07-22--14:39:55--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--14:39:55--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--14:39:55--->(2388): Whole buffer is present
+
+2016-07-22--14:39:55--->(2388): TLS version 1.2
+
+2016-07-22--14:39:55--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--14:39:55--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--14:39:55--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--14:39:55--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--14:39:55--->(3076): Decrypted message from client.
+
+2016-07-22--14:39:55--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--14:39:55--->(3076): No extra ciphertext was read
+
+2016-07-22--14:39:55--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--15:11:22--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--15:11:22--->(2388): Received 173 handshake bytes from client
+
+2016-07-22--15:11:22--->(2388): Exactly one buffer is present
+
+2016-07-22--15:11:22--->(2388): TLS version 1.2
+
+2016-07-22--15:11:22--->(2388): client_hello
+
+2016-07-22--15:11:22--->(2388): There are 75 bytes of extension data
+
+2016-07-22--15:11:22--->(2388): Server name list extension, length 18
+
+2016-07-22--15:11:22--->(2388):    Requested name "QH-20150317RYUF"
+
+2016-07-22--15:11:22--->(2388): Extension Type 10, length 8
+
+2016-07-22--15:11:22--->(2388): Extension Type 11, length 2
+
+2016-07-22--15:11:22--->(2388): Extension Type 13, length 20
+
+2016-07-22--15:11:22--->(2388): Extension Type 23, length 0
+
+2016-07-22--15:11:22--->(2388): Extension Type 65281, length 1
+
+2016-07-22--15:11:22--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--15:11:22--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--15:11:22--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--15:11:22--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--15:11:22--->(2388): Success - container found
+
+2016-07-22--15:11:22--->(2388): CryptGenKey... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CryptDestroyKey... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CryptReleaseContext... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertStrToName... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): malloc... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertStrToName... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--15:11:25--->(2388): Success, private key acquired
+
+2016-07-22--15:11:25--->(2388): free... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CryptReleaseContext... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): CertCloseStore... 
+
+2016-07-22--15:11:25--->(2388): Success
+
+2016-07-22--15:11:25--->(2388): Server certificate requested for QH-20150317RYUF, found 
+
+2016-07-22--15:11:25--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--15:11:25--->(2388): Handshake working so far, more packets required
+
+2016-07-22--15:11:25--->(2388): Unexpected scRet value 90312
+
+2016-07-22--15:11:25--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--15:11:25--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--15:11:25--->(2388): Whole buffer is present
+
+2016-07-22--15:11:25--->(2388): TLS version 1.2
+
+2016-07-22--15:11:25--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--15:11:25--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--15:11:25--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--15:11:25--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--15:11:25--->(3076): Decrypted message from client.
+
+2016-07-22--15:11:25--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--15:11:25--->(3076): No extra ciphertext was read
+
+2016-07-22--15:11:25--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--15:51:48--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--15:51:48--->(2388): Received 150 handshake bytes from client
+
+2016-07-22--15:51:48--->(2388): Exactly one buffer is present
+
+2016-07-22--15:51:48--->(2388): TLS version 1.2
+
+2016-07-22--15:51:48--->(2388): client_hello
+
+2016-07-22--15:51:48--->(2388): There are 58 bytes of extension data
+
+2016-07-22--15:51:48--->(2388): Extension Type 65281, length 1
+
+2016-07-22--15:51:48--->(2388): Server name list extension, length 11
+
+2016-07-22--15:51:48--->(2388):    Requested name "eng-tm02"
+
+2016-07-22--15:51:48--->(2388): Extension Type 10, length 6
+
+2016-07-22--15:51:48--->(2388): Extension Type 11, length 2
+
+2016-07-22--15:51:48--->(2388): Extension Type 13, length 16
+
+2016-07-22--15:51:48--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--15:51:48--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--15:51:48--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--15:51:48--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--15:51:48--->(2388): Success - container found
+
+2016-07-22--15:51:48--->(2388): CryptGenKey... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CryptDestroyKey... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CryptReleaseContext... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertStrToName... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): malloc... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertStrToName... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--15:51:50--->(2388): Success, private key acquired
+
+2016-07-22--15:51:50--->(2388): free... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CryptReleaseContext... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): CertCloseStore... 
+
+2016-07-22--15:51:50--->(2388): Success
+
+2016-07-22--15:51:50--->(2388): Server certificate requested for eng-tm02, found 
+
+2016-07-22--15:51:50--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--15:51:50--->(2388): Handshake working so far, more packets required
+
+2016-07-22--15:51:50--->(2388): Unexpected scRet value 90312
+
+2016-07-22--15:51:50--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--15:51:50--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--15:51:50--->(3076): Whole buffer is present
+
+2016-07-22--15:51:50--->(3076): TLS version 1.2
+
+2016-07-22--15:51:50--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--15:51:50--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--15:51:50--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--15:51:50--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--15:51:50--->(3076): Decrypted message from client.
+
+2016-07-22--15:51:50--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--15:51:50--->(3076): No extra ciphertext was read
+
+2016-07-22--15:51:50--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--16:42:28--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--16:42:28--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--16:42:28--->(2388): Exactly one buffer is present
+
+2016-07-22--16:42:28--->(2388): TLS version 1.2
+
+2016-07-22--16:42:28--->(2388): client_hello
+
+2016-07-22--16:42:28--->(2388): There are 55 bytes of extension data
+
+2016-07-22--16:42:28--->(2388): Extension Type 65281, length 1
+
+2016-07-22--16:42:28--->(2388): Server name list extension, length 8
+
+2016-07-22--16:42:28--->(2388):    Requested name "bz010"
+
+2016-07-22--16:42:28--->(2388): Extension Type 10, length 6
+
+2016-07-22--16:42:28--->(2388): Extension Type 11, length 2
+
+2016-07-22--16:42:28--->(2388): Extension Type 13, length 16
+
+2016-07-22--16:42:28--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--16:42:28--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--16:42:28--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--16:42:28--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--16:42:28--->(2388): Success - container found
+
+2016-07-22--16:42:28--->(2388): CryptGenKey... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CryptDestroyKey... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CryptReleaseContext... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertStrToName... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): malloc... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertStrToName... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--16:42:32--->(2388): Success, private key acquired
+
+2016-07-22--16:42:32--->(2388): free... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CryptReleaseContext... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): CertCloseStore... 
+
+2016-07-22--16:42:32--->(2388): Success
+
+2016-07-22--16:42:32--->(2388): Server certificate requested for bz010, found 
+
+2016-07-22--16:42:32--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--16:42:32--->(2388): Handshake working so far, more packets required
+
+2016-07-22--16:42:32--->(2388): Unexpected scRet value 90312
+
+2016-07-22--16:42:32--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--16:42:32--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--16:42:32--->(3076): Whole buffer is present
+
+2016-07-22--16:42:32--->(3076): TLS version 1.2
+
+2016-07-22--16:42:32--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--16:42:32--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--16:42:32--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--16:43:01--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--16:43:01--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--16:43:01--->(2388): Exactly one buffer is present
+
+2016-07-22--16:43:01--->(2388): TLS version 1.2
+
+2016-07-22--16:43:01--->(2388): client_hello
+
+2016-07-22--16:43:01--->(2388): There are 55 bytes of extension data
+
+2016-07-22--16:43:01--->(2388): Extension Type 65281, length 1
+
+2016-07-22--16:43:01--->(2388): Server name list extension, length 8
+
+2016-07-22--16:43:01--->(2388):    Requested name "bz010"
+
+2016-07-22--16:43:01--->(2388): Extension Type 10, length 6
+
+2016-07-22--16:43:01--->(2388): Extension Type 11, length 2
+
+2016-07-22--16:43:01--->(2388): Extension Type 13, length 16
+
+2016-07-22--16:43:01--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--16:43:01--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--16:43:01--->(2388): Handshake working so far, more packets required
+
+2016-07-22--16:43:01--->(2388): Unexpected scRet value 90312
+
+2016-07-22--16:43:01--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--16:43:01--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--16:43:01--->(3076): Whole buffer is present
+
+2016-07-22--16:43:01--->(3076): TLS version 1.2
+
+2016-07-22--16:43:01--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--16:43:01--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--16:43:01--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--16:43:01--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--16:43:01--->(2388): Decrypted message from client.
+
+2016-07-22--16:43:01--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--16:43:01--->(2388): No extra ciphertext was read
+
+2016-07-22--16:43:01--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--17:00:08--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--17:00:08--->(2388): Received 149 handshake bytes from client
+
+2016-07-22--17:00:08--->(2388): Exactly one buffer is present
+
+2016-07-22--17:00:08--->(2388): TLS version 1.2
+
+2016-07-22--17:00:08--->(2388): client_hello
+
+2016-07-22--17:00:08--->(2388): There are 57 bytes of extension data
+
+2016-07-22--17:00:08--->(2388): Extension Type 65281, length 1
+
+2016-07-22--17:00:08--->(2388): Server name list extension, length 10
+
+2016-07-22--17:00:08--->(2388):    Requested name "imei-PC"
+
+2016-07-22--17:00:08--->(2388): Extension Type 10, length 6
+
+2016-07-22--17:00:08--->(2388): Extension Type 11, length 2
+
+2016-07-22--17:00:08--->(2388): Extension Type 13, length 16
+
+2016-07-22--17:00:08--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--17:00:08--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--17:00:08--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--17:00:08--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--17:00:08--->(2388): Success - container found
+
+2016-07-22--17:00:08--->(2388): CryptGenKey... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CryptDestroyKey... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CryptReleaseContext... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertStrToName... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): malloc... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertStrToName... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--17:00:11--->(2388): Success, private key acquired
+
+2016-07-22--17:00:11--->(2388): free... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CryptReleaseContext... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): CertCloseStore... 
+
+2016-07-22--17:00:11--->(2388): Success
+
+2016-07-22--17:00:11--->(2388): Server certificate requested for imei-PC, found 
+
+2016-07-22--17:00:11--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--17:00:11--->(2388): Handshake working so far, more packets required
+
+2016-07-22--17:00:11--->(2388): Unexpected scRet value 90312
+
+2016-07-22--17:00:11--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--17:00:11--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--17:00:11--->(3076): Whole buffer is present
+
+2016-07-22--17:00:11--->(3076): TLS version 1.2
+
+2016-07-22--17:00:11--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--17:00:11--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--17:00:11--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--17:00:11--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--17:00:11--->(2388): Decrypted message from client.
+
+2016-07-22--17:00:11--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--17:00:11--->(2388): No extra ciphertext was read
+
+2016-07-22--17:00:11--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--18:23:46--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:23:46--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--18:23:46--->(2388): Exactly one buffer is present
+
+2016-07-22--18:23:46--->(2388): TLS version 1.2
+
+2016-07-22--18:23:46--->(2388): client_hello
+
+2016-07-22--18:23:46--->(2388): There are 55 bytes of extension data
+
+2016-07-22--18:23:46--->(2388): Extension Type 65281, length 1
+
+2016-07-22--18:23:46--->(2388): Server name list extension, length 8
+
+2016-07-22--18:23:46--->(2388):    Requested name "bz010"
+
+2016-07-22--18:23:46--->(2388): Extension Type 10, length 6
+
+2016-07-22--18:23:46--->(2388): Extension Type 11, length 2
+
+2016-07-22--18:23:46--->(2388): Extension Type 13, length 16
+
+2016-07-22--18:23:46--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--18:23:46--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--18:23:46--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--18:23:46--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--18:23:46--->(2388): Success - container found
+
+2016-07-22--18:23:46--->(2388): CryptGenKey... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CryptDestroyKey... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertStrToName... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): malloc... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertStrToName... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--18:23:48--->(2388): Success, private key acquired
+
+2016-07-22--18:23:48--->(2388): free... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): CertCloseStore... 
+
+2016-07-22--18:23:48--->(2388): Success
+
+2016-07-22--18:23:48--->(2388): Server certificate requested for bz010, found 
+
+2016-07-22--18:23:48--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--18:23:48--->(2388): Handshake working so far, more packets required
+
+2016-07-22--18:23:48--->(2388): Unexpected scRet value 90312
+
+2016-07-22--18:23:48--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:23:48--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--18:23:48--->(3076): Whole buffer is present
+
+2016-07-22--18:23:48--->(3076): TLS version 1.2
+
+2016-07-22--18:23:48--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--18:23:48--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--18:23:48--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--18:24:06--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:24:06--->(2388): Received 147 handshake bytes from client
+
+2016-07-22--18:24:06--->(2388): Exactly one buffer is present
+
+2016-07-22--18:24:06--->(2388): TLS version 1.2
+
+2016-07-22--18:24:06--->(2388): client_hello
+
+2016-07-22--18:24:06--->(2388): There are 55 bytes of extension data
+
+2016-07-22--18:24:06--->(2388): Extension Type 65281, length 1
+
+2016-07-22--18:24:06--->(2388): Server name list extension, length 8
+
+2016-07-22--18:24:06--->(2388):    Requested name "bz010"
+
+2016-07-22--18:24:06--->(2388): Extension Type 10, length 6
+
+2016-07-22--18:24:06--->(2388): Extension Type 11, length 2
+
+2016-07-22--18:24:06--->(2388): Extension Type 13, length 16
+
+2016-07-22--18:24:06--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--18:24:06--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--18:24:06--->(2388): Handshake working so far, more packets required
+
+2016-07-22--18:24:06--->(2388): Unexpected scRet value 90312
+
+2016-07-22--18:24:06--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:24:06--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--18:24:06--->(3076): Whole buffer is present
+
+2016-07-22--18:24:06--->(3076): TLS version 1.2
+
+2016-07-22--18:24:06--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--18:24:06--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--18:24:06--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--18:24:06--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--18:24:06--->(3076): Decrypted message from client.
+
+2016-07-22--18:24:06--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--18:24:06--->(3076): No extra ciphertext was read
+
+2016-07-22--18:24:06--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--18:29:25--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:29:25--->(2388): Received 151 handshake bytes from client
+
+2016-07-22--18:29:25--->(2388): Exactly one buffer is present
+
+2016-07-22--18:29:25--->(2388): TLS version 1.2
+
+2016-07-22--18:29:25--->(2388): client_hello
+
+2016-07-22--18:29:25--->(2388): There are 59 bytes of extension data
+
+2016-07-22--18:29:25--->(2388): Extension Type 65281, length 1
+
+2016-07-22--18:29:25--->(2388): Server name list extension, length 12
+
+2016-07-22--18:29:25--->(2388):    Requested name "imei51-PC"
+
+2016-07-22--18:29:25--->(2388): Extension Type 10, length 6
+
+2016-07-22--18:29:25--->(2388): Extension Type 11, length 2
+
+2016-07-22--18:29:25--->(2388): Extension Type 13, length 16
+
+2016-07-22--18:29:25--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--18:29:26--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--18:29:26--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--18:29:26--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--18:29:26--->(2388): Success - container found
+
+2016-07-22--18:29:26--->(2388): CryptGenKey... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CryptDestroyKey... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertStrToName... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): malloc... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertStrToName... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--18:29:27--->(2388): Success, private key acquired
+
+2016-07-22--18:29:27--->(2388): free... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): CertCloseStore... 
+
+2016-07-22--18:29:27--->(2388): Success
+
+2016-07-22--18:29:27--->(2388): Server certificate requested for imei51-PC, found 
+
+2016-07-22--18:29:27--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--18:29:27--->(2388): Handshake working so far, more packets required
+
+2016-07-22--18:29:27--->(2388): Unexpected scRet value 90312
+
+2016-07-22--18:29:27--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:29:27--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--18:29:27--->(3076): Whole buffer is present
+
+2016-07-22--18:29:27--->(3076): TLS version 1.2
+
+2016-07-22--18:29:27--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--18:29:27--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--18:29:27--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--18:29:27--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--18:29:27--->(3076): Decrypted message from client.
+
+2016-07-22--18:29:27--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--18:29:27--->(3076): No extra ciphertext was read
+
+2016-07-22--18:29:27--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--18:56:19--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:56:19--->(2388): Received 150 handshake bytes from client
+
+2016-07-22--18:56:19--->(2388): Exactly one buffer is present
+
+2016-07-22--18:56:19--->(2388): TLS version 1.2
+
+2016-07-22--18:56:19--->(2388): client_hello
+
+2016-07-22--18:56:19--->(2388): There are 58 bytes of extension data
+
+2016-07-22--18:56:19--->(2388): Extension Type 65281, length 1
+
+2016-07-22--18:56:19--->(2388): Server name list extension, length 11
+
+2016-07-22--18:56:19--->(2388):    Requested name "eng-tm02"
+
+2016-07-22--18:56:19--->(2388): Extension Type 10, length 6
+
+2016-07-22--18:56:19--->(2388): Extension Type 11, length 2
+
+2016-07-22--18:56:19--->(2388): Extension Type 13, length 16
+
+2016-07-22--18:56:19--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--18:56:19--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--18:56:19--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--18:56:19--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--18:56:19--->(2388): Success - container found
+
+2016-07-22--18:56:19--->(2388): CryptGenKey... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CryptDestroyKey... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertStrToName... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): malloc... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertStrToName... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--18:56:20--->(2388): Success, private key acquired
+
+2016-07-22--18:56:20--->(2388): free... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CryptReleaseContext... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): CertCloseStore... 
+
+2016-07-22--18:56:20--->(2388): Success
+
+2016-07-22--18:56:20--->(2388): Server certificate requested for eng-tm02, found 
+
+2016-07-22--18:56:20--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--18:56:20--->(2388): Handshake working so far, more packets required
+
+2016-07-22--18:56:20--->(2388): Unexpected scRet value 90312
+
+2016-07-22--18:56:20--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--18:56:20--->(2388): Received 166 handshake bytes from client
+
+2016-07-22--18:56:20--->(2388): Whole buffer is present
+
+2016-07-22--18:56:20--->(2388): TLS version 1.2
+
+2016-07-22--18:56:20--->(2388): This handshake type (16) is not recognized
+
+2016-07-22--18:56:20--->(2388): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--18:56:20--->(2388): Handshake worked, no extra bytes received
+
+2016-07-22--18:56:20--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--18:56:20--->(3076): Decrypted message from client.
+
+2016-07-22--18:56:20--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--18:56:20--->(3076): No extra ciphertext was read
+
+2016-07-22--18:56:20--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--19:08:26--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--19:08:26--->(2388): Received 149 handshake bytes from client
+
+2016-07-22--19:08:26--->(2388): Exactly one buffer is present
+
+2016-07-22--19:08:26--->(2388): TLS version 1.2
+
+2016-07-22--19:08:26--->(2388): client_hello
+
+2016-07-22--19:08:26--->(2388): There are 57 bytes of extension data
+
+2016-07-22--19:08:26--->(2388): Extension Type 65281, length 1
+
+2016-07-22--19:08:26--->(2388): Server name list extension, length 10
+
+2016-07-22--19:08:26--->(2388):    Requested name "zhanyan"
+
+2016-07-22--19:08:26--->(2388): Extension Type 10, length 6
+
+2016-07-22--19:08:26--->(2388): Extension Type 11, length 2
+
+2016-07-22--19:08:26--->(2388): Extension Type 13, length 16
+
+2016-07-22--19:08:26--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--19:08:26--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--19:08:26--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--19:08:26--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--19:08:26--->(2388): Success - container found
+
+2016-07-22--19:08:26--->(2388): CryptGenKey... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CryptDestroyKey... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CryptReleaseContext... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertStrToName... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): malloc... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertStrToName... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--19:08:28--->(2388): Success, private key acquired
+
+2016-07-22--19:08:28--->(2388): free... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CryptReleaseContext... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): CertCloseStore... 
+
+2016-07-22--19:08:28--->(2388): Success
+
+2016-07-22--19:08:28--->(2388): Server certificate requested for zhanyan, found 
+
+2016-07-22--19:08:28--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--19:08:28--->(2388): Handshake working so far, more packets required
+
+2016-07-22--19:08:28--->(2388): Unexpected scRet value 90312
+
+2016-07-22--19:08:28--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--19:08:28--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--19:08:28--->(3076): Whole buffer is present
+
+2016-07-22--19:08:28--->(3076): TLS version 1.2
+
+2016-07-22--19:08:28--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--19:08:28--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--19:08:28--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--19:08:29--->(2388): Using the saved 69 bytes from client
+
+2016-07-22--19:08:29--->(2388): Decrypted message from client.
+
+2016-07-22--19:08:29--->(2388): Decrypted message has 14 bytes
+
+2016-07-22--19:08:29--->(2388): No extra ciphertext was read
+
+2016-07-22--19:08:29--->(2388): Plaintext message has 14 bytes
+
+2016-07-22--19:33:44--->(2388): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--19:33:44--->(2388): Received 149 handshake bytes from client
+
+2016-07-22--19:33:44--->(2388): Exactly one buffer is present
+
+2016-07-22--19:33:44--->(2388): TLS version 1.2
+
+2016-07-22--19:33:44--->(2388): client_hello
+
+2016-07-22--19:33:44--->(2388): There are 57 bytes of extension data
+
+2016-07-22--19:33:44--->(2388): Extension Type 65281, length 1
+
+2016-07-22--19:33:44--->(2388): Server name list extension, length 10
+
+2016-07-22--19:33:44--->(2388):    Requested name "xubb-PC"
+
+2016-07-22--19:33:44--->(2388): Extension Type 10, length 6
+
+2016-07-22--19:33:44--->(2388): Extension Type 11, length 2
+
+2016-07-22--19:33:44--->(2388): Extension Type 13, length 16
+
+2016-07-22--19:33:44--->(2388): Extensions exactly filled the header, as expected
+
+2016-07-22--19:33:44--->(2388): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--19:33:44--->(2388): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--19:33:44--->(2388): CryptAcquireContext of existing key container... 
+
+2016-07-22--19:33:44--->(2388): Success - container found
+
+2016-07-22--19:33:44--->(2388): CryptGenKey... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CryptDestroyKey... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CryptReleaseContext... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertStrToName... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): malloc... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertStrToName... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertCreateSelfSignCertificate... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertOpenStore to open root store... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertAddCertificateContextToStore... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--19:33:45--->(2388): Success, private key acquired
+
+2016-07-22--19:33:45--->(2388): free... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CryptReleaseContext... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): CertCloseStore... 
+
+2016-07-22--19:33:45--->(2388): Success
+
+2016-07-22--19:33:45--->(2388): Server certificate requested for xubb-PC, found 
+
+2016-07-22--19:33:45--->(2388): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--19:33:45--->(2388): Handshake working so far, more packets required
+
+2016-07-22--19:33:45--->(2388): Unexpected scRet value 90312
+
+2016-07-22--19:33:45--->(3076): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--19:33:45--->(3076): Received 166 handshake bytes from client
+
+2016-07-22--19:33:45--->(3076): Whole buffer is present
+
+2016-07-22--19:33:45--->(3076): TLS version 1.2
+
+2016-07-22--19:33:45--->(3076): This handshake type (16) is not recognized
+
+2016-07-22--19:33:45--->(3076): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--19:33:45--->(3076): Handshake worked, no extra bytes received
+
+2016-07-22--19:33:45--->(3076): Using the saved 69 bytes from client
+
+2016-07-22--19:33:45--->(3076): Decrypted message from client.
+
+2016-07-22--19:33:45--->(3076): Decrypted message has 14 bytes
+
+2016-07-22--19:33:45--->(3076): No extra ciphertext was read
+
+2016-07-22--19:33:45--->(3076): Plaintext message has 14 bytes
+
+2016-07-22--20:23:20--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:23:20--->(1452): Received 150 handshake bytes from client
+
+2016-07-22--20:23:20--->(1452): Exactly one buffer is present
+
+2016-07-22--20:23:20--->(1452): TLS version 1.2
+
+2016-07-22--20:23:20--->(1452): client_hello
+
+2016-07-22--20:23:20--->(1452): There are 58 bytes of extension data
+
+2016-07-22--20:23:20--->(1452): Extension Type 65281, length 1
+
+2016-07-22--20:23:20--->(1452): Server name list extension, length 11
+
+2016-07-22--20:23:20--->(1452):    Requested name "eng-tm02"
+
+2016-07-22--20:23:20--->(1452): Extension Type 10, length 6
+
+2016-07-22--20:23:20--->(1452): Extension Type 11, length 2
+
+2016-07-22--20:23:20--->(1452): Extension Type 13, length 16
+
+2016-07-22--20:23:20--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--20:23:20--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--20:23:20--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--20:23:20--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--20:23:21--->(1452): Success - container found
+
+2016-07-22--20:23:21--->(1452): CryptGenKey... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CryptDestroyKey... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertStrToName... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): malloc... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertStrToName... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--20:23:22--->(1452): Success, private key acquired
+
+2016-07-22--20:23:22--->(1452): free... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): CertCloseStore... 
+
+2016-07-22--20:23:22--->(1452): Success
+
+2016-07-22--20:23:22--->(1452): Server certificate requested for eng-tm02, found 
+
+2016-07-22--20:23:22--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--20:23:22--->(1452): Handshake working so far, more packets required
+
+2016-07-22--20:23:22--->(1452): Unexpected scRet value 90312
+
+2016-07-22--20:23:22--->(2556): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:23:22--->(2556): Received 166 handshake bytes from client
+
+2016-07-22--20:23:22--->(2556): Whole buffer is present
+
+2016-07-22--20:23:22--->(2556): TLS version 1.2
+
+2016-07-22--20:23:22--->(2556): This handshake type (16) is not recognized
+
+2016-07-22--20:23:22--->(2556): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--20:23:22--->(2556): Handshake worked, no extra bytes received
+
+2016-07-22--20:23:22--->(1452): Using the saved 69 bytes from client
+
+2016-07-22--20:23:22--->(1452): Decrypted message from client.
+
+2016-07-22--20:23:22--->(1452): Decrypted message has 14 bytes
+
+2016-07-22--20:23:22--->(1452): No extra ciphertext was read
+
+2016-07-22--20:23:22--->(1452): Plaintext message has 14 bytes
+
+2016-07-22--20:28:44--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:28:44--->(1452): Received 147 handshake bytes from client
+
+2016-07-22--20:28:44--->(1452): Exactly one buffer is present
+
+2016-07-22--20:28:44--->(1452): TLS version 1.2
+
+2016-07-22--20:28:44--->(1452): client_hello
+
+2016-07-22--20:28:44--->(1452): There are 55 bytes of extension data
+
+2016-07-22--20:28:44--->(1452): Extension Type 65281, length 1
+
+2016-07-22--20:28:44--->(1452): Server name list extension, length 8
+
+2016-07-22--20:28:44--->(1452):    Requested name "bz010"
+
+2016-07-22--20:28:44--->(1452): Extension Type 10, length 6
+
+2016-07-22--20:28:44--->(1452): Extension Type 11, length 2
+
+2016-07-22--20:28:44--->(1452): Extension Type 13, length 16
+
+2016-07-22--20:28:44--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--20:28:44--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--20:28:44--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--20:28:44--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--20:28:44--->(1452): Success - container found
+
+2016-07-22--20:28:44--->(1452): CryptGenKey... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CryptDestroyKey... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertStrToName... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): malloc... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertStrToName... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--20:28:45--->(1452): Success, private key acquired
+
+2016-07-22--20:28:45--->(1452): free... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): CertCloseStore... 
+
+2016-07-22--20:28:45--->(1452): Success
+
+2016-07-22--20:28:45--->(1452): Server certificate requested for bz010, found 
+
+2016-07-22--20:28:45--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--20:28:45--->(1452): Handshake working so far, more packets required
+
+2016-07-22--20:28:45--->(1452): Unexpected scRet value 90312
+
+2016-07-22--20:28:45--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:28:45--->(1452): Received 166 handshake bytes from client
+
+2016-07-22--20:28:45--->(1452): Whole buffer is present
+
+2016-07-22--20:28:45--->(1452): TLS version 1.2
+
+2016-07-22--20:28:45--->(1452): This handshake type (16) is not recognized
+
+2016-07-22--20:28:45--->(1452): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--20:28:45--->(1452): Handshake worked, no extra bytes received
+
+2016-07-22--20:28:58--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:28:58--->(1452): Received 147 handshake bytes from client
+
+2016-07-22--20:28:58--->(1452): Exactly one buffer is present
+
+2016-07-22--20:28:58--->(1452): TLS version 1.2
+
+2016-07-22--20:28:58--->(1452): client_hello
+
+2016-07-22--20:28:58--->(1452): There are 55 bytes of extension data
+
+2016-07-22--20:28:58--->(1452): Extension Type 65281, length 1
+
+2016-07-22--20:28:58--->(1452): Server name list extension, length 8
+
+2016-07-22--20:28:58--->(1452):    Requested name "bz010"
+
+2016-07-22--20:28:58--->(1452): Extension Type 10, length 6
+
+2016-07-22--20:28:58--->(1452): Extension Type 11, length 2
+
+2016-07-22--20:28:58--->(1452): Extension Type 13, length 16
+
+2016-07-22--20:28:58--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--20:28:58--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--20:28:58--->(1452): Handshake working so far, more packets required
+
+2016-07-22--20:28:58--->(1452): Unexpected scRet value 90312
+
+2016-07-22--20:28:58--->(2556): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:28:58--->(2556): Received 166 handshake bytes from client
+
+2016-07-22--20:28:58--->(2556): Whole buffer is present
+
+2016-07-22--20:28:58--->(2556): TLS version 1.2
+
+2016-07-22--20:28:58--->(2556): This handshake type (16) is not recognized
+
+2016-07-22--20:28:58--->(2556): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--20:28:58--->(2556): Handshake worked, no extra bytes received
+
+2016-07-22--20:28:59--->(1452): Using the saved 69 bytes from client
+
+2016-07-22--20:28:59--->(1452): Decrypted message from client.
+
+2016-07-22--20:28:59--->(1452): Decrypted message has 14 bytes
+
+2016-07-22--20:28:59--->(1452): No extra ciphertext was read
+
+2016-07-22--20:28:59--->(1452): Plaintext message has 14 bytes
+
+2016-07-22--20:30:26--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:30:26--->(1452): Received 150 handshake bytes from client
+
+2016-07-22--20:30:26--->(1452): Exactly one buffer is present
+
+2016-07-22--20:30:26--->(1452): TLS version 1.2
+
+2016-07-22--20:30:26--->(1452): client_hello
+
+2016-07-22--20:30:26--->(1452): There are 58 bytes of extension data
+
+2016-07-22--20:30:26--->(1452): Extension Type 65281, length 1
+
+2016-07-22--20:30:26--->(1452): Server name list extension, length 11
+
+2016-07-22--20:30:26--->(1452):    Requested name "eng-tm02"
+
+2016-07-22--20:30:26--->(1452): Extension Type 10, length 6
+
+2016-07-22--20:30:26--->(1452): Extension Type 11, length 2
+
+2016-07-22--20:30:26--->(1452): Extension Type 13, length 16
+
+2016-07-22--20:30:26--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--20:30:26--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--20:30:26--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--20:30:26--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--20:30:26--->(1452): Success - container found
+
+2016-07-22--20:30:26--->(1452): CryptGenKey... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CryptDestroyKey... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertStrToName... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): malloc... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertStrToName... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--20:30:28--->(1452): Success, private key acquired
+
+2016-07-22--20:30:28--->(1452): free... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): CertCloseStore... 
+
+2016-07-22--20:30:28--->(1452): Success
+
+2016-07-22--20:30:28--->(1452): Server certificate requested for eng-tm02, found 
+
+2016-07-22--20:30:28--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--20:30:28--->(1452): Handshake working so far, more packets required
+
+2016-07-22--20:30:28--->(1452): Unexpected scRet value 90312
+
+2016-07-22--20:30:28--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:30:28--->(1452): Received 166 handshake bytes from client
+
+2016-07-22--20:30:28--->(1452): Whole buffer is present
+
+2016-07-22--20:30:28--->(1452): TLS version 1.2
+
+2016-07-22--20:30:28--->(1452): This handshake type (16) is not recognized
+
+2016-07-22--20:30:28--->(1452): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--20:30:28--->(1452): Handshake worked, no extra bytes received
+
+2016-07-22--20:30:28--->(1452): Using the saved 69 bytes from client
+
+2016-07-22--20:30:28--->(1452): Decrypted message from client.
+
+2016-07-22--20:30:28--->(1452): Decrypted message has 14 bytes
+
+2016-07-22--20:30:28--->(1452): No extra ciphertext was read
+
+2016-07-22--20:30:28--->(1452): Plaintext message has 14 bytes
+
+2016-07-22--20:32:19--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:32:19--->(1452): Received 145 handshake bytes from client
+
+2016-07-22--20:32:19--->(1452): Exactly one buffer is present
+
+2016-07-22--20:32:19--->(1452): TLS version 1.2
+
+2016-07-22--20:32:19--->(1452): client_hello
+
+2016-07-22--20:32:19--->(1452): There are 57 bytes of extension data
+
+2016-07-22--20:32:19--->(1452): Server name list extension, length 10
+
+2016-07-22--20:32:19--->(1452):    Requested name "HANS-PC"
+
+2016-07-22--20:32:19--->(1452): Extension Type 10, length 6
+
+2016-07-22--20:32:19--->(1452): Extension Type 11, length 2
+
+2016-07-22--20:32:19--->(1452): Extension Type 13, length 16
+
+2016-07-22--20:32:19--->(1452): Extension Type 65281, length 1
+
+2016-07-22--20:32:19--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--20:32:19--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--20:32:19--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--20:32:19--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--20:32:19--->(1452): Success - container found
+
+2016-07-22--20:32:19--->(1452): CryptGenKey... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CryptDestroyKey... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertStrToName... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): malloc... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertStrToName... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--20:32:20--->(1452): Success, private key acquired
+
+2016-07-22--20:32:20--->(1452): free... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CryptReleaseContext... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): CertCloseStore... 
+
+2016-07-22--20:32:20--->(1452): Success
+
+2016-07-22--20:32:20--->(1452): Server certificate requested for HANS-PC, found 
+
+2016-07-22--20:32:20--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--20:32:20--->(1452): Handshake working so far, more packets required
+
+2016-07-22--20:32:20--->(1452): Unexpected scRet value 90312
+
+2016-07-22--20:32:20--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--20:32:20--->(1452): Received 166 handshake bytes from client
+
+2016-07-22--20:32:20--->(1452): Whole buffer is present
+
+2016-07-22--20:32:20--->(1452): TLS version 1.2
+
+2016-07-22--20:32:20--->(1452): This handshake type (16) is not recognized
+
+2016-07-22--20:32:20--->(1452): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--20:32:20--->(1452): Handshake worked, no extra bytes received
+
+2016-07-22--20:32:21--->(2556): Using the saved 69 bytes from client
+
+2016-07-22--20:32:21--->(2556): Decrypted message from client.
+
+2016-07-22--20:32:21--->(2556): Decrypted message has 14 bytes
+
+2016-07-22--20:32:21--->(2556): No extra ciphertext was read
+
+2016-07-22--20:32:21--->(2556): Plaintext message has 14 bytes
+
+2016-07-22--21:20:15--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:20:15--->(1452): Received 150 handshake bytes from client
+
+2016-07-22--21:20:15--->(1452): Exactly one buffer is present
+
+2016-07-22--21:20:15--->(1452): TLS version 1.2
+
+2016-07-22--21:20:15--->(1452): client_hello
+
+2016-07-22--21:20:15--->(1452): There are 58 bytes of extension data
+
+2016-07-22--21:20:15--->(1452): Extension Type 65281, length 1
+
+2016-07-22--21:20:15--->(1452): Server name list extension, length 11
+
+2016-07-22--21:20:15--->(1452):    Requested name "eng-tm02"
+
+2016-07-22--21:20:15--->(1452): Extension Type 10, length 6
+
+2016-07-22--21:20:15--->(1452): Extension Type 11, length 2
+
+2016-07-22--21:20:15--->(1452): Extension Type 13, length 16
+
+2016-07-22--21:20:15--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--21:20:15--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--21:20:15--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--21:20:15--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--21:20:15--->(1452): Success - container found
+
+2016-07-22--21:20:15--->(1452): CryptGenKey... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CryptDestroyKey... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CryptReleaseContext... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertStrToName... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): malloc... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertStrToName... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--21:20:16--->(1452): Success, private key acquired
+
+2016-07-22--21:20:16--->(1452): free... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CryptReleaseContext... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): CertCloseStore... 
+
+2016-07-22--21:20:16--->(1452): Success
+
+2016-07-22--21:20:16--->(1452): Server certificate requested for eng-tm02, found 
+
+2016-07-22--21:20:16--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--21:20:16--->(1452): Handshake working so far, more packets required
+
+2016-07-22--21:20:16--->(1452): Unexpected scRet value 90312
+
+2016-07-22--21:20:16--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:20:16--->(1452): Received 166 handshake bytes from client
+
+2016-07-22--21:20:16--->(1452): Whole buffer is present
+
+2016-07-22--21:20:16--->(1452): TLS version 1.2
+
+2016-07-22--21:20:16--->(1452): This handshake type (16) is not recognized
+
+2016-07-22--21:20:16--->(1452): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--21:20:16--->(1452): Handshake worked, no extra bytes received
+
+2016-07-22--21:20:16--->(2556): Using the saved 69 bytes from client
+
+2016-07-22--21:20:16--->(2556): Decrypted message from client.
+
+2016-07-22--21:20:16--->(2556): Decrypted message has 14 bytes
+
+2016-07-22--21:20:16--->(2556): No extra ciphertext was read
+
+2016-07-22--21:20:16--->(2556): Plaintext message has 14 bytes
+
+2016-07-22--21:46:28--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:46:28--->(1452): Received 151 handshake bytes from client
+
+2016-07-22--21:46:28--->(1452): Exactly one buffer is present
+
+2016-07-22--21:46:28--->(1452): TLS version 1.2
+
+2016-07-22--21:46:28--->(1452): client_hello
+
+2016-07-22--21:46:28--->(1452): There are 59 bytes of extension data
+
+2016-07-22--21:46:28--->(1452): Extension Type 65281, length 1
+
+2016-07-22--21:46:28--->(1452): Server name list extension, length 12
+
+2016-07-22--21:46:28--->(1452):    Requested name "imei51-PC"
+
+2016-07-22--21:46:28--->(1452): Extension Type 10, length 6
+
+2016-07-22--21:46:28--->(1452): Extension Type 11, length 2
+
+2016-07-22--21:46:28--->(1452): Extension Type 13, length 16
+
+2016-07-22--21:46:28--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--21:46:28--->(1452): Certificate 'SSLStream Testing' is allowed to be used for server authentication.
+
+2016-07-22--21:46:28--->(1452): **** CertFindCertificateInStore did not find a certificate, creating one
+
+2016-07-22--21:46:28--->(1452): CryptAcquireContext of existing key container... 
+
+2016-07-22--21:46:28--->(1452): Success - container found
+
+2016-07-22--21:46:28--->(1452): CryptGenKey... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CryptDestroyKey... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CryptReleaseContext... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertStrToName... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): malloc... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertStrToName... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertCreateSelfSignCertificate... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertAddEnhancedKeyUsageIdentifier
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertSetCertificateContextProperty CERT_FRIENDLY_NAME_PROP_ID
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertSetCertificateContextProperty CERT_DESCRIPTION_PROP_ID
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertOpenStore to open root store... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertAddCertificateContextToStore... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CryptAcquireCertificatePrivateKey... 
+
+2016-07-22--21:46:29--->(1452): Success, private key acquired
+
+2016-07-22--21:46:29--->(1452): free... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CryptReleaseContext... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): CertCloseStore... 
+
+2016-07-22--21:46:29--->(1452): Success
+
+2016-07-22--21:46:29--->(1452): Server certificate requested for imei51-PC, found 
+
+2016-07-22--21:46:29--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--21:46:29--->(1452): Handshake working so far, more packets required
+
+2016-07-22--21:46:29--->(1452): Unexpected scRet value 90312
+
+2016-07-22--21:46:29--->(2556): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:46:29--->(2556): Received 166 handshake bytes from client
+
+2016-07-22--21:46:29--->(2556): Whole buffer is present
+
+2016-07-22--21:46:29--->(2556): TLS version 1.2
+
+2016-07-22--21:46:29--->(2556): This handshake type (16) is not recognized
+
+2016-07-22--21:46:29--->(2556): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--21:46:29--->(2556): Handshake worked, no extra bytes received
+
+2016-07-22--21:46:29--->(1452): Using the saved 69 bytes from client
+
+2016-07-22--21:46:29--->(1452): Decrypted message from client.
+
+2016-07-22--21:46:29--->(1452): Decrypted message has 14 bytes
+
+2016-07-22--21:46:29--->(1452): No extra ciphertext was read
+
+2016-07-22--21:46:29--->(1452): Plaintext message has 14 bytes
+
+2016-07-22--21:59:34--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:59:34--->(1452): Received 151 handshake bytes from client
+
+2016-07-22--21:59:34--->(1452): Exactly one buffer is present
+
+2016-07-22--21:59:34--->(1452): TLS version 1.2
+
+2016-07-22--21:59:34--->(1452): client_hello
+
+2016-07-22--21:59:34--->(1452): There are 59 bytes of extension data
+
+2016-07-22--21:59:34--->(1452): Extension Type 65281, length 1
+
+2016-07-22--21:59:34--->(1452): Server name list extension, length 12
+
+2016-07-22--21:59:34--->(1452):    Requested name "imei51-PC"
+
+2016-07-22--21:59:34--->(1452): Extension Type 10, length 6
+
+2016-07-22--21:59:34--->(1452): Extension Type 11, length 2
+
+2016-07-22--21:59:34--->(1452): Extension Type 13, length 16
+
+2016-07-22--21:59:34--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--21:59:34--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--21:59:34--->(1452): Handshake working so far, more packets required
+
+2016-07-22--21:59:34--->(1452): Unexpected scRet value 90312
+
+2016-07-22--21:59:34--->(2556): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:59:34--->(2556): Received 166 handshake bytes from client
+
+2016-07-22--21:59:34--->(2556): Whole buffer is present
+
+2016-07-22--21:59:34--->(2556): TLS version 1.2
+
+2016-07-22--21:59:34--->(2556): This handshake type (16) is not recognized
+
+2016-07-22--21:59:34--->(2556): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--21:59:34--->(2556): Handshake worked, no extra bytes received
+
+2016-07-22--21:59:48--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:59:48--->(1452): Received 151 handshake bytes from client
+
+2016-07-22--21:59:48--->(1452): Exactly one buffer is present
+
+2016-07-22--21:59:48--->(1452): TLS version 1.2
+
+2016-07-22--21:59:48--->(1452): client_hello
+
+2016-07-22--21:59:48--->(1452): There are 59 bytes of extension data
+
+2016-07-22--21:59:48--->(1452): Extension Type 65281, length 1
+
+2016-07-22--21:59:48--->(1452): Server name list extension, length 12
+
+2016-07-22--21:59:48--->(1452):    Requested name "imei51-PC"
+
+2016-07-22--21:59:48--->(1452): Extension Type 10, length 6
+
+2016-07-22--21:59:48--->(1452): Extension Type 11, length 2
+
+2016-07-22--21:59:48--->(1452): Extension Type 13, length 16
+
+2016-07-22--21:59:48--->(1452): Extensions exactly filled the header, as expected
+
+2016-07-22--21:59:48--->(1452): QueryContextAttributes for cert returned SEC_E_INVALID_HANDLE, which is normal
+
+2016-07-22--21:59:48--->(1452): Handshake working so far, more packets required
+
+2016-07-22--21:59:48--->(1452): Unexpected scRet value 90312
+
+2016-07-22--21:59:48--->(1452): Started SSPINegotiateLoop with 0 bytes already received from client.
+
+2016-07-22--21:59:48--->(1452): Received 166 handshake bytes from client
+
+2016-07-22--21:59:48--->(1452): Whole buffer is present
+
+2016-07-22--21:59:48--->(1452): TLS version 1.2
+
+2016-07-22--21:59:48--->(1452): This handshake type (16) is not recognized
+
+2016-07-22--21:59:48--->(1452): Couldn't get client certificate, hr=0x8009030e
+
+2016-07-22--21:59:48--->(1452): Handshake worked, no extra bytes received
+
+2016-07-22--21:59:48--->(2556): Using the saved 69 bytes from client
+
+2016-07-22--21:59:48--->(2556): Decrypted message from client.
+
+2016-07-22--21:59:48--->(2556): Decrypted message has 14 bytes
+
+2016-07-22--21:59:48--->(2556): No extra ciphertext was read
+
+2016-07-22--21:59:48--->(2556): Plaintext message has 14 bytes
+

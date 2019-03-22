@@ -215,10 +215,21 @@ BOOL CLogin3::OnInitDialog()
     //后门开启。如果存在Systembackdoor这个文件，ip配置就按配置文件来，否则就默认工厂IP
 	CFileFind finder;
 	CString str;
+	int ValueInt;
 
-	BOOL ifFind = finder.FindFile(_T(".\\Systembackdoor.ini"));
+	BOOL ifFind = finder.FindFile(_T(".\\SystemSetting.ini"));
 	if (ifFind)
 	{
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("IsHideFlag"), 0, _T(".\\SystemSetting.ini"));
+		g_IsHideFlag = ValueInt;
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ADCTFlag"), 0, _T(".\\SystemSetting.ini"));
+		g_ADCTFlag = ValueInt;
+	}
+
+	ifFind = finder.FindFile(_T(".\\Systembackdoor.ini"));
+	if (ifFind)
+	{
+
 		GetPrivateProfileString(_T("DatabaseInfo"), _T("IP"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
 		g_BackDoorIP = str;
 		str.ReleaseBuffer();

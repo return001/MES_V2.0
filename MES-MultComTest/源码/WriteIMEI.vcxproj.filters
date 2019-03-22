@@ -150,6 +150,12 @@
     <ClCompile Include="Aes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CurrentTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PowerControlDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WriteIMEI.rc">
@@ -296,6 +302,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Aes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IT6400.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Relay32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CurrentTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageDll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PowerControlDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

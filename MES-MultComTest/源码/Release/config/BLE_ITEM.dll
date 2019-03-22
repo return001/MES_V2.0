@@ -2,7 +2,7 @@
 失败立即停止=true@@重试次数@@3@@IDLE
 串口响应等待=false@@1@@ONm@@ON->一直打开
 配置1=false@@老化后测试@@170@@总是(3000)
-配置2=true@@AT^GT_CM=TEST**TEST_OK@@7@@GPS卫星数量
+配置2=false@@AT^GT_CM=TEST**TEST_OK@@7@@GPS卫星数量
 开始=false@@Start@@NULL@@NULL
 关闭GPS测试DL300=true@@GPSTC_OFF@@NULL@@AT^GT_CM=GPSTC,0
 GPS冷启动=true@@GPSCOLD_OK@@NULL@@AT^GT_CM=GPSCOLD

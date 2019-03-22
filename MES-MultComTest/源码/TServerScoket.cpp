@@ -8,6 +8,7 @@ TServerScoket::TServerScoket()
 	m_ServicePort = 8260;
 	m_hListenThread = NULL;
 	m_RecvFlag = FALSE;
+	m_SimpleRecvFlag = FALSE;
 }
 
 
@@ -26,6 +27,7 @@ BOOL TServerScoket::StartServer(UINT ServicePort)
 		return FALSE;
 	}
 	else{
+		m_isServerOpen = TRUE;
 		return TRUE;
 	}
 }
@@ -160,6 +162,12 @@ DWORD WINAPI ClientThreadProc(LPVOID Lparam){ //利用异步IO模型循环读取socket内的
 				ClientItem.m_pMainWnd->m_PicData += strMsg;
 				strMsg = "";
 			}
+			else if (iRet > 0 && ClientItem.m_pMainWnd->m_SimpleRecvFlag == TRUE)
+			{
+				strMsg = szRev;
+				ClientItem.m_pMainWnd->m_SimpleData += strMsg;
+				strMsg = "";
+			}
 			else{
 				strMsg = ClientItem.m_strIp + _T(" 已离开");
 				ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
@@ -230,7 +238,7 @@ BOOL TServerScoket::CreatePic()
 {
 	int dwSize = m_PicData.GetLength() / 2;
 	//判断头尾是否正确,尾部判断需要留一点空间，设置成后面16个字节找得到FFD9即可
-	if (m_PicData.Find(_T("FFD8FF")) == 0 && m_PicData.Find(_T("FFD9"))>(dwSize * 2 - 16))
+	if (m_PicData.Find(_T("FFD8FF")) == 0 && m_PicData.Find(_T("FFD9"), dwSize - 16)!=-1)
 	{
 		CFile file;
 		GetLastError();
@@ -246,4 +254,18 @@ BOOL TServerScoket::CreatePic()
 	}
 	m_PicData = "";
 	return TRUE;
+}
+
+//打开普通消息接收
+void TServerScoket::OpenSimpleRecv()
+{
+	m_SimpleRecvFlag = TRUE;
+	m_SimpleData = "";
+}
+
+//关闭普通消息接收
+void TServerScoket::CloseSimpleRecv()
+{
+	m_SimpleData = "";
+	m_SimpleRecvFlag = FALSE;
 }

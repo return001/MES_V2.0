@@ -2,7 +2,7 @@
 #include "afxwin.h"
 
 #include "afxmt.h"//CEvent
-
+#include "CurrentTest.h"
 #include "WriteIMEIDlg.h"
 
 #include "PackingPrint.h"
@@ -18,7 +18,14 @@
 
 #include "TServerScoket.h"
 
+#include "PowerControlDlg.h"
 #include "Aes.h"
+#include "ImageDll.h"
+#include <string.h>
+#include <algorithm>
+#include "Aes.h"
+#include "shlwapi.h"
+using namespace std;
 
 // IMEIWrite_MulAT 对话框
 #define THREAD_NUM 16
@@ -424,7 +431,32 @@ public:
 	CButton Start15_Control;
 	CButton Start16_Control;
 	CButton StartALL_Control;
+	CButton Stop1_Control;
+	CButton Stop2_Control;
+	CButton Stop3_Control;
+	CButton Stop4_Control;
+	CButton Stop5_Control;
+	CButton Stop6_Control;
+	CButton Stop7_Control;
+	CButton Stop8_Control;
+	CButton Stop9_Control;
+	CButton Stop10_Control;
+	CButton Stop11_Control;
+	CButton Stop12_Control;
+	CButton Stop13_Control;
+	CButton Stop14_Control;
+	CButton Stop15_Control;
+	CButton Stop16_Control;
 	CButton StopALL_Control;
+	CEdit m_ShowNumberPort1Control;
+	CEdit m_ShowNumberPort2Control;
+	CEdit m_ShowNumberPort3Control;
+	CEdit m_ShowNumberPort4Control;
+	CEdit m_ShowNumberPort5Control;
+	CEdit m_ShowNumberPort6Control;
+	CEdit m_ShowNumberPort7Control;
+	CEdit m_ShowNumberPort8Control;
+	CEdit *m_ShowNumberPortControlArray[8];
 	afx_msg void OnBnClickedButtonstart7();
 	afx_msg void OnBnClickedButtonstop7();
 	afx_msg void OnBnClickedButtonstart8();
@@ -583,10 +615,16 @@ public:
 
 
 
+	/*新增功能的整合函数*/
 
-	//三合一新增功能
+	void StartButtonGatherFun(int HandleNum);//将开始按钮需要处理的流程集合成一个函数
+	void StopButtonGatherFun(int HandleNum);//将停止按钮需要处理的流程集合成一个函数
+
+
+
+	/*三合一新增功能*/
 	
-	/*进程通讯相关的*/
+	//进程通讯相关的
 	protected:
 		afx_msg LRESULT MSG_GetSimpleMessage(WPARAM wParam, LPARAM lParam);//获取自定义消息用的系统消息函数
 		afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);//用来发送结构体的
@@ -615,7 +653,7 @@ public:
 
 	/*整机测试新增功能*/
 
-    //注意：耳标研发部门自己设计的蓝牙透传，与Dongle蓝牙适配器不适用
+    //注意：耳标研发部门自己设计的蓝牙透传方式，与Dongle蓝牙适配器不适用
 	public:
 		int OrderNumber;//蓝牙指令条数
 		int MacIntercept;//MAC地址取后几位
@@ -652,32 +690,35 @@ public:
 
 	//注意：Dongle蓝牙适配器与耳标研发部门自己设计的蓝牙透传不通用
 	public:
-		CString DongleInfo[16][2];//存放MAC地址和令牌
+		deque<int> DongleTestDataDeq;//给当前蓝牙测试端口排好队，确保多线程下只有一条线程在访问DongleTestDataArray数组，避免数据访问冲突
+		//CString DongleTestDataArray[8];//存放当前端口正在测试的蓝牙地址，用于多路蓝牙测试和蓝牙扫描枪分配
+		CString DongleInfo[16][2];//存放MAC地址和令牌，MAC地址用于当作芯片ID上传数据库，令牌用于发送指令
 		CString DongleInitCommand[16];//Dongle蓝牙适配器初始化指令，预设16个指令位
-		CString DongleSPCommand[4][2];//Dongle蓝牙适配器特殊指令，0为连接指令，1为断开指令，3为获取令牌指令
+		CString DongleSPCommand[4][2];//Dongle蓝牙适配器特殊指令，0为连接指令，1为断开指令，2为获取令牌指令，3为获取版本号
 		int DongleSpCommandSleepTime[4];//Dongle蓝牙适配器特殊指令对应的等待时间
 		int DongleInitCommandNumber;//初始化指令条数
+		int DongleComStartCount;//Dongle蓝牙端口开始数目，用于扫描枪的自动分配，防止将MAC地址分配到无蓝牙连接的端口
 
 		BOOL GetDongleCheckValue;//Dongle蓝牙复选框变量
-		BOOL DongleConnectFlag[16];//Dongle蓝牙适配器连接标识
-		BOOL DongleCheckRssiFlag[16];//Dongle蓝牙适配器检测强度标识，用来测试完后判断蓝牙是否被拿走
-		int DongleConnectCount[16];//Dongle蓝牙适配器达到一定连接次数后需重置一下，清缓存
+		BOOL DongleConnectFlag[16];//Dongle蓝牙适配器连接标识，FALSE为未连接，TRUE为已连接
+		BOOL DongleCheckRssiFlag[16];//Dongle蓝牙适配器检测强度标识，初始设置为FALSE，在蓝牙测试完后会设置为TRUE，此时CheckConnect_Thread函数就会去检测蓝牙强度，判断蓝牙设备是否被拿走
+		int DongleConnectCount[16];//记录蓝牙连接次数，Dongle蓝牙适配器达到一定连接次数后需重置一下，清缓存
 	
-
 
 		int DongleSleepTime;//蓝牙停顿时间
 		int DongleConnectRssi, DongleDisonnectRssi;//蓝牙连接强度和蓝牙断开强度
 		int DongleSDURTime;//蓝牙扫描时间
+		int DongleResetCount;//蓝牙连接X次后就对适配器进行重新初始化
+		int DongleScanGunFlag;//蓝牙扫描枪标志位，为真时代表有数据扫入，为假时未分配到MAC地址的串口线程会处于等待状态
 
-
-		BOOL DongleInit(int HandleNum);//初始化蓝牙
+		BOOL DongleInit(int HandleNum);//初始化蓝牙适配器
 		void DongleInitSetting();//蓝牙设置（变量等）初始化，读ini文件
-		BOOL DongleScan(int HandleNum,int RssiStr);//蓝牙自动扫描连接
+		BOOL DongleScan(int HandleNum,int RssiStr,CString SoftModel);//蓝牙自动扫描连接
 		BOOL DongleConnect(int HandleNum);//连接蓝牙
 		BOOL DongleDisConnect(int HandleNum);//断开蓝牙
 
 		CString DongleValueAnalyze(CString CommandName,CString CommandValue);//对蓝牙返回值进行解析
-		int DongleCommandNameToInt(CString CommandName);//对特殊转换进行一个包装处理
+		int DongleCommandNameToInt(CString CommandName);//对特殊转换进行一个包装处理(字符串转int，用于switch)
 
 		CString DongleUnixTimeToDatatime(CString str);//时间戳Unix timestamp转换
 		CString DongleHexToASCII(CString str);//字符串十六进制转ASCII码
@@ -686,19 +727,54 @@ public:
 		CString StampToDatetime(time_t nSrc);//整形转换成时间戳
 		BYTE * IMEIWrite_MulAT::CStrToByte(int len, CString str);//CString转Byte
 
-		CString Encrypt(CString plainText);//加密函数
-		CString Decrypt(CString plainText);//解密函数
+		CString Encrypt(CString plainText);//AES加密函数
+		CString Decrypt(CString plainText);//AES解密函数
+
 
 		CEdit *m_ResultArray[16];
 		CEdit *Final_Result_ControlArray[16];
+		CButton *m_StopControlArray[16];
 
-		/*网络摄像头新增功能*/
-
+		afx_msg void OnBnClickedDonglebleCheck();
+	
+		
+	/*网络摄像头新增功能*/
 	public:
 		typedef TServerScoket *PServer;
 		PServer SocketServer[8];//声明一个Socket类指针数组
 		UINT SocketServerPort[8];//Socket类的端口号
-		CString SocketServerPicName[8];//网络摄像头图片名字，也可当文件夹名字，图片存放路径为：.//图片缓存/日期/端口号/图片名字
+		CString SocketServerPicName[3][8];//网络摄像头图片名字，也可当文件夹名字，图片存放路径为：.//图片缓存/日期/端口号/图片名字
 
-		afx_msg void OnBnClickedDonglebleCheck();
+		BOOL ShowSocketPicFunction_Thread(CString RecString, int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CThumbnailBoxDlg* picdlg, CString ChipRfIDbg, BOOL DayTimeStatep);
+		void StartShowSocketPic(int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CString RecString);
+		BOOL Show_SocketPic_Data(CString RecString, CEdit* m_Result, CEdit* Final_Result_Control, CThumbnailBoxDlg* picdlg, int HandleNum, CString StartSign, CString EndSign, CString ChipRfIDbg, BOOL DayTimeStatep);		//获取图像端口数据
+		BOOL Get_SocketWifi_Data(CEdit* m_Result, CEdit* Final_Result_Control, int HandleNum, CString StartSign, CString EndSign, BOOL InThread = FALSE);	//通过Socket获取按钮WIFI数据
+		BOOL ImageAutoJudgeDarkCorner(CString ImageSrc,int RGB,float Range);//图像暗角判断，参数1图像路径，参数2像素阈值（越小就对越对黑色的判定越宽松），参数3为范围，获取的值小于这个范围返回真，否则返回假
+		BOOL ImageAutoJudgeDefinition(CString ImageSrc, float Range);//图像清晰度判断，参数1图像路径，参数2范围，大于这个范围返回真，小于则返回假
+
+		void CreateDirectoryRecursionFun(CString Src, int StartCount=0);//递归创建目录
+		CString GetDatetime();//获取当天日期
+		CString GetCurrenttime();//获取当前时分秒
+		CString GetTime();//获取系统时间
+
+
+	/*电流测试新增功能*/
+		CString PowerControlInstrNameArray[2];//程控电源设备连接PC的串口名，这里最多采用两台仪器
+		CString PowerControlRelayInstrName;//继电器串口号
+		int PowerControlRelayPortInstrName[8];//继电器端口号
+		CString BackUpPowerInstrName;//备用电源串口号
+		double m_Voltage;//电压值
+		double m_Range;//量程
+		BOOL RelayFlag, BackuppowerFlag;
+
+		typedef CurrentTest *PCurrentTest;
+		PCurrentTest CurrentTestArray[2];
+		deque<int> Current1Deq,Current2Deq;//存放当前待测以及正在测试的电流端口
+		double PortCurrentVauleArray[8];//存放各个端口的电流值
+
+		void PowerControlInitSetting();//初始化程控电源的一些参数（包括仪器地址等）
+		BOOL CurrentMainControlFun(int HandleNum);//电流测试核心函数
+		void SetVoltageAndRangeVaule(CString ConfigItem,double &m_Voltage,double &m_Range);//设置电压和量程值，如果订单配置里存在电压和量程就获取配置中的值，如果不存在则获取ini中的值
+
+		afx_msg void OnBnClickedPowercontrolsettingButton();
 };

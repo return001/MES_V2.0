@@ -96,6 +96,7 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -160,6 +161,7 @@
     <ClCompile Include="ComboListCtrl.cpp" />
     <ClCompile Include="Common\Printer\ConvertCHN.cpp" />
     <ClCompile Include="CSpreadSheet.cpp" />
+    <ClCompile Include="CurrentTest.cpp" />
     <ClCompile Include="DataBase.cpp" />
     <ClCompile Include="DeleteDB_Data_Confirm.cpp" />
     <ClCompile Include="FlatHeaderCtrl.cpp" />
@@ -181,6 +183,7 @@
     <ClCompile Include="PackingPrint.cpp" />
     <ClCompile Include="Para1.cpp" />
     <ClCompile Include="PictureEx.cpp" />
+    <ClCompile Include="PowerControlDlg.cpp" />
     <ClCompile Include="RadioTest\CSRBTHostControl.cpp" />
     <ClCompile Include="ReportCtrl.cpp" />
     <ClCompile Include="StdAfx.cpp">
@@ -211,16 +214,20 @@
     <ClInclude Include="ComboListCtrl.h" />
     <ClInclude Include="Common\Printer\ConvertCHN.h" />
     <ClInclude Include="CSpreadSheet.h" />
+    <ClInclude Include="CurrentTest.h" />
     <ClInclude Include="DataBase.h" />
     <ClInclude Include="DeleteDB_Data_Confirm.h" />
     <ClInclude Include="EventWrapper.h" />
+    <ClInclude Include="export.h" />
     <ClInclude Include="FlatHeaderCtrl.h" />
     <ClInclude Include="FunctionContext.h" />
+    <ClInclude Include="ImageDll.h" />
     <ClInclude Include="IMEIWrite_MulAT.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="InPlaceCombo.h" />
     <ClInclude Include="InPlaceEdit.h" />
     <ClInclude Include="ISocketStream.h" />
+    <ClInclude Include="IT6400.h" />
     <ClInclude Include="JPGUnion\BasicUse.h" />
     <ClInclude Include="JPGUnion\BjfProcess.h" />
     <ClInclude Include="JPGUnion\CombineImages.h" />
@@ -235,6 +242,8 @@
     <ClInclude Include="Para1.h" />
     <ClInclude Include="PhoneCommand.h" />
     <ClInclude Include="PictureEx.h" />
+    <ClInclude Include="PowerControlDlg.h" />
+    <ClInclude Include="Relay32.h" />
     <ClInclude Include="ReportCtrl.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SocketArrayList.h" />
