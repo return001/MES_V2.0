@@ -52,5 +52,8 @@ namespace Print_Message
 
         //测试时间
         public string TestTime { get; set; }
+
+        //RFID
+        public string RFID { get; set; }
     }
 }

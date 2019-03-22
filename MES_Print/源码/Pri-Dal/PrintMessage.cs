@@ -91,6 +91,9 @@ namespace Print_Message
 
         //7SIM号
         public string Equipment { get; set; }
-        
+
+        //RFID号
+        public string RFID { get; set; }
+
     }
 }

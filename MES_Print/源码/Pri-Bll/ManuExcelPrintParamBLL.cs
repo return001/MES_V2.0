@@ -12,9 +12,26 @@ namespace ExcelPrint.Param.Bll
     {
         ManuExcelPrintParamDAL MEPPD = new ManuExcelPrintParamDAL();
 
+        public void refeshConBLL()
+        {
+            MEPPD.refreshCon();
+        }
+
         public bool CheckIMEIBLL(string IMEI1,string IMEI2)
         {
             if (MEPPD.CheckIMEI1OrIMEI2DAL(IMEI1,IMEI2) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckIMEI1BLL(string IMEI1)
+        {
+            if (MEPPD.CheckIMEI1DAL(IMEI1) > 0)
             {
                 return true;
             }
@@ -39,6 +56,11 @@ namespace ExcelPrint.Param.Bll
         public List<ManuExcelPrintParam> SelectByImei1to5BLL(string IMEI)
         {
             return MEPPD.SelectByImei1to5DAL(IMEI);
+        }
+
+        public List<ManuExcelPrintParam> SelectByImei1BLL(string IMEI1)
+        {
+            return MEPPD.SelectByImei1DAL(IMEI1);
         }
 
         public List<ManuExcelPrintParam> SelectAllRePrintBLL()

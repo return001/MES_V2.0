@@ -75,6 +75,11 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.RePrintHex = new System.Windows.Forms.CheckBox();
+            this.SNHex = new System.Windows.Forms.CheckBox();
+            this.HexPrintNum = new System.Windows.Forms.TextBox();
+            this.Hexadecimal = new System.Windows.Forms.CheckBox();
+            this.SqlConfig = new System.Windows.Forms.Button();
             this.label24 = new System.Windows.Forms.Label();
             this.reminder = new System.Windows.Forms.TextBox();
             this.TemplateNum = new System.Windows.Forms.TextBox();
@@ -175,7 +180,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("宋体", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label5.Location = new System.Drawing.Point(534, 360);
+            this.label5.Location = new System.Drawing.Point(534, 393);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(82, 15);
@@ -184,7 +189,7 @@
             // 
             // ProductData
             // 
-            this.ProductData.Location = new System.Drawing.Point(536, 380);
+            this.ProductData.Location = new System.Drawing.Point(536, 413);
             this.ProductData.Margin = new System.Windows.Forms.Padding(2);
             this.ProductData.Name = "ProductData";
             this.ProductData.Size = new System.Drawing.Size(154, 21);
@@ -232,6 +237,7 @@
             this.CB_ZhiDan.Name = "CB_ZhiDan";
             this.CB_ZhiDan.Size = new System.Drawing.Size(318, 20);
             this.CB_ZhiDan.TabIndex = 15;
+            this.CB_ZhiDan.DropDown += new System.EventHandler(this.CB_ZhiDan_DropDown);
             this.CB_ZhiDan.SelectedIndexChanged += new System.EventHandler(this.CB_ZhiDan_SelectedIndexChanged);
             // 
             // label8
@@ -442,7 +448,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("宋体", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label4.Location = new System.Drawing.Point(533, 194);
+            this.label4.Location = new System.Drawing.Point(533, 227);
             this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(99, 15);
@@ -451,9 +457,10 @@
             // 
             // IMEI_Start
             // 
-            this.IMEI_Start.Location = new System.Drawing.Point(536, 213);
+            this.IMEI_Start.Location = new System.Drawing.Point(536, 246);
             this.IMEI_Start.Margin = new System.Windows.Forms.Padding(2);
             this.IMEI_Start.Name = "IMEI_Start";
+            this.IMEI_Start.ReadOnly = true;
             this.IMEI_Start.Size = new System.Drawing.Size(154, 21);
             this.IMEI_Start.TabIndex = 29;
             this.IMEI_Start.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.IMEI_Start_KeyPress);
@@ -462,7 +469,7 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("宋体", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label18.Location = new System.Drawing.Point(534, 252);
+            this.label18.Location = new System.Drawing.Point(534, 285);
             this.label18.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(157, 15);
@@ -471,10 +478,9 @@
             // 
             // PrintNum
             // 
-            this.PrintNum.Location = new System.Drawing.Point(536, 271);
+            this.PrintNum.Location = new System.Drawing.Point(536, 304);
             this.PrintNum.Margin = new System.Windows.Forms.Padding(2);
             this.PrintNum.Name = "PrintNum";
-            this.PrintNum.ReadOnly = true;
             this.PrintNum.Size = new System.Drawing.Size(154, 21);
             this.PrintNum.TabIndex = 30;
             this.PrintNum.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PrintNum_KeyPress);
@@ -551,7 +557,7 @@
             this.tabControl1.MinimumSize = new System.Drawing.Size(1, 1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1351, 800);
+            this.tabControl1.Size = new System.Drawing.Size(1153, 800);
             this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl1.TabIndex = 47;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
@@ -563,7 +569,7 @@
             this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage1.Size = new System.Drawing.Size(1343, 742);
+            this.tabPage1.Size = new System.Drawing.Size(1145, 742);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "机身贴";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -583,7 +589,7 @@
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(1339, 738);
+            this.tabControl2.Size = new System.Drawing.Size(1141, 738);
             this.tabControl2.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl2.TabIndex = 45;
             this.tabControl2.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabControl2_DrawItem);
@@ -592,6 +598,11 @@
             // tabPage4
             // 
             this.tabPage4.BackColor = System.Drawing.Color.Linen;
+            this.tabPage4.Controls.Add(this.RePrintHex);
+            this.tabPage4.Controls.Add(this.SNHex);
+            this.tabPage4.Controls.Add(this.HexPrintNum);
+            this.tabPage4.Controls.Add(this.Hexadecimal);
+            this.tabPage4.Controls.Add(this.SqlConfig);
             this.tabPage4.Controls.Add(this.label24);
             this.tabPage4.Controls.Add(this.reminder);
             this.tabPage4.Controls.Add(this.TemplateNum);
@@ -665,25 +676,76 @@
             this.tabPage4.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage4.Size = new System.Drawing.Size(1231, 730);
+            this.tabPage4.Size = new System.Drawing.Size(1033, 730);
             this.tabPage4.TabIndex = 0;
             this.tabPage4.Text = "打印";
+            // 
+            // RePrintHex
+            // 
+            this.RePrintHex.AutoSize = true;
+            this.RePrintHex.Location = new System.Drawing.Point(824, 137);
+            this.RePrintHex.Name = "RePrintHex";
+            this.RePrintHex.Size = new System.Drawing.Size(60, 16);
+            this.RePrintHex.TabIndex = 86;
+            this.RePrintHex.Text = "16进制";
+            this.RePrintHex.UseVisualStyleBackColor = true;
+            this.RePrintHex.Click += new System.EventHandler(this.RePrintHex_Click);
+            // 
+            // SNHex
+            // 
+            this.SNHex.AutoSize = true;
+            this.SNHex.Location = new System.Drawing.Point(536, 193);
+            this.SNHex.Name = "SNHex";
+            this.SNHex.Size = new System.Drawing.Size(72, 16);
+            this.SNHex.TabIndex = 85;
+            this.SNHex.Text = "SN16进制";
+            this.SNHex.UseVisualStyleBackColor = true;
+            // 
+            // HexPrintNum
+            // 
+            this.HexPrintNum.Location = new System.Drawing.Point(536, 304);
+            this.HexPrintNum.Name = "HexPrintNum";
+            this.HexPrintNum.Size = new System.Drawing.Size(154, 21);
+            this.HexPrintNum.TabIndex = 84;
+            this.HexPrintNum.Visible = false;
+            this.HexPrintNum.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.HexPrintNum_KeyPress);
+            // 
+            // Hexadecimal
+            // 
+            this.Hexadecimal.AutoSize = true;
+            this.Hexadecimal.Location = new System.Drawing.Point(613, 166);
+            this.Hexadecimal.Name = "Hexadecimal";
+            this.Hexadecimal.Size = new System.Drawing.Size(84, 16);
+            this.Hexadecimal.TabIndex = 83;
+            this.Hexadecimal.Text = "IMEI16进制";
+            this.Hexadecimal.UseVisualStyleBackColor = true;
+            this.Hexadecimal.Click += new System.EventHandler(this.Hexadecimal_Click);
+            // 
+            // SqlConfig
+            // 
+            this.SqlConfig.Location = new System.Drawing.Point(884, 13);
+            this.SqlConfig.Name = "SqlConfig";
+            this.SqlConfig.Size = new System.Drawing.Size(102, 21);
+            this.SqlConfig.TabIndex = 82;
+            this.SqlConfig.Text = "数据库配置";
+            this.SqlConfig.UseVisualStyleBackColor = true;
+            this.SqlConfig.Click += new System.EventHandler(this.SqlConfig_Click);
             // 
             // label24
             // 
             this.label24.AutoSize = true;
             this.label24.Location = new System.Drawing.Point(424, 714);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(233, 12);
+            this.label24.Size = new System.Drawing.Size(11, 12);
             this.label24.TabIndex = 81;
-            this.label24.Text = "Copyright (C) 2018 BY 几米物联自动化部";
+            this.label24.Text = " ";
             // 
             // reminder
             // 
             this.reminder.BackColor = System.Drawing.Color.Linen;
             this.reminder.Font = new System.Drawing.Font("宋体", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.reminder.ForeColor = System.Drawing.Color.Red;
-            this.reminder.Location = new System.Drawing.Point(537, 428);
+            this.reminder.Location = new System.Drawing.Point(536, 465);
             this.reminder.Margin = new System.Windows.Forms.Padding(2);
             this.reminder.Multiline = true;
             this.reminder.Name = "reminder";
@@ -693,7 +755,7 @@
             // 
             // TemplateNum
             // 
-            this.TemplateNum.Location = new System.Drawing.Point(537, 326);
+            this.TemplateNum.Location = new System.Drawing.Point(537, 359);
             this.TemplateNum.Margin = new System.Windows.Forms.Padding(2);
             this.TemplateNum.Name = "TemplateNum";
             this.TemplateNum.Size = new System.Drawing.Size(153, 21);
@@ -706,7 +768,7 @@
             // 
             this.label23.AutoSize = true;
             this.label23.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label23.Location = new System.Drawing.Point(534, 306);
+            this.label23.Location = new System.Drawing.Point(534, 339);
             this.label23.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(168, 16);
@@ -890,6 +952,8 @@
             // PrintMore
             // 
             this.PrintMore.AutoSize = true;
+            this.PrintMore.Checked = true;
+            this.PrintMore.CheckState = System.Windows.Forms.CheckState.Checked;
             this.PrintMore.Location = new System.Drawing.Point(613, 109);
             this.PrintMore.Margin = new System.Windows.Forms.Padding(2);
             this.PrintMore.Name = "PrintMore";
@@ -902,8 +966,6 @@
             // PrintOne
             // 
             this.PrintOne.AutoSize = true;
-            this.PrintOne.Checked = true;
-            this.PrintOne.CheckState = System.Windows.Forms.CheckState.Checked;
             this.PrintOne.Location = new System.Drawing.Point(536, 108);
             this.PrintOne.Margin = new System.Windows.Forms.Padding(2);
             this.PrintOne.Name = "PrintOne";
@@ -932,7 +994,7 @@
             this.Printer1.Location = new System.Drawing.Point(533, 14);
             this.Printer1.Margin = new System.Windows.Forms.Padding(2);
             this.Printer1.Name = "Printer1";
-            this.Printer1.Size = new System.Drawing.Size(318, 20);
+            this.Printer1.Size = new System.Drawing.Size(346, 20);
             this.Printer1.TabIndex = 58;
             // 
             // IMEI_Present
@@ -953,7 +1015,7 @@
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(101, 12);
             this.label28.TabIndex = 56;
-            this.label28.Text = "IMEI当前打印位：";
+            this.label28.Text = "IMEI上一打印位：";
             // 
             // label29
             // 
@@ -973,7 +1035,7 @@
             this.ExcelToPrint.Margin = new System.Windows.Forms.Padding(2);
             this.ExcelToPrint.Name = "ExcelToPrint";
             this.ExcelToPrint.Padding = new System.Windows.Forms.Padding(2);
-            this.ExcelToPrint.Size = new System.Drawing.Size(1231, 730);
+            this.ExcelToPrint.Size = new System.Drawing.Size(1033, 730);
             this.ExcelToPrint.TabIndex = 1;
             this.ExcelToPrint.Text = "导入excel打印";
             // 
@@ -983,7 +1045,7 @@
             this.CheckAndDelete.Location = new System.Drawing.Point(104, 4);
             this.CheckAndDelete.Margin = new System.Windows.Forms.Padding(2);
             this.CheckAndDelete.Name = "CheckAndDelete";
-            this.CheckAndDelete.Size = new System.Drawing.Size(1231, 730);
+            this.CheckAndDelete.Size = new System.Drawing.Size(1033, 730);
             this.CheckAndDelete.TabIndex = 2;
             this.CheckAndDelete.Text = "查询与删除";
             // 
@@ -994,7 +1056,7 @@
             this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage2.Size = new System.Drawing.Size(1343, 742);
+            this.tabPage2.Size = new System.Drawing.Size(1145, 742);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "彩盒贴打印";
             // 
@@ -1004,7 +1066,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 54);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(1343, 742);
+            this.tabPage3.Size = new System.Drawing.Size(1145, 742);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "重打查询";
             // 
@@ -1019,7 +1081,7 @@
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(18, 48);
             this.Name = "Form1";
-            this.Text = " MES-Print_1.0.7_201810181110";
+            this.Text = " MES-Print_1.0.11_201901110940";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
@@ -1108,6 +1170,11 @@
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.TextBox reminder;
         private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Button SqlConfig;
+        private System.Windows.Forms.CheckBox Hexadecimal;
+        private System.Windows.Forms.TextBox HexPrintNum;
+        private System.Windows.Forms.CheckBox SNHex;
+        private System.Windows.Forms.CheckBox RePrintHex;
     }
 }
 

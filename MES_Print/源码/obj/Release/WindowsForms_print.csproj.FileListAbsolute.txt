@@ -68,3 +68,4 @@ D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForm
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.csproj.CopyComplete
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.exe
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.pdb
+D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Release\WindowsForms_print.UpdateSqlConn.resources

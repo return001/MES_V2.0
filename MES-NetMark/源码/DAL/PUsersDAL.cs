@@ -10,7 +10,12 @@ namespace PUsers.DAL
 {
     class PUsersDAL
     {
-        private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+
+        public void refreshCon()
+        {
+            conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        }
 
         //判断用户名密码是否匹配
         public string CheckUeseDAL(string UserName, string Password)

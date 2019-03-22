@@ -12,9 +12,16 @@ namespace NetMarkIMEI.BLL
     {
         NetMarkIMEIDAL NMID = new NetMarkIMEIDAL();
 
-        public int InsertNetMarkBLL(string Zhidan, string IMEI, string Netmark)
+
+        public void refeshConBLL()
         {
-            return NMID.InsertNetMarkDAL(Zhidan, IMEI, Netmark);
+            NMID.refreshCon();
+        }
+
+
+        public int InsertNetMarkBLL(string Zhidan, string IMEI, string Netmark, string RFID, string TemPlate)
+        {
+            return NMID.InsertNetMarkDAL(Zhidan, IMEI, Netmark,RFID,TemPlate);
         }
 
         public int DeleteAllByNetLogoOrImerBLL(string NetLogoOrImer)
@@ -27,6 +34,11 @@ namespace NetMarkIMEI.BLL
             return NMID.CheckIMEIDAL(ImeiNum);
         }
 
+        public int CheckRFIDBLL(string RFIDNum)
+        {
+            return NMID.CheckRFIDDAL(RFIDNum);
+        }
+
         public int CheckNetMarkBLL(string NetMankNum)
         {
             return NMID.CheckNetMarkDAL(NetMankNum);
@@ -35,6 +47,11 @@ namespace NetMarkIMEI.BLL
         public List<NetMarkIMEIMes> SelectIMEIByNetLogoOrImerBLL(string NetLogoOrImer)
         {
             return NMID.SelectIMEIByNetLogoOrImerDAL(NetLogoOrImer);
+        }
+
+        public string SelectIMEIBLL(string RFIDOrImer)
+        {
+            return NMID.SelectIMEIDAL(RFIDOrImer);
         }
 
         public List<NetMarkIMEIMes> selectNetMarkIMEIByzhidanBLL(string ZhidanNum)
@@ -57,9 +74,19 @@ namespace NetMarkIMEI.BLL
             return NMID.SelectPresentImeiDAL(Zhidan);
         }
 
-        public string SelectResultByImeiOrNetmarkBLL(string NetLogoOrImer)
+        public List<NetMarkIMEIMes> SelectResultByImeiOrNetmarkBLL(string NetLogoOrImer)
         {
             return NMID.SelectResultByImeiOrNetmarkDAL(NetLogoOrImer);
+        }
+
+        public int UpdateRePrintBLL(string IMEInumber)
+        {
+            return NMID.UpdateRePrintDAL(IMEInumber);
+        }
+
+        public string SelectIMEIByNetMarkBLL(string netmark)
+        {
+            return NMID.SelectIMEIByNetMarkDAL(netmark);
         }
 
     }

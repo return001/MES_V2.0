@@ -30,15 +30,19 @@ namespace OqcTool
             try
             {
                 string path = AppDomain.CurrentDomain.BaseDirectory + "\\log\\" + port + System.DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+                //FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                //StreamReader sr = new StreamReader(fs, System.Text.Encoding.Default);
                 if (!File.Exists(path))
                 {
                     File.Create(path).Close();
                 }
-                StreamWriter writer = new StreamWriter(path, true);
-                writer.WriteLine("");
-                writer.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " " + msg);
-                writer.Flush();
-                writer.Close();
+                using (StreamWriter writer = new StreamWriter(path, true))
+                {
+                    writer.WriteLine("");
+                    writer.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " " + msg);
+                    writer.Flush();
+                    writer.Close();
+                }
             }
             catch
             {
@@ -126,7 +130,7 @@ namespace OqcTool
             DialogResult dr = MessageBox.Show("确定退出？", "系统提示", MessageBoxButtons.OKCancel);
             if (dr == DialogResult.OK)
             {
-                System.Environment.Exit(System.Environment.ExitCode);
+                
             }
             else
             {
@@ -174,6 +178,9 @@ namespace OqcTool
             this.CheckData.Enabled = false;
             this.ReTextCheck.Enabled = false;
             this.ExportByzhidan.Enabled = false;
+            this.zhidan.Text = "";
+            this.dataGridView1.DataSource = "";
+            //this.dataGridView1.ContextMenuStrip = null;
             this.dataGridView2.DataSource = "";
             this.OqcUser.Clear();
         }
@@ -195,6 +202,7 @@ namespace OqcTool
         private void zhidan_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.dataGridView1.Rows.Clear();
+            CommandAlterFlag = 3;
             this.S1Log.Clear();
             this.S2Log.Clear();
             this.S3Log.Clear();
@@ -204,10 +212,17 @@ namespace OqcTool
             this.Remind3.Text = "等待";
             this.Remind4.Text = "等待";
             List<string> Lcommand = OTSSB.SelectCommandBLL(zhidan.Text);
-            for(int i = 0; i < Lcommand.Count; i++)
+            if (Lcommand.Count > 0)
             {
-                string[] sArray = Regex.Split(Lcommand[i], "@@", RegexOptions.IgnoreCase);
-                this.dataGridView1.Rows.Add(sArray[0], sArray[2], sArray[1]);
+                for (int i = 0; i < Lcommand.Count; i++)
+                {
+                    if (Lcommand[i] != "")
+                    {
+                        string[] sArray = Regex.Split(Lcommand[i], "@@", RegexOptions.IgnoreCase);
+                        this.dataGridView1.Rows.Add(sArray[0], sArray[2], sArray[1]);
+                    }
+                }
+                //this.dataGridView1.ContextMenuStrip = contextMenuStrip1;
             }
         }
 
@@ -228,6 +243,13 @@ namespace OqcTool
                 MessageBox.Show("请先配置指令");
                 return;
             }
+            //判断指令是否修改成功
+            if (CommandAlterFlag != 3)
+            {
+                player.Play();
+                MessageBox.Show("指令配置不正确，请检查");
+                return;
+            }
             if (Lock.Text == "锁定")
             {
                 this.dataGridView1.ReadOnly = true;
@@ -244,6 +266,7 @@ namespace OqcTool
                 Connection3.Enabled = true;
                 Connection4.Enabled = true;
                 this.TCUpdate.Enabled = false;
+                //this.dataGridView1.ContextMenuStrip = null;
                 CommandNum = dataGridView1.RowCount - 1;
                 Lock.Text = "解锁";
             }
@@ -277,6 +300,7 @@ namespace OqcTool
             Connection4.Enabled = false;
             this.TCUpdate.Enabled = true;
             CommandNum = 0;
+            //this.dataGridView1.ContextMenuStrip = contextMenuStrip1;
             Lock.Text = "锁定";
         }
 
@@ -302,6 +326,21 @@ namespace OqcTool
                 MessageBox.Show("数据未更改");
                 return;
             }
+            //判断测试项有没有指令
+            for (int j = 0; j< dataGridView1.Rows.Count - 1; j++)
+            {
+                if (dataGridView1.Rows[j].Cells["TestName"].Value == null)
+                {
+                    DataGridViewRow row = dataGridView1.Rows[j];
+                    dataGridView1.Rows.Remove(row);
+                    j--;
+                }
+                if (dataGridView1.Rows[j].Cells["TestName"].Value!=null && dataGridView1.Rows[j].Cells["TestCommand"].Value == null)
+                {
+                    MessageBox.Show("测试指令不能为空");
+                    return;
+                }
+            }
             List<string> AlertComm = new List<string>(80);
             string AlertSql = "UPDATE [dbo].[Gps_OqcTestSystemSetting] SET ";
             for(int i = 0; i < dataGridView1.Rows.Count-1; i++)
@@ -313,6 +352,7 @@ namespace OqcTool
             if (OTSSB.UpdateCommandBLL(AlertSql) > 0)
             {
                 MessageBox.Show("修改成功");
+                CommandAlterFlag = 3;
             }
             else
             {
@@ -417,7 +457,8 @@ namespace OqcTool
                     SP1.Close();
                     Connection1.Text = "打开串口";
                     SerialPort1.Enabled = true;
-                    this.SerialPort1.Text = "";
+                    this.Remind1.Text = "等待";
+                    this.Remind1.BackColor = Color.White;
                     S1Log.AppendText(DateTime.Now.ToString("T") + " 串口1关闭成功\r\n");
                 }
             }
@@ -469,26 +510,33 @@ namespace OqcTool
                         {
                             S1Log.AppendText(DateTime.Now.ToString("T") + " 接收了" + ReceiveImei + "\r\n");
                             Log("port1", "接收指令："+ ReceiveImei, null);
-                            string[] sArray = ReceiveImei.Split(':');
-                            if (sArray[1].Trim().Contains("Sensor_OK"))
+                            if (ReceiveImei.Contains("IMEI:"))
                             {
-                                IMEI1 = sArray[1].Split('S')[0].Replace("\r\n", "");
+                                string[] sArray = ReceiveImei.Split(':');
+                                if (sArray[1].Contains("\r\n"))
+                                {
+                                    IMEI1 = sArray[1].Split('\r')[0];
+                                }
+                                else
+                                {
+                                    IMEI1 = sArray[1].Trim();
+                                }
                             }
                             else
                             {
-                                IMEI1 = sArray[1].Replace("\r\n", "");
+                                IMEI1 = "";
                             }
                         }
                     }
                     catch
                     {
-                        S1Log.AppendText(DateTime.Now.ToString("T") + "串口已关闭\r\n");
+                        S1Log.AppendText(DateTime.Now.ToString("T") + "串口或机子异常\r\n");
                         Remind1.Text = "失败";
                         Remind1.BackColor = Color.Red;
                         return;
                     }
                     //检测该机子是否已经测试过
-                    if (!OTPB.CheckImeiBLL(IMEI1))
+                    if (IMEI1!="" && !OTPB.CheckImeiBLL(IMEI1))
                     {
                         string SendCommand="";  //记录发送的指令
                         string ReceiveValue=""; //记录收到的返回值
@@ -558,9 +606,9 @@ namespace OqcTool
                     }
                     else
                     {
-                        S1Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号\r\n");
+                        S1Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号或为空\r\n");
                         Log("port1", IMEI1 + "IMEI重号。", null);
-                        Remind1.Text = "失败";
+                        Remind1.Text = "IMEI重号";
                         Remind1.BackColor = Color.Red;
                     }
                     //测试完成后检测该机子是否已断开
@@ -694,7 +742,8 @@ namespace OqcTool
                     SP2.Close();
                     Connection2.Text = "打开串口";
                     SerialPort2.Enabled = true;
-                    this.SerialPort2.Text = "";
+                    this.Remind2.Text = "等待";
+                    this.Remind2.BackColor = Color.White;
                     S2Log.AppendText(DateTime.Now.ToString("T") + " 串口2关闭成功\r\n");
                 }
             }
@@ -746,14 +795,21 @@ namespace OqcTool
                         {
                             S2Log.AppendText(DateTime.Now.ToString("T") + " 接收了" + ReceiveImei + "\r\n");
                             Log("port2", "接收指令："+ ReceiveImei, null);
-                            string[] sArray = ReceiveImei.Split(':');
-                            if (sArray[1].Trim().Contains("Sensor_OK"))
+                            if (ReceiveImei.Contains("IMEI:"))
                             {
-                                IMEI2 = sArray[1].Split('S')[0].Replace("\r\n", "");
+                                string[] sArray = ReceiveImei.Split(':');
+                                if (sArray[1].Contains("\r\n"))
+                                {
+                                    IMEI2 = sArray[1].Split('\r')[0];
+                                }
+                                else
+                                {
+                                    IMEI2 = sArray[1].Trim();
+                                }
                             }
                             else
                             {
-                                IMEI2 = sArray[1].Replace("\r\n", "");
+                                IMEI2 = "";
                             }
                         }
                     }
@@ -765,7 +821,7 @@ namespace OqcTool
                         return;
                     }
                     //检测该机子是否已经测试过
-                    if (!OTPB.CheckImeiBLL(IMEI2))
+                    if (IMEI2!="" && !OTPB.CheckImeiBLL(IMEI2))
                     {
                         string SendCommand = "";  //记录发送的指令
                         string ReceiveValue = ""; //记录收到的返回值
@@ -835,9 +891,9 @@ namespace OqcTool
                     }
                     else
                     {
-                        S2Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号\r\n");
+                        S2Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号或为空\r\n");
                         Log("port2", IMEI2 + "IMEI重号", null);
-                        Remind2.Text = "失败";
+                        Remind2.Text = "IMEI重号";
                         Remind2.BackColor = Color.Red;
                     }
                     //测试完成后检测该机子是否已断开
@@ -971,7 +1027,8 @@ namespace OqcTool
                     SP3.Close();
                     Connection3.Text = "打开串口";
                     SerialPort3.Enabled = true;
-                    this.SerialPort3.Text = "";
+                    this.Remind3.Text = "等待";
+                    this.Remind3.BackColor = Color.White;
                     S3Log.AppendText(DateTime.Now.ToString("T") + " 串口3关闭成功\r\n");
                 }
             }
@@ -1023,14 +1080,21 @@ namespace OqcTool
                         {
                             S3Log.AppendText(DateTime.Now.ToString("T") + " 接收了" + ReceiveImei + "\r\n");
                             Log("port3", "接收指令："+ ReceiveImei, null);
-                            string[] sArray = ReceiveImei.Split(':');
-                            if (sArray[1].Trim().Contains("Sensor_OK"))
+                            if (ReceiveImei.Contains("IMEI:"))
                             {
-                                IMEI3 = sArray[1].Split('S')[0].Replace("\r\n", "");
+                                string[] sArray = ReceiveImei.Split(':');
+                                if (sArray[1].Contains("\r\n"))
+                                {
+                                    IMEI3 = sArray[1].Split('\r')[0];
+                                }
+                                else
+                                {
+                                    IMEI3 = sArray[1].Trim();
+                                }
                             }
                             else
                             {
-                                IMEI3 = sArray[1].Replace("\r\n", "");
+                                IMEI3 = "";
                             }
                         }
                     }
@@ -1042,7 +1106,7 @@ namespace OqcTool
                         return;
                     }
                     //检测该机子是否已经测试过
-                    if (!OTPB.CheckImeiBLL(IMEI3))
+                    if (IMEI3!="" && !OTPB.CheckImeiBLL(IMEI3))
                     {
                         string SendCommand = "";  //记录发送的指令
                         string ReceiveValue = ""; //记录收到的返回值
@@ -1062,7 +1126,7 @@ namespace OqcTool
                                 }
                                 catch
                                 {
-                                    S3Log.AppendText(DateTime.Now.ToString("T") + "串口已关闭\r\n");
+                                    S3Log.AppendText(DateTime.Now.ToString("T") + " 串口已关闭\r\n");
                                     Remind3.Text = "失败";
                                     Remind3.BackColor = Color.Red;
                                     return;
@@ -1112,9 +1176,9 @@ namespace OqcTool
                     }
                     else
                     {
-                        S3Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号\r\n");
+                        S3Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号或为空\r\n");
                         Log("port3", IMEI3 + "IMEI重号", null);
-                        Remind3.Text = "失败";
+                        Remind3.Text = "IMEI重号";
                         Remind3.BackColor = Color.Red;
                     }
                     //测试完成后检测该机子是否已断开
@@ -1248,7 +1312,8 @@ namespace OqcTool
                     SP4.Close();
                     Connection4.Text = "打开串口";
                     SerialPort4.Enabled = true;
-                    this.SerialPort4.Text = "";
+                    this.Remind4.Text = "等待";
+                    this.Remind4.BackColor = Color.White;
                     S4Log.AppendText(DateTime.Now.ToString("T") + " 串口4关闭成功\r\n");
                 }
             }
@@ -1300,14 +1365,21 @@ namespace OqcTool
                         {
                             S4Log.AppendText(DateTime.Now.ToString("T") + " 接收了" + ReceiveImei + "\r\n");
                             Log("port4", "接收指令："+ ReceiveImei, null);
-                            string[] sArray = ReceiveImei.Split(':');
-                            if (sArray[1].Trim().Contains("Sensor_OK"))
+                            if (ReceiveImei.Contains("IMEI:"))
                             {
-                                IMEI4 = sArray[1].Split('S')[0].Replace("\r\n", "");
+                                string[] sArray = ReceiveImei.Split(':');
+                                if (sArray[1].Contains("\r\n"))
+                                {
+                                    IMEI4 = sArray[1].Split('\r')[0];
+                                }
+                                else
+                                {
+                                    IMEI4 = sArray[1].Trim();
+                                }
                             }
                             else
                             {
-                                IMEI4 = sArray[1].Replace("\r\n", "");
+                                IMEI4 = "";
                             }
                         }
                     }
@@ -1319,7 +1391,7 @@ namespace OqcTool
                         return;
                     }
                     //检测该机子是否已经测试过
-                    if (!OTPB.CheckImeiBLL(IMEI4))
+                    if (IMEI4!="" && !OTPB.CheckImeiBLL(IMEI4))
                     {
                         string SendCommand = "";  //记录发送的指令
                         string ReceiveValue = ""; //记录收到的返回值
@@ -1389,9 +1461,9 @@ namespace OqcTool
                     }
                     else
                     {
-                        S4Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号\r\n");
+                        S4Log.AppendText(DateTime.Now.ToString("T") + " IMEI重号或为空\r\n");
                         Log("port4", IMEI4 + "IMEI重号", null);
-                        Remind4.Text = "失败";
+                        Remind4.Text = "IMEI重号";
                         Remind4.BackColor = Color.Red;
                     }
                     //测试完成后检测该机子是否已断开
@@ -1447,10 +1519,22 @@ namespace OqcTool
                 Lock.Enabled = false;
                 AutoConnection.Text = "一键断开";
                 AutoAllocationPort();
-                Connection1_Click(sender, e);
-                Connection2_Click(sender, e);
-                Connection3_Click(sender, e);
-                Connection4_Click(sender, e);
+                if (Connection1.Text == "打开串口")
+                {
+                    Connection1_Click(sender, e);
+                }
+                if (Connection2.Text == "打开串口")
+                {
+                    Connection2_Click(sender, e);
+                }
+                if (Connection3.Text == "打开串口")
+                {
+                    Connection3_Click(sender, e);
+                }
+                if (Connection4.Text == "打开串口")
+                {
+                    Connection4_Click(sender, e);
+                }
             }
             else
             {
@@ -1464,10 +1548,22 @@ namespace OqcTool
                 SerialPort3.Enabled = true;
                 SerialPort4.Enabled = true;
                 AutoConnection.Text = "一键连接";
-                Connection1_Click(sender, e);
-                Connection2_Click(sender, e);
-                Connection3_Click(sender, e);
-                Connection4_Click(sender, e);
+                if (Connection1.Text == "关闭串口")
+                {
+                    Connection1_Click(sender, e);
+                }
+                if (Connection2.Text == "关闭串口")
+                {
+                    Connection2_Click(sender, e);
+                }
+                if (Connection3.Text == "关闭串口")
+                {
+                    Connection3_Click(sender, e);
+                }
+                if (Connection4.Text == "关闭串口")
+                {
+                    Connection4_Click(sender, e);
+                }
             }
         }
         

@@ -11,48 +11,58 @@ namespace ManuOrderParam.DAL
 {
     class ManuOrderParamDAL
     {
-        private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+
+        public void refreshCon()
+        {
+            conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        }
 
         //返回制单号
         public List<Gps_ManuOrderParam> SelectZhidanNumDAL()
         {
-            SqlConnection conn1 = new SqlConnection(conStr);
-            conn1.Open();
-            List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
-            using (SqlCommand command = conn1.CreateCommand())
+            using (SqlConnection conn1 = new SqlConnection(conStr))
             {
-                command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE Status='1' OR Status='0' ORDER BY ZhiDan";
-                SqlDataReader dr = command.ExecuteReader();
-                while (dr.Read())
+                conn1.Open();
+                List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
+                using (SqlCommand command = conn1.CreateCommand())
                 {
-                    list.Add(new Gps_ManuOrderParam()
+                    command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE Status='1' OR Status='0' ORDER BY ZhiDan";
+                    SqlDataReader dr = command.ExecuteReader();
+                    while (dr.Read())
                     {
-                        ZhiDan = dr.GetString(1)
-                    });
+                        list.Add(new Gps_ManuOrderParam()
+                        {
+                            ZhiDan = dr.GetString(1)
+                        });
+                    }
+                    return list;
                 }
-                return list;
             }
         }
 
         //根据制单号返回该制单相关信息
         public List<Gps_ManuOrderParam> selectManuOrderParamByzhidanDAL(string ZhidanNum)
         {
-            SqlConnection conn1 = new SqlConnection(conStr);
-            conn1.Open();
-            List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
-            using (SqlCommand command = conn1.CreateCommand())
+            using (SqlConnection conn1 = new SqlConnection(conStr))
             {
-                command.CommandText = "SELECT * FROM dbo.Gps_ManuOrderParam WHERE ZhiDan='" + ZhidanNum + "'";
-                SqlDataReader dr = command.ExecuteReader();
-                while (dr.Read())
+                conn1.Open();
+                List<Gps_ManuOrderParam> list = new List<Gps_ManuOrderParam>();
+                using (SqlCommand command = conn1.CreateCommand())
                 {
-                    list.Add(new Gps_ManuOrderParam()
+                    command.CommandText = "SELECT IMEIStart,IMEIEnd,JST_template FROM dbo.Gps_ManuOrderParam WHERE (Status='1' OR Status='0') AND ZhiDan='" + ZhidanNum + "'";
+                    SqlDataReader dr = command.ExecuteReader();
+                    while (dr.Read())
                     {
-                        IMEIStart = dr.GetString(14),
-                        IMEIEnd = dr.GetString(15),
-                    });
+                        list.Add(new Gps_ManuOrderParam()
+                        {
+                            IMEIStart = dr.IsDBNull(0) ? "" : dr.GetString(0),
+                            IMEIEnd = dr.IsDBNull(1) ? "" : dr.GetString(1),
+                            JST_template = dr.IsDBNull(2)?"":dr.GetString(2)
+                        });
+                    }
+                    return list;
                 }
-                return list;
             }
         }
 

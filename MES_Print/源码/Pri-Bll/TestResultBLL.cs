@@ -12,17 +12,14 @@ namespace TestResult.Param.BLL
     {
         TestResultDAL TRD = new TestResultDAL();
 
-
-        public bool CheckOneBefStationBLL(string MissingSql)
+        public void refeshConBLL()
         {
-            if (TRD.CheckOneStationDAL(MissingSql) > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            TRD.refreshCon();
+        }
+
+        public string CheckOneBefStationBLL(string MissingSql,string IMEI)
+        {
+            return TRD.CheckOneStationDAL(MissingSql,IMEI);
         }
 
         //public bool CheckTwoBefStationBLL(string IMEInumber, string Station1,string Station2)

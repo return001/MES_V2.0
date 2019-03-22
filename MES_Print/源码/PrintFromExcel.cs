@@ -10,14 +10,19 @@ using ExcelPrint.Param.Bll;
 using System.IO;
 using Print_Message;
 using System.Media;
+using ManuOrder.Param.BLL;
+using DataRelative.Param.BLL;
 
 namespace WindowsForms_print
 {
     public partial class PrintFromExcel : Form
     {
         InputExcelBLL IEB = new InputExcelBLL();
+        ManuOrderParamBLL MOPB = new ManuOrderParamBLL();
         ManuExcelPrintParamBLL MEPPB = new ManuExcelPrintParamBLL();
+        DataRelativeSheetBLL DRSB = new DataRelativeSheetBLL();
         List<ManuExcelPrintParam> mepp = new List<ManuExcelPrintParam>();
+        List<Gps_ManuOrderParam> G_MOP = new List<Gps_ManuOrderParam>();
         Engine btEngine = new Engine();
         LabelFormatDocument btFormat;
 
@@ -29,6 +34,18 @@ namespace WindowsForms_print
         //打印参数
         int TN =1;
         string lj = "";
+
+        //记录Excel字段，用来插入关联表
+        string IMEI; string SN; string SIM; string VIP; string BAT; string MAC; string ICCID; string Equipment;
+        //插入关联表的Sql语句
+        string DrsbSql; string ToReplay;
+        //记录字典里的个数
+        int SdNum;
+        //记录字典里有没有IMEI这个字段
+        int HaveImei1 = 0;
+
+        //导入Excel时将字段放入容器
+        SortedDictionary<int, string> AssociatedFields = new SortedDictionary<int, string>();
 
         public PrintFromExcel()
         {
@@ -59,6 +76,11 @@ namespace WindowsForms_print
             {
                 Printer.Items.Add(sPrint);
             }
+            G_MOP = MOPB.SelectZhidanNumBLL();
+            foreach (Gps_ManuOrderParam a in G_MOP)
+            {
+                this.CB_Zhidan.Items.Add(a.ZhiDan);
+            }
             btEngine.Start();
         }
 
@@ -66,52 +88,108 @@ namespace WindowsForms_print
         private void Open_Template_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "文本文件|*.btw";
             ofd.ShowDialog();
             string path = ofd.FileName;
-            string strExtension = "";
-            int nIndex = path.LastIndexOf('.');
-            if (nIndex > 0)
-            {
-                strExtension = path.Substring(nIndex);
-                if (strExtension != ".btw")
-                {
-                    player.Play();
-                    this.remined.AppendText("请选择正确的btw文件！\r\n");
-                }
-                else
-                {
-                    this.Select_Template.Text = path;
-                    lj = path;
-                }
-            }
+            this.Select_Template.Text = path;
+            lj = path;
         }
 
         //导入Excel文件
         private void Import_Click(object sender, EventArgs e)
         {
+            DrsbSql = "";
             OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "文本文件|*.xls;*.xlsx";
             dialog.ShowDialog();
             string path = dialog.FileName;
-            if (path != "")
+            if (path == "")
             {
-                string strExtension = path.Substring(path.LastIndexOf('.'));
-                if (strExtension != ".xls" && strExtension != ".xlsx")
+                return;
+            }
+            string strExtension = path.Substring(path.LastIndexOf('.'));
+            this.dataGridView1.DataSource = "";
+            this.ImportPath.Text = path;
+            DataTable dt = IEB.GetExcelDatatable(path, strExtension);
+            dataGridView1.DataSource = dt;
+            dataGridView1.Columns[0].Width = 200;
+            dataGridView1.Columns[1].Width = 200;
+            dataGridView1.Columns[2].Width = 200;
+            dataGridView1.Columns[3].Width = 200;
+            dataGridView1.Columns[4].Width = 200;
+            //判断导入的Excel是否有IMEI字段
+            for (int a = 0; a < 5; a++)
+            {
+                if (dataGridView1.Rows[0].Cells[a].Value.ToString() == "IMEI")
                 {
-                    player.Play();
-                    this.remined.AppendText("请选择xls文件!\r\n");
+                    HaveImei1 = 1;
+                    break;
                 }
-                else
+                HaveImei1 = 0;
+            }
+            //将Excel字段放入字典
+            for (int i = 0; i < 5; i++)
+            {
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "IMEI")
                 {
-                    this.dataGridView1.DataSource = "";
-                    this.ImportPath.Text = path;
-                    DataTable dt = IEB.GetExcelDatatable(path,strExtension);
-                    dataGridView1.DataSource = dt;
-                    dataGridView1.Columns[0].Width = 200;
-                    dataGridView1.Columns[1].Width = 200;
-                    dataGridView1.Columns[2].Width = 200;
-                    dataGridView1.Columns[3].Width = 200;
-                    dataGridView1.Columns[4].Width = 200;
+                    IMEI = "IMEI1";
+                    AssociatedFields[i] = IMEI;
                 }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "SN")
+                {
+                    SN = "IMEI2";
+                    AssociatedFields[i] = SN;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "SIM")
+                {
+                    SIM = "IMEI3";
+                    AssociatedFields[i] = SIM;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "ICCID")
+                {
+                    ICCID = "IMEI4";
+                    AssociatedFields[i] = ICCID;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "MAC")
+                {
+                    MAC = "IMEI6";
+                    AssociatedFields[i] = MAC;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "Equipment")
+                {
+                    Equipment = "IMEI7";
+                    AssociatedFields[i] = Equipment;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "VIP")
+                {
+                    VIP = "IMEI8";
+                    AssociatedFields[i] = VIP;
+                }
+                if (dataGridView1.Rows[0].Cells[i].Value.ToString() == "BAT")
+                {
+                    BAT = "IMEI9";
+                    AssociatedFields[i] = BAT;
+                }
+            }
+            SdNum = AssociatedFields.Count;
+            //拼凑sql语句
+            if (HaveImei1 == 1)
+            {
+                DrsbSql = " INSERT INTO dbo.DataRelativeSheet(";
+                for (int j = 0; j < AssociatedFields.Count; j++)
+                {
+                    DrsbSql += AssociatedFields[j] + ",";
+                }
+                DrsbSql += "ZhiDan,TestTime) VALUES(TheValues";
+            }
+            else
+            {
+                DrsbSql = " INSERT INTO dbo.DataRelativeSheet(IMEI1,";
+                for (int j = 0; j < AssociatedFields.Count; j++)
+                {
+                    DrsbSql += AssociatedFields[j] + ",";
+                }
+                DrsbSql += "ZhiDan,TestTime) VALUES(TheValues";
             }
         }
 
@@ -276,6 +354,29 @@ namespace WindowsForms_print
                             });
                             if (MEPPB.InsertManuExcelPrintBLL(mepp))
                             {
+                                if (HaveImei1 == 1)
+                                {
+                                    for (int k = 0; k < SdNum; k++)
+                                    {
+                                        ToReplay += "'" + dr3[k].ToString() + "',";
+                                    }
+                                    ToReplay += "'" + this.CB_Zhidan.Text + "','" + System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff") + "')";
+                                    string Insql = DrsbSql.Replace("TheValues", ToReplay);
+                                    DRSB.InsertRSFromExcelBLL(Insql);
+                                    ToReplay = "";
+                                }
+                                else
+                                {
+                                    ToReplay += "'" + dr3[0].ToString() + "',";
+                                    for (int k = 0; k < SdNum; k++)
+                                    {
+                                        ToReplay += "'" + dr3[k].ToString() + "',";
+                                    }
+                                    ToReplay += "'" + this.CB_Zhidan.Text + "','" + System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff") + "')";
+                                    string Insql = DrsbSql.Replace("TheValues", ToReplay);
+                                    DRSB.InsertRSFromExcelBLL(Insql);
+                                    ToReplay = "";
+                                }
                                 btFormat.Print();
                                 Form1.Log("Excel打印了机身贴IMEI号为" + dr3[1].ToString() + "的制单", null);
                             }
@@ -321,6 +422,29 @@ namespace WindowsForms_print
                                 });
                                 if (MEPPB.InsertManuExcelPrintBLL(mepp))
                                 {
+                                    if (HaveImei1 == 1)
+                                    {
+                                        for (int k = 0; k < SdNum; k++)
+                                        {
+                                            ToReplay += "'" + dr3[k].ToString() + "',";
+                                        }
+                                        ToReplay += "'" + this.CB_Zhidan.Text + "','" + System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff") + "')";
+                                        string Insql = DrsbSql.Replace("TheValues", ToReplay);
+                                        DRSB.InsertRSFromExcelBLL(Insql);
+                                        ToReplay = "";
+                                    }
+                                    else
+                                    {
+                                        ToReplay += "'" + dr3[0].ToString() + "',";
+                                        for (int k = 0; k < SdNum; k++)
+                                        {
+                                            ToReplay += "'" + dr3[k].ToString() + "',";
+                                        }
+                                        ToReplay += "'" + this.CB_Zhidan.Text + "','" + System.DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff") + "')";
+                                        string Insql = DrsbSql.Replace("TheValues", ToReplay);
+                                        DRSB.InsertRSFromExcelBLL(Insql);
+                                        ToReplay = "";
+                                    }
                                     btFormat.Print();
                                     Form1.Log("Excel打印了机身贴IMEI号为" + dr3[1].ToString() + "的制单", null);
                                 }
@@ -353,7 +477,7 @@ namespace WindowsForms_print
             }
         }
 
-        //导入Excel按钮函数
+        //打开Excel按钮函数
         private void OpenExcel_Click(object sender, EventArgs e)
         {
             if (this.ImportPath.Text == "")
@@ -621,7 +745,7 @@ namespace WindowsForms_print
                                 if (MEPPB.UpdateRePrintTimeBLL(dr3[0].ToString(), DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")))
                                 {
                                     btFormat.Print();
-                                    Form1.Log("Excel打印了机身贴IMEI号为" + dr3[1].ToString() + "的制单", null);
+                                    Form1.Log("Excel重打印了机身贴IMEI号为" + dr3[1].ToString() + "的制单", null);
                                 }
                             }
                             else
@@ -649,6 +773,69 @@ namespace WindowsForms_print
             catch (Exception ex)
             {
                 MessageBox.Show("Exception:" + ex.Message);
+            }
+        }
+
+        //扫入IMEI1进行重打
+        private void RePrintIMEI1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+            {
+                if(this.RePrintIMEI1.Text == "")
+                {
+                    return;
+                }
+                //是否已经选择了打印机
+                if (this.Printer.Text == "")
+                {
+                    player.Play();
+                    this.RePrintIMEI1.Clear();
+                    this.RePrintIMEI1.Focus();
+                    this.remined.AppendText("请选择打印机\r\n");
+                    return;
+                }
+                //是否选择了模板
+                if (this.Select_Template.Text == "")
+                {
+                    player.Play();
+                    this.RePrintIMEI1.Clear();
+                    this.RePrintIMEI1.Focus();
+                    this.remined.AppendText("请选择模板\r\n");
+                    return;
+                }
+                //判断是否打印过，没有打印过的不允许重打
+                if (!MEPPB.CheckIMEI1BLL(this.RePrintIMEI1.Text))
+                {
+                    player.Play();
+                    this.RePrintIMEI1.Clear();
+                    this.RePrintIMEI1.Focus();
+                    this.remined.AppendText(this.RePrintIMEI1.Text+"没有记录，无需重打\r\n");
+                    return;
+                }
+                //打开模板
+                LabelFormatDocument btFormat = btEngine.Documents.Open(lj);
+                //指定打印机名称
+                btFormat.PrintSetup.PrinterName = this.Printer.Text;
+                mepp = MEPPB.SelectByImei1BLL(this.RePrintIMEI1.Text);
+                foreach(ManuExcelPrintParam a in mepp)
+                {
+                    //对模板相应字段进行赋值
+                    btFormat.SubStrings["IMEI1"].Value = a.IMEI1;
+                    btFormat.SubStrings["IMEI2"].Value = a.IMEI2;
+                    btFormat.SubStrings["IMEI3"].Value = a.IMEI3;
+                    btFormat.SubStrings["IMEI4"].Value = a.IMEI4;
+                    btFormat.SubStrings["IMEI5"].Value = a.IMEI5;
+                    btFormat.SubStrings["ProductDate"].Value = DateTime.Now.ToString("yyyy.MM.dd");
+                }
+                //打印份数,同序列打印的份数
+                btFormat.PrintSetup.IdenticalCopiesOfLabel = TN;
+                if (MEPPB.UpdateRePrintTimeBLL(this.RePrintIMEI1.Text, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff")))
+                {
+                    btFormat.Print();
+                    Form1.Log("Excel重打印了机身贴IMEI号为" + this.RePrintIMEI1.Text + "的制单", null);
+                    this.RePrintIMEI1.Clear();
+                    this.RePrintIMEI1.Focus();
+                }
             }
         }
 

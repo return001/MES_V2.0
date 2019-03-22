@@ -11,6 +11,12 @@ namespace PUsers.BLL
     {
         PUsersDAL PUD = new PUsersDAL();
 
+
+        public void refeshConBLL()
+        {
+            PUD.refreshCon();
+        }
+
         public string CheckUeseBLL(string UserName, string Password)
         {
             return PUD.CheckUeseDAL(UserName, Password);

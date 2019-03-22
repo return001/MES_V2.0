@@ -9,3 +9,8 @@ D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csproj
 D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.exe
 D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.pdb
 D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csprojAssemblyReference.cache
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\bin\Release\Seagull.BarTender.Print.dll
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\bin\Release\Seagull.BarTender.Print.xml
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.UpdateSqlConn.resources
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.csproj.CopyComplete
+D:\项目集\网标工具\NetLogoTool\NetLogoTool\obj\Release\NetLogoTool.Unlock.resources

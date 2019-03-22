@@ -8,10 +8,14 @@ namespace PrintRecord.Param.DAL
 {
     class PrintRecordParamDAL
     {
-        private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+       string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
 
+        public void refreshCon()
+        {
+            conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        }
 
-        public int InsertPrintRecordParamDAL(string Zhidan, int SimMark, int VipMark, int BatMark, int IccidMark, int MacMark, int EquipmentMark, int NoCheckMark, int NoPaperMark,int UpdataSimMark,int UpdateIMEIMark,int AutoTestMark,int CoupleMark,int WriteImeiMark,int ParamDownloadMark,int TemPlate1Num,int TemPlate2Num)
+        public int InsertPrintRecordParamDAL(string Zhidan, int SimMark, int VipMark, int BatMark, int IccidMark, int MacMark, int EquipmentMark, int NoCheckMark, int NoPaperMark,int UpdataSimMark,int UpdateIMEIMark,int AutoTestMark,int CoupleMark,int WriteImeiMark,int ParamDownloadMark,int TemPlate1Num,int TemPlate2Num,int GpsMark)
         {
             using (SqlConnection conn1 = new SqlConnection(conStr))
             {
@@ -22,12 +26,12 @@ namespace PrintRecord.Param.DAL
                     command.CommandText = "SELECT ID FROM dbo.Gps_ManuPrintRecordParam WHERE ZhiDan ='" + Zhidan + "'";
                     if (Convert.ToInt32(command.ExecuteScalar()) > 0)
                     {
-                        command.CommandText = "UPDATE dbo.Gps_ManuPrintRecordParam SET SimMark ='" + SimMark + "',VipMark = '" + VipMark + "',BatMark ='" + BatMark + "',IccidMark = '" + IccidMark + "',MacMark ='" + MacMark + "',EquipmentMark = '" + EquipmentMark + "',NoCheckMark ='" + NoCheckMark + "',NoPaperMark = '" + NoPaperMark + "',UpdataSimMark ='" + UpdataSimMark + "',UpdateIMEIMark = '" + UpdateIMEIMark + "',AutoTestMark ='" + AutoTestMark + "',CoupleMark = '" + CoupleMark + "',WriteImeiMark ='" + WriteImeiMark + "',ParamDownloadMark = '" + ParamDownloadMark + "',TemPlate1Num ='" + TemPlate1Num + "',TemPlate2Num = '" + TemPlate2Num + "' WHERE ZhiDan='" + Zhidan + "'";
+                        command.CommandText = "UPDATE dbo.Gps_ManuPrintRecordParam SET SimMark ='" + SimMark + "',VipMark = '" + VipMark + "',BatMark ='" + BatMark + "',IccidMark = '" + IccidMark + "',MacMark ='" + MacMark + "',EquipmentMark = '" + EquipmentMark + "',NoCheckMark ='" + NoCheckMark + "',NoPaperMark = '" + NoPaperMark + "',UpdataSimMark ='" + UpdataSimMark + "',UpdateIMEIMark = '" + UpdateIMEIMark + "',AutoTestMark ='" + AutoTestMark + "',CoupleMark = '" + CoupleMark + "',WriteImeiMark ='" + WriteImeiMark + "',ParamDownloadMark = '" + ParamDownloadMark + "',TemPlate1Num ='" + TemPlate1Num + "',TemPlate2Num = '" + TemPlate2Num + "',GPSMark = '" + GpsMark + "' WHERE ZhiDan='" + Zhidan + "'";
                         httpstr = command.ExecuteNonQuery();
                     }
                     else
                     {
-                        command.CommandText = "INSERT INTO dbo.Gps_ManuPrintRecordParam(ZhiDan,SimMark,VipMark,BatMark,IccidMark,MacMark,EquipmentMark,NoCheckMark,NoPaperMark,UpdataSimMark,UpdateIMEIMark,AutoTestMark,CoupleMark,WriteImeiMark,ParamDownloadMark,TemPlate1Num,TemPlate2Num) VALUES('" + Zhidan + "','" + SimMark + "','" + VipMark + "','" + BatMark + "','" + IccidMark + "','" + MacMark + "','" + EquipmentMark + "','" + NoCheckMark + "','" + NoPaperMark + "','" + UpdataSimMark + "','" + UpdateIMEIMark + "','" + AutoTestMark + "'," + CoupleMark + ",'" + WriteImeiMark + "','"+ ParamDownloadMark +"'," + TemPlate1Num + ",'" + TemPlate2Num + "')";
+                        command.CommandText = "INSERT INTO dbo.Gps_ManuPrintRecordParam(ZhiDan,SimMark,VipMark,BatMark,IccidMark,MacMark,EquipmentMark,NoCheckMark,NoPaperMark,UpdataSimMark,UpdateIMEIMark,AutoTestMark,CoupleMark,WriteImeiMark,ParamDownloadMark,TemPlate1Num,TemPlate2Num,GPSMark) VALUES('" + Zhidan + "','" + SimMark + "','" + VipMark + "','" + BatMark + "','" + IccidMark + "','" + MacMark + "','" + EquipmentMark + "','" + NoCheckMark + "','" + NoPaperMark + "','" + UpdataSimMark + "','" + UpdateIMEIMark + "','" + AutoTestMark + "'," + CoupleMark + ",'" + WriteImeiMark + "','"+ ParamDownloadMark +"'," + TemPlate1Num + ",'" + TemPlate2Num + "','" + GpsMark + "')";
                         httpstr = command.ExecuteNonQuery();
                     }
                     return httpstr;
@@ -65,7 +69,8 @@ namespace PrintRecord.Param.DAL
                         WriteImeiMark = dr.GetInt32(14),
                         ParamDownloadMark = dr.GetInt32(15),
                         TemPlate1Num = dr.GetInt32(16),
-                        TemPlate2Num = dr.GetInt32(17)
+                        TemPlate2Num = dr.GetInt32(17),
+                        GPSMark = dr.GetInt32(18)
                     });
                 }
                 return list;

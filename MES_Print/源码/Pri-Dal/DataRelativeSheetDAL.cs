@@ -13,7 +13,12 @@ namespace DataRelative.Param.DAL
     class DataRelativeSheetDAL
     {
 
-        private static readonly string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        string conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+
+        public void refreshCon()
+        {
+            conStr = ConfigurationManager.ConnectionStrings["conn1"].ConnectionString;
+        }
 
         //根据IMEI获取关联数据
         public List<DataRelativeSheet> SelectByImeiDAL(string Imei1)
@@ -24,20 +29,21 @@ namespace DataRelative.Param.DAL
                 conn1.Open();
                 using (SqlCommand command = conn1.CreateCommand())
                 {
-                    command.CommandText = "SELECT * FROM dbo.DataRelativeSheet WHERE IMEI1 ='" + Imei1 + "'";
+                    command.CommandText = "SELECT SN,IMEI2,IMEI3,IMEI4,IMEI6,IMEI7,IMEI8,IMEI9,IMEI13 FROM dbo.DataRelativeSheet WHERE IMEI1 ='" + Imei1 + "'";
                     SqlDataReader dr = command.ExecuteReader();
                     while (dr.Read())
                     {
                         pm.Add(new DataRelativeSheet()
                         {
                             SN = dr.IsDBNull(0) ? "" : dr.GetString(0),
-                            IMEI2 = dr.IsDBNull(2) ? "" : dr.GetString(2),
-                            IMEI3 = dr.IsDBNull(3) ? "" : dr.GetString(3),
-                            IMEI4 = dr.IsDBNull(4) ? "" : dr.GetString(4),
-                            IMEI6 = dr.IsDBNull(6) ? "" : dr.GetString(6),
-                            IMEI7 = dr.IsDBNull(7) ? "" : dr.GetString(7),
-                            IMEI8 = dr.IsDBNull(8) ? "" : dr.GetString(8),
-                            IMEI9 = dr.IsDBNull(9) ? "" : dr.GetString(9)
+                            IMEI2 = dr.IsDBNull(1) ? "" : dr.GetString(1),
+                            IMEI3 = dr.IsDBNull(2) ? "" : dr.GetString(2),
+                            IMEI4 = dr.IsDBNull(3) ? "" : dr.GetString(3),
+                            IMEI6 = dr.IsDBNull(4) ? "" : dr.GetString(4),
+                            IMEI7 = dr.IsDBNull(5) ? "" : dr.GetString(5),
+                            IMEI8 = dr.IsDBNull(6) ? "" : dr.GetString(6),
+                            IMEI9 = dr.IsDBNull(7) ? "" : dr.GetString(7),
+                            RFID = dr.IsDBNull(8) ? "" : dr.GetString(8)
                         });
                     }
                     return pm;
@@ -46,7 +52,7 @@ namespace DataRelative.Param.DAL
         }
 
         //根据SIM号获取ICCID
-        public string SelectIccidBySimDAL(string SIM)
+        public string SelectIccidBySimDAL(string SIM ,string G_zhidan)
         {
             using (SqlConnection conn1 = new SqlConnection(conStr))
             {
@@ -54,9 +60,33 @@ namespace DataRelative.Param.DAL
                 string Iccid;
                 using (SqlCommand command = conn1.CreateCommand())
                 {
-                    command.CommandText = "SELECT IMEI4 FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
-                    Iccid = Convert.ToString(command.ExecuteScalar());
-                    return Iccid;
+                    command.CommandText = "SELECT ZhiDan FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
+                    if (Convert.ToString(command.ExecuteScalar()) != G_zhidan)
+                    {
+                        return "-1";
+                    }
+                    else
+                    {
+                        command.CommandText = "SELECT IMEI4 FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
+                        Iccid = Convert.ToString(command.ExecuteScalar());
+                        return Iccid;
+                    }
+                }
+            }
+        }
+
+        //判断扫入的SIM卡号的扫描订单是否跟关联表一致
+        public string SelectzhidanBySimDAL(string SIM)
+        {
+            using (SqlConnection conn1 = new SqlConnection(conStr))
+            {
+                conn1.Open();
+                string zhidan;
+                using (SqlCommand command = conn1.CreateCommand())
+                {
+                    command.CommandText = "SELECT ZhiDan FROM dbo.DataRelativeSheet WHERE IMEI3 ='" + SIM + "'";
+                    zhidan = Convert.ToString(command.ExecuteScalar());
+                    return zhidan;
                 }
             }
         }
@@ -340,9 +370,24 @@ namespace DataRelative.Param.DAL
                 string IMEI;
                 using (SqlCommand command = conn1.CreateCommand())
                 {
-                    command.CommandText = "SELECT IMEI1 FROM dbo.DataRelativeSheet WHERE (SN = '" + IMEI2Value + "' OR IMEI2 = '" + IMEI2Value + "')";
+                    command.CommandText = "SELECT IMEI1 FROM dbo.DataRelativeSheet WHERE (SN = '" + IMEI2Value + "' OR IMEI2 = '" + IMEI2Value + "' OR IMEI13 = '"+IMEI2Value+"')";
                     IMEI = Convert.ToString(command.ExecuteScalar());
                     return IMEI;
+                }
+            }
+        }
+
+        //Excel打印插入数据到关联表
+        public int InsertRSFromExcelDAL(string InSql)
+        {
+            using (SqlConnection conn1 = new SqlConnection(conStr))
+            {
+                conn1.Open();
+                using (SqlCommand command = conn1.CreateCommand())
+                {
+                    command.CommandText = InSql;
+                    int httpstr = command.ExecuteNonQuery();
+                    return httpstr;
                 }
             }
         }

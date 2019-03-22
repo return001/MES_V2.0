@@ -15,5 +15,25 @@ namespace NetLogo_Message
         //IMEI终止位
         public string IMEI { get; set; }
 
+        //制单号
+        public string zhidan { get; set; }
+
+        //RFID
+        public string RFID { get; set; }
+
+        //机身打印时间
+        public string JS_PrintTime { get; set; }
+
+        //机身打印模板
+        public string JS_Template { get; set; }
+
+        //机身重打次数
+        public int RePrintNum { get; set; }
+
+        //机身首次重打印时间
+        public string RePrintFirstTime { get; set; }
+
+        //机身末次重打印时间
+        public string RePrintEndTime { get; set; }
     }
 }

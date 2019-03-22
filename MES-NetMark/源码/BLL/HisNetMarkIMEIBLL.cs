@@ -10,9 +10,18 @@ namespace HisNetMarkIMEI.BLL
     class HisNetMarkIMEIBLL
     {
         HisNetMarkIMEIDAL HNMID = new HisNetMarkIMEIDAL();
+
+        public void refeshConBLL()
+        {
+            HNMID.refreshCon();
+        }
+
         public int InsertHisNetMarkDAL(string Zhidan, string IMEI, string Netmark)
         {
             return HNMID.InsertHisNetMarkDAL(Zhidan, IMEI, Netmark);
         }
+
+
+
     }
 }

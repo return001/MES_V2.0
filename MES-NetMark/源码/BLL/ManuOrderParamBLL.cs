@@ -18,6 +18,10 @@ namespace ManuOrderParam.BLL
             return MOPD.selectManuOrderParamByzhidanDAL(ZhidanNum);
         }
 
+        public void refeshConBLL()
+        {
+            MOPD.refreshCon();
+        }
 
 
     }

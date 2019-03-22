@@ -141,6 +141,12 @@
     <Compile Include="JS_Unlock.Designer.cs">
       <DependentUpon>JS_Unlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="UpdateSqlConn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UpdateSqlConn.Designer.cs">
+      <DependentUpon>UpdateSqlConn.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
@@ -174,6 +180,9 @@
     </Compile>
     <EmbeddedResource Include="JS_Unlock.resx">
       <DependentUpon>JS_Unlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateSqlConn.resx">
+      <DependentUpon>UpdateSqlConn.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

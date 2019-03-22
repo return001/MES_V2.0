@@ -17,5 +17,8 @@ namespace NetLogo_Message
         //IMEI终止位
         public string IMEIEnd { get; set; }
 
+        //IMEI终止位
+        public string JST_template { get; set; }
+
     }
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -73,6 +74,7 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.Index = new System.Windows.Forms.TabPage();
             this.Check = new System.Windows.Forms.TabPage();
+            this.ReTextCheck = new System.Windows.Forms.Button();
             this.CheckData = new System.Windows.Forms.Button();
             this.RadioBad = new System.Windows.Forms.RadioButton();
             this.RadioFine = new System.Windows.Forms.RadioButton();
@@ -86,7 +88,9 @@
             this.OqcUser = new System.Windows.Forms.TextBox();
             this.OqcLogout = new System.Windows.Forms.Button();
             this.OqcLogin = new System.Windows.Forms.Button();
-            this.ReTextCheck = new System.Windows.Forms.Button();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.复制ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.粘贴ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -99,6 +103,7 @@
             this.Check.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.groupBox3.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -535,6 +540,16 @@
             this.Check.Text = "查询与导出";
             this.Check.UseVisualStyleBackColor = true;
             // 
+            // ReTextCheck
+            // 
+            this.ReTextCheck.Location = new System.Drawing.Point(333, 16);
+            this.ReTextCheck.Name = "ReTextCheck";
+            this.ReTextCheck.Size = new System.Drawing.Size(91, 23);
+            this.ReTextCheck.TabIndex = 6;
+            this.ReTextCheck.Text = "重测查询";
+            this.ReTextCheck.UseVisualStyleBackColor = true;
+            this.ReTextCheck.Click += new System.EventHandler(this.ReTextCheck_Click);
+            // 
             // CheckData
             // 
             this.CheckData.Enabled = false;
@@ -702,15 +717,25 @@
             this.OqcLogin.UseVisualStyleBackColor = true;
             this.OqcLogin.Click += new System.EventHandler(this.OqcLogin_Click);
             // 
-            // ReTextCheck
+            // contextMenuStrip1
             // 
-            this.ReTextCheck.Location = new System.Drawing.Point(333, 16);
-            this.ReTextCheck.Name = "ReTextCheck";
-            this.ReTextCheck.Size = new System.Drawing.Size(91, 23);
-            this.ReTextCheck.TabIndex = 6;
-            this.ReTextCheck.Text = "重测查询";
-            this.ReTextCheck.UseVisualStyleBackColor = true;
-            this.ReTextCheck.Click += new System.EventHandler(this.ReTextCheck_Click);
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.复制ToolStripMenuItem,
+            this.粘贴ToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(101, 48);
+            // 
+            // 复制ToolStripMenuItem
+            // 
+            this.复制ToolStripMenuItem.Name = "复制ToolStripMenuItem";
+            this.复制ToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.复制ToolStripMenuItem.Text = "复制";
+            // 
+            // 粘贴ToolStripMenuItem
+            // 
+            this.粘贴ToolStripMenuItem.Name = "粘贴ToolStripMenuItem";
+            this.粘贴ToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.粘贴ToolStripMenuItem.Text = "粘贴";
             // 
             // Form1
             // 
@@ -722,7 +747,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "MES-OQC_1.0.0_201812141640";
+            this.Text = "MES-OQC_1.0.1_201812271620";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
@@ -744,6 +769,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -801,6 +827,9 @@
         private System.Windows.Forms.RadioButton RadioFine;
         private System.Windows.Forms.RadioButton RadioAll;
         private System.Windows.Forms.Button ReTextCheck;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem 复制ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 粘贴ToolStripMenuItem;
     }
 }
 

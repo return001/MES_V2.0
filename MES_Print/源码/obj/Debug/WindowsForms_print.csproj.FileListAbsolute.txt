@@ -70,4 +70,5 @@ D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_print.csproj.CopyComplete
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_print.exe
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_print.pdb
+D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_print.UpdateSqlConn.resources
 D:\MES打印尝试\WindowsForms_print\WindowsForms_print\obj\Debug\WindowsForms_print.csprojAssemblyReference.cache

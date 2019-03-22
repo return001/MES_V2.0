@@ -104,6 +104,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.GPS = new System.Windows.Forms.CheckBox();
             this.UpdataSimByImei = new System.Windows.Forms.CheckBox();
             this.UpdateIMEIBySim = new System.Windows.Forms.CheckBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -146,6 +147,9 @@
             this.label27 = new System.Windows.Forms.Label();
             this.RemindInputName = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.RFIDStart = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -484,13 +488,17 @@
             // 
             this.splitContainer3.Panel2.AllowDrop = true;
             this.splitContainer3.Panel2.BackColor = System.Drawing.Color.Linen;
+            this.splitContainer3.Panel2.Controls.Add(this.RFIDStart);
+            this.splitContainer3.Panel2.Controls.Add(this.GPS);
             this.splitContainer3.Panel2.Controls.Add(this.UpdataSimByImei);
             this.splitContainer3.Panel2.Controls.Add(this.UpdateIMEIBySim);
+            this.splitContainer3.Panel2.Controls.Add(this.label39);
             this.splitContainer3.Panel2.Controls.Add(this.label23);
             this.splitContainer3.Panel2.Controls.Add(this.GLB_SN);
             this.splitContainer3.Panel2.Controls.Add(this.Tempalte2Num);
             this.splitContainer3.Panel2.Controls.Add(this.reminder);
             this.splitContainer3.Panel2.Controls.Add(this.Tempalte1Num);
+            this.splitContainer3.Panel2.Controls.Add(this.label28);
             this.splitContainer3.Panel2.Controls.Add(this.label38);
             this.splitContainer3.Panel2.Controls.Add(this.ShowSN);
             this.splitContainer3.Panel2.Controls.Add(this.label37);
@@ -1055,6 +1063,18 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "软件型号：";
             // 
+            // GPS
+            // 
+            this.GPS.AutoSize = true;
+            this.GPS.Checked = true;
+            this.GPS.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.GPS.Location = new System.Drawing.Point(392, 73);
+            this.GPS.Name = "GPS";
+            this.GPS.Size = new System.Drawing.Size(66, 16);
+            this.GPS.TabIndex = 139;
+            this.GPS.Text = "查功能2";
+            this.GPS.UseVisualStyleBackColor = true;
+            // 
             // UpdataSimByImei
             // 
             this.UpdataSimByImei.AutoSize = true;
@@ -1099,7 +1119,7 @@
             // 
             // Tempalte2Num
             // 
-            this.Tempalte2Num.Location = new System.Drawing.Point(452, 189);
+            this.Tempalte2Num.Location = new System.Drawing.Point(547, 189);
             this.Tempalte2Num.Margin = new System.Windows.Forms.Padding(2);
             this.Tempalte2Num.Name = "Tempalte2Num";
             this.Tempalte2Num.Size = new System.Drawing.Size(75, 21);
@@ -1124,7 +1144,7 @@
             // 
             // Tempalte1Num
             // 
-            this.Tempalte1Num.Location = new System.Drawing.Point(374, 189);
+            this.Tempalte1Num.Location = new System.Drawing.Point(547, 140);
             this.Tempalte1Num.Margin = new System.Windows.Forms.Padding(2);
             this.Tempalte1Num.Name = "Tempalte1Num";
             this.Tempalte1Num.Size = new System.Drawing.Size(75, 21);
@@ -1135,12 +1155,12 @@
             // label38
             // 
             this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(388, 172);
+            this.label38.Location = new System.Drawing.Point(545, 123);
             this.label38.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(113, 12);
+            this.label38.Size = new System.Drawing.Size(95, 12);
             this.label38.TabIndex = 130;
-            this.label38.Text = "模板1、2打印份数：";
+            this.label38.Text = "模板1打印份数：";
             // 
             // ShowSN
             // 
@@ -1177,7 +1197,7 @@
             this.ParamDownload.AutoSize = true;
             this.ParamDownload.Checked = true;
             this.ParamDownload.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ParamDownload.Location = new System.Drawing.Point(309, 76);
+            this.ParamDownload.Location = new System.Drawing.Point(309, 73);
             this.ParamDownload.Margin = new System.Windows.Forms.Padding(2);
             this.ParamDownload.Name = "ParamDownload";
             this.ParamDownload.Size = new System.Drawing.Size(60, 16);
@@ -1190,7 +1210,7 @@
             this.WriteImei.AutoSize = true;
             this.WriteImei.Checked = true;
             this.WriteImei.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WriteImei.Location = new System.Drawing.Point(218, 76);
+            this.WriteImei.Location = new System.Drawing.Point(218, 73);
             this.WriteImei.Margin = new System.Windows.Forms.Padding(2);
             this.WriteImei.Name = "WriteImei";
             this.WriteImei.Size = new System.Drawing.Size(60, 16);
@@ -1203,7 +1223,7 @@
             this.Couple.AutoSize = true;
             this.Couple.Checked = true;
             this.Couple.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Couple.Location = new System.Drawing.Point(128, 76);
+            this.Couple.Location = new System.Drawing.Point(128, 73);
             this.Couple.Margin = new System.Windows.Forms.Padding(2);
             this.Couple.Name = "Couple";
             this.Couple.Size = new System.Drawing.Size(60, 16);
@@ -1216,7 +1236,7 @@
             this.AutoTest.AutoSize = true;
             this.AutoTest.Checked = true;
             this.AutoTest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AutoTest.Location = new System.Drawing.Point(33, 76);
+            this.AutoTest.Location = new System.Drawing.Point(33, 73);
             this.AutoTest.Margin = new System.Windows.Forms.Padding(2);
             this.AutoTest.Name = "AutoTest";
             this.AutoTest.Size = new System.Drawing.Size(60, 16);
@@ -1507,6 +1527,34 @@
             this.splitContainer2.Size = new System.Drawing.Size(150, 100);
             this.splitContainer2.TabIndex = 0;
             // 
+            // RFIDStart
+            // 
+            this.RFIDStart.Location = new System.Drawing.Point(374, 188);
+            this.RFIDStart.Name = "RFIDStart";
+            this.RFIDStart.ReadOnly = true;
+            this.RFIDStart.Size = new System.Drawing.Size(153, 21);
+            this.RFIDStart.TabIndex = 140;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(545, 172);
+            this.label28.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(95, 12);
+            this.label28.TabIndex = 130;
+            this.label28.Text = "模板2打印份数：";
+            // 
+            // label39
+            // 
+            this.label39.AutoSize = true;
+            this.label39.Location = new System.Drawing.Point(386, 172);
+            this.label39.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label39.Name = "label39";
+            this.label39.Size = new System.Drawing.Size(41, 12);
+            this.label39.TabIndex = 136;
+            this.label39.Text = "RFID：";
+            // 
             // Color_Box
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1656,5 +1704,9 @@
         private System.Windows.Forms.TextBox GLB_SN;
         private System.Windows.Forms.CheckBox UpdateIMEIBySim;
         private System.Windows.Forms.CheckBox UpdataSimByImei;
+        private System.Windows.Forms.CheckBox GPS;
+        private System.Windows.Forms.TextBox RFIDStart;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.Label label28;
     }
 }

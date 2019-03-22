@@ -12,10 +12,14 @@ namespace ManuPrintRecord.Param.BLL
     {
         PrintRecordParamDAL MPRPD = new PrintRecordParamDAL();
 
-
-        public bool InsertPrintRecordParamBLL(string Zhidan, int SimMark, int VipMark, int BatMark, int IccidMark, int MacMark, int EquipmentMark, int NoCheckMark, int NoPaperMark, int UpdataSimMark, int UpdateIMEIMark, int AutoTestMark, int CoupleMark, int WriteImeiMark, int ParamDownloadMark, int TemPlate1Num, int TemPlate2Num)
+        public void refeshConBLL()
         {
-            if (MPRPD.InsertPrintRecordParamDAL(Zhidan, SimMark,VipMark, BatMark, IccidMark, MacMark, EquipmentMark, NoCheckMark,  NoPaperMark,  UpdataSimMark,  UpdateIMEIMark,  AutoTestMark,  CoupleMark,  WriteImeiMark,  ParamDownloadMark,  TemPlate1Num,  TemPlate2Num) > 0)
+            MPRPD.refreshCon();
+        }
+
+        public bool InsertPrintRecordParamBLL(string Zhidan, int SimMark, int VipMark, int BatMark, int IccidMark, int MacMark, int EquipmentMark, int NoCheckMark, int NoPaperMark, int UpdataSimMark, int UpdateIMEIMark, int AutoTestMark, int CoupleMark, int WriteImeiMark, int ParamDownloadMark, int TemPlate1Num, int TemPlate2Num, int GpsMark)
+        {
+            if (MPRPD.InsertPrintRecordParamDAL(Zhidan, SimMark,VipMark, BatMark, IccidMark, MacMark, EquipmentMark, NoCheckMark,  NoPaperMark,  UpdataSimMark,  UpdateIMEIMark,  AutoTestMark,  CoupleMark,  WriteImeiMark,  ParamDownloadMark,  TemPlate1Num,  TemPlate2Num, GpsMark) > 0)
             {
                 return true;
             }

@@ -12,14 +12,24 @@ namespace DataRelative.Param.BLL
     {
         DataRelativeSheetDAL DRSD = new DataRelativeSheetDAL();
 
+        public void refeshConBLL()
+        {
+            DRSD.refreshCon();
+        }
+
         public List<DataRelativeSheet> SelectByIMEIBLL(string IMEI1)
         {
             return DRSD.SelectByImeiDAL(IMEI1);
         }
 
-        public string SelectIccidBySimBLL(string SIM)
+        public string SelectIccidBySimBLL(string SIM,string G_zhidan)
         {
-            return DRSD.SelectIccidBySimDAL(SIM);
+            return DRSD.SelectIccidBySimDAL(SIM, G_zhidan);
+        }
+
+        public string SelectZhidanBySimBLL(string SIM)
+        {
+            return DRSD.SelectzhidanBySimDAL(SIM);
         }
 
         public string SelectSNByImeiBLL(string IMEI)
@@ -160,6 +170,18 @@ namespace DataRelative.Param.BLL
         public string SelectIMEIBySnOrIMEI2BLL(string IMEI2Value)
         {
             return DRSD.SelectIMEIBySnOrIMEI2DAL(IMEI2Value);
+        }
+
+        public bool InsertRSFromExcelBLL(string ExcelSql)
+        {
+            if (DRSD.InsertRSFromExcelDAL(ExcelSql) > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
     }

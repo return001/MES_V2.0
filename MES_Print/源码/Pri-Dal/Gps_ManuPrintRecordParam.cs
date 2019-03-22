@@ -62,5 +62,8 @@ namespace Print_Message
         //17模板2贴纸份数标志位
         public int TemPlate2Num { get; set; }
 
+        //18功能2检测标志位
+        public int GPSMark { get; set; }
+
     }
 }

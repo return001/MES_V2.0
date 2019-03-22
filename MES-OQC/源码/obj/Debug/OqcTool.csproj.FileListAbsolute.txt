@@ -20,10 +20,10 @@ D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.exe
 D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.pdb
 D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.UpdateSqlConn.resources
 D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.Unlock.resources
-D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.csprojAssemblyReference.cache
 D:\项目集\OQC工位工具\OQCTool\OqcTool\bin\Debug\NPOI.dll
 D:\项目集\OQC工位工具\OQCTool\OqcTool\bin\Debug\NPOI.OOXML.dll
 D:\项目集\OQC工位工具\OQCTool\OqcTool\bin\Debug\NPOI.OpenXml4Net.dll
 D:\项目集\OQC工位工具\OQCTool\OqcTool\bin\Debug\NPOI.OpenXmlFormats.dll
 D:\项目集\OQC工位工具\OQCTool\OqcTool\bin\Debug\NPOI.xml
 D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.csproj.CopyComplete
+D:\项目集\OQC工位工具\OQCTool\OqcTool\obj\Debug\OqcTool.csprojAssemblyReference.cache

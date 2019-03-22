@@ -34,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Seagull.BarTender.Print, Version=10.1.4.1, Culture=neutral, PublicKeyToken=109ff779a1b4cbc7, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Seagull\BarTender Suite\SDK\Assemblies\Seagull.BarTender.Print.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -48,11 +52,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BLL\DataRelativeSheetBLL.cs" />
     <Compile Include="BLL\HisNetMarkIMEIBLL.cs" />
     <Compile Include="BLL\ManuOrderParamBLL.cs" />
+    <Compile Include="BLL\NetMarkConfigBLL.cs" />
     <Compile Include="BLL\NetMarkIMEIBLL.cs" />
     <Compile Include="BLL\PUsersBLL.cs" />
+    <Compile Include="DAL\DataRelativeSheetDAL.cs" />
     <Compile Include="DAL\HisNetMarkIMEIDAL.cs" />
+    <Compile Include="DAL\NetMarkConfig.cs" />
+    <Compile Include="DAL\NetMarkConfigDAL.cs" />
     <Compile Include="DAL\NetMarkIMEI.cs" />
     <Compile Include="DAL\ManuOrderParam.cs" />
     <Compile Include="DAL\ManuOrderParamDAL.cs" />
@@ -72,6 +81,18 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Unlock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Unlock.Designer.cs">
+      <DependentUpon>Unlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UpdateSqlConn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UpdateSqlConn.Designer.cs">
+      <DependentUpon>UpdateSqlConn.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -88,6 +109,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Unlock.resx">
+      <DependentUpon>Unlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateSqlConn.resx">
+      <DependentUpon>UpdateSqlConn.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

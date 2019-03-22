@@ -117,4 +117,108 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="NetMark.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="IMEI.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="RFID.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="zhidan.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="PrintTime.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="JS_TemPlate.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="RePrintNum.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="RePrintFirstTime.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="RePrintEndTime.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAABILAAASCwAAAAAAAAAA
+        AAD/////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        /////////v7+///////+/v7///////////////////////7+/v/+/v7///////7+/v/+/v7///////7+
+        /v////////////7+/v////////////////////////////7+/v///////v7+//7+/v//////////////
+        ///////////////+/v/8/Pz//f39/////////////////////////////f39//79/f/+/v7///////7+
+        /v/9/f3//v7+//////////////////v8/P/8/Pz////////////+/v7//Pz8//7+/v////////////7+
+        /v///////////////////////v7+///////o6en/4+Pj//n5+f////////////39/f//////7Ozs/9nZ
+        2f/p6en//v7+//7+/v/n5ub/6Ojo//z8/P/+//7//f39/+np6f/q6ur//fz8/////////v7/6Ojo/+Pk
+        4//7+/v///////////////////////7+/v/8/f3/t7u6/3p+ff+lo6T/7ezs///////8/Pz//////8nK
+        yv9xc3L/aWpq/769vf/29PT/rbCw/4aIiP+6urr/9fT0//////+5urr/iouL/7S0tP/y8vL/+/r7/62w
+        sf9/gYL/ra2t//Dw8P///////f39///////9/f3//////83Pz/8JAQD/AgAA/21ycv/u7Oz//v7+////
+        ///W2tn/FxUU/wMAAP8MCgr/trS0/66wsv8AAAD/EQwM/5udnf/9/f3/1tXV/wUDA/8NDAz/fHx8/+Xl
+        5f/BwcH/AwAA/wQAAP+DhIT/7e3t///////39/f///////39/f//////wMnJ/zUKDf8oAAH/aHFv/+7s
+        7P/8/f3//////0lRT/9KAAD/ZAUN/w0JCv+0trX/qKmn/xQAEP8bDBX/lpiX//////9xeXj/PAAA/yQA
+        Av9LUVH/zsvM/6u0s/86CQz/IQAB/3qCgf/x7+////////f39//+/v7//f39//////+/ysv/Shwe/zQA
+        Av9qcW7/6Onp//////+apaP/JwAF/2czMv9BESn/EwcR/7G2tf+trqT/GgpE/xEKJP+fn5n/5efo/zMn
+        Kf9jIib/LgID/yQmJv+vra3/maWj/1AdH/8nAAH/eoKC//Hv7////////f39//7+/v/9/f3//////7/K
+        yv9HGRz/MgAB/2hvbf/x8PD/6ezr/ygeH/9LCA7/GiMZ/zUcWf8OCBr/tba1/6utov8KDVD/Bggr/62r
+        o/+SmZr/MQEG/zEoK/9BKiv/IAQG/3+Cgv+Gk5H/Thwe/yQAAP95goH/8e/w///////+/v7//v7+//39
+        /f//////v8rK/0gaHP80AAL/Zm1r//n3+P9iamr/KgAA/y4YGv9MUkf/JxVm/wwIIf+0t7H/raei/woj
+        UP8HFSv/pKGb/0hFS/8YAAD/TU5N/2hkZP8vBQn/S0pK/3iDgf9PHB7/JQAB/3mCgf/x7+////////7+
+        /v/+/v7//f39//////+/ysr/SBoc/zEAAP91e3n/o62r/yUGCP8nAAD/eoOC/5KSiv8QBVz/Dgok/7S4
+        sf+tpaD/CTVO/xQoOf9wcGT/IA4l/xMAD/+wtLD/rbGx/zgXGf8tHh//Xmtq/1AdH/8mAAH/eYKB//Hv
+        7////////v7+//7+/v/9/f3//////7/Kyv9HGRv/NgAE/2Jrav81NDT/NAAA/y8mJv/+/Pv/iIqB/w0F
+        X/8PCyX/tbex/62mof8FMUv/GCk9/zcxLf8EACb/ODY7/+7u7f/v8/L/VElI/y4MD/8uPDn/VCAi/yQA
+        AP95goH/8e/v///////+/v7//v7+//39/f//////v8rL/0YXGf9DCA3/EiUl/zQDB/8ZAAD/pq2r////
+        //+EhXv/GgZQ/xALIv+3trT/raqf/wsZU/8LEiz/FQwZ/wEAGP+FiIP///////////+RlJP/NBMX/w8U
+        E/9CERP/IQAA/3qDgv/x7+////////39/f/+/v7//f39//////+/ysv/Rxca/zYFCP8UBwj/LwAA/1th
+        YP/8/////////4SHgv8vBjf/Ewwd/7G1t/+rraD/EQpT/wgGJP8KABX/JSAq/9ra2P///////////9/i
+        4P9NPT7/Fw4P/ygAAf8fAAD/eoGB//Dv7///////9/f3//7+/v/9/f3//////8DKx/9GGRv/QgcM/ykA
+        AP8lHR3/3uDg//7+////////hYiI/z8FGP8gDxX/vMLE/6uupv8fDjr/Ewkh/wMAAP9xcXL///////39
+        /f/8+/v//////4aCg/87LTD/JwUG/xsAAP+Jj47/9PPz///////4+Pj//v7+//39/f//////vsLB/2BP
+        T/++Vlr/FQAA/52mpv//////+Pj4//////+Hi4v/ZDI1/y4bHf/n7Ov/pqqp/2FMV/9kOEP/DwkK/9bX
+        2P///////f7+//39/f//////xsrJ/1dUVv+MVFn/FQAA/7K4uP///////f39//7+/v/+/v7//v7+////
+        ///b2dr/ZWNj/1hUVf9ucnL///////39/f/7+/v//////62urP9KRUb/VlRT///////Hysr/YFxf/1tM
+        TP+GhIP///////37/P////////////39/f//////iIaH/2RXVv9DOjr/4+Pk///////9/f3/////////
+        /////////v7+///////x8fH/6enq//39/f/+/v7//////////////////v7+/+zt7f/4+fn/////////
+        ///t7u7/6ezs//7+/v/9/f3////////////////////////////4+fn/5ujo//f4+P//////////////
+        /////////////////////////f39//7+/v///////f39//7+/v/////////////////9/f3///////7+
+        /v/+/v7//v7+/////////////fz8//39/f/+/v7///////////////////////7+/v///////f39//7+
+        /v///////////////////////////////////////v7+//7+/v/+/v7/////////////////////////
+        ///+/v7//v7+/////////////v7+//7+/v////////////////////////////////////////////7+
+        /v/+/v7/////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+</value>
+  </data>
 </root>
