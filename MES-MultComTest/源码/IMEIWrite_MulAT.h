@@ -30,6 +30,7 @@ using namespace std;
 // IMEIWrite_MulAT 对话框
 #define THREAD_NUM 16
 #define PORTS_NUM 48
+#define AntiDupData 10
 
 #define WM_SEFOCS  WM_USER+111
 
@@ -716,6 +717,7 @@ public:
 		BOOL DongleScan(int HandleNum,int RssiStr,CString SoftModel);//蓝牙自动扫描连接
 		BOOL DongleConnect(int HandleNum);//连接蓝牙
 		BOOL DongleDisConnect(int HandleNum);//断开蓝牙
+		BOOL DongleScanGun(int HandleNum);//蓝牙扫描枪功能函数
 
 		CString DongleValueAnalyze(CString CommandName,CString CommandValue);//对蓝牙返回值进行解析
 		int DongleCommandNameToInt(CString CommandName);//对特殊转换进行一个包装处理(字符串转int，用于switch)
@@ -749,8 +751,8 @@ public:
 		void StartShowSocketPic(int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CString RecString);
 		BOOL Show_SocketPic_Data(CString RecString, CEdit* m_Result, CEdit* Final_Result_Control, CThumbnailBoxDlg* picdlg, int HandleNum, CString StartSign, CString EndSign, CString ChipRfIDbg, BOOL DayTimeStatep);		//获取图像端口数据
 		BOOL Get_SocketWifi_Data(CEdit* m_Result, CEdit* Final_Result_Control, int HandleNum, CString StartSign, CString EndSign, BOOL InThread = FALSE);	//通过Socket获取按钮WIFI数据
-		BOOL ImageAutoJudgeDarkCorner(CString ImageSrc,int RGB,float Range);//图像暗角判断，参数1图像路径，参数2像素阈值（越小就对越对黑色的判定越宽松），参数3为范围，获取的值小于这个范围返回真，否则返回假
-		BOOL ImageAutoJudgeDefinition(CString ImageSrc, float Range);//图像清晰度判断，参数1图像路径，参数2范围，大于这个范围返回真，小于则返回假
+		BOOL ImageAutoJudgeDarkCorner(int HandleNum,CString ImageSrc,int RGB,float Range);//图像暗角判断，参数1图像路径，参数2像素阈值（越小就对越对黑色的判定越宽松），参数3为范围，获取的值小于这个范围返回真，否则返回假
+		BOOL ImageAutoJudgeDefinition(int HandleNum,CString ImageSrc, float Range);//图像清晰度判断，参数1图像路径，参数2范围，大于这个范围返回真，小于则返回假
 
 		void CreateDirectoryRecursionFun(CString Src, int StartCount=0);//递归创建目录
 		CString GetDatetime();//获取当天日期
@@ -775,6 +777,30 @@ public:
 		void PowerControlInitSetting();//初始化程控电源的一些参数（包括仪器地址等）
 		BOOL CurrentMainControlFun(int HandleNum);//电流测试核心函数
 		void SetVoltageAndRangeVaule(CString ConfigItem,double &m_Voltage,double &m_Range);//设置电压和量程值，如果订单配置里存在电压和量程就获取配置中的值，如果不存在则获取ini中的值
+		BOOL CurrentTestFun();//电流测试流程复用整合
+		BOOL VoltageTestFun();//电压测试流程复用整合
 
 		afx_msg void OnBnClickedPowercontrolsettingButton();
+
+		/*新增字段防重复功能*/
+
+		CString AntiDupDataArray[16][AntiDupData];//表示[串口号][字段]
+		CString AntiDupDataVauleArray[16][AntiDupData];//表示[串口号][值] ,也就是字段对应的值
+
+		BOOL AntiDupDataSNUploadFlag[16];//表示是否上传SN号，为TRUE时上传SN到Gps_Data_AntiDup表
+		BOOL AntiDupDataNoUploadFlag[16];//表示是否上传字段，为TRUE时上传SN到Gps_Data_AntiDup表
+	    int AntiDupDataNoUploadCount[16][1];//表示要上传的字段数量，值越大表示要上传的字段越多
+
+		void AntiDupDataInit(int HandleNum);//字段防重复功能变量初始化
+
+		//上传和检查要分开
+		BOOL Data_AntiDupSNCheck(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
+		BOOL Data_AntiDupSNUpload(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
+
+
+		BOOL Data_AntiDupDataNo(CAdoInterface& myado, int HandleNum, CString DataNoStr);
+
+		//上传和检查要分开
+		BOOL Data_AntiDupDataNoCheck(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
+		BOOL Data_AntiDupDataNoUpload(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
 };

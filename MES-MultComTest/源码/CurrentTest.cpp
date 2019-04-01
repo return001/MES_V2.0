@@ -61,9 +61,24 @@ bool CurrentTest::RelayChange(int proNum, static char InstrName[], static char R
 	do
 	{
 		CmdSet(RelayInstrName, RelayNum2, on, relay2_Pt, serial2_Pt);//测试电源继电器闭合
+
+		if (relay2 == true)
+		{
+			count = 0;
+			break;
+		}
+		count++;
+		if (count == 3)
+		{
+			return false;
+		}
+	} while (1);
+
+	do
+	{
 		CmdSet(RelayInstrName, RelayNum1, on, relay1_Pt, serial1_Pt);//备用电源继电器断开
 
-		if (relay2 == true && relay2 == true)
+		if (relay1 == true)
 		{
 			count = 0;
 			break;
@@ -80,9 +95,23 @@ bool CurrentTest::RelayChange(int proNum, static char InstrName[], static char R
 
 	do
 	{
-		CmdSet(RelayInstrName, RelayNum2, off, relay2_Pt, serial2_Pt);//刘维球： 测试电源继电器断开
 		CmdSet(RelayInstrName, RelayNum1, off, relay1_Pt, serial1_Pt);//刘维球： 备用电源继电器闭合
-		if (relay2 == true && relay2 == true)
+		if (relay1 == true)
+		{
+			count = 0;
+			break;
+		}
+		count++;
+		if (count == 3)
+		{
+			return false;
+		}
+	} while (1);
+
+	do
+	{
+		CmdSet(RelayInstrName, RelayNum2, off, relay2_Pt, serial2_Pt);//刘维球： 测试电源继电器断开
+		if (relay2 == true)
 		{
 			count = 0;
 			break;
@@ -126,9 +155,8 @@ double CurrentTest::currentTest(int proNum, static char InstrName[], static char
 	do
 	{
 		CmdSet(RelayInstrName, RelayNum2, on, relay2_Pt, serial2_Pt);//测试电源继电器闭合
-		CmdSet(RelayInstrName, RelayNum1, on, relay1_Pt, serial1_Pt);//备用电源继电器断开
 
-		if (relay2 == true && relay2 == true)
+		if (relay2 == true)
 		{
 			count = 0;
 			break;
@@ -136,7 +164,23 @@ double CurrentTest::currentTest(int proNum, static char InstrName[], static char
 		count++;
 		if (count == 3)
 		{
-			return -1;
+			return false;
+		}
+	} while (1);
+
+	do
+	{
+		CmdSet(RelayInstrName, RelayNum1, on, relay1_Pt, serial1_Pt);//备用电源继电器断开
+
+		if (relay1 == true)
+		{
+			count = 0;
+			break;
+		}
+		count++;
+		if (count == 3)
+		{
+			return false;
 		}
 	} while (1);
 
@@ -152,9 +196,8 @@ double CurrentTest::currentTest(int proNum, static char InstrName[], static char
 
 	do
 	{
-		CmdSet(RelayInstrName, RelayNum2, off, relay2_Pt, serial2_Pt);//刘维球： 测试电源继电器断开
 		CmdSet(RelayInstrName, RelayNum1, off, relay1_Pt, serial1_Pt);//刘维球： 备用电源继电器闭合
-		if (relay2 == true && relay2 == true)
+		if (relay1 == true)
 		{
 			count = 0;
 			break;
@@ -162,9 +205,24 @@ double CurrentTest::currentTest(int proNum, static char InstrName[], static char
 		count++;
 		if (count == 3)
 		{
-			return -1;
+			return false;
 		}
-	} while (0);
+	} while (1);
+
+	do
+	{
+		CmdSet(RelayInstrName, RelayNum2, off, relay2_Pt, serial2_Pt);//刘维球： 测试电源继电器断开
+		if (relay2 == true)
+		{
+			count = 0;
+			break;
+		}
+		count++;
+		if (count == 3)
+		{
+			return false;
+		}
+	} while (1);
 
 	FreeLibrary(bEzdDLL);
 

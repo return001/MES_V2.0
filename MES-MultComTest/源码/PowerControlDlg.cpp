@@ -539,11 +539,14 @@ void CPowerControlDlg::InitPowerReadIniSettingFun()
 		ValueInt = GetPrivateProfileInt(SettringTitle2, _T("BackuppowerFlag"), 0, IniFileName);
 		m_BackuppowerCheckVaule = ValueInt;
 
-		ValueInt = GetPrivateProfileInt(SettringTitle2, _T("Voltage"), 4.0, IniFileName);
-		m_VoltageVaule = ValueInt;
+		//GetPrivateProfileString不能读浮点数
+		GetPrivateProfileString(SettringTitle2, _T("Voltage"), _T(""), ValueStr.GetBuffer(50), 50, IniFileName);
+		m_VoltageVaule = atof(ValueStr);
+		ValueStr.ReleaseBuffer();
 
-		ValueInt = GetPrivateProfileInt(SettringTitle2, _T("Range"), 0.001, IniFileName);
-		m_RangeVaule = ValueInt;
+		GetPrivateProfileString(SettringTitle2, _T("Range"), _T(""), ValueStr.GetBuffer(50), 50, IniFileName);
+		m_RangeVaule = atof(ValueStr);
+		ValueStr.ReleaseBuffer();
 
 		GetPrivateProfileString(SettringTitle2, _T("RelayAddress"), _T(""), ValueStr.GetBuffer(50), 50, IniFileName);
 		m_RelayListVaule=ValueStr;
