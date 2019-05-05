@@ -34,6 +34,7 @@ extern CString UserNameDB;
 //三合一新增功能
 extern int g_ADCTFlag;//因为要实现三合一的缘故，所以这里做一个标志位来实现自动登陆和自动获取数据
 extern int g_IsHideFlag;//是否隐藏窗口
+extern int g_ToolFlag;//是否隐藏窗口
 
 extern CString g_BackDoorIP;//这里是一个后门
 extern CString g_BackDoorDatabase;

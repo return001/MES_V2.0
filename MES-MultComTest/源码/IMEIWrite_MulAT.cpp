@@ -38,6 +38,7 @@ extern "C" int _imp___vsnprintf(
 
 //三合一全局变量
 map<CString, int>IMEIWrite_MulAT::PortStatusMap;
+map<CString, int>IMEIWrite_MulAT::DongleRssiMap;
 
 unsigned char key[] = { 0x20, 0x57, 0x2f, 0x52, 0x36, 0x4b, 0x3f, 0x47, 0x30, 0x50, 0x41, 0x58, 0x11, 0x63, 0x2d, 0x2b };
 
@@ -86,6 +87,8 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 , BLEGetSettingFlag(-1)
 , BLEGetSettingEndFlag(0)
 , GetDongleCheckValue(FALSE)
+, CheckAutoTestChoose(FALSE)
+, GetDongleScanCheckValue(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	GdiplusStartup(&m_GdiplusToken, &m_GdiplusStartupInput, NULL);
@@ -97,6 +100,7 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		GetPicChoose = FALSE;
 		BGConfirmChoose = FALSE;
 		PicStaticChoose = FALSE;
+		CheckAutoTestChoose == FALSE;
 	}
 
 	//为Socket类指针生成实例和对初始化相关的变量
@@ -191,6 +195,12 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		DongleCheckRssiFlag[i] = FALSE;
 		DongleInfo[i][0] = "";
 		DongleInfo[i][1] = "";
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		DongleTestRssiInfoArray[i] = "";
+		DongleStatusArray[i] = FALSE;
 	}
 }
 
@@ -338,6 +348,7 @@ void IMEIWrite_MulAT::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO55, VIControlBaud);
 	DDX_Control(pDX, IDC_COMBO56, WorkStationControl);
 	DDX_Check(pDX, IDC_CHECK39, CheckSMTChoose);
+	DDX_Check(pDX, IDC_CHECK45, CheckAutoTestChoose);
 	DDX_Check(pDX, IDC_CHECK40, RTestChoose);
 	DDX_Check(pDX, IDC_CHECK41, GetPicChoose);
 	DDX_Check(pDX, IDC_CHECK42, BGConfirmChoose);
@@ -346,6 +357,7 @@ void IMEIWrite_MulAT::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK44, PicStaticChoose);
 	DDX_Check(pDX, IDC_BLUETOOTH_CHECK, GetBluetoothCheckValue);
 	DDX_Check(pDX, IDC_DongleBle_CHECK, GetDongleCheckValue);
+	DDX_Check(pDX, IDC_DongleBleScan_CHECK, GetDongleScanCheckValue);
 	DDX_Control(pDX, IDC_BUTTON2, Stop1_Control);
 	DDX_Control(pDX, IDC_BUTTON15, Stop2_Control);
 	DDX_Control(pDX, IDC_BUTTON17, Stop3_Control);
@@ -456,6 +468,7 @@ BEGIN_MESSAGE_MAP(IMEIWrite_MulAT, CResizableDialog)
 	ON_BN_CLICKED(IDC_BUTTONCONNCPU2, &IMEIWrite_MulAT::OnBnClickedButtonconncpu2)
 	ON_BN_CLICKED(IDC_BUTTONDISCONNCPU2, &IMEIWrite_MulAT::OnBnClickedButtondisconncpu2)
 	ON_BN_CLICKED(IDC_CHECK39, &IMEIWrite_MulAT::OnBnClickedCheck39)
+	ON_BN_CLICKED(IDC_CHECK45, &IMEIWrite_MulAT::OnBnClickedCheck45)
 	ON_BN_CLICKED(IDC_CHECK40, &IMEIWrite_MulAT::OnBnClickedCheck40)
 	ON_CBN_SELCHANGE(IDC_COMBO53, &IMEIWrite_MulAT::OnCbnSelchangeCombo53)
 	ON_BN_CLICKED(IDC_CHECK41, &IMEIWrite_MulAT::OnBnClickedCheck41)
@@ -471,7 +484,8 @@ BEGIN_MESSAGE_MAP(IMEIWrite_MulAT, CResizableDialog)
 	ON_BN_CLICKED(IDC_RESETBLE_BUTTON, &IMEIWrite_MulAT::OnBnClickedResetbleButton)
 	ON_BN_CLICKED(IDC_DongleBle_CHECK, &IMEIWrite_MulAT::OnBnClickedDonglebleCheck)
 	ON_BN_CLICKED(IDC_POWERCONTROLSETTING_BUTTON, &IMEIWrite_MulAT::OnBnClickedPowercontrolsettingButton)
-	END_MESSAGE_MAP()
+	ON_BN_CLICKED(IDC_DongleBleScan_CHECK, &IMEIWrite_MulAT::OnBnClickedDongleblescanCheck)
+END_MESSAGE_MAP()
 
 
 // IMEIWrite_MulAT 消息处理程序
@@ -517,6 +531,7 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	InitCOM(&m_Port16, &m_Baud16, 15);
 
 	InitCOM(&CPUControlPort, &CPUControlBaud, 16);
+	CPUControlBaud.SetWindowText("9600");
 	InitCOM(&VIControlPort, &VIControlBaud, 17);
 
 	InitCOM(&ScanGunPort1, &ScanGunBaud1, 18);//初始化扫描枪串口
@@ -540,6 +555,13 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 
 	fontsp = new CFont;
 	fontsp->CreateFontA(30, 0, 0, 0, 600, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE,
+		"arial");
+
+	font_fail = new CFont;
+	font_fail->CreateFont(33, 0, 0, 0, 600, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
 		CLIP_DEFAULT_PRECIS,
 		DEFAULT_QUALITY,
 		DEFAULT_PITCH | FF_DONTCARE,
@@ -628,8 +650,10 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	AddAnchor(IDC_CHECK41, TOP_CENTER);
 	AddAnchor(IDC_CHECK42, TOP_CENTER);
 	AddAnchor(IDC_CHECK44, TOP_CENTER);
+	AddAnchor(IDC_CHECK45, TOP_CENTER);
 	AddAnchor(IDC_BLUETOOTH_CHECK, TOP_CENTER);
 	AddAnchor(IDC_DongleBle_CHECK, TOP_CENTER);
+	AddAnchor(IDC_DongleBleScan_CHECK, TOP_CENTER);
 	AddAnchor(IDC_CHECK43, TOP_LEFT4);//AddAnchor(IDC_CHECK43, TOP_CENTER);
 
 	AddAnchor(IDC_STATICSUCCOUNT, TOP_CENTER);
@@ -966,6 +990,30 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 
 	//电流测试新增功能 
 	PowerControlInitSetting();//对一些参数进行初始化
+
+	SetDlgItemText(IDC_COMBOTESTYYPE, "DAM继电器");
+
+	//Dongle蓝牙新增功能
+	DongleInitSetting();
+
+	//1是SMT，2是组装，3是老化后
+	if (g_ToolFlag == 1)
+	{
+		CheckSMTChoose = FALSE;
+		CheckAutoTestChoose = FALSE;
+		SetDlgItemText(IDC_COMBO56, "SMT测试");
+	}
+	else if (g_ToolFlag == 2)
+	{
+		CheckSMTChoose = TRUE;
+		SetDlgItemText(IDC_COMBO56, "组装测试");
+	}
+	else if (g_ToolFlag == 3)
+	{
+		CheckSMTChoose = TRUE;
+		CheckAutoTestChoose = TRUE;
+		SetDlgItemText(IDC_COMBO56, "老化后测试");
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -1767,7 +1815,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 	SetCommTimeouts(hPort[HandleNum], &timeouts);
 
 	//如果是蓝牙串口获取配置的时候，到这步就直接返回
-	if (BLEGetSettingFlag == 0 || BLEGetSettingFlag == 1)
+	if (BLEGetSettingFlag == 0 || BLEGetSettingFlag == 1 ||(GetDongleScanCheckValue==TRUE&&HandleNum>7))
 	{
 		return TRUE;
 	}
@@ -2179,6 +2227,36 @@ BOOL IMEIWrite_MulAT::OPen_Serial_PortReadConstant(CComboBox* m_Port, CComboBox*
 	int i;
 
 
+	//如果是DAM继电器的时候
+	CString TestType, WorkStation;
+	GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+	GetDlgItem(IDC_COMBO56)->GetWindowTextA(WorkStation);
+	if (TestType == "DAM继电器")
+	{
+		if (WorkStation == "SMT测试")
+		{
+			AfxMessageBox("DAM继电器在SMT中还未实现！");
+			if (hPort[16] != NULL)
+				CloseHandle(hPort[16]);									//打开串口时，接收失败
+			hPort[16] = NULL;
+			return FALSE;
+		}
+		BOOL DamFlag;
+		DamFlag = DamControlFun(0, "打开通路");
+		DamFlag = DamControlFun(0, "关闭通路");
+		if (DamFlag == TRUE)
+		{
+			return TRUE;
+		}
+		else
+		{
+			if (hPort[16] != NULL)
+				CloseHandle(hPort[16]);									//打开串口时，接收失败
+			hPort[16] = NULL;
+			return FALSE;
+		}
+	}
+
 	//write "AT"
 	for (i = 0; i<3; i++)
 	{
@@ -2303,10 +2381,11 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 		{
 			command = strCommand_Vaule;
 			//Dongle高速蓝牙适配器不需要\r\n
-			if (GetDongleCheckValue == FALSE)
+			if (GetDongleCheckValue == FALSE && (GetDongleScanCheckValue == FALSE||HandleNum < 8))
 			{
 				command = strCommand_Vaule + "\r\n";//拼接命令
 			}
+
 
 			buffer = command.GetBuffer(command.GetLength());
 			bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
@@ -2356,7 +2435,7 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 				}
 			}
 		}
-		//发送十六进制数据
+		//发送十六进制数据(蓝牙模式)
 		else if (HexFlag == 1)
 		{
 			//先转十六进制
@@ -2447,6 +2526,69 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 				}
 			}
 		}
+		//发送十六进制数据(普通模式)
+		else if (HexFlag == 2)
+		{
+			//先转十六进制
+			int len = strCommand_Vaule.GetLength() / 2;
+			BYTE *pBData = new BYTE[len];
+			pBData = CStrToByte(len,strCommand_Vaule);
+
+			//发送十六进制数据
+			bWriteStat = WriteFile(hPort[HandleNum], (LPVOID)pBData, len, &dwBytesWritten, NULL);
+
+			if (dwBytesWritten != len)
+			{
+				Sleep(300);
+				continue;
+			}
+
+			//receive response
+
+			unsigned char str[32];
+
+			Sleep(atoi(paraArray[1].Low_Limit_Value) + WaitTime);
+			CString Port_Temp = "";//串口读取数据 的缓存HexGroupToString
+			for (int r = 0; r < WaitTime; r++)
+			{
+				memset(str, 0, sizeof(str) / sizeof(str[0]));
+				bReadStatus = ReadFile(hPort[HandleNum], str, 32, &dwBytesRead, NULL);//bReadStatus = ReadFile( hPort[HandleNum], buffer, PICDATAMAX, &dwBytesRead, NULL);//Send_Serial_Order
+				if (dwBytesRead != 0)
+				{
+					CString charVtemp1, charVtemp2, charVtemp3;
+					BYTE x[32];
+					CHAR *tempC;
+					for (int i = 0; i < 16; i++)
+					{
+						charVtemp1.Format(_T("%02X"), (unsigned char)str[i]);
+						charVtemp3 += charVtemp1;
+					}
+					strCommand_Vaule_Return = charVtemp3;
+
+					if (strCommand_Vaule_Return.Find(EndSign) != -1)//if((p)||(Port_Temp.Find(EndSign)!=-1))
+					{
+						CString  selPort;
+						selPort = strCommand_Vaule_Return;
+
+						Vaule_Return_Count_CS[HandleNum] = selPort;
+
+						*Vaule_Return = "Analysis_SUCCESS";
+						return "Analysis_SUCCESS";
+					}
+					else
+					{
+						//Port_Temp += CString(buffer);
+						Sleep(200 * r);
+						continue;
+					}
+				}
+				else
+				{
+					Sleep(200 * r);
+					continue;
+				}
+			}
+		}
 	}
 	Vaule_Return_Count_CS[HandleNum] = strCommand_Vaule_Return;	//串口返回值
 	//CloseHandle(hPort[HandleNum]);							//成功后不关闭串口---发送完AT指令后
@@ -2472,9 +2614,9 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 	showtimeCS.Format(" %02d:%02d:%02d", showtime.GetHour(), showtime.GetMinute(), showtime.GetSecond());
 
 	CString LOG_Show_Old;
-	m_Result->GetWindowText(LOG_Show_Old);
-	m_Result->SetWindowText(Msg_Log + showtimeCS + "\r\n" + LOG_Show_Old.Left(8092));
-	m_Result->UpdateWindow();
+	m_ResultArray[HandleNum]->GetWindowText(LOG_Show_Old);
+	m_ResultArray[HandleNum]->SetWindowText(Msg_Log + showtimeCS + "\r\n" + LOG_Show_Old.Left(8092));
+	m_ResultArray[HandleNum]->UpdateWindow();
 
 	CString HandleNumCS;
 	HandleNumCS.Format("%02d", HandleNum + 1);
@@ -2484,26 +2626,72 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum + 8] = RGB(0, 155, 100);
 		else
 			gColor[HandleNum] = RGB(0, 155, 100);
-		Final_Result_Control->SetWindowTextA("运行" + HandleNumCS);
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("运行" + HandleNumCS);
 		//三合一传递信息
 		if (g_ADCTFlag == TRUE)
 		{
-			SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "测试", 0);
-			SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), Msg_Log, 1);/*.Left(Msg_Log.GetLength()-8)*/
+			if (get_map_key_value(PortStatusMap, HandleNum) != "")
+			{
+				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "测试", 0);
+				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), Msg_Log, 1);/*.Left(Msg_Log.GetLength()-8)*/
+			}
 		}
 
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		Thread_State[HandleNum] = TRUE;
 	}
 	else if (State == 128)
 	{
-		Final_Result_Control->SetFont(font);
+		Final_Result_ControlArray[HandleNum]->SetFont(font);
 
 		if (ChipRfIDbg != "")
 			gColor[HandleNum + 8] = RGB(255, 0, 0);
 		else
 			gColor[HandleNum] = RGB(255, 0, 0);
-		Final_Result_Control->SetWindowTextA("失败" + HandleNumCS);
+
+		//显示报错的测试项的名字
+		CString FailInfo = ParaItemName[HandleNum];
+
+		if (FailInfo.Find("TR") != -1)
+		{
+			FailInfo = FailInfo.Right(FailInfo.GetLength() - FailInfo.Find("TR"));
+			FailInfo.Replace("TR", "");
+			//FailInfo = FailInfo.Left(FailInfo.Find("TR"));
+		}
+
+		if (FailInfo.Find("CR") != -1)
+		{
+			FailInfo = FailInfo.Right(FailInfo.GetLength() - FailInfo.Find("CR"));
+			FailInfo.Replace("CR", "");
+		}
+
+		if (FailInfo.Find("DL") != -1)
+		{
+			FailInfo = FailInfo.Left(FailInfo.Find("DL"));
+		}
+
+		if (FailInfo.GetLength() > 12)
+		{
+			FailInfo = FailInfo.Left(12);
+		}
+
+		if (FailInfo == "")
+		{
+			Final_Result_ControlArray[HandleNum]->SetWindowTextA("失败" + HandleNumCS);
+			FailInfo += "失败";
+		}
+		else
+		{
+			if (FailInfo.Find("漏测") != -1 || FailInfo.Find("数据库") != -1)
+			{
+
+			}
+			else
+				FailInfo += "失败";
+		
+			Final_Result_ControlArray[HandleNum]->SetFont(font_fail);
+			Final_Result_ControlArray[HandleNum]->SetWindowTextA(FailInfo + HandleNumCS);
+		}
 		//三合一传递信息
 		if (g_ADCTFlag == TRUE)
 		{
@@ -2517,13 +2705,24 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 		if (Category != "-1")
 			Data_UpdateError(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, Msg_Log, Category, ChipRfIDCurrent);
 
-		BOOL FaillResult = CPUCommunication("失败", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
-		if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
 
-		FaillResult = CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		BOOL FaillResult;
+		CString TestType, WorkStation;
+		GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+		if (TestType == "DAM继电器")
+		{
+			FaillResult = CloseExternalCircuit(HandleNum);
+		}
+		else
+		{
+			FaillResult = CPUCommunication("失败", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			FaillResult &= CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		}
 
 		CString VoiceMessage;
-		VoiceMessage.Format("%s失败", HandleNumCS);
+		VoiceMessage.Format("%s"+FailInfo, HandleNumCS);
+		//VoiceMessage.Format("%s失败", HandleNumCS);
 		Voice_Speak(VoiceMessage);
 
 		if (ChipRfIDbg == "")
@@ -2544,8 +2743,7 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 	}
 	else if (State == 255)
 	{
-		Final_Result_Control->SetFont(font);
-
+		Final_Result_ControlArray[HandleNum]->SetFont(font);
 		WriteLogIni(HandleNum, ChipRfIDCurrent);
 		CString LogCS;
 		LogCS = ChipRfIDCurrent + ";" + IMEIRecord[HandleNum] + ";" + BTMac[HandleNum] + ";" + SimNumber[HandleNum] + ";" + NteTemperature[HandleNum] + ";" + GPSSnrAve[HandleNum] + ";" + InchargeI[HandleNum] + ";" + BTTestResult[HandleNum] + ";";
@@ -2555,33 +2753,42 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum + 8] = RGB(0, 255, 0);
 		else
 			gColor[HandleNum] = RGB(0, 255, 0);
-
 		//Thread_State[HandleNum]=FALSE;
-		BOOL SuccessResult = CPUCommunication("成功", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
-		if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
-		SuccessResult &= CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		BOOL SuccessResult=TRUE;
+		CString TestType, WorkStation;
+		GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+		if (TestType == "DAM继电器")
+		{
+			SuccessResult = CloseExternalCircuit(HandleNum);
+		}
+		else
+		{
+			SuccessResult = CPUCommunication("成功", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			SuccessResult &= CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		}
 
-		Final_Result_Control->SetWindowTextA("成功" + HandleNumCS);
-
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("成功" + HandleNumCS);
 		//三合一传递信息
 		if (g_ADCTFlag == TRUE)
 		{
 			SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "成功", 0);
 		}
 
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		if (SuccessResult == FALSE)
 		{
 			if (ChipRfIDbg != "")
 				gColor[HandleNum + 8] = RGB(255, 0, 0);
 			else
 				gColor[HandleNum] = RGB(255, 0, 0);
-			Final_Result_Control->SetWindowTextA("失败" + HandleNumCS);
-			Final_Result_Control->UpdateWindow();
+			Final_Result_ControlArray[HandleNum]->SetFont(font_fail);
+			Final_Result_ControlArray[HandleNum]->SetWindowTextA("继电器关闭失败" + HandleNumCS);
+			Final_Result_ControlArray[HandleNum]->UpdateWindow();
 			//三合一传递信息
 			if (g_ADCTFlag == TRUE)
 			{
-				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "失败", 0);
+				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "继电器关闭失败", 0);
 			}
 
 			CString VoiceMessage;
@@ -2603,7 +2810,6 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			CString VoiceMessage;
 			VoiceMessage.Format("%s成功", HandleNumCS);
 			Voice_Speak(VoiceMessage);
-
 			EnterCriticalSection(&SUCCFAILCOUNT);
 			SuccessCount++;
 			CString SuccessCountCS;
@@ -2622,7 +2828,7 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 	}
 	else if (State == 2550)
 	{
-		Final_Result_Control->SetFont(font);
+		Final_Result_ControlArray[HandleNum]->SetFont(font);
 
 		if (ChipRfIDbg != "")
 			gColor[HandleNum + 8] = RGB(0, 255, 0);
@@ -2630,26 +2836,35 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum] = RGB(0, 255, 0);
 
 		//Thread_State[HandleNum]=FALSE;
-		BOOL SuccessResult = CPUCommunication("成功", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
-		if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
-		SuccessResult &= CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		BOOL SuccessResult;
+		CString TestType, WorkStation;
+		GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+		if (TestType == "DAM继电器")
+		{
+			SuccessResult = CloseExternalCircuit(HandleNum);
+		}
+		else
+		{
+			SuccessResult = CPUCommunication("成功", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			if (RecoverVoltage == TRUE)CPUCommunication("外电1开", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+			SuccessResult &= CPUCommunication("关闭通路", HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
+		}
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("");
 
-		Final_Result_Control->SetWindowTextA("");
-
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		if (SuccessResult == FALSE)
 		{
 			if (ChipRfIDbg != "")
 				gColor[HandleNum + 8] = RGB(255, 0, 0);
 			else
 				gColor[HandleNum] = RGB(255, 0, 0);
-			Final_Result_Control->SetWindowTextA("失败" + HandleNumCS);
+			Final_Result_Control->SetWindowTextA("继电器关闭失败" + HandleNumCS);
 			//三合一传递信息
 			if (g_ADCTFlag == TRUE)
 			{
-				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "失败", 0);
+				SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "继电器关闭失败", 0);
 			}
-			Final_Result_Control->UpdateWindow();
+			Final_Result_ControlArray[HandleNum]->UpdateWindow();
 			CString VoiceMessage;
 			VoiceMessage.Format("%s失败", HandleNumCS);
 			Voice_Speak(VoiceMessage);
@@ -2667,10 +2882,10 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 		else
 		{
 			CString VoiceMessage;
-			VoiceMessage.Format("%s已成功", HandleNumCS);
+			VoiceMessage.Format("%s已测试", HandleNumCS);
 			Voice_Speak(VoiceMessage);
-			Final_Result_Control->SetWindowTextA("已成功");
-			Final_Result_Control->UpdateWindow();
+			Final_Result_ControlArray[HandleNum]->SetWindowTextA("已测试");
+			Final_Result_ControlArray[HandleNum]->UpdateWindow();
 			EnterCriticalSection(&SUCCFAILCOUNT);
 			SuccessCount++;
 			CString SuccessCountCS;
@@ -2693,8 +2908,8 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum + 8] = RGB(60, 190, 190);
 		else
 			gColor[HandleNum] = RGB(60, 190, 190);
-		Final_Result_Control->SetWindowTextA("W");
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("W");
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		Thread_State[HandleNum] = FALSE;
 		if (COM_State[HandleNum] == FALSE)
 			EnableWindow_Start(HandleNum);
@@ -2705,8 +2920,8 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum + 8] = RGB(60, 190, 190);
 		else
 			gColor[HandleNum] = RGB(60, 190, 190);
-		Final_Result_Control->SetWindowTextA("W");
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("W");
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		Thread_State[HandleNum] = FALSE;
 		//EnableWindow_Start(HandleNum);
 	}
@@ -2725,8 +2940,8 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 	else if (State == 256)
 	{
 		Thread_State[HandleNum] = FALSE;
-		Final_Result_Control->SetWindowTextA("W");
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("W");
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		SetFocus_Choose(HandleNum);
 	}
 	else
@@ -2735,13 +2950,13 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 			gColor[HandleNum + 8] = RGB(0, 155, 100);
 		else
 			gColor[HandleNum] = RGB(0, 155, 100);
-		Final_Result_Control->SetWindowTextA("运行" + HandleNumCS);
+		Final_Result_ControlArray[HandleNum]->SetWindowTextA("运行" + HandleNumCS);
 		//三合一传递信息
 		if (g_ADCTFlag == TRUE)
 		{
 			SendADCTHint(get_map_key_value(PortStatusMap, HandleNum), "测试", 0);
 		}
-		Final_Result_Control->UpdateWindow();
+		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		Thread_State[HandleNum] = TRUE;
 	}
 
@@ -2850,848 +3065,1083 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	CString BBCSettingHigh[3 * 2];
 	CString BBCSetting;
 
-	if (IMEI_FT_Item.Find("打开GPS测试") != -1)
-	{
-		IMEI_FT_Item_Int = 1;
 
-		pos = Serial_Order_Return_CS.Find("GPGSV");
-		if (pos >= 0)
+	//名字规则一样的要放一起，最大的优化if else if语句（原逻辑），利用do while(0)来处理,一般来说以下测试项都应该只是触发一次（因为原逻辑是if elseif），触发完了后用break直接跳出，最大限度节省时间
+	do{
+		if (IMEI_FT_Item.Find("测试") != -1)
 		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 5);
-			GpsMessage = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 1, HandleNum));//有效GPS数据条数 
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS信息数量===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 1, HandleNum), HandleNum);
+			if (IMEI_FT_Item.Find("打开GPS测试") != -1)
+			{
+				IMEI_FT_Item_Int = 1;
 
-			GpsMessageFirst = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum));//有效GPS数据条数 
-			if (GpsMessageFirst != 1)
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS当前信息非第一条===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum), HandleNum);
-				return false;
-			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS当前信息是第一条===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum) + " 开始解析", HandleNum);
-			}
-
-			GpsNumber = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3, HandleNum));//卫星数量
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS数据:搜到卫星数量===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3, HandleNum), HandleNum);
-			for (int j = 0; j<GpsNumber; j++)
-			{
-				if (GPSDataTypeChoose == TRUE)
+				pos = Serial_Order_Return_CS.Find("GPGSV");
+				if (pos >= 0)
 				{
-					if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 5);
+					GpsMessage = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 1, HandleNum));//有效GPS数据条数 
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS信息数量===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 1, HandleNum), HandleNum);
+
+					GpsMessageFirst = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum));//有效GPS数据条数 
+					if (GpsMessageFirst != 1)
 					{
-						GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 + 4 * (j + 1), HandleNum);//4+===>每条语句，最后一颗星有4个逗号乘以1
-						GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 + 4 * (j + 1) + 3, HandleNum);
+						LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS当前信息非第一条===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum), HandleNum);
+						return false;
 					}
-					else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
+					else
 					{
-						GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 8 + 4 * (j + 1), HandleNum);//8+===>每条语句，最后一颗星有4个逗号乘以2
-						GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 8 + 4 * (j + 1) + 3, HandleNum);
+						LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS当前信息是第一条===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 2, HandleNum) + " 开始解析", HandleNum);
 					}
-					else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
+
+					GpsNumber = atoi(GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3, HandleNum));//卫星数量
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "解析GPS数据:搜到卫星数量===" + GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3, HandleNum), HandleNum);
+					for (int j = 0; j<GpsNumber; j++)
 					{
-						GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 12 + 4 * (j + 1), HandleNum);//12+===>每条语句，最后一颗星有4个逗号乘以3
-						GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 12 + 4 * (j + 1) + 3, HandleNum);
+						if (GPSDataTypeChoose == TRUE)
+						{
+							if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 + 4 * (j + 1), HandleNum);//4+===>每条语句，最后一颗星有4个逗号乘以1
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 + 4 * (j + 1) + 3, HandleNum);
+							}
+							else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 8 + 4 * (j + 1), HandleNum);//8+===>每条语句，最后一颗星有4个逗号乘以2
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 8 + 4 * (j + 1) + 3, HandleNum);
+							}
+							else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 12 + 4 * (j + 1), HandleNum);//12+===>每条语句，最后一颗星有4个逗号乘以3
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 12 + 4 * (j + 1) + 3, HandleNum);
+							}
+							else if ((GpsMessage >= 1) && (j <= 3))
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 0 + 4 * (j + 1), HandleNum);//4+===>每条语句，最后一颗星有4个逗号乘以0
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 0 + 4 * (j + 1) + 3, HandleNum);
+							}
+						}
+						else//正常GPS数据格式
+						{
+							if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
+							{
+								if ((GpsNumber <= 8) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,				//3+===>每条语句，最后一颗星有3个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 3 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else if ((GpsNumber>8) && (j == 7))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 3 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1) + 3, HandleNum);
+								}
+							}
+							else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
+							{
+								if ((GpsNumber <= 12) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);									//6+===>每条语句，最后一颗星有3个逗号乘以2
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 6 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else if ((GpsNumber>12) && (j == 11))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 6 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1) + 3, HandleNum);
+								}
+							}
+							else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
+							{
+								if ((GpsNumber <= 16) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);									//9+===>每条语句，最后一颗星有3个逗号乘以3
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 9 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else if ((GpsNumber>16) && (j == 15))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 9 + 4 * (j + 1) + 3, HandleNum);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1) + 3, HandleNum);
+								}
+							}
+							else if ((GpsMessage >= 1) && (j <= 3))
+							{
+								if ((GpsNumber <= 4) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);	//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
+								}
+								else if ((GpsNumber>4) && (j == 3))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);	//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
+								}
+							}
+						}
+						//LogShow_exchange(m_Result,Final_Result_Control,0,"解析GPS数据:卫星编码= "+GpsID[j]+" 信噪比= "+GpsSNR[j],HandleNum);
 					}
-					else if ((GpsMessage >= 1) && (j <= 3))
+					//按信号强弱排序
+					for (int j = 0; j<GpsNumber; j++)
 					{
-						GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 0 + 4 * (j + 1), HandleNum);//4+===>每条语句，最后一颗星有4个逗号乘以0
-						GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 0 + 4 * (j + 1) + 3, HandleNum);
+						for (int i = j + 1; i<GpsNumber; i++)
+						{
+							if (atoi(GpsSNR[j])<atoi(GpsSNR[i]))
+							{
+								GpsSNRTemp[j] = GpsSNR[j];
+								GpsIDTemp[j] = GpsID[j];
+
+								GpsSNR[j] = GpsSNR[i];
+								GpsID[j] = GpsID[i];
+
+								GpsSNR[i] = GpsSNRTemp[j];
+								GpsID[i] = GpsIDTemp[j];
+							}
+						}
+						LogShow_exchange(m_Result, Final_Result_Control, 0, "排序后GPS数据:卫星编码= " + GpsID[j] + " 信噪比= " + GpsSNR[j], HandleNum);
 					}
+					//按信号强弱排序
+
+					break;
 				}
-				else//正常GPS数据格式
+				else
 				{
-					if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
-					{
-						if ((GpsNumber <= 8) && (j == GpsNumber - 1))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,				//3+===>每条语句，最后一颗星有3个逗号
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 3 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else if ((GpsNumber>8) && (j == 7))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 3 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1), HandleNum);//4+===>$GPGSV,2,2,7,
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 3 + 4 * (j + 1) + 3, HandleNum);
-						}
-					}
-					else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
-					{
-						if ((GpsNumber <= 12) && (j == GpsNumber - 1))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);									//6+===>每条语句，最后一颗星有3个逗号乘以2
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 6 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else if ((GpsNumber>12) && (j == 11))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 6 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1), HandleNum);
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 6 + 4 * (j + 1) + 3, HandleNum);
-						}
-					}
-					else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
-					{
-						if ((GpsNumber <= 16) && (j == GpsNumber - 1))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);									//9+===>每条语句，最后一颗星有3个逗号乘以3
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 9 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else if ((GpsNumber>16) && (j == 15))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 9 + 4 * (j + 1) + 3, HandleNum);
-						}
-						else
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1), HandleNum);
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 9 + 4 * (j + 1) + 3, HandleNum);
-						}
-					}
-					else if ((GpsMessage >= 1) && (j <= 3))
-					{
-						if ((GpsNumber <= 4) && (j == GpsNumber - 1))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);	//除了GPGSV,第4个逗号
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
-						}
-						else if ((GpsNumber>4) && (j == 3))
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);	//除了GPGSV,第4个逗号
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", "*", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
-						}
-						else
-						{
-							GpsID[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1), HandleNum);//除了GPGSV,第4个逗号
-							GpsSNR[j] = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ",", ",", 4 * (j + 1) + 3, HandleNum);//除了GPGSV第7个逗号
-						}
-					}
-				}
-				//LogShow_exchange(m_Result,Final_Result_Control,0,"解析GPS数据:卫星编码= "+GpsID[j]+" 信噪比= "+GpsSNR[j],HandleNum);
-			}
-			//按信号强弱排序
-			for (int j = 0; j<GpsNumber; j++)
-			{
-				for (int i = j + 1; i<GpsNumber; i++)
-				{
-					if (atoi(GpsSNR[j])<atoi(GpsSNR[i]))
-					{
-						GpsSNRTemp[j] = GpsSNR[j];
-						GpsIDTemp[j] = GpsID[j];
-
-						GpsSNR[j] = GpsSNR[i];
-						GpsID[j] = GpsID[i];
-
-						GpsSNR[i] = GpsSNRTemp[j];
-						GpsID[i] = GpsIDTemp[j];
-					}
-				}
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "排序后GPS数据:卫星编码= " + GpsID[j] + " 信噪比= " + GpsSNR[j], HandleNum);
-			}
-			//按信号强弱排序
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else if (IMEI_FT_Item.Find("关闭GPS测试") != -1)
-	{
-		IMEI_FT_Item_Int = 2;
-	}
-	else if (IMEI_FT_Item.Find("152功能测试") != -1)
-	{
-		CString DataCountCS;
-		int DataCount = Serial_Order_Return_CS.GetLength();
-		DataCountCS.Format("%d", DataCount);
-		LogShow_exchange(m_Result, Final_Result_Control, 0, "152功能测试数据量=" + DataCountCS, HandleNum);
-
-		if (DataCount<atoi(paraArray[2].High_Limit_Value))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数异常！！！数据量不够，参考(>" + paraArray[2].High_Limit_Value, HandleNum);
-			return false;
-		}
-
-		RestartCount = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "Recorded", 1, HandleNum);
-		if (RestartCount == "NULL")
-			RestartCount = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "\r", 1, HandleNum);
-		RestartCount.Replace("\r", "");
-		RestartCount.Replace("\n", "");
-		LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数 " + RestartCount, HandleNum);
-		IMEI_FT_Item_Int = 3;
-	}
-	else if (IMEI_FT_Item.Find("电池电压") != -1)//charge in, vBat=4.13V,iChr=0.20A,vChr=4.79V
-	{
-
-		if (Serial_Order_Return_CS.Find("VBAT") != -1)
-		{
-			VBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "VBAT=", "V,", 1, HandleNum);
-			IBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "ICHR=", "A,", 1, HandleNum);
-			VCharge = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "VCHR=", "V", 1, HandleNum);
-		}
-		else if (Serial_Order_Return_CS.Find("EADC") != -1)
-		{
-			CString Temp = Serial_Order_Return_CS.Mid(Serial_Order_Return_CS.Find("EADC:") + 5, 25);
-
-			Temp.Replace("\r", "");
-			Temp.Replace("\n", "");
-			Temp.Replace(" ", "");
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "Temp= " + Temp, HandleNum);
-			VBat = GetData((LPSTR)(LPCTSTR)Temp, "NULL", ",", 1, HandleNum);
-			IBat = GetData((LPSTR)(LPCTSTR)Temp, ",", ",", 3, HandleNum);
-			VCharge = GetData((LPSTR)(LPCTSTR)Temp, ",", "NULL", 4, HandleNum);
-		}
-		else
-		{
-			VBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "vBat=", "V,", 1, HandleNum);
-			IBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "iChr=", "A,", 1, HandleNum);
-			VCharge = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "vChr=", "V", 1, HandleNum);
-		}
-		LogShow_exchange(m_Result, Final_Result_Control, 0, "VBat= " + VBat, HandleNum);
-		LogShow_exchange(m_Result, Final_Result_Control, 0, "IBat= " + IBat, HandleNum);
-		LogShow_exchange(m_Result, Final_Result_Control, 0, "VCharge= " + VCharge, HandleNum);
-		IMEI_FT_Item_Int = 4;
-	}
-	else if (IMEI_FT_Item.Find("IMEI检查") != -1)
-	{
-		int pos = Serial_Order_Return_CS.Find(':');
-		if (pos >= 0)
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
-
-		pos = Serial_Order_Return_CS.Find('"');
-		if (pos >= 0)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
-		}
-		else
-		{
-		}
-		IMEIRecord[HandleNum] = Serial_Order_Return_CS;
-		if (CompareIMEI == TRUE)
-		{
-			if (IMEI_Input[HandleNum] != IMEIRecord[HandleNum])
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "IMEI比对失败！！！！！！！！！\r\n" + IMEI_Input[HandleNum] + "!=" + IMEIRecord[HandleNum], HandleNum);
-				return false;
-			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "IMEI比对成功！！\r\n" + IMEI_Input[HandleNum] + "==" + IMEIRecord[HandleNum], HandleNum);
-			}
-		}
-		IMEI_FT_Item_Int = 8;
-	}
-	else if (IMEI_FT_Item.Find("芯片ID") != -1)
-	{
-		SIMisOK[HandleNum] = FALSE;
-
-		IMEI_FT_Item_Int = 9;
-		Serial_Order_Return_CS.Replace(" ", "");
-		Serial_Order_Return_CS.Replace("\r", "");
-		Serial_Order_Return_CS.Replace("\n", "");
-		//int pos=Serial_Order_Return_CS.Find("ChipRID:");
-		int pos = Serial_Order_Return_CS.Find(":");
-		if (pos >= 0)
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);//Serial_Order_Return_CS=Serial_Order_Return_CS.Mid(pos+8);
-
-
-		if (IMEI_FT_Item.Find("芯片IDCounterX") != -1)
-		{
-		}
-		else if (IMEI_FT_Item.Find("芯片IDCounter") != -1)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(atoi(IMEI_FT_Item.Right(2)));
-			if (Serial_Order_Return_CS.GetLength() != atoi(IMEI_FT_Item.Right(2)))
-				return false;
-		}
-		else
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(32);
-			if (Serial_Order_Return_CS.GetLength() != 32)
-				return false;
-		}
-		ChipRfID[HandleNum] = Serial_Order_Return_CS;//线程0、1
-
-
-        //这里需要去检查总表那里的SN号也就是芯片ID，如果是重新测试则不进行检查
-		if (IMEI_FT_Item.Find("检查")!=-1&&WorkStationCS=="SMT测试")
-		{
-
-			//这里只进行数据库检查
-			EnterCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
-			BOOL UpFlag = Data_AntiDupSNCheck(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, ChipRfID[HandleNum]);
-			LeaveCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
-
-			//重新测试的两种情况
-			if (RTestChoose == TRUE&&UpFlag == FALSE)
-			{
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "重新测试不报错", HandleNum);
-				AntiDupDataSNUploadFlag[HandleNum] = FALSE;//不对数据库做操作
-			}
-			else if (RTestChoose == FALSE&&UpFlag == FALSE)
-			{
 					return false;
+				}
 			}
-			
-			//只要不存在那就一定要上传
-			if (UpFlag == TRUE)
+			else if (IMEI_FT_Item.Find("关闭GPS测试") != -1)
 			{
-				AntiDupDataSNUploadFlag[HandleNum] = TRUE;//根据这个标识，后面就会上传芯片ID
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "芯片ID在数据库中不存在", HandleNum);
+				IMEI_FT_Item_Int = 2;
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("152功能测试") != -1)
+			{
+				CString DataCountCS;
+				int DataCount = Serial_Order_Return_CS.GetLength();
+				DataCountCS.Format("%d", DataCount);
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "152功能测试数据量=" + DataCountCS, HandleNum);
+
+				if (DataCount<atoi(paraArray[2].High_Limit_Value))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数异常！！！数据量不够，参考(>" + paraArray[2].High_Limit_Value, HandleNum);
+					return false;
+				}
+
+				RestartCount = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "Recorded", 1, HandleNum);
+				if (RestartCount == "NULL")
+					RestartCount = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "\r", 1, HandleNum);
+				RestartCount.Replace("\r", "");
+				RestartCount.Replace("\n", "");
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数 " + RestartCount, HandleNum);
+				IMEI_FT_Item_Int = 3;
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("温度测试") != -1)
+			{
+				Serial_Order_Return_CS.Replace("\r", "");
+				Serial_Order_Return_CS.Replace("\n", "");
+				//IMEI_FT_Item_Int=10;
+				CString Temperature = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " C", 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(Temperature) < atof(CountLow)) || (atof(Temperature) > atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "温度异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "温度正常..", HandleNum);
+				}
+				NteTemperature[HandleNum] = Serial_Order_Return_CS;
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("充电测试") != -1)
+			{
+				Serial_Order_Return_CS.Replace("\r", "");
+				Serial_Order_Return_CS.Replace("\n", "");
+				//IMEI_FT_Item_Int=11;
+				CString iu = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " A", 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(iu) < atof(CountLow)) || (atof(iu) > atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流正常..", HandleNum);
+				}
+				InchargeI[HandleNum] = Serial_Order_Return_CS;
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("BT测试") != -1)
+			{
+				Serial_Order_Return_CS.Replace("\r", "");
+				Serial_Order_Return_CS.Replace("\n", "");
+				pos = Serial_Order_Return_CS.Find('"');
+				if (pos >= 0)
+				{
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
+				}
+				else
+				{
+				}
+				BTTestResult[HandleNum] = Serial_Order_Return_CS;
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("电流测试") != -1)
+			{
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+
+				Vaule_Return_Count_CS[HandleNum].Format("%f", PortCurrentVauleArray[HandleNum]);
+
+				if (((PortCurrentVauleArray[HandleNum])<atof(CountLow)) || ((PortCurrentVauleArray[HandleNum])>atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				}
+
+				break;
 			}
 		}
-	}
-	else if (IMEI_FT_Item.Find("软件版本") != -1)
-	{
-		pos = Serial_Order_Return_CS.Find(':');
-		if (pos >= 0)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
 
-			pos = Serial_Order_Return_CS.Find(' ');
-			if (pos >= 0)
-				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(pos);
-		}
-		else
+		if (IMEI_FT_Item.Find("电压") != -1)
 		{
-			pos = Serial_Order_Return_CS.Find(']');
+			if (IMEI_FT_Item.Find("对比电压") != -1)
+			{
+				//IMEI_FT_Item_Int=12;
+				CString Vext;
+				if (Serial_Order_Return_CS.Find("Vdc") == -1)
+					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, '(', ')', 1, HandleNum);
+				else
+					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ':', "Vdc", 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				}
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("只有电压") != -1)
+			{
+				//IMEI_FT_Item_Int=12;
+				CString Vext;
+				if (Serial_Order_Return_CS.Find(')') != -1)
+					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
+				else if (Serial_Order_Return_CS.Find('V') != -1)
+					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'V', 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				}
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("电池电压") != -1)//charge in, vBat=4.13V,iChr=0.20A,vChr=4.79V
+			{
+				if (Serial_Order_Return_CS.Find("VBAT") != -1)
+				{
+					VBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "VBAT=", "V,", 1, HandleNum);
+					IBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "ICHR=", "A,", 1, HandleNum);
+					VCharge = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "VCHR=", "V", 1, HandleNum);
+				}
+				else if (Serial_Order_Return_CS.Find("EADC") != -1)
+				{
+					CString Temp = Serial_Order_Return_CS.Mid(Serial_Order_Return_CS.Find("EADC:") + 5, 25);
+
+					Temp.Replace("\r", "");
+					Temp.Replace("\n", "");
+					Temp.Replace(" ", "");
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "Temp= " + Temp, HandleNum);
+					VBat = GetData((LPSTR)(LPCTSTR)Temp, "NULL", ",", 1, HandleNum);
+					IBat = GetData((LPSTR)(LPCTSTR)Temp, ",", ",", 3, HandleNum);
+					VCharge = GetData((LPSTR)(LPCTSTR)Temp, ",", "NULL", 4, HandleNum);
+				}
+				else
+				{
+					VBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "vBat=", "V,", 1, HandleNum);
+					IBat = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "iChr=", "A,", 1, HandleNum);
+					VCharge = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, "vChr=", "V", 1, HandleNum);
+				}
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "VBat= " + VBat, HandleNum);
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "IBat= " + IBat, HandleNum);
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "VCharge= " + VCharge, HandleNum);
+				IMEI_FT_Item_Int = 4;
+
+				break;
+			}
+		}
+
+		if (IMEI_FT_Item.Find("RSSI") != -1)
+		{
+			if (paraArray[i].showName.Find("Dongle蓝牙RSSI检查") != -1)
+			{
+				if (paraArray[i].showName.Find("打开") != -1 && HandleNum < 8)
+				{
+					DongleStatusArray[HandleNum] = TRUE;
+				}
+				else if (paraArray[i].showName.Find("关闭") != -1 && HandleNum < 8)
+				{
+					DongleStatusArray[HandleNum] = FALSE;
+				}
+
+				break;
+			}
+			else if (paraArray[i].showName.Find("Dongle蓝牙RSSI信号强度") != -1)//直连蓝牙设备，直接对蓝牙设备进行信号检测
+			{
+				if (GetDongleCheckValue == TRUE)
+				{
+					CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+					CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+
+					//Vaule_Return_Count_CS[HandleNum].Format("%d", Vaule_Return_Count_CS[HandleNum]);
+
+					if ((atoi(Vaule_Return_Count_CS[HandleNum]) < atoi(CountLow)) || (atoi(Vaule_Return_Count_CS[HandleNum]) > atoi(CountHigh)))
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+						CString str;
+						Send_Serial_Order(&str, "AT+RSSI?", HandleNum, "Cancelled", "");
+						return false;
+					}
+					else
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					}
+				}
+				else if (GetDongleScanCheckValue == TRUE)
+				{
+					DongleTestRssiDeq.push_back(HandleNum);
+
+					if (DequeContinueControlFun(HandleNum, DongleTestRssiDeq)==FALSE)
+					{
+						return false;
+					}
+
+					//从map中寻找设备，找不到就返回false
+					CString MacStr,MacRssiStr;
+					int MacRssiInt;
+					m_ShowNumberPortControlArray[HandleNum]->GetWindowTextA(MacStr);
+
+					map<CString, int>::iterator iter;
+					iter = DongleRssiMap.find(MacStr);
+					if (iter != DongleRssiMap.end())
+					{
+						MacRssiInt = iter->second;
+
+						MacRssiStr.Format("%d", MacRssiInt);
+
+						//找到设备后开始判断大小
+						CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+						CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+
+						if (MacRssiInt < atoi(CountLow) || MacRssiInt > atoi(CountHigh))
+						{
+							LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+							DongleRssiMap.erase(iter);
+							DongleTestRssiDeq.pop_front();
+							return false;
+						}
+						else
+						{
+							LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+							DongleRssiMap.erase(iter);
+							DongleTestRssiDeq.pop_front();
+							break;
+						}
+					}
+					else
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "找不到对应设备！", HandleNum);
+						DongleTestRssiDeq.pop_front();
+						return false;
+					}
+				}
+				break;
+			}
+			else if (IMEI_FT_Item.Find("RSSI:[") != -1)
+			{
+				//IMEI_FT_Item_Int=12;
+				CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ']', 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				}
+
+				break;
+			}
+			else if (IMEI_FT_Item.Find("SSIDRSSI") != -1)//SSIDRSSI
+			{
+				CString LowDataMul[THREAD_NUM];
+				CString HighDataMul[THREAD_NUM];
+
+				CString LimitSetting;
+				if (WIFI_RSSILimitCS == "")
+					LimitSetting = paraArray[i].High_Limit_Value;
+				else
+					LimitSetting = WIFI_RSSILimitCS;
+				//CString LimitSetting=paraArray[i].High_Limit_Value;
+				for (int j = 0; j<THREAD_NUM; j++)
+				{
+					if (j == 0)
+					{
+						LowDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, "NULL", ",", 1, HandleNum);
+						HighDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 1, HandleNum);
+					}
+					else
+					{
+						LowDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 2 * j, HandleNum);
+						HighDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 2 * j + 1, HandleNum);
+					}
+				}
+
+				//IMEI_FT_Item_Int=12;
+				CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
+				//CString CountLow=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,"NULL",   ",",1,HandleNum);
+				//CString CountHigh=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,",",   ",",1,HandleNum);
+				//if((atof(Vext)<atof(CountLow))||(atof(Vext)>atof(CountHigh)))
+				if ((atof(Vext)<atof(LowDataMul[HandleNum])) || (atof(Vext)>atof(HighDataMul[HandleNum])))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
+				}
+
+				break;
+			}
+			else//正常的RSSI检测
+			{
+				CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
+				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					return false;
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				}
+
+				break;
+			}
+
+		}
+
+
+		if (IMEI_FT_Item.Find("IMEI检查") != -1)
+		{
+			int pos = Serial_Order_Return_CS.Find(':');
 			if (pos >= 0)
 				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
 
-			pos = Serial_Order_Return_CS.Find('[');
+			pos = Serial_Order_Return_CS.Find('"');
 			if (pos >= 0)
-				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(pos);
-		}
-
-		Software_Version[HandleNum] = Software_VersionFull;
-	}
-	else if (IMEI_FT_Item.Find("蓝牙地址") != -1)
-	{
-		pos = Serial_Order_Return_CS.Find('"');
-		if (pos >= 0)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
-		}
-		else
-		{
-		}
-		BTMac[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("BT测试") != -1)
-	{
-		Serial_Order_Return_CS.Replace("\r", "");
-		Serial_Order_Return_CS.Replace("\n", "");
-		pos = Serial_Order_Return_CS.Find('"');
-		if (pos >= 0)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
-		}
-		else
-		{
-		}
-		BTTestResult[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("查询IMSI") != -1)
-	{
-		pos = Serial_Order_Return_CS.Find('"');
-		if (pos >= 0)
-		{
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
-			Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
-		}
-		else
-		{
-		}
-		SimNumber[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("温度测试") != -1)
-	{
-		Serial_Order_Return_CS.Replace("\r", "");
-		Serial_Order_Return_CS.Replace("\n", "");
-		//IMEI_FT_Item_Int=10;
-		CString Temperature = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " C", 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Temperature)<atof(CountLow)) || (atof(Temperature)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "温度异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "温度正常..", HandleNum);
-		}
-		NteTemperature[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("充电测试") != -1)
-	{
-		Serial_Order_Return_CS.Replace("\r", "");
-		Serial_Order_Return_CS.Replace("\n", "");
-		//IMEI_FT_Item_Int=11;
-		CString iu = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " A", 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(iu)<atof(CountLow)) || (atof(iu)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流正常..", HandleNum);
-		}
-		InchargeI[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("模拟电流") != -1)
-	{
-		SimulationCurrent[HandleNum].Replace("\r", "");
-		SimulationCurrent[HandleNum].Replace("\n", "");
-		CString iu = GetData((LPSTR)(LPCTSTR)SimulationCurrent[HandleNum], "", " A", 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(iu)<atof(CountLow)) || (atof(iu)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, SimulationCurrent[HandleNum] + "模拟电流异常！！！" + iu + "参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			SimulationCurrent[HandleNum] = "";
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "模拟电流正常.." + iu, HandleNum);
-			SimulationCurrent[HandleNum] = "";
-		}
-		InchargeI[HandleNum] = Serial_Order_Return_CS;
-	}
-	else if (IMEI_FT_Item.Find("对比电压") != -1)
-	{
-		//IMEI_FT_Item_Int=12;
-		CString Vext;
-		if (Serial_Order_Return_CS.Find("Vdc") == -1)
-			Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, '(', ')', 1, HandleNum);
-		else
-			Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ':', "Vdc", 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("只有电压") != -1)
-	{
-		//IMEI_FT_Item_Int=12;
-		CString Vext;
-		if (Serial_Order_Return_CS.Find(')') != -1)
-			Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
-		else if (Serial_Order_Return_CS.Find('V') != -1)
-			Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'V', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("RSSI:[") != -1)
-	{
-		//IMEI_FT_Item_Int=12;
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ']', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("SSIDRSSI") != -1)//SSIDRSSI
-	{
-		CString LowDataMul[THREAD_NUM];
-		CString HighDataMul[THREAD_NUM];
-
-		CString LimitSetting;
-		if (WIFI_RSSILimitCS == "")
-			LimitSetting = paraArray[i].High_Limit_Value;
-		else
-			LimitSetting = WIFI_RSSILimitCS;
-		//CString LimitSetting=paraArray[i].High_Limit_Value;
-		for (int j = 0; j<THREAD_NUM; j++)
-		{
-			if (j == 0)
 			{
-				LowDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, "NULL", ",", 1, HandleNum);
-				HighDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 1, HandleNum);
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
 			}
 			else
 			{
-				LowDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 2 * j, HandleNum);
-				HighDataMul[j] = GetData((LPSTR)(LPCTSTR)LimitSetting, ",", ",", 2 * j + 1, HandleNum);
 			}
-		}
-
-		//IMEI_FT_Item_Int=12;
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
-		//CString CountLow=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,"NULL",   ",",1,HandleNum);
-		//CString CountHigh=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,",",   ",",1,HandleNum);
-		//if((atof(Vext)<atof(CountLow))||(atof(Vext)>atof(CountHigh)))
-		if ((atof(Vext)<atof(LowDataMul[HandleNum])) || (atof(Vext)>atof(HighDataMul[HandleNum])))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("RSSI") != -1)
-	{
-
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("重力传感器") != -1)
-	{
-		pos = Serial_Order_Return_CS.Find(paraArray[i].High_Limit_Value);
-		if (pos >= 0)
-		{
-			return false;
-		}
-		else
-		{
-		}
-	}
-	else if (IMEI_FT_Item.Find("截取括号") != -1)
-	{
-		//IMEI_FT_Item_Int=12;
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("逗号一") != -1)
-	{
-		//IMEI_FT_Item_Int=12;
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ',', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("蜂鸣器量化") != -1)
-	{
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'T', 1, HandleNum);
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("SIM卡检测") != -1)
-	{
-		SIMisOK[HandleNum] = TRUE;
-	}
-	else if (IMEI_FT_Item.Find("串口获取16进制字符串") != -1)//"串口获取图片"
-	{
-		char OutStringBuffer[PICDATAMAX] = { 0 };
-		CString RecString;
-		HexGroupToString(OutStringBuffer, (unsigned char *)(LPSTR)(LPCTSTR)Serial_Order_Return_CS, Serial_Order_Return_CS.GetLength());
-		RecString.Format("%s", OutStringBuffer);//--------------------------------------------------------------注意看是否需要清理空格
-		StartShowPic(HandleNum, m_Result, Final_Result_Control, RecString);
-	}
-	else if (IMEI_FT_Item.Find("值量化") != -1)//**
-	{
-		CString strH = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "**", ",", 1, HandleNum);
-		CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, strH, 1, HandleNum);
-
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (IMEI_FT_Item.Find("电流测试") != -1)
-	{
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-
-		Vaule_Return_Count_CS[HandleNum].Format("%f", PortCurrentVauleArray[HandleNum]);
-
-		if (((PortCurrentVauleArray[HandleNum])<atof(CountLow)) || ((PortCurrentVauleArray[HandleNum])>atof(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else if (paraArray[i].showName.Find("Socket自动判断") != -1)//这里是自动识别图片用的
-	{
-		BOOL ImageJudegeResult;
-		if (paraArray[i].showName.Find("清晰度") != -1)
-		{
-			float Range = 3.0;
-			int RangeCut = paraArray[i].High_Limit_Value.Find("范围:");
-			if (RangeCut != -1)
+			IMEIRecord[HandleNum] = Serial_Order_Return_CS;
+			if (CompareIMEI == TRUE)
 			{
-				Range = atof(paraArray[i].High_Limit_Value.Right(paraArray[i].High_Limit_Value.GetLength() - RangeCut - 5));
-			}
-
-			if (paraArray[i].showName.Find("夜拍") != -1)
-			{
-				if (PathFileExists(SocketServerPicName[0][HandleNum]) != TRUE)
+				if (IMEI_Input[HandleNum] != IMEIRecord[HandleNum])
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "IMEI比对失败！！！！！！！！！\r\n" + IMEI_Input[HandleNum] + "!=" + IMEIRecord[HandleNum], HandleNum);
 					return false;
 				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "IMEI比对成功！！\r\n" + IMEI_Input[HandleNum] + "==" + IMEIRecord[HandleNum], HandleNum);
+				}
+			}
+			IMEI_FT_Item_Int = 8;
 
-				ImageJudegeResult = ImageAutoJudgeDefinition(HandleNum,SocketServerPicName[0][HandleNum], Range);
+			break;
+		}
+		else if (IMEI_FT_Item.Find("芯片ID") != -1)
+		{
+			CString LowLimitStr = paraArray[i].Low_Limit_Value;
+			SIMisOK[HandleNum] = FALSE;
 
+			IMEI_FT_Item_Int = 9;
+			Serial_Order_Return_CS.Replace(" ", "");
+			LowLimitStr.Replace(" ", "");
+			Serial_Order_Return_CS.Replace("\r", "");
+			Serial_Order_Return_CS.Replace("\n", "");
+			//int pos=Serial_Order_Return_CS.Find("ChipRID:");
+			int pos = Serial_Order_Return_CS.Find(LowLimitStr);
+			if (pos >= 0)
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());//Serial_Order_Return_CS=Serial_Order_Return_CS.Mid(pos+8);
+
+			if (Serial_Order_Return_CS.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Right(Serial_Order_Return_CS.GetLength() - Serial_Order_Return_CS.Find(":") - 1);
+			}
+
+			CString FeiFaTest = Serial_Order_Return_CS;
+			if (FeiFaTest.Trim("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() != 0)
+			{
+				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "存在非法字符", HandleNum);
+				return false;
+			}
+
+
+			if (IMEI_FT_Item.Find("芯片IDCounterX") != -1)
+			{
+			}
+			else if (IMEI_FT_Item.Find("芯片IDCounter") != -1)
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(atoi(IMEI_FT_Item.Right(2)));
+				if (Serial_Order_Return_CS.GetLength() != atoi(IMEI_FT_Item.Right(2)))
+					return false;
+			}
+			else
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(32);
+				if (Serial_Order_Return_CS.GetLength() != 32)
+					return false;
+			}
+
+
+			ChipRfID[HandleNum] = Serial_Order_Return_CS;//线程0、1
+
+
+			//这里需要去检查总表那里的SN号也就是芯片ID，如果是重新测试则不进行检查
+			if (IMEI_FT_Item.Find("检查") != -1 && WorkStationCS == "SMT测试")
+			{
+
+				//这里只进行数据库检查
+				EnterCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
+				BOOL UpFlag = Data_AntiDupSNCheck(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, ChipRfID[HandleNum]);
+				LeaveCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
+
+				//重新测试的两种情况
+				if (RTestChoose == TRUE&&UpFlag == FALSE)
+				{
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "重新测试不报错", HandleNum);
+					AntiDupDataSNUploadFlag[HandleNum] = FALSE;//不对数据库做操作
+				}
+				else if (RTestChoose == FALSE&&UpFlag == FALSE)
+				{
+					if (AntiDupDataLinkFlag[HandleNum][0] == 2 || AntiDupDataLinkFlag[HandleNum][0] == 0)//没有这条指令和LINK查出来对不上的情况下都按照原逻辑
+					{
+						return false;
+					}
+					else if (AntiDupDataLinkFlag[HandleNum][0] == 1)//此机已经测试过，我们不做任何操作,提示已测过就行
+					{
+						LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "此机已测试过", HandleNum);
+						AntiDupDataSNUploadFlag[HandleNum] = FALSE;//不对数据库做操作
+					}
+				}
+
+				//只要不存在那就一定要上传
+				if (UpFlag == TRUE)
+				{
+					AntiDupDataSNUploadFlag[HandleNum] = TRUE;//根据这个标识，后面就会上传芯片ID
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "芯片ID在数据库中不存在", HandleNum);
+				}
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("LINK防重复") != -1)//link初始默认是3，入库前要写入6，这里提前默认写个9
+		{
+			CString LowLimitStr = paraArray[i].Low_Limit_Value;
+			if (IMEI_FT_Item.Find("查") != -1)
+			{
+				Serial_Order_Return_CS.Replace(" ", "");
+				LowLimitStr.Replace(" ", "");
+				Serial_Order_Return_CS.Replace("\r", "");
+				Serial_Order_Return_CS.Replace("\n", "");
+				int pos = Serial_Order_Return_CS.Find(LowLimitStr);
+				if (pos >= 0)
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());//Serial_Order_Return_CS=Serial_Order_Return_CS.Mid(pos+8);
+
+				if (Serial_Order_Return_CS.Find(":") != -1)
+				{
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Right(Serial_Order_Return_CS.GetLength() - Serial_Order_Return_CS.Find(":") - 1);
+				}
+
+				if (Serial_Order_Return_CS == paraArray[i].High_Limit_Value)
+				{
+					AntiDupDataLinkFlag[HandleNum][0] = 1;
+				}
+				else if (Serial_Order_Return_CS != paraArray[i].High_Limit_Value)
+				{
+					AntiDupDataLinkFlag[HandleNum][0] = 2;
+				}
+			}
+			//出现写的指令必须要将指令拿出来，免得有些写指令不一样
+			else if (IMEI_FT_Item.Find("写") != -1)
+			{
+				AntiDupDataLinkFlag[HandleNum][1] = 1;
+				AntiDupDataLinkOrder[HandleNum] = paraArray[i].Other_ITEM;
+				AntiDupDataLinkOrder[HandleNum].Replace(AntiDupDataLinkOrder[HandleNum].Right(AntiDupDataLinkOrder[HandleNum].GetLength() - AntiDupDataLinkOrder[HandleNum].Find(",") - 1), "3");
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("软件版本") != -1)
+		{
+			pos = Serial_Order_Return_CS.Find(':');
+			if (pos >= 0)
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+
+				pos = Serial_Order_Return_CS.Find(' ');
+				if (pos >= 0)
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Left(pos);
+			}
+			else
+			{
+				pos = Serial_Order_Return_CS.Find(']');
+				if (pos >= 0)
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+
+				pos = Serial_Order_Return_CS.Find('[');
+				if (pos >= 0)
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Left(pos);
+			}
+
+			Software_Version[HandleNum] = Software_VersionFull;
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("蓝牙地址") != -1)
+		{
+			pos = Serial_Order_Return_CS.Find('"');
+			if (pos >= 0)
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
+			}
+			else
+			{
+			}
+			BTMac[HandleNum] = Serial_Order_Return_CS;
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("查询IMSI") != -1)
+		{
+			pos = Serial_Order_Return_CS.Find('"');
+			if (pos >= 0)
+			{
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + 1);
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(Serial_Order_Return_CS.Find('"'));
+			}
+			else
+			{
+			}
+			SimNumber[HandleNum] = Serial_Order_Return_CS;
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("模拟电流") != -1)
+		{
+			SimulationCurrent[HandleNum].Replace("\r", "");
+			SimulationCurrent[HandleNum].Replace("\n", "");
+			CString iu = GetData((LPSTR)(LPCTSTR)SimulationCurrent[HandleNum], "", " A", 1, HandleNum);
+			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+			if ((atof(iu)<atof(CountLow)) || (atof(iu)>atof(CountHigh)))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, SimulationCurrent[HandleNum] + "模拟电流异常！！！" + iu + "参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				SimulationCurrent[HandleNum] = "";
+				return false;
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "模拟电流正常.." + iu, HandleNum);
+				SimulationCurrent[HandleNum] = "";
+			}
+			InchargeI[HandleNum] = Serial_Order_Return_CS;
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("重力传感器") != -1)
+		{
+			pos = Serial_Order_Return_CS.Find(paraArray[i].High_Limit_Value);
+			if (pos >= 0)
+			{
+				return false;
+			}
+			else
+			{
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("截取括号") != -1)
+		{
+			//IMEI_FT_Item_Int=12;
+			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
+			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				return false;
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("逗号一") != -1)
+		{
+			//IMEI_FT_Item_Int=12;
+			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ',', 1, HandleNum);
+			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				return false;
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("蜂鸣器量化") != -1)
+		{
+			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'T', 1, HandleNum);
+			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				return false;
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			}
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("SIM卡检测") != -1)
+		{
+			SIMisOK[HandleNum] = TRUE;
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("串口获取16进制字符串") != -1)//"串口获取图片"
+		{
+			char OutStringBuffer[PICDATAMAX] = { 0 };
+			CString RecString;
+			HexGroupToString(OutStringBuffer, (unsigned char *)(LPSTR)(LPCTSTR)Serial_Order_Return_CS, Serial_Order_Return_CS.GetLength());
+			RecString.Format("%s", OutStringBuffer);//--------------------------------------------------------------注意看是否需要清理空格
+			StartShowPic(HandleNum, m_Result, Final_Result_Control, RecString);
+
+			break;
+		}
+		else if (IMEI_FT_Item.Find("值量化") != -1)//**
+		{
+			CString strH = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "**", ",", 1, HandleNum);
+			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, strH, 1, HandleNum);
+
+			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
+			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
+			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				return false;
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			}
+
+			break;
+		}
+		else if (paraArray[i].showName.Find("Socket自动判断") != -1)//这里是自动识别图片用的
+		{
+			BOOL ImageJudegeResult;
+			if (paraArray[i].showName.Find("清晰度") != -1)
+			{
+				float Range = 3.0;
+				int RangeCut = paraArray[i].High_Limit_Value.Find("范围:");
+				if (RangeCut != -1)
+				{
+					Range = atof(paraArray[i].High_Limit_Value.Right(paraArray[i].High_Limit_Value.GetLength() - RangeCut - 5));
+				}
+
+				if (paraArray[i].showName.Find("夜拍") != -1)
+				{
+					if (PathFileExists(SocketServerPicName[0][HandleNum]) != TRUE)
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
+						return false;
+					}
+
+					ImageJudegeResult = ImageAutoJudgeDefinition(HandleNum, SocketServerPicName[0][HandleNum], Range);
+
+					if (ImageJudegeResult == FALSE)
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
+						return false;
+					}
+				}
+				else if (paraArray[i].showName.Find("白天") != -1)
+				{
+					if (PathFileExists(SocketServerPicName[1][HandleNum]) != TRUE)
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 128, "白天模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
+						return false;
+					}
+					ImageJudegeResult = ImageAutoJudgeDefinition(HandleNum, SocketServerPicName[1][HandleNum], Range);
+					if (ImageJudegeResult == FALSE)
+					{
+						LogShow_exchange(m_Result, Final_Result_Control, 128, "白天图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
+						return false;
+					}
+				}
+
+			}
+			else if (paraArray[i].showName.Find("暗角") != -1)
+			{
+				int RGB = 30;
+				float Range = 0.0002;
+				int RGBCut = paraArray[i].High_Limit_Value.Find("RGB值:");
+				if (RGBCut != -1)
+				{
+					RGB = atof(paraArray[i].High_Limit_Value.Mid(RGBCut + 6, paraArray[i].High_Limit_Value.Find(",") - RGBCut - 6));
+				}
+				int RangeCut = paraArray[i].High_Limit_Value.Find("范围:");
+				if (RangeCut != -1)
+				{
+					Range = atof(paraArray[i].High_Limit_Value.Right(paraArray[i].High_Limit_Value.GetLength() - RangeCut - 5));
+				}
+
+				if (PathFileExists(SocketServerPicName[2][HandleNum]) != TRUE)
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片不存在\r\n", HandleNum, "功能测试:2-TEST");
+					return false;
+				}
+				ImageJudegeResult = ImageAutoJudgeDarkCorner(HandleNum, SocketServerPicName[2][HandleNum], RGB, Range);
 				if (ImageJudegeResult == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
-					return false;
-				}
-			}
-            else if (paraArray[i].showName.Find("白天") != -1)
-			{
-				if (PathFileExists(SocketServerPicName[1][HandleNum]) != TRUE)
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 128, "白天模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
-					return false;
-				}
-				ImageJudegeResult = ImageAutoJudgeDefinition(HandleNum, SocketServerPicName[1][HandleNum], Range);
-				if (ImageJudegeResult == FALSE)
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 128, "白天图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
+					LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
 					return false;
 				}
 			}
 
+			break;
 		}
-        else if (paraArray[i].showName.Find("暗角") != -1)
+		//123456(PRE)15(LENGTH)123456789012345-123456789022345(SectionNumber)读取保存 //1是RID,固定上传,2是Mac地址（唯一）,后续待添加
+		else if (paraArray[i].showName.Find("读取保存") != -1)
 		{
-			int RGB = 30;
-			float Range = 0.0002;
-			int RGBCut = paraArray[i].showName.Find("RGB值:");
-			if (RGBCut != -1)
+			CString ItemName = paraArray[i].showName;
+
+			CString LowLimitStr, PreStr, LengthStr, SectionNumberLowStr, SectionNumberHighStr, SectionNumberStr, NumberStr, DataNoStr;
+
+			int DataNoInt;
+
+			//先将号码取出来
+			LowLimitStr = paraArray[i].Low_Limit_Value;
+			Serial_Order_Return_CS.Replace(" ", "");
+			LowLimitStr.Replace(" ", "");
+			Serial_Order_Return_CS.Replace("\r", "");
+			Serial_Order_Return_CS.Replace("\n", "");
+
+			int pos = Serial_Order_Return_CS.Find(LowLimitStr);
+			if (pos >= 0)
+				NumberStr = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());
+			else
+				return false;
+
+			if (NumberStr.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
 			{
-				RGB = atof(paraArray[i].showName.Mid(RGBCut + 6, paraArray[i].showName.Find(",") - RGBCut - 6));
-			}
-			int RangeCut = paraArray[i].showName.Find("范围:");
-			if (RangeCut != -1)
-			{
-				Range = atof(paraArray[i].showName.Right(paraArray[i].showName.GetLength() - RangeCut - 5));
+				CString ICount = NumberStr;
+				int count = ICount.Replace(":", "");
+				if (count != 5)
+				{
+					NumberStr = NumberStr.Right(NumberStr.GetLength() - NumberStr.Find(":") - 1);
+				}
 			}
 
-			if (PathFileExists(SocketServerPicName[2][HandleNum]) != TRUE)
+			pos = NumberStr.Find('"');
+			if (pos >= 0)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片不存在\r\n", HandleNum, "功能测试:2-TEST");
-				return false;
+				NumberStr = NumberStr.Mid(pos + 1);
+				NumberStr = NumberStr.Left(NumberStr.Find('"'));
 			}
-			ImageJudegeResult = ImageAutoJudgeDarkCorner(HandleNum,SocketServerPicName[2][HandleNum], RGB, Range);
-			if (ImageJudegeResult == FALSE)
+			else
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
-				return false;
 			}
+
+			pos = NumberStr.Find('<');
+			if (pos >= 0)
+			{
+				NumberStr = NumberStr.Mid(pos + 1);
+				NumberStr = NumberStr.Left(NumberStr.Find('>'));
+			}
+			else
+			{
+			}
+
+			//NumberStr = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "", 1, HandleNum);
+
+			//判断前缀
+			if (ItemName.Find("(PRE)") != -1)
+			{
+				PreStr = ItemName.Left(ItemName.Find("(PRE)"));
+
+				if (NumberStr.Find(PreStr) != 0)//如果查找出来不等于0，那就代表前缀肯定不对
+				{
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段前缀错误", HandleNum);
+					return false;
+				}
+
+				ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(PRE)") - 5);//截取掉PRE部分
+			}
+
+
+			//判断长度
+			if (ItemName.Find("(LENGTH)") != -1)
+			{
+				LengthStr = ItemName.Left(ItemName.Find("(LENGTH)"));
+
+				if (NumberStr.GetLength() != atoi(LengthStr))//长度不对就返回错误
+				{
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段长度错误", HandleNum);
+					return false;
+				}
+
+
+				ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(LENGTH)") - 8);//截取掉LENGTH部分
+			}
+
+			//判断是否在范围内
+			if (ItemName.Find("(SectionNumber)") != -1)
+			{
+				SectionNumberStr = ItemName.Left(ItemName.Find("(SectionNumber)"));
+
+				SectionNumberHighStr = SectionNumberStr.Left(SectionNumberStr.Find("-"));
+
+				SectionNumberLowStr = SectionNumberStr.Right(SectionNumberStr.GetLength() - SectionNumberStr.Find("-") - 1);
+
+				if (NumberStr < SectionNumberHighStr || NumberStr >SectionNumberLowStr)//大于最大值或者小于最小值就返回错误
+				{
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "号段范围错误", HandleNum);
+					return false;
+				}
+
+				ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(SectionNumber)") - 15);//截取掉SectionNumber部分
+			}
+
+
+			if (WorkStationCS == "SMT测试")
+			{
+				int count = 0;
+				count = sscanf_s(CStringA(ItemName), "读取保存%d", &DataNoInt);//用格式化函数拿一下数字
+				if (count == 0)
+				{
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "读取保存检测失败，请确认是否为读取保存+数字(例如读取保存1)", HandleNum);
+					return false;
+				}
+
+
+				DataNoStr.Format("Data%d", DataNoInt);//再格式化一下，这样每次新增字段就不需要再改代码
+
+				AntiDupDataNoUploadCount[HandleNum][0]++;//读取保存的次数
+				AntiDupDataArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = DataNoStr;//根据次数存放字段名
+				AntiDupDataVauleArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = NumberStr;//再将值取出来
+
+
+				//判断数据库中是否存在数据，两种情况
+				//不是重新测试的情况，直接查字段,字段如果已经存在，芯片ID相同就报“已上传”的错误，不同就报错的同时给出与字段对应绑定的芯片ID，如果不存在就插入
+				//如果是重新测试，直接查字段，字段如果已经存在，芯片ID相同就不报错，芯片ID不同就要给出与字段对应绑定的芯片ID并报错，如果字段不存在，芯片ID不存在就插入，芯片ID存在就要再去查一下此芯片ID是否已经绑定过字段，绑定过就报失败
+
+				//开始进行数据库检查
+				EnterCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
+				BOOL UpFlag = Data_AntiDupDataNoCheck(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, ChipRfID[HandleNum]);
+				LeaveCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
+
+				if (UpFlag == FALSE)
+				{
+					AntiDupDataVauleArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = "";
+					AntiDupDataArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = "";
+					AntiDupDataNoUploadCount[HandleNum][0]--;
+					return false;
+				}
+			}
+			break;
 		}
-
-	}
-	//123456(PRE)15(LENGTH)123456789012345-123456789022345(SectionNumber)读取保存 //1是RID,固定上传,2是Mac地址（唯一）,后续待添加
-	else if (paraArray[i].showName.Find("读取保存") != -1)
-	{
-		CString ItemName = paraArray[i].showName;
-
-		CString PreStr, LengthStr, SectionNumberLowStr, SectionNumberHighStr, SectionNumberStr, NumberStr, DataNoStr;
-
-		int DataNoInt;
-
-		//先将号码取出来
-		Serial_Order_Return_CS.Replace("\r", "");
-		Serial_Order_Return_CS.Replace("\n", "");
-		int pos = Serial_Order_Return_CS.Find(":");
-		if (pos >= 0)
-			NumberStr = Serial_Order_Return_CS.Mid(pos + 1);
 		else
-			return false;
+			IMEI_FT_Item_Int = 32;
 
-		//NumberStr = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "", 1, HandleNum);
-
-		//判断前缀
-		if (ItemName.Find("(PRE)") != -1)
-		{
-			PreStr = ItemName.Left(ItemName.Find("(PRE)"));
-
-			if (NumberStr.Find(PreStr) != 0)//如果查找出来不等于0，那就代表前缀肯定不对
-			{
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段前缀错误", HandleNum);
-				return false;
-			}
-
-			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(PRE)") - 5);//截取掉PRE部分
-		}
+	} while(0);
 
 
-		//判断长度
-		if (ItemName.Find("(LENGTH)") != -1)
-		{
-			LengthStr = ItemName.Left(ItemName.Find("(LENGTH)"));
-
-			if (NumberStr.GetLength() != atoi(LengthStr))//长度不对就返回错误
-			{
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段长度错误", HandleNum);
-				return false;
-			}
-
-
-			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(LENGTH)") - 8);//截取掉LENGTH部分
-		}
-
-		//判断是否在范围内
-		if (ItemName.Find("(SectionNumber)") != -1)
-		{
-			SectionNumberStr = ItemName.Left(ItemName.Find("(SectionNumber)"));
-
-			SectionNumberHighStr = SectionNumberStr.Left(SectionNumberStr.Find("-"));
-
-			SectionNumberLowStr = SectionNumberStr.Right(SectionNumberStr.GetLength() - SectionNumberStr.Find("-") - 1);
-
-			if (NumberStr < SectionNumberHighStr || NumberStr >SectionNumberLowStr)//大于最大值或者小于最小值就返回错误
-			{
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "号段范围错误", HandleNum);
-				return false;
-			}
-
-			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(SectionNumber)") - 15);//截取掉SectionNumber部分
-		}
-
-
-		if (WorkStationCS == "SMT测试")
-		{
-			int count=0;
-			count = sscanf_s(CStringA(ItemName), "读取保存%d", &DataNoInt);//用格式化函数拿一下数字
-			if (count == 0)
-			{
-				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "读取保存检测失败，请确认是否为读取保存+数字(例如读取保存1)", HandleNum);
-				return false;
-			}
-
-			
-			DataNoStr.Format("Data%d", DataNoInt);//再格式化一下，这样每次新增字段就不需要再改代码
-
-			AntiDupDataNoUploadCount[HandleNum][0]++;//读取保存的次数
-			AntiDupDataArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = DataNoStr;//根据次数存放字段名
-			AntiDupDataVauleArray[HandleNum][AntiDupDataNoUploadCount[HandleNum][0] - 1] = NumberStr;//再将值取出来
-
-
-			//判断数据库中是否存在数据，两种情况
-			//不是重新测试的情况，直接查字段,字段如果已经存在，芯片ID相同就报“已上传”的错误，不同就报错的同时给出与字段对应绑定的芯片ID，如果不存在就插入
-			//如果是重新测试，直接查字段，字段如果已经存在，芯片ID相同就不报错，芯片ID不同就要给出与字段对应绑定的芯片ID并报错，如果字段不存在，芯片ID不存在就插入，芯片ID存在就要再去查一下此芯片ID是否已经绑定过字段，绑定过就报失败
-
-			//开始进行数据库检查
-			EnterCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
-			BOOL UpFlag = Data_AntiDupDataNoCheck(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, ChipRfID[HandleNum]);
-			LeaveCriticalSection(&UPDATEDB[HandleNum % (THREAD_NUM / 8)]);
-
-			if (UpFlag == FALSE)
-			{
-				return false;
-			}
-
-		}
-
-		
-	}
-	else if (paraArray[i].showName.Find("字段显示") != -1)//显示特殊字段用
+	//无冲突的关键字
+	if (paraArray[i].showName.Find("字段显示") != -1)//显示特殊字段用
 	{
 		if (HandleNum<8)
-			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(Serial_Order_Return);
+			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(Serial_Order_Return_CS);
 	}
-	else if (paraArray[i].showName.Find("Dongle蓝牙RSSI信号强度") != -1)
-	{
-		CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
-		CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
 
-		Vaule_Return_Count_CS[HandleNum].Format("%d", Vaule_Return_Count_CS[HandleNum]);
-
-		if (((PortCurrentVauleArray[HandleNum])<atoi(CountLow)) || ((PortCurrentVauleArray[HandleNum])>atoi(CountHigh)))
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			CString str;
-			Send_Serial_Order(&str,"AT+RSSI?",HandleNum,"Cancelled","");
-			return false;
-		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-		}
-	}
-	else
-		IMEI_FT_Item_Int = 32;
 
 	BOOL GPSresult = TRUE;
 	switch (IMEI_FT_Item_Int)
@@ -3813,16 +4263,86 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 
 	/*这里是部分功能连接前要做的事情---在这里开始*/
 
-	//这里开启蓝牙扫描枪
+	//初始化一下蓝牙测信号强度是否开始的数值
+	if (HandleNum < 8)
+	{
+		DongleStatusArray[HandleNum] = FALSE;
+		DongleTestRssiInfoArray[HandleNum] = "";
+	}
+
+	//这里开启蓝牙扫描枪，通过扫描来连接蓝牙
 	if (GetDongleCheckValue == TRUE)
 	{
 		if (DongleScanGun(HandleNum)==FALSE)
 			return false;
 	}
 
+	//这里只需要扫入蓝牙，不需要做连接，如果是第八个串口以及以后，则进行蓝牙扫描的工作
+	if (GetDongleScanCheckValue==TRUE)
+	{
+		CompareIMEI = FALSE;
+		if (HandleNum <= 7)
+		{
+			if (DongleScanGunOnly(HandleNum) == FALSE)
+				return false;
+		}
+		else if (HandleNum>7)
+		{
+			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum) == TRUE)//仅打开一次串口，后续保持一直打开
+			{
+				//打开串口成功
+				COM_State[HandleNum] = TRUE;
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "打开串口成功！\r\n", HandleNum);													//第一次显示“测试中”
+			}
+			else
+			{
+				//打开串口失败
+				COM_State[HandleNum] = FALSE;
+				LogShow_exchange(m_Result, Final_Result_Control, 128, "打开串口失败！\r\n", HandleNum);
+				return false;
+			}
+
+			DongleInit(HandleNum);
+
+			while (1)
+			{
+				BOOL DongleStatusCheck=FALSE;
+				for (int i = 0; i < 8; i++)
+				{
+					DongleStatusCheck |= DongleStatusArray[i];
+				}
+
+				//判断完前七个串口的状态后，只要有一个串口状态需要开启蓝牙扫描那就要去扫描，如果全部串口都为FALSE，那就清空map
+				if (DongleStatusCheck == TRUE)
+				{
+					DongleScanRssiFun(HandleNum, MachineType_CS);
+				}
+				else if (DongleStatusCheck == FALSE)
+				{
+					DongleRssiMap.clear();
+				}
+				Sleep(1000);
+				if (StopSign[HandleNum] == TRUE)
+				{
+					return FALSE;
+				}
+			}
+		}
+	}
+
 	AntiDupDataInit(HandleNum);//初始化字段防重复的变量
 
+    //初始化一下结束时要关闭的继电器数组的值
+	for (int i = 0; i < 8; i++)
+	{
+		ExternalCircuit[HandleNum][i]=FALSE;
+	}
+
+	ParaItemName[HandleNum] = "";
+
 	/*这里是部分功能连接前要做的事情---到这里结束*/
+
+
 
 	while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) != TRUE)//
 	{
@@ -3846,10 +4366,26 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 				return false;
 		}
 
+		////这里继续开启蓝牙扫描枪（这里不应该再开启扫描枪，只给扫一次的机会）
+		//if (GetDongleScanCheckValue == TRUE)
+		//{
+		//	if (DongleScanGunOnly(HandleNum) == FALSE)
+		//		return false;
+		//}
+
 		/*这里是部分功能连接前要做的事情---到这里结束*/
 
 
 		Sleep(1000);
+	}
+
+
+	if (GetDongleScanCheckValue == TRUE&&hScanGun[0] != NULL)
+	{
+		if (DongleTestDataDeq.size() != 0)
+		{
+			DongleTestDataDeq.pop_front();
+		}
 	}
 
 	CTime TestTime = CTime::GetCurrentTime();
@@ -4016,6 +4552,16 @@ GETPort:
 			if (Try_Time_Real<1)
 				Try_Time_Real = atoi(paraArray[0].High_Limit_Value);
 
+			//TR是指定这条指令循环测试几次，CR是用于控制板的，存在tr的时候就不能触发CR
+			if (tr == -1)
+			{
+				int cr = paraArray[i].showName.Find("CR");
+				if (cr >= 0)
+					Try_Time_Real = atoi(paraArray[i].showName.Left(2));
+				if (Try_Time_Real < 1)
+					Try_Time_Real = atoi(paraArray[0].High_Limit_Value);
+			}
+
 			CString WaitTimeCS;
 			int wpos = paraArray[i].showName.Find("DL");
 			if (wpos != -1)
@@ -4023,7 +4569,9 @@ GETPort:
 			else
 				WaitTimeCS = "0";
 
-			if ((paraArray[i].showName.Find("按键") != -1) || (paraArray[i].showName.Find("开蜂鸣器") != -1) || (paraArray[i].showName.Find("震动") != -1) || (paraArray[i].showName.Find("确认标识") != -1) || (paraArray[i].showName.Find("控制板状态") != -1))//
+			ParaItemName[HandleNum] = paraArray[i].showName;
+
+			if ((paraArray[i].showName.Find("白纸") != -1)||(paraArray[i].showName.Find("按键") != -1) || (paraArray[i].showName.Find("开蜂鸣器") != -1) || (paraArray[i].showName.Find("震动") != -1) || (paraArray[i].showName.Find("确认标识") != -1) || (paraArray[i].showName.Find("控制板状态") != -1))//
 			{
 				Final_Result_Control->SetFont(fontsp);
 				gColor[HandleNum] = RGB(205, 0, 205);
@@ -4071,9 +4619,9 @@ GETPort:
 				LogShow_exchange(m_Result, Final_Result_Control, 0, "测试中...", HandleNum);
 			}
 
-			if ((paraArray[i].showName.Find("开蜂鸣器") != -1) || (paraArray[i].showName.Find("关蜂鸣器") != -1) || (paraArray[i].showName.Find("按键") != -1) || (paraArray[i].showName.Find("震动") != -1)\
+			if (((paraArray[i].showName.Find("开蜂鸣器") != -1) || (paraArray[i].showName.Find("关蜂鸣器") != -1) || (paraArray[i].showName.Find("按键") != -1) || (paraArray[i].showName.Find("震动") != -1)\
 				|| (paraArray[i].showName.Find("控制板") != -1) || (paraArray[i].showName.Find("模拟电流") != -1) || (paraArray[i].showName.Find("通路") != -1) || (paraArray[i].showName.Find("照明灯") != -1)\
-				|| (paraArray[i].showName.Find("控制板状态") != -1) || (paraArray[i].showName.Find("外电") != -1))
+				|| (paraArray[i].showName.Find("控制板状态") != -1) || (paraArray[i].showName.Find("外电") != -1)) && (paraArray[i].showName.Find("Socket按键判断") == -1))
 			{
 				BOOL Result = CPUCommunication(paraArray[i].showName, HandleNum, "", "", COM_State[THREAD_NUM], m_Result, Final_Result_Control);
 				if (paraArray[i].showName.Find("控制板状态") != -1)//查询控制板相关状态的时候，要多次循环
@@ -4095,6 +4643,7 @@ GETPort:
 							Sleep(atoi(WaitTimeCS));
 							continue;//循环do while
 						}
+						
 						else
 						{
 							LogShow_exchange(m_Result, Final_Result_Control, 128, "控制板状态变化超时,立即停止！！！", HandleNum, "功能测试:1-CPU");
@@ -4110,6 +4659,17 @@ GETPort:
 				}
 				else if (Result == FALSE)
 				{
+					if (paraArray[i].showName.Find("CR") != -1)
+					{
+						Try_Time++;
+						LogShow_exchange(m_Result, Final_Result_Control, 5, "测试项目:" + paraArray[i].showName + "无效继续...", HandleNum);	//控制板轮序获取状态
+						if (Try_Time < Try_Time_Real)
+						{
+							Sleep(atoi(WaitTimeCS));
+							continue;//循环do while
+						}
+					}
+
 					LogShow_exchange(m_Result, Final_Result_Control, 128, "与控制板通信异常,立即停止！！！", HandleNum, "功能测试:1-CPU");
 					goto OVERDONE;//测试失败且有关闭串口选择处理
 				}
@@ -4155,6 +4715,37 @@ GETPort:
 					SocketServer[HandleNum]->OpenRecv(PicName);
 				}
 				CreateDirectoryRecursionFun(PicName);//自动创建文件夹路径，以日期和串口来对图片进行归类整理
+			}
+			else if ((paraArray[i].showName.Find("Socket按键判断") != -1))
+			{
+				SocketServer[HandleNum]->OpenSimpleRecv();
+				int count=0;
+				int WaitCount = atoi(WaitTimeCS)/300;
+				if (WaitTimeCS == "0")
+				{
+					WaitCount = 10;
+				}
+				
+				while (1)
+				{
+					if (SocketServer[HandleNum]->m_SimpleData.Find(paraArray[i].Low_Limit_Value) != -1)
+					{
+						SocketServer[HandleNum]->CloseSimpleRecv();
+						LogShow_exchange(m_Result, Final_Result_Control, 5, "确认成功", HandleNum);			//继续测试，状态不更新
+						break;
+					}
+
+					Sleep(300);
+
+					//默认超过8秒就当作超时处理
+					count++;
+					if (count >= WaitCount)
+					{
+						SocketServer[HandleNum]->CloseSimpleRecv();
+						LogShow_exchange(m_Result, Final_Result_Control, 128, "按键判断超时", HandleNum, "功能测试:2-TEST");
+						goto OVERDONE;
+					}
+				}
 			}
 			else if ((paraArray[i].showName.Find("Socket判断图片") != -1))
 			{
@@ -4305,61 +4896,6 @@ GETPort:
 				Picdlg[TimerHandleNum].SendMessage(WM_CLOSE);
 				LeaveCriticalSection(&WIFICOMMUNICATE[HandleNum]);//人工判断完图片后离开临界区，让其它端口的测试继续
 			}
-			//else if (paraArray[i].showName.Find("Socket自动判断") != -1)//这里是自动识别图片用的
-			//{
-			//	BOOL ImageJudegeResult;
-			//	if (paraArray[i].showName.Find("清晰度") != -1)
-			//	{
-			//		if (paraArray[i].showName.Find("白天") != -1)
-			//		{
-			//			if (PathFileExists(SocketServerPicName[0][HandleNum]) != TRUE)
-			//			{
-			//				LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
-			//				goto OVERDONE;
-			//			}
-
-			//			ImageJudegeResult=ImageAutoJudgeDefinition(SocketServerPicName[0][HandleNum], 3);
-
-			//			if (ImageJudegeResult == FALSE)
-			//			{
-			//				LogShow_exchange(m_Result, Final_Result_Control, 128, "夜间图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
-			//				goto OVERDONE;
-			//			}
-			//		}
-
-			//		if (paraArray[i].showName.Find("黑夜") != -1)
-			//		{
-			//			if (PathFileExists(SocketServerPicName[1][HandleNum]) != TRUE)
-			//			{
-			//				LogShow_exchange(m_Result, Final_Result_Control, 128, "白天模式图片不存在\r\n", HandleNum, "功能测试:2-TEST");
-			//				goto OVERDONE;
-			//			}
-			//			ImageJudegeResult=ImageAutoJudgeDefinition(SocketServerPicName[1][HandleNum], 2);
-			//			if (ImageJudegeResult == FALSE)
-			//			{
-			//				LogShow_exchange(m_Result, Final_Result_Control, 128, "白天图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
-			//				goto OVERDONE;
-			//			}
-			//		}
-
-			//	}
-			//	
-			//	if (paraArray[i].showName.Find("暗角") != -1)
-			//	{
-			//		if (PathFileExists(SocketServerPicName[2][HandleNum]) != TRUE)
-			//		{
-			//			LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片不存在\r\n", HandleNum, "功能测试:2-TEST");
-			//			goto OVERDONE;
-			//		}
-			//		ImageJudegeResult=ImageAutoJudgeDarkCorner(SocketServerPicName[2][HandleNum], 30, 0.0002);
-			//		if (ImageJudegeResult == FALSE)
-			//		{
-			//			LogShow_exchange(m_Result, Final_Result_Control, 128, "暗角图片自动测试不通过\r\n", HandleNum, "功能测试:2-TEST");
-			//			goto OVERDONE;
-			//		}
-			//	}
-
-			//}
 			else if ((paraArray[i].showName.Find("高压保护测试") != -1))//高压保护
 			{
 				BOOL Flag = TRUE, Flag2 = TRUE;
@@ -4368,6 +4904,9 @@ GETPort:
 				char *p2 = BackUpPowerInstrName.GetBuffer();
 
 				SetVoltageAndRangeVaule(paraArray[i].Low_Limit_Value,m_Voltage,m_Range);
+
+				double m_HighVoltage, m_Delay;
+				SetHighVoltageAndDelayVaule(paraArray[i].High_Limit_Value, m_HighVoltage,m_Delay);
 
 				if (RelayFlag == FALSE)
 				{
@@ -4387,8 +4926,8 @@ GETPort:
 					}
 					else if (Flag == TRUE)
 					{
-						CurrentTestArray[0]->PowerOn(p1, atof(paraArray[i].High_Limit_Value));
-						Sleep(3000);
+						CurrentTestArray[0]->PowerOn(p1, m_HighVoltage);
+						Sleep(m_Delay);
 						CurrentTestArray[0]->PowerOn(p1, m_Voltage);
 					}
 				}
@@ -4435,7 +4974,8 @@ GETPort:
 								{
 									deque<int>::iterator pos;
 									pos = find(Current1Deq.begin(), Current1Deq.end(), HandleNum);
-									Current1Deq.erase(pos);
+									if (pos != Current1Deq.end())
+										Current1Deq.erase(pos);
 									return FALSE;
 								}
 
@@ -4483,7 +5023,8 @@ GETPort:
 								{
 									deque<int>::iterator pos;
 									pos = find(Current2Deq.begin(), Current2Deq.end(), HandleNum);
-									Current2Deq.erase(pos);
+									if (pos != Current2Deq.end())
+										Current2Deq.erase(pos);
 									return FALSE;
 								}
 							}
@@ -4540,7 +5081,8 @@ GETPort:
 							{
 								deque<int>::iterator pos;
 								pos = find(Current1Deq.begin(), Current1Deq.end(), HandleNum);
-								Current1Deq.erase(pos);
+								if (pos != Current1Deq.end())
+									Current1Deq.erase(pos);
 								return FALSE;
 							}
 						}
@@ -4584,7 +5126,8 @@ GETPort:
 								{
 									deque<int>::iterator pos;
 									pos = find(Current1Deq.begin(), Current1Deq.end(), HandleNum);
-									Current1Deq.erase(pos);
+									if (pos != Current1Deq.end())
+										Current1Deq.erase(pos);
 									return FALSE;
 								}
 
@@ -4627,7 +5170,8 @@ GETPort:
 								{
 									deque<int>::iterator pos;
 									pos = find(Current2Deq.begin(), Current2Deq.end(), HandleNum);
-									Current2Deq.erase(pos);
+									if (pos != Current2Deq.end())
+										Current2Deq.erase(pos);
 									return FALSE;
 								}
 							}
@@ -4967,6 +5511,12 @@ GETPort:
 				NewData.Format("%s,%d", Ipaddress.Right(Ipaddress.GetLength()-4),SocketServerPort[HandleNum]);
 				PortOrder.Replace("IP端口", NewData);
 			}
+			else if (paraArray[i].showName.Find("字段显示") != -1)//扫描枪扫出来显示的字段去替代指令
+			{
+				CString NewData;
+				m_ShowNumberPortControlArray[HandleNum]->GetWindowTextA(NewData);
+				PortOrder.Replace("字段显示", NewData);
+			}
 
 			CString Serial_Order_Return_CS_Show;
 
@@ -5011,32 +5561,37 @@ GETPort:
 					Judge_Return = IMEI_Function_Judge(i, paraArray[i].showName, (LPTSTR)(LPCTSTR)Serial_Order_Return, HandleNum, m_Result, Final_Result_Control);
 				}
 
-				//Socket接收图像在这里判断接收结束
-				if(SocketServer[HandleNum]->m_RecvFlag==TRUE)
-				{ 
-					SocketServer[HandleNum]->CloseRecv();
-					if (SocketServer[HandleNum]->CreatePic() == FALSE)
+				if (GetPicChoose == TRUE)
+				{
+					//Socket接收图像在这里判断接收结束
+					if (SocketServer[HandleNum]->m_RecvFlag == TRUE)
 					{
-						SocketServerPicName[0][HandleNum] = "";
-						SocketServerPicName[1][HandleNum] = "";
-						LogShow_exchange(m_Result, Final_Result_Control, 5, "测试项目:" + paraArray[i].showName + "失败,图像创建失败，立即停止！！！", HandleNum);
-						goto OVERDONE;
-					}
+						SocketServer[HandleNum]->CloseRecv();
+						if (SocketServer[HandleNum]->CreatePic() == FALSE)
+						{
+							SocketServerPicName[0][HandleNum] = "";
+							SocketServerPicName[1][HandleNum] = "";
+							LogShow_exchange(m_Result, Final_Result_Control, 5, "测试项目:" + paraArray[i].showName + "失败,图像创建失败，立即停止！！！", HandleNum);
+							goto OVERDONE;
+						}
 
-					//为了不影响原有的图片展示逻辑，这里将图片放到原本存放图片的数组中
-					if (paraArray[i].showName.Find("夜拍") != -1)
-					{
-						PicPath[0][HandleNum] = SocketServerPicName[0][HandleNum];
-					}
-					else if (paraArray[i].showName.Find("白天") != -1)
-					{
-						PicPath[1][HandleNum] = SocketServerPicName[1][HandleNum];
+						//为了不影响原有的图片展示逻辑，这里将图片放到原本存放图片的数组中
+						if (paraArray[i].showName.Find("夜拍") != -1)
+						{
+							PicPath[0][HandleNum] = SocketServerPicName[0][HandleNum];
+						}
+						else if (paraArray[i].showName.Find("白天") != -1)
+						{
+							PicPath[1][HandleNum] = SocketServerPicName[1][HandleNum];
+						}
 					}
 				}
+
 				
 				if (Judge_Return == true)
 				{
 					//结果达标
+					ParaItemName[HandleNum] = "";
 					LogShow_exchange(m_Result, Final_Result_Control, 5, "测试项目:" + paraArray[i].showName + "达标！========该项测试成功", HandleNum);			//继续测试，状态不更新
 					All_Result[i] = 1;
 					/*
@@ -5110,6 +5665,14 @@ GETPort:
 										return FALSE;
 									Sleep(300);
 								}
+							}
+
+							//清除字段显示框
+							if (HandleNum < 8)
+							{
+								DongleStatusArray[HandleNum] = FALSE;
+								DongleTestRssiInfoArray[HandleNum] = "";
+								m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 							}
 
 							EnableWindow_Start(HandleNum);
@@ -5208,9 +5771,10 @@ GETPort:
 		CString m_dbNew;
 		//WorkStationControl.GetWindowTextA(WorkStationCS);
 		//if(WorkStationCS=="")WorkStationControl.GetWindowTextA(WorkStationCS);
-		if ((SIMisOK[HandleNum] != TRUE) && ((WorkStationCS != "组装测试") && (WorkStationCS != "研发测试")))
+		if ((SIMisOK[HandleNum] != TRUE) && ((WorkStationCS != "组装测试") && (WorkStationCS != "老化后测试") &&(WorkStationCS != "研发测试")))
 		{
 			//三合一测试的时候可以先把这里注释掉
+			ParaItemName[HandleNum] = "SIM卡漏测";
 			LogShow_exchange(m_Result, Final_Result_Control, 128, "漏测SIM卡，必须测试SIM卡！！！", HandleNum, "功能测试:2-TEST");
 			goto OVERDONE;//测试失败且有关闭串口选择处理
 		}
@@ -5229,7 +5793,7 @@ GETPort:
 			do{
 				if (WorkStationCS == "研发测试")
 				{
-					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "研发测试，不上传字段防重复到数据库", HandleNum);
+					LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "研发测试，不上传字段到防重复数据库", HandleNum);
 					break;
 				}
 
@@ -5256,7 +5820,6 @@ GETPort:
 				}
 			} while (0);
 
-
 			/*新增字段防重复功能---到这里结束开始*/
 
 			if (WorkStationCS == "SMT测试")
@@ -5276,11 +5839,11 @@ GETPort:
 			}
 			else if (WorkStationCS == "老化后测试")
 			{
-				DBResult = Data_UpdatePara(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, FALSE);
+				DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, FALSE);
 				if (DBResult == FALSE)
 				{
 					Sleep(3000);
-					DBResult = Data_UpdatePara(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control);
+					DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control);
 				}
 			}
 			else if (WorkStationCS == "研发测试")
@@ -5295,7 +5858,6 @@ GETPort:
 		}
 		//////////////////////////////////////////////
 		//////////////////////////////////////////////
-
 
 
 
@@ -5370,6 +5932,8 @@ GETPort:
 			//清除字段显示框
 			if (HandleNum < 8)
 			{
+				DongleStatusArray[HandleNum] = FALSE;
+				DongleTestRssiInfoArray[HandleNum] = "";
 				m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 			}
 
@@ -5413,6 +5977,11 @@ OVERDONE:
 				DongleConnectCount[HandleNum]++;
 			}
 
+			if (AntiDupDataLinkFlag[HandleNum][1] == 1)//如果有写入LINK，就要记得重新写回3
+			{
+				Send_Serial_Order(&Serial_Order_Return, AntiDupDataLinkOrder[HandleNum], HandleNum, "OK", "");
+			}
+
 			BOOL Return;
 			if (hPort[HandleNum] != NULL)
 				Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -5454,6 +6023,8 @@ OVERDONE:
 	//清除字段显示框
 	if (HandleNum < 8)
 	{
+		DongleStatusArray[HandleNum] = FALSE;
+		DongleTestRssiInfoArray[HandleNum] = "";
 		m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 	}
 
@@ -5514,12 +6085,13 @@ void IMEIWrite_MulAT::EnableWindow_ALL(BOOL Choose)
 	GetDlgItem(IDC_CHECK39)->EnableWindow(Choose);
 	GetDlgItem(IDC_BLUETOOTH_CHECK)->EnableWindow(Choose);
 	GetDlgItem(IDC_DongleBle_CHECK)->EnableWindow(Choose);
+	GetDlgItem(IDC_DongleBleScan_CHECK)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK40)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK41)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK42)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK43)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK44)->EnableWindow(Choose);
-
+	GetDlgItem(IDC_CHECK45)->EnableWindow(Choose);
 	GetDlgItem(IDC_BUTTONCONNCPU)->EnableWindow(Choose);
 	GetDlgItem(IDC_BUTTONDISCONNCPU)->EnableWindow(Choose);
 	GetDlgItem(IDC_BUTTON3)->EnableWindow(Choose);
@@ -6036,7 +6608,7 @@ void IMEIWrite_MulAT::OnTimer(UINT nIDEvent)
 		else
 		{
 			//如果不勾选蓝牙，才按照原逻辑，否则不要让它去check扫描枪数据
-			if (Get_ScanGun_Data(&m_Result1, &Final_Result_Control1, 0, "\r") == TRUE&&GetBluetoothCheckValue == FALSE&&GetDongleCheckValue==FALSE)	//扫描枪有数据
+			if (Get_ScanGun_Data(&m_Result1, &Final_Result_Control1, 0, "\r") == TRUE&&GetBluetoothCheckValue == FALSE&&GetDongleCheckValue == FALSE&&GetDongleScanCheckValue == FALSE)	//扫描枪有数据
 			{
 				if (Check_ScanGun_Data(&m_Result1, &Final_Result_Control1, 0, NULL, TRUE, 15) == TRUE)			//IMEI号
 				{
@@ -6065,6 +6637,7 @@ void IMEIWrite_MulAT::OnTimer(UINT nIDEvent)
 
 			if (g_IsHideFlag == 1)
 			{
+				ShowWindow(SW_SHOWMINIMIZED);
 				ShowWindow(SW_HIDE);//隐藏窗口
 				//ShowWindow(SW_HIDE);//隐藏窗口
 				//ShowWindow(SW_HIDE);//隐藏窗口
@@ -6075,6 +6648,7 @@ void IMEIWrite_MulAT::OnTimer(UINT nIDEvent)
 		}
 		else if (g_ADCTFlag != 1)
 		{
+			//ShowWindow(SW_HIDE);
 			ShowWindow(SW_SHOWMAXIMIZED);
 		}
 		break;
@@ -7445,6 +8019,22 @@ BOOL IMEIWrite_MulAT::Get_ScanGun_Data(CEdit* m_Result, CEdit* Final_Result_Cont
 	char *p = NULL;
 	char buf[1024];
 
+	if (DongleTestDataDeq.size() != 0&&GetDongleScanCheckValue==TRUE)
+	{
+		CString ShowNumberStr;
+		m_ShowNumberPortControlArray[DongleTestDataDeq.front()]->GetWindowText(ShowNumberStr);
+		if (ShowNumberStr == "")
+		{
+			Final_Result_ControlArray[HandleNum]->SetFont(font);
+			gColor[HandleNum] = RGB(0, 155, 100);
+			Final_Result_ControlArray[DongleTestDataDeq.front()]->SetWindowTextA("可扫描");
+		}
+	}
+	else if (GetDongleScanCheckValue == TRUE)
+	{
+		return TRUE;
+	}
+
 	//read and the com port
 	CString Port_Temp = "";//串口读取数据 的缓存
 	for (int r = 0; r<2; r++)
@@ -7511,7 +8101,60 @@ BOOL IMEIWrite_MulAT::Get_ScanGun_Data(CEdit* m_Result, CEdit* Final_Result_Cont
 				//	//BluetoothCoreFunction(MAC);
 				//}
 
-				if (GetDongleCheckValue == TRUE)
+				if (GetDongleScanCheckValue == TRUE)
+				{
+					if (Software_Version[0] == "")
+					{
+						//SetDlgItemText(IDC_SCANDATA_EDIT, Vaule_ScanGun[HandleNum]);
+						Vaule_ScanGun[HandleNum] = "";
+						return TRUE;
+					}
+					else if (Software_Version[0] != "")
+					{
+						if (DongleTestDataDeq.size() == 0)
+						{
+							GetDlgItem(IDC_SCANDATA_EDIT)->SetWindowTextA("无串口可分配");
+							Vaule_ScanGun[HandleNum] = "";
+							return TRUE;
+						}
+
+						CString ScanGunDataStr;
+						GetDlgItem(IDC_SCANDATA_EDIT)->GetWindowTextA(ScanGunDataStr);
+
+						if (ScanGunDataStr == "" || ScanGunDataStr == "无串口可分配" || ScanGunDataStr == "MAC地址已经扫入" || ScanGunDataStr == "扫入速度过快，请重扫")
+						{
+							if (Vaule_ScanGun[HandleNum] != "")
+							{
+								for (int z = 0; z < 8; z++)
+								{
+									if (DongleTestRssiInfoArray[z] == Vaule_ScanGun[HandleNum])
+									{
+										GetDlgItem(IDC_SCANDATA_EDIT)->SetWindowTextA("MAC地址已经扫入");
+										Vaule_ScanGun[HandleNum] = "";
+										return TRUE;
+									}
+								}
+								if (Vaule_ScanGun[HandleNum].GetLength() > 12)
+								{
+									Vaule_ScanGun[HandleNum] = Vaule_ScanGun[HandleNum].Left(12);
+								}
+								SetDlgItemText(IDC_SCANDATA_EDIT, Vaule_ScanGun[HandleNum]);
+								DongleScanGunFlag = TRUE;
+							}
+							else if (Vaule_ScanGun[HandleNum] == "")
+							{
+								return TRUE;
+							}
+						}
+						else if (ScanGunDataStr != "")
+						{
+							GetDlgItem(IDC_SCANDATA_EDIT)->SetWindowTextA("扫入速度过快，请重扫");
+							Vaule_ScanGun[HandleNum] = "";
+							return TRUE;
+						}
+					}
+				}
+				else if (GetDongleCheckValue == TRUE)
 				{
 					if (Software_Version[0] == "")
 					{
@@ -7531,7 +8174,7 @@ BOOL IMEIWrite_MulAT::Get_ScanGun_Data(CEdit* m_Result, CEdit* Final_Result_Cont
 						CString ScanGunDataStr;
 						GetDlgItem(IDC_SCANDATA_EDIT)->GetWindowTextA(ScanGunDataStr);
 
-						if (ScanGunDataStr == "" || ScanGunDataStr == "无串口可分配" || ScanGunDataStr == "地址已经扫入" || ScanGunDataStr == "扫入速度过快，请重扫")
+						if (ScanGunDataStr == "" || ScanGunDataStr == "无串口可分配" || ScanGunDataStr == "MAC地址已经扫入" || ScanGunDataStr == "扫入速度过快，请重扫")
 						{
 							if (Vaule_ScanGun[HandleNum] != "")
 							{
@@ -7642,13 +8285,17 @@ void IMEIWrite_MulAT::OnBnClickedButton3()//打开扫描枪1
 	SetTimer(30, 1000, NULL);
 
 	//如果没有勾选蓝牙才去判断IMEI
-	if (GetBluetoothCheckValue == FALSE && GetDongleCheckValue==FALSE)
+	if (GetBluetoothCheckValue == FALSE && GetDongleCheckValue==FALSE&&GetDongleScanCheckValue==FALSE)
 	{
 		CompareIMEI = TRUE;
 	}
 	else if (GetBluetoothCheckValue == TRUE || GetDongleCheckValue == TRUE)
 	{
 		AfxMessageBox("获取配置前请先扫描MAC地址！Mac地址扫入过快时只有第一个有效！");
+	}
+	else if (GetDongleScanCheckValue == TRUE)
+	{
+		AfxMessageBox("需先打开待测串口，扫入MAC地址并连接上后，才可以扫入下一个MAC地址");
 	}
 
 }
@@ -7889,6 +8536,15 @@ void IMEIWrite_MulAT::WriteLogIni(int LogNum, CString ChipRfIDbg)
 	//sprintf(m_Time_Time, "%d-Log",LogNum);
 	sprintf(cReportPath, "%s%04d%02d%02d/%s.txt", m_strModulePath, cTime.GetYear(), cTime.GetMonth(), cTime.GetDay(), m_Time_Time);
 	cReport[LogNum].Open(cReportPath, CFile::modeCreate | CFile::modeReadWrite | CFile::modeNoTruncate);
+	//try{
+	//	CFileException e;
+	//	BOOL FileFlag = cReport[LogNum].Open(cReportPath, CFile::modeCreate | CFile::modeReadWrite | CFile::modeNoTruncate, &e);
+	//	AfxMessageBox(e.ReportError());
+	//}
+	//catch (CFileException &e)
+	//{
+	//	AfxMessageBox(e.ReportError());/*打印出异常原因*/
+	//}
 	//CFile::modeCreate 文件不存在，则新建；存在并且没有CFile::modeNoTruncate则清空原文件，有CFile::modeNoTruncate，则不清空原文件（不把长度删除为0）
 	/*if(!cReport[LogNum].Open(cReportPath,CFile::modeReadWrite))
 	{
@@ -7993,7 +8649,7 @@ void IMEIWrite_MulAT::OnBnClickedButtonstart9()
 	int HandleNum = 8;
 	StopSign[8] = FALSE;
 	Start9_Control.EnableWindow(FALSE);
-	if (GetPicChoose == TRUE)
+	if (GetPicChoose == TRUE)  //如果是作为摄像头之类产品的时候，9-16口只作为图像接收端口
 	{
 		HandleNum = 0;
 		if (OPen_Pic_Port(&m_Port9, &m_Baud9, HandleNum) == FALSE)
@@ -8255,6 +8911,24 @@ void IMEIWrite_MulAT::OnBnClickedButtonstop8()
 void IMEIWrite_MulAT::OnBnClickedButtonstop9()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	int ArraySign = 8;//一个数组标记，便于此函数一些数组的统一使用
+
+	if (GetDongleScanCheckValue == TRUE&& (ArraySign > 7) && COM_State[ArraySign]==TRUE)
+	{
+		BOOL Return;
+		if (hPort[ArraySign] != NULL)
+			Return = CloseHandle(hPort[ArraySign]);				//测试成功后
+		hPort[ArraySign] = NULL;
+		if (Return == TRUE)
+			LogShow_exchange(&m_Result9, &Final_Result_Control9, 5, "关闭该串口成功！！", ArraySign);
+		else
+		{
+			LogShow_exchange(&m_Result9, &Final_Result_Control9, 128, "关闭该串口失败！！", ArraySign, "功能测试:0-端口");
+			//return FALSE; //关闭串口失败
+		}
+		COM_State[ArraySign] = FALSE;
+	}
+
 	int HandleNum = 8;
 	StopSign[HandleNum] = TRUE;
 	Sleep(100);
@@ -8320,6 +8994,7 @@ void IMEIWrite_MulAT::OnBnClickedButtonstop10()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int HandleNum = 9;
+
 	StopSign[HandleNum] = TRUE;
 	Sleep(100);
 	int i = 0;
@@ -8804,13 +9479,60 @@ void IMEIWrite_MulAT::OnBnClickedButtondisconncpu()
 
 BOOL IMEIWrite_MulAT::CPUCommunication(CString CpuOrderName, int HandleNum, CString EndSign, CString StartSign, BOOL Enable, CEdit* m_Result, CEdit* Final_Result_Control)
 {
-	LogShow_exchange(m_Result, Final_Result_Control, 6, "开始与单片机通信0-'" + CpuOrderName + "'命令", HandleNum);
+	CString TestType, WorkStation;
+
+	GetDlgItem(IDC_COMBO56)->GetWindowTextA(WorkStation);
+	GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+
+	if (TestType != "DAM继电器")
+	{
+		LogShow_exchange(m_Result, Final_Result_Control, 6, "开始与单片机通信0-'" + CpuOrderName + "'命令", HandleNum);
+	}
+
 	EnterCriticalSection(&CPUCOMMUNICATE);
+
 	if (Enable == FALSE)
 	{
 		LeaveCriticalSection(&CPUCOMMUNICATE);
 		return TRUE;
 	}
+	
+	if (TestType == "DAM继电器")
+	{
+		if (WorkStation == "SMT测试")
+		{
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "DAM继电器在SMT中还未实现！", HandleNum);
+			LeaveCriticalSection(&CPUCOMMUNICATE);
+			return FALSE;
+		}
+
+		if ((CpuOrderName.Find("通路") != -1) || (CpuOrderName.Find("外电") != -1))
+		{
+			BOOL DamFlag = DamControlFun(HandleNum, CpuOrderName);
+
+			if (DamFlag == FALSE)
+			{
+				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "继电器调用失败！", HandleNum);
+				LeaveCriticalSection(&CPUCOMMUNICATE);
+				Vaule_Return_Count_CS[THREAD_NUM] = "";
+				return FALSE;
+			}
+			else if (DamFlag == TRUE)
+			{
+				LeaveCriticalSection(&CPUCOMMUNICATE);
+				Vaule_Return_Count_CS[THREAD_NUM] = "";
+				return TRUE;
+			}
+		}
+		else
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 6, CpuOrderName + "不是Dam继电器命令", HandleNum);
+			LeaveCriticalSection(&CPUCOMMUNICATE);
+			return TRUE;
+		}
+		
+	}
+	
 	LogShow_exchange(m_Result, Final_Result_Control, 6, "开始与单片机通信1-'" + CpuOrderName + "'命令", HandleNum);
 	int CpuOrderNum = -1;
 	if (CpuOrderName == "成功")
@@ -8868,6 +9590,10 @@ BOOL IMEIWrite_MulAT::CPUCommunication(CString CpuOrderName, int HandleNum, CStr
 		CpuOrderNum = 21;
 	else if (CpuOrderName.Find("外电3关") != -1)
 		CpuOrderNum = 22;
+	else if (CpuOrderName.Find("外电4开") != -1)
+		CpuOrderNum = 23;
+	else if (CpuOrderName.Find("外电4关") != -1)
+		CpuOrderNum = 24;
 	else
 	{
 		LeaveCriticalSection(&CPUCOMMUNICATE);
@@ -8884,18 +9610,18 @@ BOOL IMEIWrite_MulAT::CPUCommunication(CString CpuOrderName, int HandleNum, CStr
 	关1#电压3：AT+01a+#+Voltage_3_OFF+校验
 	*/
 	//--开绿灯--开红灯--开蜂鸣器--关蜂鸣器--SOS按键--SOS关按键--按键1--按键2--获取到终端--外电模拟电流--打开通路--关闭通路--开照明灯--关照明灯--门状态--按钮状态
-	CString CpuOrder[23] = { "CTNGL", "CTNRL", "TNB", "TFB", "TNK", "TFK", "TNDSV", "TNCSV", "GetCom", "Crt", "TNPW", "TFPW", "TNL", "TFL", "CheckDoor", "CheckButtonF", "CheckButtonP", \
-		"Voltage_1_ON", "Voltage_2_ON", "Voltage_3_ON", "Voltage_1_OFF", "Voltage_2_OFF", "Voltage_3_OFF" };
+	CString CpuOrder[25] = { "CTNGL", "CTNRL", "TNB", "TFB", "TNK", "TFK", "TNDSV", "TNCSV", "GetCom", "Crt", "TNPW", "TFPW", "TNL", "TFL", "CheckDoor", "CheckButtonF", "CheckButtonP", \
+		"Voltage_1_ON", "Voltage_2_ON", "Voltage_3_ON", "Voltage_1_OFF", "Voltage_2_OFF", "Voltage_3_OFF", "Voltage_4_ON", "Voltage_4_OFF" };
 	CString Command_Position[16] = { "AT01a#", "AT02b#", "AT03c#", "AT04d#", "AT05e#", "AT06f#", "AT07g#", "AT08h#",
 		"AT09i#", "AT10j#", "AT11k#", "AT12l#", "AT13m#", "AT14n#", "AT15o#", "AT16p#" };
 
-	CString TestType;
-	GetDlgItem(IDC_COMBOTESTYYPE)->GetWindowTextA(TestType);
+
 	if (TestType == "无尾线")
 	{
 		CpuOrder[0] = "TNGL";
 		CpuOrder[1] = "TNRL";
 	}
+
 
 	CString TestType2;
 	GetDlgItem(IDC_COMBOTESTYYPE2)->GetWindowTextA(TestType2);//气动
@@ -9619,6 +10345,332 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara2(CAdoInterface& myado, int DataUpNum, CEdi
 }
 //以上是数据库Data_UpdatePara2
 
+
+//以下是数据库Data_UpdatePara3
+BOOL IMEIWrite_MulAT::Data_UpdatePara3(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL ErrorUpEnable, CString ChipRfIDbg)//---------0
+{
+	CString ChipRfIDCurrent;
+	if (ChipRfIDbg != "")
+	{
+		ChipRfIDCurrent = ChipRfIDbg;
+	}
+	else
+	{
+		ChipRfIDCurrent = ChipRfID[DataUpNum];
+	}
+	_variant_t var;
+	CString DB_FAIL;
+	if (IMEI_Setdlg.Initial_Connect_DB == TRUE)
+	{
+		CString Conn = "";
+		Conn.Format("driver={SQL Server};Server=%s;DATABASE=%s;UID=%s;PWD=%s", IMEI_Setdlg.m_server, IMEI_Setdlg.m_db, IMEI_Setdlg.m_user, IMEI_Setdlg.m_pwd);
+
+		if (myado.m_pCon == NULL)
+		{
+			CoInitialize(NULL);
+			DB_FAIL = myado.ConnecDataLibrary(Conn, "", "", adModeUnknown);
+		}
+		if (myado.m_pCon->State == 0)  //1表示已经打开,0表示关闭，数据库意外断开，重连
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 5, "重新连接数据库.......", DataUpNum);
+			DB_FAIL = myado.ConnecDataLibrary(Conn, "", "", adModeUnknown);//数据库意外断开，重连
+		}
+		else
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库连接正常中...", DataUpNum);
+		}
+		if (DB_FAIL == "FAIL")
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "连接数据库失败，无法上传数据！！！请检查网络.......", DataUpNum, "功能测试:3-DB", ChipRfIDCurrent);
+			return FALSE;
+		}
+
+		OrderNumbersControl.GetWindowTextA(ZhiDanCS);
+		if ((ChipRfIDCurrent == "") || (Software_Version[DataUpNum] == ""))
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "SN或者软件版本为空", DataUpNum);
+			return FALSE;
+		}
+
+
+
+		//////////////////////////////////////////////////
+		//返工操作
+		ReturnCodeControl.GetWindowTextA(ReturnCodeCS);
+		if (ReturnCodeCS != "")
+		{
+			BOOL UP_Barcode = TRUE;
+			BOOL Barcode_Check_UP;
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "查看数据总表(返工)...", DataUpNum);
+			BOOL ReduceBarcode_Check = FALSE;
+			////////////////////////////////检查RFID、机型、软件版本是否已经存在//////////////////////////////
+			myado.OpenSheet("select SN,SoftModel,Version,OtherTestSign from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");
+			BOOL Barcode_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
+			Barcode_Check &= myado.Find("SoftModel='" + MachineType_CS + "'");
+			Barcode_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
+			ReduceBarcode_Check = Barcode_Check;
+
+			myado.CloseSheet();
+
+			CString ExistMessage = "";
+			GetExistReturnCode(myado, DataUpNum, m_Result, Final_Result_Control, &ExistMessage, ChipRfIDCurrent);
+			Barcode_Check &= (ExistMessage.Find(ReturnCodeCS) != -1);
+
+			if (Barcode_Check == TRUE)
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库总表已经有，此机已经测试过(返工)！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！...", DataUpNum);
+				return TRUE;//有2
+			}
+			else
+			{
+				/*
+				myado.OpenSheet("select SN,SoftModel,Version,AutoTestResult from dbo.Gps_TestResult WHERE SN ='"+ChipRfIDCurrent+"' AND Version='"+Software_Version[DataUpNum]+"'AND SoftModel='"+MachineType_CS+"'");
+				Barcode_Check=myado.Find("SN='"+ChipRfIDCurrent+"'");
+				Barcode_Check&=myado.Find("SoftModel='"+MachineType_CS+"'");
+				Barcode_Check&=myado.Find("Version='"+Software_Version[DataUpNum]+"'");
+				myado.CloseSheet();
+				*/
+				Barcode_Check = ReduceBarcode_Check;
+				if (Barcode_Check == TRUE)
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库已经有功能测试记录，更新(返工)...", DataUpNum);
+
+				}
+				else
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库不存在，直接上传(返工)...", DataUpNum);
+				}
+			}
+			////////////////////////////////检查RFID是否已经存在//////////////////////////////
+			CTime ReturnTime;
+			CString ReturnTimeCS;
+			ReturnTime = CTime::GetCurrentTime();
+			ReturnTimeCS.Format("%04d-%02d-%02d->", ReturnTime.GetYear(), ReturnTime.GetMonth(), ReturnTime.GetDay());
+
+
+			UP_Barcode = TRUE;
+			if (Barcode_Check == TRUE)
+			{
+				//更新
+				CString strSQL_Write_Barcode;
+				//myado.OpenSheet("select * from dbo.Gps_TestResult WHERE SN ='"+ChipRfIDCurrent+"' AND Version='"+Software_Version[DataUpNum]+"'AND SoftModel='"+MachineType_CS+"'");
+
+				if (1)
+				{
+					strSQL_Write_Barcode = "UPDATE dbo.Gps_TestResult SET OtherTestSign = '" + ReturnTimeCS + ReturnCodeCS + ExistMessage + "',ZhiDan = '" + ZhiDanCS + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";
+					UP_Barcode = myado.Execute(strSQL_Write_Barcode, &var);
+				}
+				//myado.CloseSheet();
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "返工sql:" + strSQL_Write_Barcode, DataUpNum);
+				//更新
+			}
+			else
+			{
+				//直接上传
+				CString strSQL1 = "Insert into dbo.Gps_TestResult(SN,IMEI,Version,SoftModel,OtherTestSign,ZhiDan)\
+								  								  								 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','" + ReturnTimeCS + ReturnCodeCS + "','" + ZhiDanCS + "')";
+
+
+				//myado.OpenSheet("select * from dbo.Gps_TestResult");
+				UP_Barcode = myado.Execute(strSQL1, &var);
+				//myado.CloseSheet();
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "返工sql:" + strSQL1, DataUpNum);
+			}
+			if (UP_Barcode == TRUE)
+			{
+				//再次检查
+				if (var.intVal<1)//if(var.intVal!=1)
+					Barcode_Check_UP = FALSE;
+				else
+					Barcode_Check_UP = TRUE;
+				//再次检查
+			}
+			if ((UP_Barcode == TRUE&&Barcode_Check_UP == TRUE))
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "SN:" + ChipRfIDCurrent + "数据库上传总表成功(返工)...", DataUpNum);
+			}
+			else
+			{
+				if (ErrorUpEnable == TRUE)LogShow_exchange(m_Result, Final_Result_Control, 128, "SN:" + ChipRfIDCurrent + "数据库上传总表失败(返工)", DataUpNum, "功能测试:3-DB", ChipRfIDCurrent);
+				return FALSE;
+			}
+			return TRUE;
+		}
+		//返工操作
+		///////////////////////////////////////////////////////////
+
+
+
+
+		///////////////////////////////////////////////////////////
+		//上传功能位
+
+		LogShow_exchange(m_Result, Final_Result_Control, 0, "查看老化后功能表...", DataUpNum);
+
+		myado.OpenSheet("select SN,Result,SoftModel,Version from dbo.Gps_AutoTest_Result3 WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");//变1
+		BOOL Barcode_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
+		Barcode_Check &= myado.Find("SoftModel='" + MachineType_CS + "'");
+		Barcode_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
+		//Barcode_Check&=myado.Find("Result='1'");
+		myado.CloseSheet();
+		if (Barcode_Check == TRUE)
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库已经有老化后功能测试记录，更新...", DataUpNum);
+		}
+		else
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库不存在，直接上传...", DataUpNum);
+		}
+
+		BOOL UP_Barcode = TRUE;
+		BOOL Barcode_Check_UP;
+		if (Barcode_Check == TRUE)
+		{
+
+			//更新--被原始系统测试过
+			CString strSQL_Write_Barcode;
+			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result3 WHERE SN ='"+ChipRfIDCurrent+"' AND Version='"+Software_Version[DataUpNum]+"'AND SoftModel='"+MachineType_CS+"'");//变1
+
+			if (1)
+			{
+				strSQL_Write_Barcode = "UPDATE dbo.Gps_AutoTest_Result3 SET Result='1',ZhiDan = '" + ZhiDanCS + "',Computer = '" + Hostname + Ipaddress + "',TestSetting = '" + ATCommandList_CSDBCompare + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";//变2
+				UP_Barcode = myado.Execute(strSQL_Write_Barcode, &var);
+			}
+			//myado.CloseSheet();
+			//更新
+		}
+		else
+		{
+			//直接上传
+			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result3(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
+							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','gps','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
+
+
+			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result3");
+			UP_Barcode = myado.Execute(strSQL1, &var);
+			//myado.CloseSheet();
+		}
+		if (UP_Barcode == TRUE)
+		{
+			//再次检查
+			if (var.intVal<1)//if(var.intVal!=1)
+				Barcode_Check_UP = FALSE;
+			else
+				Barcode_Check_UP = TRUE;
+			//再次检查
+		}
+
+		if ((UP_Barcode == TRUE&&Barcode_Check_UP == TRUE))
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "SN:" + ChipRfIDCurrent + "数据库上传功能位成功...", DataUpNum);
+		}
+		else
+		{
+			if (ErrorUpEnable == TRUE)LogShow_exchange(m_Result, Final_Result_Control, 128, "SN:" + ChipRfIDCurrent + "数据库上传功能位失败", DataUpNum, "功能测试:3-DB", ChipRfIDCurrent);
+			return FALSE;
+		}
+
+		//上传功能位
+		///////////////////////////////////////////////////////////
+
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		LogShow_exchange(m_Result, Final_Result_Control, 0, "查看数据总表...", DataUpNum);
+		BOOL ReduceBarcode_Check = FALSE;
+		////////////////////////////////检查RFID、机型、软件版本是否已经存在//////////////////////////////
+		myado.OpenSheet("select SN,SoftModel,Version,GPSResult from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");
+		Barcode_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
+		Barcode_Check &= myado.Find("SoftModel='" + MachineType_CS + "'");
+		Barcode_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
+		ReduceBarcode_Check = Barcode_Check;
+		Barcode_Check &= myado.Find("GPSResult='1'");
+		myado.CloseSheet();
+		if (Barcode_Check == TRUE)
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库总表已经有，此机已经测试过！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！...", DataUpNum);
+			//三合一传递信息
+			if (g_ADCTFlag == TRUE)
+			{
+				SendADCTHint(get_map_key_value(PortStatusMap, DataUpNum), "已测试", 0);
+			}
+			return TRUE;//有2
+		}
+		else
+		{
+
+			Barcode_Check = ReduceBarcode_Check;
+			if (Barcode_Check == TRUE)
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库已经有功能测试记录，更新...", DataUpNum);
+			}
+			else
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库不存在，直接上传...", DataUpNum);
+			}
+		}
+		////////////////////////////////检查RFID是否已经存在//////////////////////////////
+		UP_Barcode = TRUE;
+		if (Barcode_Check == TRUE)
+		{
+			//更新
+			CString strSQL_Write_Barcode;
+			//myado.OpenSheet("select * from dbo.Gps_TestResult WHERE SN ='"+ChipRfIDCurrent+"' AND Version='"+Software_Version[DataUpNum]+"'AND SoftModel='"+MachineType_CS+"'");
+
+			if (1)
+			{
+				//strSQL_Write_Barcode="UPDATE dbo.Gps_TestResult SET AutoTestResult = '1' WHERE SN ='"+ChipRfIDCurrent+"' AND Version='"+Software_Version[DataUpNum]+"'AND SoftModel='"+MachineType_CS+"'";
+				strSQL_Write_Barcode = "UPDATE dbo.Gps_TestResult SET GPSResult = '1',ZhiDan = '" + ZhiDanCS + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";
+				UP_Barcode = myado.Execute(strSQL_Write_Barcode, &var);
+			}
+			//myado.CloseSheet();
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "sql:" + strSQL_Write_Barcode, DataUpNum);
+			//更新
+		}
+		else
+		{
+			//直接上传
+			CString strSQL1 = "Insert into dbo.Gps_TestResult(SN,IMEI,Version,SoftModel,GPSResult,ZhiDan)\
+							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ZhiDanCS + "')";
+
+
+			//myado.OpenSheet("select * from dbo.Gps_TestResult");
+			UP_Barcode = myado.Execute(strSQL1, &var);
+			//myado.CloseSheet();
+		}
+		if (UP_Barcode == TRUE)
+		{
+			//再次检查
+
+			if (var.intVal<1)//if(var.intVal!=1)
+				Barcode_Check_UP = FALSE;
+			else
+				Barcode_Check_UP = TRUE;
+			//再次检查
+		}
+
+
+		if ((UP_Barcode == TRUE&&Barcode_Check_UP == TRUE))
+		{
+			LogShow_exchange(m_Result, Final_Result_Control, 0, "SN:" + ChipRfIDCurrent + "数据库上传总表成功...", DataUpNum);
+		}
+		else
+		{
+			if (ErrorUpEnable == TRUE)LogShow_exchange(m_Result, Final_Result_Control, 128, "SN:" + ChipRfIDCurrent + "数据库上传总表失败", DataUpNum, "功能测试:3-DB", ChipRfIDCurrent);
+			return FALSE;
+		}
+
+	}
+	else
+	{
+		LogShow_exchange(m_Result, Final_Result_Control, 0, "SN:" + ChipRfIDCurrent + "没有勾选数据库不上传...", DataUpNum);
+		return TRUE;
+	}
+	myado.CloseDataLibrary();
+	return TRUE;//LBCCheckIMEI
+}
+//以上是数据库Data_UpdatePara3
+
 //以下是数据库Data_UpdateParaPre
 BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL* smt_Check)//---------0
 {
@@ -9695,7 +10747,45 @@ BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CE
 				}
 				else
 				{
+					ParaItemName[DataUpNum] = "SMT功能漏测";
 					LogShow_exchange(m_Result, Final_Result_Control, 128, "SN:" + ChipRfIDCurrent + "SMT功能漏测！！！", DataUpNum, "功能测试:3-DB");
+					return TRUE;
+				}
+			}
+		}
+		else
+			*smt_Check = TRUE;
+
+		if ((CheckAutoTestChoose == TRUE) && ((WorkStationCS != "SMT测试") && (WorkStationCS != "组装测试") && (WorkStationCS != "研发测试")))//卡老化前测试
+		{
+			myado.OpenSheet("select SN,SoftModel,Version,AutoTestResult from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'");
+			BOOL AutoTest_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
+			//SMT_Check&=myado.Find("SoftModel='"+MachineType_CS+"'");
+			AutoTest_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
+			AutoTest_Check &= myado.Find("AutoTestResult='1'");
+			myado.CloseSheet();
+
+			*smt_Check = AutoTest_Check;
+			if (AutoTest_Check == TRUE)
+			{
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "老化前功能测试通过...", DataUpNum);
+			}
+			else
+			{
+				myado.OpenSheet("select SN,SoftModel,Version,AutoTestResult from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "'");
+				BOOL AutoTest1_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
+				AutoTest1_Check &= myado.Find("AutoTestResult='1'");
+				myado.CloseSheet();
+
+				*smt_Check = AutoTest1_Check;
+				if (AutoTest1_Check == TRUE)
+				{
+					LogShow_exchange(m_Result, Final_Result_Control, 0, "老化前功能测试通过...", DataUpNum);
+				}
+				else
+				{
+					ParaItemName[DataUpNum] = "老化前漏测";
+					LogShow_exchange(m_Result, Final_Result_Control, 128, "SN:" + ChipRfIDCurrent + "老化前功能漏测！！！", DataUpNum, "功能测试:3-DB");
 					return TRUE;
 				}
 			}
@@ -9710,7 +10800,7 @@ BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CE
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		LogShow_exchange(m_Result, Final_Result_Control, 0, "查看数据总表...", DataUpNum);//Data_UpdateParaPre
 		////////////////////////////////检查RFID、机型、软件版本是否已经存在//////////////////////////////
-		myado.OpenSheet("select SN,SoftModel,Version,AutoTestResult,FunctionResult from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");
+		myado.OpenSheet("select SN,SoftModel,Version,AutoTestResult,FunctionResult,GPSResult from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");
 		BOOL Barcode_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
 		Barcode_Check &= myado.Find("SoftModel='" + MachineType_CS + "'");
 		Barcode_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
@@ -9721,6 +10811,8 @@ BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CE
 			Barcode_Check &= myado.Find("FunctionResult='1'");
 		else if (WorkStationCS == "组装测试")
 			Barcode_Check &= myado.Find("AutoTestResult='1'");
+		else if (WorkStationCS == "老化后测试")
+			Barcode_Check &= myado.Find("GPSResult='1'");
 		else if (WorkStationCS == "研发测试")
 			Barcode_Check = FALSE;
 		else
@@ -9745,8 +10837,6 @@ BOOL IMEIWrite_MulAT::Data_UpdateParaPre(CAdoInterface& myado, int DataUpNum, CE
 		if (Barcode_Check == TRUE)
 		{
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "数据库总表已经有，此机已经测试过！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！...", DataUpNum);
-			
-
 			
 			//三合一传递信息
 			if (g_ADCTFlag == TRUE)
@@ -9870,6 +10960,8 @@ BOOL IMEIWrite_MulAT::Data_UpdateError(CAdoInterface& myado, int DataUpNum, CEdi
 					strSQL_Write_Barcode = "UPDATE dbo.LTestLogMessage SET ErrorMessage3='" + ExistMessage + "' ,ZhiDan='" + ZhiDanCS + "' ,CategoryNum3='" + Category + "',Computer3 = '" + Hostname + Ipaddress + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";//变2
 				else if (WorkStationCS == "组装测试")
 					strSQL_Write_Barcode = "UPDATE dbo.LTestLogMessage SET ErrorMessage1='" + ExistMessage + "' ,ZhiDan='" + ZhiDanCS + "' ,CategoryNum1='" + Category + "',Computer = '" + Hostname + Ipaddress + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";
+				else if (WorkStationCS == "老化后测试")
+					strSQL_Write_Barcode = "UPDATE dbo.LTestLogMessage SET ErrorMessage2='" + ExistMessage + "' ,ZhiDan='" + ZhiDanCS + "' ,CategoryNum2='" + Category + "',Computer2 = '" + Hostname + Ipaddress + "' WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'";
 
 				UP_Barcode = myado.Execute(strSQL_Write_Barcode, &var);
 			}
@@ -9886,6 +10978,10 @@ BOOL IMEIWrite_MulAT::Data_UpdateError(CAdoInterface& myado, int DataUpNum, CEdi
 			else if (WorkStationCS == "组装测试")
 				strSQL1 = "Insert into dbo.LTestLogMessage(SN,SoftModel,Version,ZhiDan,ErrorMessage1,CategoryNum1,Computer)\
 						  							 values('" + ChipRfIDCurrent + "','" + MachineType_CS + "','" + Software_Version[DataUpNum] + "','" + ZhiDanCS + "','" + ExistMessage + "','" + Category + "','" + Hostname + Ipaddress + "')";
+			
+			else if (WorkStationCS == "老化后测试")
+				strSQL1 = "Insert into dbo.LTestLogMessage(SN,SoftModel,Version,ZhiDan,ErrorMessage2,CategoryNum2,Computer)\
+						  						  							 values('" + ChipRfIDCurrent + "','" + MachineType_CS + "','" + Software_Version[DataUpNum] + "','" + ZhiDanCS + "','" + ExistMessage + "','" + Category + "','" + Hostname + Ipaddress + "')";
 
 
 			//myado.OpenSheet("select * from dbo.LTestLogMessage");
@@ -9964,7 +11060,7 @@ void IMEIWrite_MulAT::Voice_Ini()
 		return;
 	hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void **)&pVoice);
 	pVoice->SetVolume(100);	//0~100
-	pVoice->SetRate(8);		//-10~+10
+	pVoice->SetRate(5);		//-10~+10
 }
 void IMEIWrite_MulAT::Voice_Speak(CString Text)
 {
@@ -10062,7 +11158,7 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 	}
 
 	//Dongle蓝牙在这里初始化设置
-	if (GetDongleCheckValue == TRUE)
+	if (GetDongleCheckValue == TRUE|| GetDongleScanCheckValue==TRUE)
 	{
 		DongleInitSetting();
 	}
@@ -10309,6 +11405,7 @@ BOOL IMEIWrite_MulAT::GetSettingFromDB(CAdoInterface& myado, CString m_server, C
 			if (var.vt != VT_NULL)
 			{
 				FieldValue.Format("%s", (LPCSTR)(_bstr_t)var);
+				if (g_ADCTFlag == FALSE)
 				LogShow_exchange(m_Result, Final_Result_Control, 5, "服务器中存在字段:MachineName，成功获取:" + FieldValue, 0);
 
 				MachineType_CS = FieldValue;
@@ -10323,6 +11420,7 @@ BOOL IMEIWrite_MulAT::GetSettingFromDB(CAdoInterface& myado, CString m_server, C
 			if (var.vt != VT_NULL)
 			{
 				FieldValue.Format("%s", (LPCSTR)(_bstr_t)var);
+				if (g_ADCTFlag == FALSE)
 				LogShow_exchange(m_Result, Final_Result_Control, 5, "服务器中存在字段:Station，成功获取:" + FieldValue, 0);
 				CString MachineNameC;
 				int pos = FieldValue.Find("}}");
@@ -10367,6 +11465,7 @@ BOOL IMEIWrite_MulAT::GetSettingFromDB(CAdoInterface& myado, CString m_server, C
 				if (var.vt != VT_NULL)
 				{
 					FieldValue.Format("%s", (LPCSTR)(_bstr_t)var);
+					if (g_ADCTFlag==FALSE)
 					LogShow_exchange(m_Result, Final_Result_Control, 5, "服务器中存在字段:" + FieldName + "，成功获取:" + FieldValue, 0);
 
 					if (FieldValue != "")
@@ -10903,6 +12002,12 @@ void IMEIWrite_MulAT::OnBnClickedCheck39()
 	UpdateData(TRUE);
 }
 
+void IMEIWrite_MulAT::OnBnClickedCheck45()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+}
+
 void IMEIWrite_MulAT::OnBnClickedCheck40()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -11285,6 +12390,15 @@ BOOL IMEIWrite_MulAT::Show_Pic_Data(CString RecString, CEdit* m_Result, CEdit* F
 									{
 										Sleep(3000);
 										DBResult = Data_UpdatePara(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, TRUE, ChipRfIDbg);
+									}
+								}
+								else if (WorkStationCS == "老化后测试")
+								{
+									DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, FALSE, ChipRfIDbg);
+									if (DBResult == FALSE)
+									{
+										Sleep(3000);
+										DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, TRUE, ChipRfIDbg);
 									}
 								}
 								else if (WorkStationCS == "研发测试")
@@ -11763,6 +12877,15 @@ BOOL IMEIWrite_MulAT::Get_Pic_Data(CEdit* m_Result, CEdit* Final_Result_Control,
 											DBResult = Data_UpdatePara(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, TRUE, ChipRfIDbg);
 										}
 									}
+									else if (WorkStationCS == "老化后测试")
+									{
+										DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, FALSE, ChipRfIDbg);
+										if (DBResult == FALSE)
+										{
+											Sleep(3000);
+											DBResult = Data_UpdatePara3(IMEI_Setdlg.Mulmyado[HandleNum], HandleNum, m_Result, Final_Result_Control, TRUE, ChipRfIDbg);
+										}
+									}
 									else if (WorkStationCS == "研发测试")
 									{
 										DBResult = TRUE;
@@ -12205,6 +13328,12 @@ void IMEIWrite_MulAT::OnBnClickedDonglebleCheck()
 	UpdateData(TRUE);
 }
 
+void IMEIWrite_MulAT::OnBnClickedDongleblescanCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+}
+
 //获取图片复选框
 void IMEIWrite_MulAT::OnBnClickedCheck41()
 {
@@ -12271,6 +13400,19 @@ void IMEIWrite_MulAT::StopButtonGatherFun(int HandleNum)
 		BluetoothDisconnect(HandleNum);
 	}
 
+	if (GetDongleScanCheckValue == TRUE&&HandleNum < 8)
+	{
+		DongleStatusArray[HandleNum] = FALSE;
+		DongleTestRssiInfoArray[HandleNum] = "";
+		if (hScanGun[0] != NULL)
+		{
+			deque<int>::iterator pos;
+			pos = find(DongleTestDataDeq.begin(), DongleTestDataDeq.end(), HandleNum);
+			if (pos != DongleTestDataDeq.end())
+				DongleTestDataDeq.erase(pos);
+		}
+	}
+
 	if (0)
 	{
 		BOOL Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -12306,11 +13448,46 @@ void IMEIWrite_MulAT::StopButtonGatherFun(int HandleNum)
 
 	if (HandleNum < 8)
 	{
+		DongleTestRssiInfoArray[HandleNum] = "";
 		m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 	}
 }
 
-
+//统一对队列进行管理，在队列有数据进入之时，就判断这条线程有没有被关闭，是否轮到当前这条线程工作了
+BOOL IMEIWrite_MulAT::DequeContinueControlFun(int HandleNum, deque<int> &ContinueDeq)
+{
+	for (int i = 0; i < 25; i++)//不要设置成死循环,25*400=10秒超时
+	{
+		if (ContinueDeq.front() == HandleNum)
+		{
+			return TRUE;
+		}
+		Sleep(400);
+		if (StopSign[HandleNum] == TRUE || i == 24)
+		{
+            //这里要注意，因为队列是动态的，所以删除前要确定队列有没有发生变化(因为存在强制停止的情况，所以可能会有两条线程同时在执行删除操作)
+			int DeqCount1, DeqCount2;
+			deque<int>::iterator pos;
+			for (int j=0; j < 3; j++)
+			{
+				DeqCount1 = ContinueDeq.size();
+				pos = find(ContinueDeq.begin(), ContinueDeq.end(), HandleNum);
+				
+				DeqCount2 = ContinueDeq.size();
+				if (DeqCount1 == DeqCount2)
+				{
+					ContinueDeq.erase(pos);
+					break;
+				}
+				else if (DeqCount1 != DeqCount2)
+				{
+					continue;
+				}
+			}
+			return FALSE;
+		}
+	}
+}
 
 /*三合一新增功能*/
 
@@ -12321,6 +13498,7 @@ afx_msg LRESULT IMEIWrite_MulAT::MSG_GetSimpleMessage(WPARAM wParam, LPARAM lPar
 	switch (wParam)
 	{
 	case 3:
+		g_ExitFlag = 0;
 		exit(0);
 		break;
 	default:
@@ -12335,6 +13513,7 @@ void IMEIWrite_MulAT::MSG_SendSimpleMessage()
 	HWND ADCTHwnd = NULL;
 	ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
 	::SendMessage(ADCTHwnd, WM_SimpleMessage, 3, (LPARAM)this->m_hWnd);
+	//ADCTInquire("ALL", 1);
 }
 
 //通过COPYDATA发送结构体
@@ -12344,7 +13523,9 @@ void IMEIWrite_MulAT::MSG_SendCopyDataMessage(CopyDataMSG *MessageStruct, int re
 	copyData.dwData = replyInt;//0是发送，1是回复
 	copyData.cbData = sizeof(CopyDataMSG);
 	copyData.lpData = (PVOID)MessageStruct;
-	::SendMessageTimeout(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData, SMTO_ABORTIFHUNG, 3000, 0);
+	Sleep(1);
+	::SendMessage(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData);
+	//::SendMessageTimeout(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData, SMTO_ABORTIFHUNG, 10000, 0);
 }
 
 //通过COPYDATA接收结构体
@@ -12355,6 +13536,7 @@ BOOL IMEIWrite_MulAT::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	{
 		CopyDataMSG *copydataMsg = new CopyDataMSG;
 		copydataMsg = (CopyDataMSG *)pCopyDataStruct->lpData;
+		CString MSGPort = copydataMsg->Port, MSGNum, MSGMessageChar = copydataMsg->MessageChar;
 
 		//0代表是ADCT主控进行查询，1代表是ADCT主控现在要进行设置
 		switch (pCopyDataStruct->dwData)
@@ -12368,8 +13550,9 @@ BOOL IMEIWrite_MulAT::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 		default:
 			break;
 		}
+		MSGNum.Format("%d", copydataMsg->MessageNum);
+		LogShow_exchange(m_ResultArray[8], Final_Result_ControlArray[8], 0, "Recevi:Port:" + MSGPort + "MessageNum:" + MSGNum + "MessageChar:" + MSGMessageChar, 8);
 	}
-
 	return CResizableDialog::OnCopyData(pWnd, pCopyDataStruct);
 }
 
@@ -12403,7 +13586,9 @@ void IMEIWrite_MulAT::ADCTInquire(CString PortNo, INT CommandNo)
 	default:
 		break;
 	}
-
+	CString MSGPort = copydataMsg->Port, MSGNum, MSGMessageChar = copydataMsg->MessageChar;
+	MSGNum.Format("%d", copydataMsg->MessageNum);
+	LogShow_exchange(m_ResultArray[8], Final_Result_ControlArray[8], 0, "SendInquire:Port:" + MSGPort + "MessageNum:" + MSGNum + "MessageChar:" + MSGMessageChar, 8);
 
 	MSG_SendCopyDataMessage(copydataMsg, 1);
 
@@ -12422,6 +13607,8 @@ void IMEIWrite_MulAT::ADCTSetup(CString PortNo, INT CommandNo, CString message)
 	CopyDataMSG *copydataMsg = new CopyDataMSG;
 	strcpy(copydataMsg->Port, (LPCTSTR)PortNo);
 	copydataMsg->MessageNum = CommandNo;
+	int count = 0;
+
 
 	//CommandNo和Status变量，0是初始化，1是串口开始，2是串口关闭，3是设置重新测试，4是泰斗，5是终端稳定或跳动串口
 	switch (CommandNo)
@@ -12478,7 +13665,23 @@ void IMEIWrite_MulAT::ADCTSetup(CString PortNo, INT CommandNo, CString message)
 			strcpy(copydataMsg->MessageChar, (LPCTSTR)"1");//根据串口是否能够关闭决定是0还是1
 			break;
 		}
-		ResultFlag = StopPortTest(PortNo);//实现串口强制关闭
+
+
+		do{
+			ResultFlag = StopPortTest(PortNo);//实现串口强制关闭
+
+			if (ResultFlag == 1)
+			{
+				break;
+			}
+			count++;
+			Sleep(500);
+			if (count > 2)
+			{
+				break;
+			}
+		} while (0);
+
 		Str_ResultFlag.Format("%d", ResultFlag);
 		strcpy(copydataMsg->MessageChar, (LPCTSTR)Str_ResultFlag);//根据串口是否能够关闭决定是0还是1
 		break;
@@ -12529,10 +13732,18 @@ void IMEIWrite_MulAT::ADCTSetup(CString PortNo, INT CommandNo, CString message)
 	case 6:
 		OnClose();
 		strcpy(copydataMsg->MessageChar, (LPCTSTR)"ALL");
+		if (g_ExitFlag == 0)
+			return;
 		break;
 	default:
 		break;
 	}
+
+	CString MSGPort = copydataMsg->Port, MSGNum, MSGMessageChar = copydataMsg->MessageChar;
+	MSGNum.Format("%d", copydataMsg->MessageNum);
+	LogShow_exchange(m_ResultArray[8], Final_Result_ControlArray[8], 0, "SendSetUp:Port:" + MSGPort + "MessageNum:" + MSGNum + "MessageChar:" + MSGMessageChar, 8);
+
+	UpdateWindow();
 
 	MSG_SendCopyDataMessage(copydataMsg, 1);//1代表回复给主控程序
 
@@ -12848,6 +14059,13 @@ int IMEIWrite_MulAT::StopPortTest(CString PortNo)
 	else if (StopSign[PortStatusMap[PortNo]] == FALSE)
 	{
 		flag = 0;
+	}
+	else
+	{
+		flag = 2;
+		CString i;
+		i.Format("%d", PortStatusMap[PortNo]);
+		LogShow_exchange(m_ResultArray[0], Final_Result_ControlArray[0], 6, PortNo +"||"+ i, 0);
 	}
 	return flag;
 }
@@ -13636,6 +14854,9 @@ BOOL IMEIWrite_MulAT::DongleDisConnect(int HandleNum)
 	Send_Serial_Order(&Vaule_Return, DongleSPCommand[1][0], HandleNum, (LPSTR)(LPCTSTR)DongleSPCommand[1][1], "", DongleSpCommandSleepTime[1]);
 	if (Vaule_Return == "FAIL")
 	{
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "蓝牙设备已经离线！", HandleNum);
+		DongleInfo[HandleNum][0] = "";
+		DongleInfo[HandleNum][1] = "";
 		return FALSE;
 	}
 	//Send_Serial_Order(&Vaule_Return, "AT + RESET", HandleNum, "RESET", "",1000);
@@ -13912,6 +15133,143 @@ CString IMEIWrite_MulAT::Decrypt(CString plainText)
 }
 
 
+/*Dongle蓝牙扫描信号强度新增功能*/
+
+//蓝牙扫描函数
+BOOL  IMEIWrite_MulAT::DongleScanRssiFun(int HandleNum, CString SoftModel)
+{
+	CString Vaule_Return, strCommand_Vaule;
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "正在扫描蓝牙设备中，请稍等", HandleNum);
+	Send_Serial_Order(&Vaule_Return, "AT+SCAN?", HandleNum, "Devices Found:", "", DongleSDURTime);
+
+	if (Vaule_Return == "FAIL")
+	{
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "扫描失败！", HandleNum);
+		return TRUE;
+	}
+
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "扫描成功！", HandleNum);
+
+	//开始处理获取到的设备
+	CString BleTemp, InfoTemp, BleTime, BleInfo[30][3];
+
+	int InfoCut, CutTime, RSSICount = 0, RSSIMAX = -100, RSSITemp;
+
+	BleTemp = Vaule_Return_Count_CS[HandleNum];
+	InfoCut = BleTemp.Find(_T("Devices Found:"));
+
+	//获取的设备数量
+	BleTime = BleTemp.Right(BleTemp.GetLength() - InfoCut - 14);
+	CutTime = atoi(CStringA(BleTime.TrimLeft(_T(" "))));
+
+	//将获取的信息进行切割
+	BleTemp = BleTemp.Left(InfoCut);
+	BleTemp = BleTemp.Right(BleTemp.GetLength() - 11);
+
+	//这里应该卡住队列,同一个数组绝对不能让多个线程同时访问，不然很有可能会造成访问冲突（要考虑到当前队列的数量，队列数量两个以上就要插队）
+	int DeqSizeInt=DongleTestRssiDeq.size();
+	if (DeqSizeInt < 2)
+	{
+		DongleTestRssiDeq.push_back(HandleNum);
+	}
+	else
+	{
+		DongleTestRssiDeq.insert(DongleTestRssiDeq.begin() + 1, HandleNum);
+	}
+
+
+	//判断一下当前是不是已经到达队首了，如果超时就直接失败
+	if (DequeContinueControlFun(HandleNum, DongleTestRssiDeq) == FALSE)
+	{
+		return FALSE;
+	}
+
+
+	//将获取的信息放入数组中
+	int Devices = 0;
+	for (int i = 0; i < CutTime; i++)
+	{
+		CString StrTemp;
+		StrTemp.Format(_T("\r\n%d: 0x"), i);
+		BleTemp = BleTemp.Right(BleTemp.GetLength() - BleTemp.Find(StrTemp) - 7);
+		InfoTemp = BleTemp.Left(BleTemp.Find(_T("\r\n")));
+
+		//筛选一下终端类型
+		if (InfoTemp.Find(SoftModel) == -1)
+			continue;
+
+		//筛掉MAP里是否已经存在这个MAC了，如果存在就更新一下RSSI（或者可以直接利用数组的赋值方法来覆盖）
+		for (int j = 0; j < 3; j++)
+		{
+			int CutTemp;
+			CutTemp = InfoTemp.Find(_T(","));
+
+			if (CutTemp == -1)
+			{
+				BleInfo[Devices][j] = InfoTemp;
+				if (j != 2)
+				{
+					BleInfo[Devices][2] = _T("NULL");
+				}
+				break;
+			}
+			BleInfo[Devices][j] = InfoTemp.Left(InfoTemp.Find(_T(",")));
+			InfoTemp = InfoTemp.Right(InfoTemp.GetLength() - InfoTemp.Find(_T(",")) - 2);
+		}
+		DongleRssiMap[BleInfo[Devices][0]] = atoi(BleInfo[Devices][1]);
+		Devices++;
+	}
+
+	DongleTestRssiDeq.pop_front();
+
+	int SizeInt = DongleRssiMap.size();
+	CString SizeStr;
+	SizeStr.Format("%d", SizeInt);
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "当前已找到的设备数量为:"+SizeStr, HandleNum);
+	return TRUE;
+}
+
+//蓝牙扫描枪功能函数
+BOOL IMEIWrite_MulAT::DongleScanGunOnly(int HandleNum)
+{
+	//if (Software_Version[0] == "")
+	//{
+	//	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "请先获取配置！", HandleNum);
+	//	return FALSE;
+	//}
+
+	if (hScanGun[0] != NULL)
+	{
+		//这里应该卡住队列,让设备排队连接，同时连接的话会造成争抢问题
+		DongleTestDataDeq.push_back(HandleNum);
+		
+		while(1)
+		{
+			//扫描枪有信息来了就获取
+			if (DongleTestDataDeq.front() == HandleNum&&DongleScanGunFlag == TRUE)
+			{
+				GetDlgItem(IDC_SCANDATA_EDIT)->GetWindowTextA(DongleTestRssiInfoArray[HandleNum]);
+				m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(DongleTestRssiInfoArray[HandleNum]);
+				DongleScanGunFlag = FALSE;
+				//DongleTestDataDeq.pop_front();
+				GetDlgItem(IDC_SCANDATA_EDIT)->SetWindowTextA("");
+				break;
+			}
+			Sleep(300);
+			if (StopSign[HandleNum] == TRUE)
+			{
+				deque<int>::iterator pos;
+				pos = find(DongleTestDataDeq.begin(), DongleTestDataDeq.end(), HandleNum);
+				if (pos != DongleTestDataDeq.end())
+					DongleTestDataDeq.erase(pos);
+				return FALSE;
+			}
+		}
+	}
+	return TRUE;
+}
+
+
 /*网络摄像头新增功能*/
 
 //图像暗角判断
@@ -14149,6 +15507,31 @@ void IMEIWrite_MulAT::SetVoltageAndRangeVaule(CString ConfigItem, double &m_Volt
 	}
 }
 
+//高压保护设置电压和等待值，如果订单配置里存在电压和等待就获取配置中的值，如果不存在则用默认值
+void IMEIWrite_MulAT::SetHighVoltageAndDelayVaule(CString ConfigItem, double &m_HighVoltage, double &m_Delay)
+{
+	int VoltageCut = ConfigItem.Find("电压:");
+	if (VoltageCut != -1)
+	{
+		m_HighVoltage = atof(ConfigItem.Mid(VoltageCut + 5, ConfigItem.Find(",") - VoltageCut - 5));
+	}
+	else
+	{
+		m_HighVoltage = 3.8;
+	}
+
+	int RangeCut = ConfigItem.Find("等待:");
+	if (RangeCut != -1)
+	{
+		m_Delay = atof(ConfigItem.Right(ConfigItem.GetLength() - RangeCut - 5));
+	}
+	else
+	{
+		m_Delay = 2000;
+	}
+
+}
+
 //电流测试配置
 void IMEIWrite_MulAT::OnBnClickedPowercontrolsettingButton()
 {
@@ -14175,6 +15558,10 @@ void IMEIWrite_MulAT::AntiDupDataInit(int HandleNum)
 		AntiDupDataArray[HandleNum][i] = "";
 		AntiDupDataVauleArray[HandleNum][i] = "";
 	}
+
+	AntiDupDataLinkOrder[HandleNum] = "";
+	AntiDupDataLinkFlag[HandleNum][0] = 0;
+	AntiDupDataLinkFlag[HandleNum][1] = 0;
 
 	AntiDupDataSNUploadFlag[HandleNum] = FALSE;
 	AntiDupDataNoUploadCount[HandleNum][0] = 0;
@@ -14449,6 +15836,7 @@ BOOL IMEIWrite_MulAT::Data_AntiDupDataNoCheck(CAdoInterface& myado, int HandleNu
 
 			if (Barcode_Check == TRUE)
 			{
+				if (AntiDupDataLinkFlag[HandleNum][0] == 0 || AntiDupDataLinkFlag[HandleNum][0] == 2)
 				return FALSE;
 			}
 			else if (Barcode_Check == FALSE)
@@ -14577,4 +15965,195 @@ BOOL IMEIWrite_MulAT::Data_AntiDupDataNoUpload(CAdoInterface& myado, int HandleN
 	myado.CloseDataLibrary();
 	return TRUE;
 }
+
+
+/*DAM继电器新增功能*/
+
+CString IMEIWrite_MulAT::UART_CRC16_Work(unsigned char CRC_Buf[], int CRC_Leni)
+{
+	int i, j;
+	unsigned short CRC_Sumx, CRC_Temp;
+	CString CRC_Rec;
+	CRC_Sumx = 0xFFFF;
+
+	for (i = 0; i < CRC_Leni; i++)
+	{
+		CRC_Sumx = (CRC_Buf[i]) ^ CRC_Sumx;//异或
+		for (j = 0; j < 8; j++)
+		{
+			if (CRC_Sumx & 0x01)
+			{
+				CRC_Sumx >>= 1;
+				CRC_Sumx ^= 0xa001;
+			}
+			else
+			{
+				CRC_Sumx >>= 1;
+			}
+		}
+	}
+	CRC_Temp = CRC_Sumx >> 8;
+	CRC_Temp = CRC_Temp | (CRC_Sumx << 8);
+	printf("%04X\n", CRC_Temp);
+	CRC_Rec.Format("%04X", CRC_Temp);
+	return (CRC_Rec);
+}
+
+/*
+浩凯的继电器控制函数
+Address:控制的继电器的地址 特殊：-1查询继电器 -2全开全断
+PowerAction:开关动作
+返回值为命令
+*/
+CString IMEIWrite_MulAT::PowerSet(int Address, bool PowerAction)
+{
+	//CPublicFunction pf;
+	CString HexTemp, SendText, DictateNum;
+	int HexLen = 1;
+	unsigned short CrcTemp;
+	//SendText.Format("%X", atoi(RadioAddress));
+	SendText.Format("%X", 254);//254是继电器广播的默认地址
+	if (Address == -1)             //暂时不做
+	{
+		HexTemp = "01";
+		HexLen++;
+		return "FALSE";
+	}
+	else if (Address == -2)		 //暂时不做
+	{
+		HexTemp = "0F";
+		HexLen++;
+		return "FALSE";
+	}
+	else if (Address > -1 && Address < 32)
+	{
+		HexTemp.Format("0500%02X", Address);
+		HexLen += 3;
+	}
+	else
+	{
+		return "FALSE";
+	}
+	SendText += HexTemp;
+	if (PowerAction)
+	{
+		HexTemp = "FF00";
+	}
+	else
+	{
+		HexTemp = "0000";
+	}
+	HexLen += 2;
+	SendText += HexTemp;
+	BYTE * HexTemp2;
+	HexTemp2 = CStrToByte(6, SendText);
+	//unsigned char buff[6] = { 0 };
+	//buff[0] = 0xFE;
+	//buff[1] = 0x05;
+	//buff[2] = 0x00;
+	//buff[3] = 0x00;
+	//buff[4] = 0x00;
+	//buff[5] = 0x00;
+	HexTemp = UART_CRC16_Work(HexTemp2, 6);
+	SendText += HexTemp;
+	return SendText;
+}
+
+BOOL IMEIWrite_MulAT::DamControlFun(int HandleNum, CString OrderNum)
+{
+	int count,DamNo;//DamNo为继电器端口
+	CString CommandStr;
+	BOOL ActionJudge;//继电器动作，TRUE为打开，FALSE为关闭
+
+	//打开(关闭)通路为单对单，外电1对应继电器端口0-7，外电2对应继电器端口8-15，外电3对应继电器端口16-23，外电4对应继电器端口24-31
+	if (OrderNum.Find("通路") != -1)
+	{
+		ExternalCircuit[HandleNum][0] = TRUE;
+		if (OrderNum.Find("打开") != -1)
+		{
+			ActionJudge = TRUE;
+		}
+		else if (OrderNum.Find("关闭") != -1)
+		{
+			ActionJudge = FALSE;
+		}
+		DamNo = HandleNum;
+	}
+	else if (OrderNum.Find("外电")!=-1)
+	{
+		count = sscanf_s(CStringA(OrderNum), "外电%d", &DamNo);//用格式化函数拿一下数字
+		if (count == 0 || DamNo>4 || DamNo<1)
+		{
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "项目名称错误，确保为外电1或外电2或外电3或外电4开(关)", HandleNum);
+			return FALSE;
+		}
+		ExternalCircuit[HandleNum][DamNo] = TRUE;
+		DamNo = HandleNum + (DamNo - 1) * 8;
+		if (OrderNum.Find("开") != -1)
+		{
+			ActionJudge = TRUE;
+		}
+		else if (OrderNum.Find("关") != -1)
+		{
+			ActionJudge = FALSE;
+		}
+
+	}
+	CommandStr=PowerSet(DamNo, ActionJudge);
+	CString ReturnStr;
+	int Damcount=0;
+	do{
+		Sleep(400);
+		Damcount++;
+		Send_Serial_Order(&ReturnStr, CommandStr, 16, (LPSTR)(LPCTSTR)CommandStr, "", 1, 2);
+		if (ReturnStr == "Analysis_SUCCESS")
+		{
+			break;
+		}
+	} while (Damcount < 6);
+
+	if (ReturnStr == "FAIL")
+	{
+
+		return FALSE;
+	}
+	Sleep(100);
+	return TRUE;
+}
+
+BOOL IMEIWrite_MulAT::CloseExternalCircuit(int HandleNum)
+{
+	BOOL Result=TRUE;
+
+	if (ExternalCircuit[HandleNum][0] == TRUE)
+	{
+	    Result &= DamControlFun(HandleNum, "关闭通路");
+		Sleep(250);
+	}
+	if (ExternalCircuit[HandleNum][1] == TRUE)
+	{
+		Result &= DamControlFun(HandleNum, "外电1关");
+		Sleep(250);
+	}
+	if (ExternalCircuit[HandleNum][2] == TRUE)
+	{
+		Result &= DamControlFun(HandleNum, "外电2关");
+		Sleep(250);
+	}
+	if (ExternalCircuit[HandleNum][3] == TRUE)
+	{
+		Result &= DamControlFun(HandleNum, "外电3关");
+		Sleep(250);
+	}
+	if (ExternalCircuit[HandleNum][4] == TRUE)
+	{
+		Result &= DamControlFun(HandleNum, "外电4关");
+		Sleep(250);
+	}
+	return Result;
+}
+
+
+
+
 

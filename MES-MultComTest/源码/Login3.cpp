@@ -224,12 +224,13 @@ BOOL CLogin3::OnInitDialog()
 		g_IsHideFlag = ValueInt;
 		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ADCTFlag"), 0, _T(".\\SystemSetting.ini"));
 		g_ADCTFlag = ValueInt;
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ToolFlag"), 0, _T(".\\SystemSetting.ini"));
+		g_ToolFlag = ValueInt;
 	}
 
 	ifFind = finder.FindFile(_T(".\\Systembackdoor.ini"));
 	if (ifFind)
 	{
-
 		GetPrivateProfileString(_T("DatabaseInfo"), _T("IP"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
 		g_BackDoorIP = str;
 		str.ReleaseBuffer();

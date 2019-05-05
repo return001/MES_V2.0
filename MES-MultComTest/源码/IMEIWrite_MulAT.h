@@ -148,6 +148,7 @@ public:
 
 	CFont* font;
 	CFont* fontsp;
+	CFont* font_fail;
 public:
 	CEvent RunCommandList1;
 	BOOL StopAutoStart;
@@ -219,7 +220,6 @@ public:
 	CComboBox m_Port1;
 	CComboBox m_Baud1;
 
-public:
 	afx_msg void OnEnChangeImeia();
 	CString IMEI_InputA;
 	CEdit IMEI_InputA_Control;
@@ -449,6 +449,9 @@ public:
 	CButton Stop15_Control;
 	CButton Stop16_Control;
 	CButton StopALL_Control;
+	CEdit *m_ResultArray[16];
+	CEdit *Final_Result_ControlArray[16];
+	CButton *m_StopControlArray[16];
 	CEdit m_ShowNumberPort1Control;
 	CEdit m_ShowNumberPort2Control;
 	CEdit m_ShowNumberPort3Control;
@@ -490,6 +493,7 @@ public:
 	BOOL GetExistReturnCode(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,CString *ExistMessage,CString ChipRfIDbg="");
 	BOOL Data_UpdatePara(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,BOOL ErrorUpEnable=TRUE,CString ChipRfIDbg="");
 	BOOL Data_UpdatePara2(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,BOOL ErrorUpEnable=TRUE,CString ChipRfIDbg="");			//SMT测试
+	BOOL Data_UpdatePara3(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL ErrorUpEnable = TRUE, CString ChipRfIDbg = "");			//老化后测试
 	BOOL Data_UpdateParaPre(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,BOOL* smt_Check);
 	BOOL Data_UpdateError(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,CString Message,CString Category,CString ChipRfIDbg="");
 	BOOL GetExistError(CAdoInterface& myado,int DataUpNum,CEdit* m_Result,CEdit* Final_Result_Control,CString *ExistMessage,CString ChipRfIDbg="");
@@ -621,7 +625,7 @@ public:
 	void StartButtonGatherFun(int HandleNum);//将开始按钮需要处理的流程集合成一个函数
 	void StopButtonGatherFun(int HandleNum);//将停止按钮需要处理的流程集合成一个函数
 
-
+	BOOL DequeContinueControlFun(int HandleNum,deque<int> &ContinueDeq);//统一对队列进行管理，在队列有数据进入之时，就判断这条线程有没有被关闭，是否轮到当前这条线程工作了
 
 	/*三合一新增功能*/
 	
@@ -733,13 +737,23 @@ public:
 		CString Decrypt(CString plainText);//AES解密函数
 
 
-		CEdit *m_ResultArray[16];
-		CEdit *Final_Result_ControlArray[16];
-		CButton *m_StopControlArray[16];
-
 		afx_msg void OnBnClickedDonglebleCheck();
 	
 		
+	/*Dongle蓝牙扫描信号强度新增功能*/
+		deque<int> DongleTestRssiDeq;//给蓝牙测信号，访问信号存放数组排个队，如果是蓝牙适配器进入队列，则会进行插队操作(不为空的情况下会排在第二位)
+		static map<CString, int>DongleRssiMap;//存放蓝牙地址和信号
+		BOOL DongleStatusArray[8];//蓝牙是否开始的状态，只要存在有1就表示需要进行搜索，全部为0表示要停止搜索并清空整个DongleRssiMap
+		CString DongleTestRssiInfoArray[8];//存放蓝牙MAC地址
+
+		BOOL DongleScanRssiFun(int HandleNum, CString SoftModel);//蓝牙扫描函数
+		BOOL DongleScanGunOnly(int HandleNum);//蓝牙扫描枪功能函数
+
+		CString DongleRssiArray[24][3];//
+		int DongleRssiArrayCount;//计算数组目前现有的MAC地址数量
+
+		BOOL GetDongleScanCheckValue;
+
 	/*网络摄像头新增功能*/
 	public:
 		typedef TServerScoket *PServer;
@@ -777,16 +791,21 @@ public:
 		void PowerControlInitSetting();//初始化程控电源的一些参数（包括仪器地址等）
 		BOOL CurrentMainControlFun(int HandleNum);//电流测试核心函数
 		void SetVoltageAndRangeVaule(CString ConfigItem,double &m_Voltage,double &m_Range);//设置电压和量程值，如果订单配置里存在电压和量程就获取配置中的值，如果不存在则获取ini中的值
+		void SetHighVoltageAndDelayVaule(CString ConfigItem, double &m_HighVoltage, double &m_Delay);
 		BOOL CurrentTestFun();//电流测试流程复用整合
 		BOOL VoltageTestFun();//电压测试流程复用整合
 
 		afx_msg void OnBnClickedPowercontrolsettingButton();
 
-		/*新增字段防重复功能*/
+
+	/*新增字段防重复功能*/
 
 		CString AntiDupDataArray[16][AntiDupData];//表示[串口号][字段]
 		CString AntiDupDataVauleArray[16][AntiDupData];//表示[串口号][值] ,也就是字段对应的值
 
+		CString AntiDupDataLinkOrder[16];//存放Link指令
+        int AntiDupDataLinkFlag[16][2];//0列表示查出来的link是否是对应数值(0无此指令，1数值正确，2数值错误)，1列表示是否执行了写LINK，写了的话失败后要将Link置为空
+		
 		BOOL AntiDupDataSNUploadFlag[16];//表示是否上传SN号，为TRUE时上传SN到Gps_Data_AntiDup表
 		BOOL AntiDupDataNoUploadFlag[16];//表示是否上传字段，为TRUE时上传SN到Gps_Data_AntiDup表
 	    int AntiDupDataNoUploadCount[16][1];//表示要上传的字段数量，值越大表示要上传的字段越多
@@ -797,10 +816,24 @@ public:
 		BOOL Data_AntiDupSNCheck(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
 		BOOL Data_AntiDupSNUpload(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
 
-
-		BOOL Data_AntiDupDataNo(CAdoInterface& myado, int HandleNum, CString DataNoStr);
-
 		//上传和检查要分开
 		BOOL Data_AntiDupDataNoCheck(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
 		BOOL Data_AntiDupDataNoUpload(CAdoInterface& myado, int HandleNum, CString ChipIDStr);
+
+
+	/*DAM继电器新增功能*/
+		BOOL ExternalCircuit[16][9];
+		CString ParaItemName[16];//当前测试项名字
+
+		CString UART_CRC16_Work(unsigned char CRC_Buf[], int CRC_Leni);
+		CString PowerSet(int Address, bool PowerAction);
+
+		BOOL CloseExternalCircuit(int HandleNum);//关闭外电的函数
+		BOOL DamControlFun(int HandleNum, CString OrderNum);//发送继电器命令函数，为真时表示发送成功，为假时表示发送失败
+		BOOL CheckAutoTestChoose;
+		afx_msg void OnBnClickedCheck45();
+
+
+
+		afx_msg void OnBnClickedDongleblescanCheck();
 };
