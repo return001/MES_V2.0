@@ -89,6 +89,7 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 , GetDongleCheckValue(FALSE)
 , CheckAutoTestChoose(FALSE)
 , GetDongleScanCheckValue(FALSE)
+, GetRDAHostCheckValue(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	GdiplusStartup(&m_GdiplusToken, &m_GdiplusStartupInput, NULL);
@@ -100,7 +101,7 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		GetPicChoose = FALSE;
 		BGConfirmChoose = FALSE;
 		PicStaticChoose = FALSE;
-		CheckAutoTestChoose == FALSE;
+		CheckAutoTestChoose = FALSE;
 	}
 
 	//为Socket类指针生成实例和对初始化相关的变量
@@ -382,6 +383,7 @@ void IMEIWrite_MulAT::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SHOWNUMBERPORT6_EDIT, m_ShowNumberPort6Control);
 	DDX_Control(pDX, IDC_SHOWNUMBERPORT7_EDIT, m_ShowNumberPort7Control);
 	DDX_Control(pDX, IDC_SHOWNUMBERPORT8_EDIT, m_ShowNumberPort8Control);
+	DDX_Check(pDX, IDC_RDAHost_CHECK, GetRDAHostCheckValue);
 }
 
 
@@ -485,6 +487,7 @@ BEGIN_MESSAGE_MAP(IMEIWrite_MulAT, CResizableDialog)
 	ON_BN_CLICKED(IDC_DongleBle_CHECK, &IMEIWrite_MulAT::OnBnClickedDonglebleCheck)
 	ON_BN_CLICKED(IDC_POWERCONTROLSETTING_BUTTON, &IMEIWrite_MulAT::OnBnClickedPowercontrolsettingButton)
 	ON_BN_CLICKED(IDC_DongleBleScan_CHECK, &IMEIWrite_MulAT::OnBnClickedDongleblescanCheck)
+	ON_BN_CLICKED(IDC_RDAHost_CHECK, &IMEIWrite_MulAT::OnBnClickedRdahostCheck)
 END_MESSAGE_MAP()
 
 
@@ -654,6 +657,7 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	AddAnchor(IDC_BLUETOOTH_CHECK, TOP_CENTER);
 	AddAnchor(IDC_DongleBle_CHECK, TOP_CENTER);
 	AddAnchor(IDC_DongleBleScan_CHECK, TOP_CENTER);
+	AddAnchor(IDC_RDAHost_CHECK, TOP_CENTER);
 	AddAnchor(IDC_CHECK43, TOP_LEFT4);//AddAnchor(IDC_CHECK43, TOP_CENTER);
 
 	AddAnchor(IDC_STATICSUCCOUNT, TOP_CENTER);
@@ -1258,7 +1262,7 @@ BOOL IMEIWrite_MulAT::OnGetport()
 	LeaveCriticalSection(&GETPORT);
 	return TRUE;
 }
-void IMEIWrite_MulAT::InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num)//初始化串口
+void IMEIWrite_MulAT::InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num, BOOL RDAFlag)//初始化串口
 {
 	//init baud
 	m_Baud->AddString("460800");
@@ -1704,7 +1708,7 @@ BOOL IMEIWrite_MulAT::CheckConnect_Thread(CComboBox* m_Port, CComboBox* m_Baud, 
 	if (PortType_CS == "终端跳动端口")
 		return TRUE;
 
-	if (OPen_Serial_Port(m_Port, m_Baud, HandleNum) == TRUE)//CheckConnect_Thread
+	if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0,GetRDAHostCheckValue) == TRUE)//CheckConnect_Thread
 	{
 		//打开串口成功
 	}
@@ -1714,8 +1718,8 @@ BOOL IMEIWrite_MulAT::CheckConnect_Thread(CComboBox* m_Port, CComboBox* m_Baud, 
 		//LogShow_exchange(m_Result,Final_Result_Control,5,"设备已断开连接，可以测试下一台",HandleNum);
 		return FALSE;
 	}
-	if (hPort[HandleNum] != NULL)
-		Return = CloseHandle(hPort[HandleNum]);								//测试成功后
+	if (hPort[HandleNum] != NULL || GetRDAHostCheckValue == TRUE)
+		Return = CloseHandleControl(hPort[HandleNum], GetRDAHostCheckValue, HandleNum);										//测试成功后
 	hPort[HandleNum] = NULL;
 	if (Return == TRUE)
 	{
@@ -1729,7 +1733,7 @@ BOOL IMEIWrite_MulAT::CheckConnect_Thread(CComboBox* m_Port, CComboBox* m_Baud, 
 	return TRUE;
 }
 
-BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose)		//打开串口
+BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose, BOOL RDAFlag)		//打开串口
 {
 	CString sPort, sBaud;
 	int port, baud;
@@ -1748,6 +1752,96 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 	//get baud
 	m_Baud->GetWindowText(sBaud);
 	baud = atoi(sBaud);
+
+	/*如果是RDA平台的话则调用此串口初始化*/
+	if (RDAFlag == TRUE && CPUChoose == FALSE)
+	{
+		//按照原始逻辑，先关串口-》再打开串口-》然后发AT指令
+		BOOL ComInitFlag;
+		CString RDAPort,RDACommand = "", RDAReturnOK="";
+		int RDATimeout=1;
+
+		m_Port->GetWindowText(RDAPort);
+
+		RdaHostInterface.RDAComShutdown(HandleNum);
+		ComInitFlag = RdaHostInterface.RDAComInit(HandleNum, RDAPort);
+        if (ComInitFlag == FALSE)
+		{
+			return FALSE;
+		}
+
+		for (int i = 0; i < 3; i++)
+		{
+			RDACommand.Empty();
+			if (paraArray[3].Low_Limit_Value != "")
+			{
+				int pos = paraArray[3].Low_Limit_Value.Find("**");
+				if (pos >= 0)
+				{
+					RDACommand = paraArray[3].Low_Limit_Value.Left(pos) + "\r\n";
+					RDAReturnOK = paraArray[3].Low_Limit_Value.Mid(pos + 2);
+				}
+				else
+				{
+					RDACommand.Format("AT^GT_CM=TEST\r\n");
+					RDAReturnOK = "TEST_OK";
+				}
+			}
+			else
+			{
+				RDACommand.Format("AT^GT_CM=TEST\r\n");
+				RDAReturnOK = "TEST_OK";
+			}
+
+			if (RDAReturnOK == "")
+				RDAReturnOK = "\r";
+
+			//调用RDA的写方法
+			BOOL WriteFlag = RdaHostInterface.RDAComWriteData(HandleNum, RDACommand);
+			
+			if (WriteFlag == FALSE)
+			{
+				Sleep(500);
+				if (i == 2)
+					RDATimeout = 1;
+				continue;
+			}
+
+			CString WaitTimeCS;
+			int wpos = paraArray[3].showName.Find("DL");
+			if (wpos != -1)
+				WaitTimeCS = paraArray[3].showName.Mid(wpos + 2);
+			else
+				WaitTimeCS = "0";
+			//receive response
+			Sleep(300 + atoi(WaitTimeCS));
+
+			if (RDAComReceive[HandleNum].GetLength() > 0)
+			{
+				if (RDAComReceive[HandleNum].Find(RDAReturnOK) != -1)
+				{
+					RDATimeout = 0;
+					break;
+				}
+			}
+			Sleep(100);
+		}
+
+		RDAComReceive[HandleNum] = "";
+		
+		//这里直接返回
+		if (RDATimeout == 1)
+		{
+			CloseHandleControl(hPort[HandleNum], GetRDAHostCheckValue, HandleNum);
+			return FALSE;
+		}                                                         
+		else if (RDATimeout == 0)
+		{
+			return TRUE;
+		}
+
+	}
+	/*RDA平台串口初始化从这里结束*/
 
 	if (hPort[HandleNum] != NULL)
 	{
@@ -2347,7 +2441,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_PortReadConstant(CComboBox* m_Port, CComboBox*
 
 	return TRUE;														//返回TRUE，打开串口正常
 }
-char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime,int HexFlag)//通过串口发送命令
+char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime, int HexFlag, BOOL RDAFlag)//通过串口发送命令
 {
 	int Vaule_Return_Count = -1;															//参数的个数
 	BOOL bReadStatus, bWriteStat;
@@ -2377,7 +2471,7 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 		command.Empty();
 
 		//发送字符串
-		if (HexFlag == 0)
+		if (HexFlag == 0&&GetRDAHostCheckValue==FALSE)
 		{
 			command = strCommand_Vaule;
 			//Dongle高速蓝牙适配器不需要\r\n
@@ -2424,6 +2518,57 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 					else
 					{
 						Port_Temp += CString(buffer);
+						Sleep(200 * r);
+						continue;
+					}
+				}
+				else
+				{
+					Sleep(200 * r);
+					continue;
+				}
+			}
+		}
+		else if (HexFlag == 0 && GetRDAHostCheckValue == TRUE)
+		{
+			command = strCommand_Vaule;
+			RDAComReceive[HandleNum] = "";
+			BOOL WriteFlag = RdaHostInterface.RDAComWriteData(HandleNum, command);
+
+			if (WriteFlag == FALSE)
+			{
+				Sleep(300);
+				continue;
+			}
+
+			//receive response
+			Sleep(atoi(paraArray[1].Low_Limit_Value) + WaitTime);
+			CString Port_Temp = "";//串口读取数据 的缓存HexGroupToString
+			for (int r = 0; r < 6; r++)
+			{
+
+				if (RDAComReceive[HandleNum].GetLength() != 0)
+				{
+					char *RDABuffer = (LPSTR)(LPCTSTR)RDAComReceive[HandleNum];
+					if (strstr(EndSign, "NULL"))
+						p = strstr(RDABuffer, "\r");
+					else
+						p = strstr(RDABuffer, EndSign);
+
+					strCommand_Vaule_Return = Port_Temp + RDAComReceive[HandleNum];
+					if ((p) || (strCommand_Vaule_Return.Find(EndSign) != -1))//if((p)||(Port_Temp.Find(EndSign)!=-1))
+					{
+						CString  selPort;
+						selPort = strCommand_Vaule_Return;
+
+						Vaule_Return_Count_CS[HandleNum] = selPort;
+						RDAComReceive[HandleNum] = "";
+						*Vaule_Return = "Analysis_SUCCESS";
+						return "Analysis_SUCCESS";
+					}
+					else
+					{
+						Port_Temp += RDAComReceive[HandleNum];
 						Sleep(200 * r);
 						continue;
 					}
@@ -2482,8 +2627,6 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 					//else
 					//	p = strstr(str, EndSign);
 					CString charVtemp1, charVtemp2, charVtemp3;
-					BYTE x[32];
-					CHAR *tempC;
 					for (int i = 0; i < 16; i++)
 					{
 						charVtemp1.Format(_T("%02X"), (unsigned char)str[i]);
@@ -2556,8 +2699,6 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 				if (dwBytesRead != 0)
 				{
 					CString charVtemp1, charVtemp2, charVtemp3;
-					BYTE x[32];
-					CHAR *tempC;
 					for (int i = 0; i < 16; i++)
 					{
 						charVtemp1.Format(_T("%02X"), (unsigned char)str[i]);
@@ -2594,6 +2735,22 @@ char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strComm
 	//CloseHandle(hPort[HandleNum]);							//成功后不关闭串口---发送完AT指令后
 	*Vaule_Return = "FAIL";
 	return "FAIL";
+}
+
+//关闭串口整合函数，为了兼容RDA和MTK平台而创立，参数1为要关闭的句柄，参数2为RDA要关闭的串口序号（默认的255只是当缺省参数用），参数3区分RDA还是MTK
+BOOL IMEIWrite_MulAT::CloseHandleControl(HANDLE hObject, BOOL RDAFlag, int HandleNum)
+{
+	BOOL IsClose;
+	if (RDAFlag == FALSE||HandleNum>16)
+	{
+		IsClose=CloseHandle(hObject);
+	}
+	else if (RDAFlag == TRUE)
+	{
+		IsClose = RdaHostInterface.RDAComShutdown(HandleNum);
+	}
+
+	return IsClose;
 }
 
 
@@ -3621,8 +3778,8 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			IMEI_FT_Item_Int = 9;
 			Serial_Order_Return_CS.Replace(" ", "");
 			LowLimitStr.Replace(" ", "");
-			Serial_Order_Return_CS.Replace("\r", "");
-			Serial_Order_Return_CS.Replace("\n", "");
+			//Serial_Order_Return_CS.Replace("\r", "");
+			//Serial_Order_Return_CS.Replace("\n", "");
 			//int pos=Serial_Order_Return_CS.Find("ChipRID:");
 			int pos = Serial_Order_Return_CS.Find(LowLimitStr);
 			if (pos >= 0)
@@ -3632,6 +3789,16 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			{
 				Serial_Order_Return_CS = Serial_Order_Return_CS.Right(Serial_Order_Return_CS.GetLength() - Serial_Order_Return_CS.Find(":") - 1);
 			}
+
+			int FindCount = Serial_Order_Return_CS.Find("\r\n");
+			if (FindCount != -1)
+			{
+				Serial_Order_Return_CS.Left(FindCount);
+			}
+
+			Serial_Order_Return_CS.Replace("\r", "");
+			Serial_Order_Return_CS.Replace("\n", "");
+
 
 			CString FeiFaTest = Serial_Order_Return_CS;
 			if (FeiFaTest.Trim("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").GetLength() != 0)
@@ -3920,7 +4087,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			BOOL ImageJudegeResult;
 			if (paraArray[i].showName.Find("清晰度") != -1)
 			{
-				float Range = 3.0;
+				double Range = 3.0;
 				int RangeCut = paraArray[i].High_Limit_Value.Find("范围:");
 				if (RangeCut != -1)
 				{
@@ -3962,16 +4129,16 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else if (paraArray[i].showName.Find("暗角") != -1)
 			{
 				int RGB = 30;
-				float Range = 0.0002;
+				double Range = 0.0002;
 				int RGBCut = paraArray[i].High_Limit_Value.Find("RGB值:");
 				if (RGBCut != -1)
 				{
-					RGB = atof(paraArray[i].High_Limit_Value.Mid(RGBCut + 6, paraArray[i].High_Limit_Value.Find(",") - RGBCut - 6));
+					RGB = atoi(paraArray[i].High_Limit_Value.Mid(RGBCut + 6, paraArray[i].High_Limit_Value.Find(",") - RGBCut - 6));
 				}
 				int RangeCut = paraArray[i].High_Limit_Value.Find("范围:");
 				if (RangeCut != -1)
 				{
-					Range = atof(paraArray[i].High_Limit_Value.Right(paraArray[i].High_Limit_Value.GetLength() - RangeCut - 5));
+					Range = atoi(paraArray[i].High_Limit_Value.Right(paraArray[i].High_Limit_Value.GetLength() - RangeCut - 5));
 				}
 
 				if (PathFileExists(SocketServerPicName[2][HandleNum]) != TRUE)
@@ -4002,8 +4169,8 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			LowLimitStr = paraArray[i].Low_Limit_Value;
 			Serial_Order_Return_CS.Replace(" ", "");
 			LowLimitStr.Replace(" ", "");
-			Serial_Order_Return_CS.Replace("\r", "");
-			Serial_Order_Return_CS.Replace("\n", "");
+			//Serial_Order_Return_CS.Replace("\r", "");
+			//Serial_Order_Return_CS.Replace("\n", "");
 
 			int pos = Serial_Order_Return_CS.Find(LowLimitStr);
 			if (pos >= 0)
@@ -4040,6 +4207,16 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else
 			{
 			}
+
+			int FindCount = NumberStr.Find("\r\n");
+			if (FindCount != -1)
+			{
+				NumberStr.Left(FindCount);
+			}
+
+			NumberStr.Replace("\r", "");
+			NumberStr.Replace("\n", "");
+
 
 			//NumberStr = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "", 1, HandleNum);
 
@@ -4138,8 +4315,66 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	//无冲突的关键字
 	if (paraArray[i].showName.Find("字段显示") != -1)//显示特殊字段用
 	{
-		if (HandleNum<8)
+		if (HandleNum < 8&&GetDongleCheckValue==FALSE)
+		{
+			CString LowLimitStr, PreStr, LengthStr, SectionNumberLowStr, SectionNumberHighStr, SectionNumberStr, NumberStr, DataNoStr;
+
+			//先将号码取出来
+			LowLimitStr = paraArray[i].Low_Limit_Value;
+			Serial_Order_Return_CS.Replace(" ", "");
+			LowLimitStr.Replace(" ", "");
+
+			int pos = Serial_Order_Return_CS.Find(LowLimitStr);
+			if (pos >= 0)
+				NumberStr = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());
+			else
+				return false;
+
+			if (NumberStr.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
+			{
+				CString ICount = NumberStr;
+				int count = ICount.Replace(":", "");
+				if (count != 5)
+				{
+					NumberStr = NumberStr.Right(NumberStr.GetLength() - NumberStr.Find(":") - 1);
+				}
+			}
+
+			pos = NumberStr.Find('"');
+			if (pos >= 0)
+			{
+				NumberStr = NumberStr.Mid(pos + 1);
+				NumberStr = NumberStr.Left(NumberStr.Find('"'));
+			}
+			else
+			{
+			}
+
+			pos = NumberStr.Find('<');
+			if (pos >= 0)
+			{
+				NumberStr = NumberStr.Mid(pos + 1);
+				NumberStr = NumberStr.Left(NumberStr.Find('>'));
+			}
+			else
+			{
+			}
+
+			int FindCount = NumberStr.Find("\r\n");
+			if (FindCount != -1)
+			{
+				NumberStr.Left(FindCount);
+			}
+
+			NumberStr.Replace("\r", "");
+			NumberStr.Replace("\n", "");
+
+			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(NumberStr);
+		}
+		else if (GetDongleCheckValue == TRUE)
+		{
 			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(Serial_Order_Return_CS);
+		}
 	}
 
 
@@ -4152,10 +4387,13 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "搜索到的卫星数量不足" + paraArray[3].High_Limit_Value + " 个,继续...", HandleNum);
 			return false;
 		}
+		GPS_SNRLimit.GetWindowTextA(GPS_SNRLimitCS);
+
 		if (GPS_SNRLimitCS == "")
 			SNRSetting = paraArray[i].High_Limit_Value;
 		else
 			SNRSetting = GPS_SNRLimitCS;
+
 		LogShow_exchange(m_Result, Final_Result_Control, 0, SNRSetting, HandleNum);
 		SNRSetting.Replace(" ", "");
 		for (int j = 0; j<THREAD_NUM; j++)
@@ -4343,7 +4581,7 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 	/*这里是部分功能连接前要做的事情---到这里结束*/
 
 
-
+	int ADCTWaitTimeout = 0;
 	while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) != TRUE)//
 	{
 		showtime = CTime::GetCurrentTime();
@@ -4354,9 +4592,71 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 		if (StopSign[HandleNum] == TRUE)
 			return FALSE;
 		if (showtime.GetSecond() % 5>2)
+		{
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "等待连接", HandleNum);
-
-
+			if (g_ADCTFlag == TRUE)
+			{
+				ADCTWaitTimeout++;
+				if (ADCTWaitTimeout > g_WaitTimeoutFlag)
+				{
+					CString PortNum;
+					switch (HandleNum)
+					{
+					case 0:
+						GetDlgItemText(IDC_COMBO1, PortNum);
+						break;
+					case 1:
+						GetDlgItemText(IDC_COMBO4, PortNum);
+						break;
+					case 2:
+						GetDlgItemText(IDC_COMBO6, PortNum);
+						break;
+					case 3:
+						GetDlgItemText(IDC_COMBO8, PortNum);
+						break;
+					case 4:
+						GetDlgItemText(IDC_COMBO10, PortNum);
+						break;
+					case 5:
+						GetDlgItemText(IDC_COMBO12, PortNum);
+						break;
+					case 6:
+						GetDlgItemText(IDC_COMBO29, PortNum);
+						break;
+					case 7:
+						GetDlgItemText(IDC_COMBO31, PortNum);
+						break;
+					case 8:
+						GetDlgItemText(IDC_COMBO33, PortNum);
+						break;
+					case 9:
+						GetDlgItemText(IDC_COMBO35, PortNum);
+						break;
+					case 10:
+						GetDlgItemText(IDC_COMBO37, PortNum);
+						break;
+					case 11:
+						GetDlgItemText(IDC_COMBO39, PortNum);
+						break;
+					case 12:
+						GetDlgItemText(IDC_COMBO41, PortNum);
+						break;
+					case 13:
+						GetDlgItemText(IDC_COMBO43, PortNum);
+						break;
+					case 14:
+						GetDlgItemText(IDC_COMBO45, PortNum);
+						break;
+					case 15:
+						GetDlgItemText(IDC_COMBO47, PortNum);
+						break;
+					default:
+						break;
+					}
+					ADCTSetup(PortNum, 7, "ALL");
+				}
+			}
+		}
 		/*这里是部分功能连接前要做的事情---在这里开始*/
 
 		//这里继续开启蓝牙扫描枪
@@ -4474,7 +4774,7 @@ GETPort:
 	}
 	else
 	{
-			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum) == TRUE)//仅打开一次串口，后续保持一直打开
+			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0,GetRDAHostCheckValue) == TRUE)//仅打开一次串口，后续保持一直打开
 			{
 				//打开串口成功
 				COM_State[HandleNum] = TRUE;
@@ -5511,7 +5811,7 @@ GETPort:
 				NewData.Format("%s,%d", Ipaddress.Right(Ipaddress.GetLength()-4),SocketServerPort[HandleNum]);
 				PortOrder.Replace("IP端口", NewData);
 			}
-			else if (paraArray[i].showName.Find("字段显示") != -1)//扫描枪扫出来显示的字段去替代指令
+			else if (paraArray[i].Other_ITEM.Find("字段显示") != -1)//扫描枪扫出来显示的字段去替代指令
 			{
 				CString NewData;
 				m_ShowNumberPortControlArray[HandleNum]->GetWindowTextA(NewData);
@@ -5523,7 +5823,7 @@ GETPort:
 			//因为Dongle高速蓝牙依旧分为十六进制指令发送和AT指令发送，所以指令发送要分两种情况，比如我们以MAC地址作为芯片ID时只能通过适配器的AT指令获取MAC地址
 			if (GetDongleCheckValue == FALSE)
 			{
-				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS));
+				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS),0,GetRDAHostCheckValue);
 
 				Serial_Order_Return_CS_Show = Vaule_Return_Count_CS[HandleNum];
 			}
@@ -5634,8 +5934,8 @@ GETPort:
 									}
 
 									BOOL Return;
-									if (hPort[HandleNum] != NULL)
-										Return = CloseHandle(hPort[HandleNum]);				//测试成功后
+									if (hPort[HandleNum] != NULL||GetRDAHostCheckValue==TRUE)
+										Return = CloseHandleControl(hPort[HandleNum], GetRDAHostCheckValue,HandleNum);				//测试成功后
 									hPort[HandleNum] = NULL;
 									if (Return == TRUE)
 										LogShow_exchange(m_Result, Final_Result_Control, 5, "关闭该串口成功！！", HandleNum);
@@ -5748,10 +6048,10 @@ GETPort:
 					t++;
 				} while ((Port_OK == FALSE) && (t<5));
 
-				if ((t>1) && (hPort[HandleNum] != NULL))				//串口不稳定的时候
+				if ((t>1) && (hPort[HandleNum] != NULL || GetRDAHostCheckValue==TRUE))				//串口不稳定的时候
 				{
-					CloseHandle(hPort[HandleNum]);				//重新打开串口
-					OPen_Serial_Port(m_Port, m_Baud, HandleNum);	//串口不稳定的时候
+					CloseHandleControl(hPort[HandleNum],GetRDAHostCheckValue,HandleNum);				//重新打开串口
+					OPen_Serial_Port(m_Port, m_Baud, HandleNum, 0, GetRDAHostCheckValue);	//串口不稳定的时候
 				}
 			}
 			//虚拟串口的处理
@@ -5896,8 +6196,8 @@ GETPort:
 					}
 
 					BOOL Return;
-					if (hPort[HandleNum] != NULL)
-						Return = CloseHandle(hPort[HandleNum]);				//测试成功后
+					if (hPort[HandleNum] != NULL || GetRDAHostCheckValue == TRUE)
+						Return = CloseHandleControl(hPort[HandleNum], GetRDAHostCheckValue, HandleNum);					//测试成功后
 					hPort[HandleNum] = NULL;
 					if (Return == TRUE)
 						LogShow_exchange(m_Result, Final_Result_Control, 5, "关闭该串口成功！！", HandleNum);
@@ -5979,12 +6279,12 @@ OVERDONE:
 
 			if (AntiDupDataLinkFlag[HandleNum][1] == 1)//如果有写入LINK，就要记得重新写回3
 			{
-				Send_Serial_Order(&Serial_Order_Return, AntiDupDataLinkOrder[HandleNum], HandleNum, "OK", "");
+				Send_Serial_Order(&Serial_Order_Return, AntiDupDataLinkOrder[HandleNum], HandleNum, "OK", "",0, GetRDAHostCheckValue);
 			}
 
 			BOOL Return;
-			if (hPort[HandleNum] != NULL)
-				Return = CloseHandle(hPort[HandleNum]);				//测试成功后
+			if (hPort[HandleNum] != NULL || GetRDAHostCheckValue == TRUE)
+				Return = CloseHandleControl(hPort[HandleNum], GetRDAHostCheckValue, HandleNum);						//测试完成后
 			hPort[HandleNum] = NULL;
 			if (Return == TRUE)
 				LogShow_exchange(m_Result, Final_Result_Control, 5, "关闭该串口成功！！", HandleNum);
@@ -6091,6 +6391,7 @@ void IMEIWrite_MulAT::EnableWindow_ALL(BOOL Choose)
 	GetDlgItem(IDC_CHECK42)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK43)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK44)->EnableWindow(Choose);
+	GetDlgItem(IDC_RDAHost_CHECK)->EnableWindow(Choose);
 	GetDlgItem(IDC_CHECK45)->EnableWindow(Choose);
 	GetDlgItem(IDC_BUTTONCONNCPU)->EnableWindow(Choose);
 	GetDlgItem(IDC_BUTTONDISCONNCPU)->EnableWindow(Choose);
@@ -8917,7 +9218,7 @@ void IMEIWrite_MulAT::OnBnClickedButtonstop9()
 	{
 		BOOL Return;
 		if (hPort[ArraySign] != NULL)
-			Return = CloseHandle(hPort[ArraySign]);				//测试成功后
+			Return = CloseHandleControl(hPort[ArraySign], GetRDAHostCheckValue, ArraySign);				//测试成功后
 		hPort[ArraySign] = NULL;
 		if (Return == TRUE)
 			LogShow_exchange(&m_Result9, &Final_Result_Control9, 5, "关闭该串口成功！！", ArraySign);
@@ -9780,6 +10081,16 @@ BOOL IMEIWrite_MulAT::GetExistReturnCode(CAdoInterface& myado, int DataUpNum, CE
 //以下是数据库Data_UpdatePara
 BOOL IMEIWrite_MulAT::Data_UpdatePara(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL ErrorUpEnable, CString ChipRfIDbg)//---------0
 {
+	CString ProductType;
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		ProductType = "RDA";
+	}
+	else
+	{
+		ProductType = "MTK";
+	}
+
 	CString ChipRfIDCurrent;
 	if (ChipRfIDbg != "")
 	{
@@ -9984,7 +10295,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara(CAdoInterface& myado, int DataUpNum, CEdit
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','gps','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
+							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
 
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result");
@@ -10135,6 +10446,16 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara(CAdoInterface& myado, int DataUpNum, CEdit
 //以下是数据库Data_UpdatePara2
 BOOL IMEIWrite_MulAT::Data_UpdatePara2(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL ErrorUpEnable, CString ChipRfIDbg)//---------0
 {
+	CString ProductType;
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		ProductType = "RDA";
+	}
+	else
+	{
+		ProductType = "MTK";
+	}
+
 	CString ChipRfIDCurrent;
 	if (ChipRfIDbg != "")
 	{
@@ -10219,7 +10540,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara2(CAdoInterface& myado, int DataUpNum, CEdi
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result2(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','gps','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3	
+							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3	
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result2");
 			UP_Barcode = myado.Execute(strSQL1, &var);
@@ -10349,6 +10670,16 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara2(CAdoInterface& myado, int DataUpNum, CEdi
 //以下是数据库Data_UpdatePara3
 BOOL IMEIWrite_MulAT::Data_UpdatePara3(CAdoInterface& myado, int DataUpNum, CEdit* m_Result, CEdit* Final_Result_Control, BOOL ErrorUpEnable, CString ChipRfIDbg)//---------0
 {
+	CString ProductType;
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		ProductType = "RDA";
+	}
+	else
+	{
+		ProductType = "MTK";
+	}
+
 	CString ChipRfIDCurrent;
 	if (ChipRfIDbg != "")
 	{
@@ -10544,7 +10875,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara3(CAdoInterface& myado, int DataUpNum, CEdi
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result3(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','gps','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
+							  							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
 
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result3");
@@ -11078,8 +11409,18 @@ void IMEIWrite_MulAT::Voice_Speak(CString Text)
 
 /*菜单栏*/
 
-//获取配置，网络获取
-void IMEIWrite_MulAT::OnGetWebSetting()
+//获取配置线程函数
+UINT static __cdecl OnGetWebSetting_Thread(LPVOID pParam)
+{
+	BOOL flag;
+
+	IMEIWrite_MulAT* Mead_Main_Win = (IMEIWrite_MulAT*)pParam;
+	Mead_Main_Win->OnGetWebSetting_ThreadFun();
+	return 0;
+}
+
+//由于RDA透传用的是回调函数的方式，所以这里获取配置转为线程模式
+void IMEIWrite_MulAT::OnGetWebSetting_ThreadFun()
 {
 	CString Serial_Order_Return, Serial_Order_ReturnTemp;//Serial_Order_Return是正常使用的参数，Serial_Order_ReturnTemp是给蓝牙指令用的参数
 	CString OrderNumbersControlCS;
@@ -11087,7 +11428,7 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 	GetDlgItemText(IDC_SCANDATA_EDIT, StrMac);
 
 	UpdateData(TRUE);
-	if (GetBluetoothCheckValue == TRUE || (GetDongleCheckValue == TRUE&&hScanGun[0]!=NULL))
+	if (GetBluetoothCheckValue == TRUE || (GetDongleCheckValue == TRUE&&hScanGun[0] != NULL))
 	{
 		if (hScanGun[0] == NULL)
 		{
@@ -11158,7 +11499,7 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 	}
 
 	//Dongle蓝牙在这里初始化设置
-	if (GetDongleCheckValue == TRUE|| GetDongleScanCheckValue==TRUE)
+	if (GetDongleCheckValue == TRUE || GetDongleScanCheckValue == TRUE)
 	{
 		DongleInitSetting();
 	}
@@ -11171,22 +11512,22 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 			AfxMessageBox("线程1串口已经打开");
 			goto WEBGETFAILE;
 		}
-		if (OPen_Serial_Port(&m_Port1, &m_Baud1, 0) == TRUE)//OnGetWebSetting
+		if (OPen_Serial_Port(&m_Port1, &m_Baud1, 0, 0, GetRDAHostCheckValue) == TRUE)//OnGetWebSetting
 		{
 			//Dongle高速蓝牙适配器的时候在这里进行连接和初始化，连接失败就直接退出
 			if (GetDongleCheckValue == TRUE)
 			{
-			    DongleConnectFlag[0] = TRUE;
+				DongleConnectFlag[0] = TRUE;
 				DongleInit(0);
 
 				//扫描枪要在这里赋值
 				if (hScanGun[0] != NULL)
 					GetDlgItem(IDC_SCANDATA_EDIT)->GetWindowTextA(DongleInfo[0][0]);
 
-				if (DongleScan(0, DongleConnectRssi,"") == FALSE)
+				if (DongleScan(0, DongleConnectRssi, "") == FALSE)
 				{
 					if (hScanGun[0] != NULL)
-						DongleInfo[0][0]="";
+						DongleInfo[0][0] = "";
 					AfxMessageBox("蓝牙连接失败，请检查透传模块与蓝牙设备");
 					goto WEBGETFAILE;
 				}
@@ -11198,10 +11539,10 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 			goto WEBGETFAILE;
 		}
 
-		//蓝牙适配器的时候读版本
+		//要区分一下是否用的是蓝牙设备
 		if (GetDongleCheckValue == FALSE)
 		{
-			Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500);
+			Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500, GetDongleCheckValue, GetRDAHostCheckValue);
 		}
 		else if (GetDongleCheckValue == TRUE)
 		{
@@ -11249,8 +11590,8 @@ void IMEIWrite_MulAT::OnGetWebSetting()
 		}
 
 		BOOL Return;
-		if (hPort[0] != NULL)
-			Return = CloseHandle(hPort[0]);				//测试成功后
+		if (hPort[0] != NULL || GetRDAHostCheckValue == TRUE)
+			Return = CloseHandleControl(hPort[0], GetRDAHostCheckValue, 0);					//测试成功后				//测试成功后
 		hPort[0] = NULL;
 		if (Return == TRUE)
 		{
@@ -11342,6 +11683,12 @@ WEBGETFAILE:
 	StartA_Control.EnableWindow(FALSE);
 	m_bVar = 0;
 	return;
+}
+
+//获取配置，网络获取
+void IMEIWrite_MulAT::OnGetWebSetting()
+{
+	AfxBeginThread(OnGetWebSetting_Thread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 }
 
 BOOL IMEIWrite_MulAT::GetSettingFromDB(CAdoInterface& myado, CString m_server, CString m_db, CString m_user, CString m_pwd, CString SoftwareVer, CEdit* m_Result, CEdit* Final_Result_Control)//---------3
@@ -12012,6 +12359,29 @@ void IMEIWrite_MulAT::OnBnClickedCheck40()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
+}
+
+void IMEIWrite_MulAT::OnBnClickedRdahostCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	BOOL InitFlag;
+
+	//为TRUE就执行初始化，为FALSE就释放动态库
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		InitFlag=RdaHostInterface.RDADllInit();
+		if (InitFlag == FALSE)
+		{
+			MessageBox("RDA平台透传模块初始化失败！",NULL);
+			GetRDAHostCheckValue == FALSE;
+			UpdateData(FALSE);
+		}
+	}
+	else if (GetRDAHostCheckValue == FALSE)
+	{
+		RdaHostInterface.RDADeinitialization();
+	}
 }
 
 void IMEIWrite_MulAT::OnCbnSelchangeCombo53()
@@ -13487,6 +13857,7 @@ BOOL IMEIWrite_MulAT::DequeContinueControlFun(int HandleNum, deque<int> &Continu
 			return FALSE;
 		}
 	}
+	return TRUE;
 }
 
 /*三合一新增功能*/
@@ -13510,7 +13881,7 @@ afx_msg LRESULT IMEIWrite_MulAT::MSG_GetSimpleMessage(WPARAM wParam, LPARAM lPar
 //自定义系统消息发送函数，用来发送句柄给主控程序的
 void IMEIWrite_MulAT::MSG_SendSimpleMessage()
 {
-	HWND ADCTHwnd = NULL;
+	ADCTHwnd = NULL;
 	ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
 	::SendMessage(ADCTHwnd, WM_SimpleMessage, 3, (LPARAM)this->m_hWnd);
 	//ADCTInquire("ALL", 1);
@@ -13524,7 +13895,9 @@ void IMEIWrite_MulAT::MSG_SendCopyDataMessage(CopyDataMSG *MessageStruct, int re
 	copyData.cbData = sizeof(CopyDataMSG);
 	copyData.lpData = (PVOID)MessageStruct;
 	Sleep(1);
-	::SendMessage(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData);
+	::SendMessage(ADCTHwnd, WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData);
+	//if (IsSuccess==FALSE)
+	//	::SendMessage(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData);
 	//::SendMessageTimeout(::FindWindow("ADCT", "AutoDownloadATETest"), WM_COPYDATA, (WPARAM)GetSafeHwnd(), (LPARAM)&copyData, SMTO_ABORTIFHUNG, 10000, 0);
 }
 
@@ -13734,6 +14107,10 @@ void IMEIWrite_MulAT::ADCTSetup(CString PortNo, INT CommandNo, CString message)
 		strcpy(copydataMsg->MessageChar, (LPCTSTR)"ALL");
 		if (g_ExitFlag == 0)
 			return;
+		break;
+	case 7:
+		g_WaitTimeoutFlag = atoi(message);
+		strcpy(copydataMsg->MessageChar, (LPCTSTR)"ALL");
 		break;
 	default:
 		break;
@@ -14369,7 +14746,7 @@ int IMEIWrite_MulAT::BluetoothConnect(int PortNo, CString MACStr, CComboBox* m_P
 	//要记得关闭串口
 	BOOL Return;
 	if (hPort[PortNo] != NULL)
-		Return = CloseHandle(hPort[PortNo]);
+		Return = CloseHandleControl(hPort[PortNo], GetRDAHostCheckValue, PortNo);
 	hPort[PortNo] = NULL;
 	if (Return == TRUE)
 	{
@@ -15225,7 +15602,20 @@ BOOL  IMEIWrite_MulAT::DongleScanRssiFun(int HandleNum, CString SoftModel)
 	int SizeInt = DongleRssiMap.size();
 	CString SizeStr;
 	SizeStr.Format("%d", SizeInt);
-	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "当前已找到的设备数量为:"+SizeStr, HandleNum);
+	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "当前已找到的设备数量为:" + SizeStr, HandleNum);
+	
+	map<CString,int>::iterator Countiter;
+	Countiter = DongleRssiMap.begin();
+	for (int a = 1; Countiter != DongleRssiMap.end(); Countiter++, a++)
+	{
+		CString Istr,Rssistr,Macstr;
+		int Iint = Countiter->second;
+		Macstr = Countiter->first;
+		Istr.Format("%d", a);
+		Rssistr.Format("%d", Iint);
+		LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "设备" + Istr + ":" + Macstr + "," + Rssistr, HandleNum);
+	}
+
 	return TRUE;
 }
 
@@ -16152,6 +16542,9 @@ BOOL IMEIWrite_MulAT::CloseExternalCircuit(int HandleNum)
 	}
 	return Result;
 }
+
+
+
 
 
 

@@ -466,6 +466,8 @@
 #define IDC_POWERCONTROLCOMLIST2_COMBO  1289
 #define IDC_CHECK45                     1289
 #define IDC_POWERCONTROLNUMBERLIST2_COMBO 1290
+#define IDC_CHECK46                     1290
+#define IDC_RDAHost_CHECK               1290
 #define IDC_POWERCONTROLTEST1_BUTTON    1291
 #define IDC_POWERCONTROLTEST2_BUTTON    1292
 #define IDC_POWERCONTROLRESULT1_EDIT    1293
@@ -478,6 +480,7 @@
 #define IDC_RELAYHINT2_STATIC           1300
 #define IDC_VOLTAGEV_STATIC             1301
 #define IDC_VOLTAGE_STATIC              1302
+#define IDC_DongleBleScan_CHECK         1303
 #define ID_FRESH_32771                  32771
 #define ID_EIDT_32772                   32772
 #define ID_32772                        32772
@@ -498,7 +501,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        177
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1290
+#define _APS_NEXT_CONTROL_VALUE         1291
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

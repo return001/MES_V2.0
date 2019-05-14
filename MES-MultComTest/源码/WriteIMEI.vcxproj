@@ -185,6 +185,7 @@
     <ClCompile Include="PictureEx.cpp" />
     <ClCompile Include="PowerControlDlg.cpp" />
     <ClCompile Include="RadioTest\CSRBTHostControl.cpp" />
+    <ClCompile Include="RDAHostInterface.cpp" />
     <ClCompile Include="ReportCtrl.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -243,6 +244,7 @@
     <ClInclude Include="PhoneCommand.h" />
     <ClInclude Include="PictureEx.h" />
     <ClInclude Include="PowerControlDlg.h" />
+    <ClInclude Include="RDAHostInterface.h" />
     <ClInclude Include="Relay32.h" />
     <ClInclude Include="ReportCtrl.h" />
     <ClInclude Include="Resource.h" />

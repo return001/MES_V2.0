@@ -156,6 +156,9 @@
     <ClCompile Include="PowerControlDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RDAHostInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WriteIMEI.rc">
@@ -320,6 +323,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PowerControlDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RDAHostInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

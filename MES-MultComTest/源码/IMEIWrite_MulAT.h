@@ -17,6 +17,7 @@
 #include <deque>
 
 #include "TServerScoket.h"
+#include "RDAHostInterface.h"
 
 #include "PowerControlDlg.h"
 #include "Aes.h"
@@ -159,13 +160,23 @@ public:
 	void Delay_Clock(UINT mSecond);
 
 	BOOL OnGetport();
-	void InitCOM(CComboBox* m_Port,CComboBox* m_Baud,int num);//初始化串口
-	BOOL OPen_Serial_Port(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
+	//void InitCOM(CComboBox* m_Port,CComboBox* m_Baud,int num);//初始化串口
+	//BOOL OPen_Serial_Port(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL OPen_Serial_PortReadConstant(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL CheckConnect_Thread(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
-	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0);//因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
+/*	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0);*///因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
 
-	void LogShow_exchange(CEdit* m_Result,CEdit* Final_Result_Control,int State,CString Msg_Log,int HandleNum,CString Category="-1",CString ChipRfIDbg=""); //重点看
+
+	void InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num, BOOL RDAFlag = FALSE);
+
+	BOOL OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose = FALSE, BOOL RDAFlag = FALSE);
+
+	char*  Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime = 3, int HexFlag = 0, BOOL RDAFlag = FALSE);
+
+	BOOL CloseHandleControl(HANDLE hObject, BOOL RDAFlag = FALSE,int HandleNum=255);
+
+
+	void LogShow_exchange(CEdit* m_Result,CEdit* Final_Result_Control,int State,CString Msg_Log,int HandleNum,CString Category="-1",CString ChipRfIDbg=""); 
 	bool IMEI_Function_Judge(int i,CString IMEI_FT_Item,char* Serial_Order_Return,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
 
 	CString GetData(char* Serial_Order_Return,CString Start,CString End,int Count=1,int HandleNum=0);//获取有效数据
@@ -636,6 +647,7 @@ public:
 	public:
 		CString m_SoftVersion;//软件版本，在网络获取函数中使用的
 		int m_bVar;//消息传送时回复的值，在网络获取函数中使用的
+		HWND ADCTHwnd;//ADCT的句柄
 
 		static map<CString, int>PortStatusMap;//此map容器与StopSign数组联动，键放的是串口号，值放的是StopSign数组对应的下标，利用此函数便可以快速通过串口号来判断端口是否处于占用
 
@@ -836,4 +848,13 @@ public:
 
 
 		afx_msg void OnBnClickedDongleblescanCheck();
+
+	/*RDA平台新增功能*/
+		RDAHostInterface RdaHostInterface;
+
+
+		BOOL GetRDAHostCheckValue;
+
+		void OnGetWebSetting_ThreadFun();//获取配置线程函数
+		afx_msg void OnBnClickedRdahostCheck();
 };
