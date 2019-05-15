@@ -14,8 +14,9 @@ import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.entity.DeleteTable;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.model.DataRelativeSheet;
-import com.jimi.mes_server.model.GpsUser;
+import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.service.ReportService;
+import com.jimi.mes_server.service.UserService;
 import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.util.TokenBox;
@@ -34,6 +35,8 @@ public class ReportController extends Controller {
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 	
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
+	
+	private static UserService userService = Enhancer.enhance(UserService.class);
 	/*
 	 * public static void main(String[] args) { PropKit.use("properties.ini");
 	 * DruidPlugin dp = new DruidPlugin(PropKit.get("d_url"), PropKit.get("d_user"),
@@ -55,6 +58,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
+	@Access({ "SuperAdmin","admin","operator" })
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		ResultUtil result = ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, type));
 		renderJson(result);
@@ -69,6 +73,7 @@ public class ReportController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
+	@Access({ "SuperAdmin","admin","operator" })
 	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter, isReferred));
 		renderJson(result);
@@ -88,6 +93,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
+	@Access({ "SuperAdmin","admin","operator" })
 	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -130,6 +136,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
+	@Access({ "SuperAdmin","admin","operator" })
 	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -169,8 +176,8 @@ public class ReportController extends Controller {
 			throw new OperationException("当前用户无权限删除");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (user.getUserType().equals("SuperAdmin")) {
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.delete(table, filter, type);
 			renderJson(ResultUtil.succeed());
 			return ;
@@ -205,8 +212,8 @@ public class ReportController extends Controller {
 			throw new OperationException("当前用户无权限删除");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (user.getUserType().equals("SuperAdmin")) {
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.deleteByIds(table, filter, type);
 			renderJson(ResultUtil.succeed());
 			return ;
@@ -239,7 +246,7 @@ public class ReportController extends Controller {
 	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		String table = "Gps_ManuPrintParam";
-		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
 			filter = filter + "(ZhiDan = '" + zhiDan + "')";
@@ -262,7 +269,7 @@ public class ReportController extends Controller {
 				filter = filter + "(((JS_ReEndPrintTime >= '" + startTimeString + "' and JS_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReEndPrintTime is null) and (JS_ReFirstPrintTime >= '" + startTimeString + "' and JS_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReFirstPrintTime is null) and (JS_PrintTime >= '" + startTimeString + "' and JS_PrintTime <= '" + endTimeString + "')))";
 			}
 		}
-		if (user.getUserType().equals("SuperAdmin")) {
+		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.deleteGpsManuPrintParam(filter);
 			renderJson(ResultUtil.succeed());
 			return ;
@@ -295,7 +302,7 @@ public class ReportController extends Controller {
 	@Access({"SuperAdmin", "admin"})
 	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		GpsUser user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		String table = "Gps_ManuSimDataParam";
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -315,7 +322,7 @@ public class ReportController extends Controller {
 			String endTimeString = formatDateToString(endTime, "yyyy/MM/dd HH:mm:ss");
 			filter = filter + " (((ReSDTime >= '" + startTimeString + "' and ReSDTime <= '" + endTimeString + "'))" + " or ((ReSDTime is null) and (SDTime >= '" + startTimeString + "' and SDTime <= '" + endTimeString + "')))";
 		}
-		if (user.getUserType().equals("SuperAdmin")) {
+		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.deleteGpsManuSimDataParam(filter);
 			renderJson(ResultUtil.succeed());
 			return;

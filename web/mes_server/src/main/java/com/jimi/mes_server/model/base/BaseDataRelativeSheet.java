@@ -126,6 +126,15 @@ public abstract class BaseDataRelativeSheet<M extends BaseDataRelativeSheet<M>> 
 		return getStr("IMEI12");
 	}
 
+	public M setIMEI13(java.lang.String IMEI13) {
+		set("IMEI13", IMEI13);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEI13() {
+		return getStr("IMEI13");
+	}
+
 	public M setZhiDan(java.lang.String ZhiDan) {
 		set("ZhiDan", ZhiDan);
 		return (M)this;

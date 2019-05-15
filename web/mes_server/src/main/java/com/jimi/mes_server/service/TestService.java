@@ -55,47 +55,47 @@ public class TestService extends SelectService {
 		switch (type) {
 		case 0:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only create the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db1").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing != null) {
-				throw new ParameterException("only create the setTing once");
+				throw new ParameterException("已存在此配置");
 			}		
 			return functionSetTing.use("db1").save();
 		case 1:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only create the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db2").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing != null) {
-				throw new ParameterException("only create the setTing once");
+				throw new ParameterException("已存在此配置");
 			}			
 			return functionSetTing.use("db2").save();
 		case 2:
 			if(coupleSetTing.getSoftWare() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
-				throw new ParameterException("only create the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			coupleTestSetTing = TestSystemSetting.dao.use("db2").findById(coupleSetTing.getSoftWare());
 			if (coupleTestSetTing != null) {
-				throw new ParameterException("only create the setTing once");
+				throw new ParameterException("已存在此配置");
 			}		
 			return coupleSetTing.use("db2").save();
 		case 3:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only create the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db3").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing != null) {
-				throw new ParameterException("only create the setTing once");
+				throw new ParameterException("已存在此配置");
 			}
 			return functionSetTing.use("db3").save();
 		case 4:
 			if(coupleSetTing.getSoftWare() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
-				throw new ParameterException("only create the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(coupleSetTing.getSoftWare());
 			if (coupleTestSetTing != null) {
-				throw new ParameterException("only create the setTing once");
+				throw new ParameterException("已存在此配置");
 			}
 			return coupleSetTing.use("db3").save();
 		default:
@@ -135,47 +135,47 @@ public class TestService extends SelectService {
 		switch (type) {
 		case 0:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only update the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db1").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing == null) {
-				throw new ParameterException("only update the setTing exist");
+				throw new ParameterException("不存在此配置，无法更新");
 			}
 			return functionSetTing.use("db1").update();
 		case 1:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only update the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db2").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing == null) {
-				throw new ParameterException("only update the setTing exist");
+				throw new ParameterException("不存在此配置，无法更新");
 			}
 			return functionSetTing.use("db2").update();
 		case 2:
 			if(coupleSetTing.getSoftWare() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
-				throw new ParameterException("only update the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			coupleTestSetTing = TestSystemSetting.dao.use("db2").findById(coupleSetTing.getSoftWare());
 			if (coupleTestSetTing != null) {
-				throw new ParameterException("only update the setTing exist");
+				throw new ParameterException("不存在此配置，无法更新");
 			}
 			return coupleSetTing.use("db2").update();
 		case 3:
 			if(functionSetTing.getSoftWare() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
-				throw new ParameterException("only update the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db3").findById(functionSetTing.getSoftWare());
 			if (functionTestSetTing != null) {
-				throw new ParameterException("only update the setTing exist");
+				throw new ParameterException("不存在此配置，无法更新");
 			}
 			return functionSetTing.use("db3").update();
 		case 4:
 			if(coupleSetTing.getSoftWare() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
-				throw new ParameterException("only update the setTing have the SoftWare、MachineName and Station");
+				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
 			coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(coupleSetTing.getSoftWare());
 			if (coupleTestSetTing != null) {
-				throw new ParameterException("only update the setTing exist");
+				throw new ParameterException("不存在此配置，无法更新");
 			}
 			return coupleSetTing.use("db3").update();
 		default:

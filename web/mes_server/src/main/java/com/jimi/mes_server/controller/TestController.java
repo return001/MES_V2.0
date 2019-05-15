@@ -23,7 +23,7 @@ public class TestController extends Controller {
 
 	public static final String COUPLE_TEST_TABLE_NAME = "TestSystemSetting";
 
-	
+	@Access({ "SuperAdmin","admin","operator" })
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		if (type != null) {
 			if (type.equals(0) || type.equals(1) || type.equals(3)) {
@@ -31,10 +31,10 @@ public class TestController extends Controller {
 			} else if (type.equals(2) || type.equals(4)) {
 				renderJson(ResultUtil.succeed(testService.select(COUPLE_TEST_TABLE_NAME, pageNo, pageSize, ascBy, descBy, filter, type)));
 			} else {
-				renderJson(ResultUtil.failed(400, "can not recognized type"));
+				renderJson(ResultUtil.failed(400, "此类型无法识别"));
 			}
 		} else {
-			renderJson(ResultUtil.failed(400, "type can not be null"));
+			renderJson(ResultUtil.failed(400, "类型不能为空"));
 		}
 	}
 

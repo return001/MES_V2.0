@@ -20,7 +20,7 @@ public class OrderController extends Controller {
 	
 	public static final String ORDER_TABLE_NAME = "Gps_ManuOrderParam";
 	
-	
+	@Access({ "SuperAdmin","admin","operator" })
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
 		renderJson(ResultUtil.succeed(orderService.select(ORDER_TABLE_NAME, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}

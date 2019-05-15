@@ -1,11 +1,13 @@
 package com.jimi.mes_server.interceptor;
 
+import com.jfinal.aop.Aop;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.exception.AccessException;
-import com.jimi.mes_server.model.GpsUser;
+import com.jimi.mes_server.model.LUserAccount;
+import com.jimi.mes_server.service.UserService;
 import com.jimi.mes_server.util.TokenBox;
 
 
@@ -24,22 +26,23 @@ public class AccessInterceptor implements Interceptor {
 			 invocation.invoke();
 			 return;
 		 }
+		 UserService userService = Aop.get(UserService.class);
 		 String token = invocation.getController().getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		 GpsUser user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
+		 LUserAccount user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
 		 if(user == null) {
-			 throw new AccessException("not logined");
+			 throw new AccessException("未登录");
 		 }
 		 if(!user.getInService()) {
-			 throw new AccessException("the user is disabled");
+			 throw new AccessException("此用户未启用");
 		 }
 		 String[] accessUserTypes = access.value();
 		 for (String userType : accessUserTypes) {
-			if(userType.equals(user.getUserType())){
+			if(userType.equals(userService.getTypeName(user.getWebUserType()))){
 				invocation.invoke();
 				return;
 			}
 		}
-		throw new AccessException("access denied");
+		throw new AccessException("权限不足");
 	}
 
 }

@@ -3,6 +3,7 @@ package com.jimi.mes_server.controller;
 import java.io.File;
 
 import com.jfinal.core.Controller;
+import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.service.DeleteHistoryService;
 import com.jimi.mes_server.util.ResultUtil;
 
@@ -26,6 +27,7 @@ public class DeleteHistoryController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
+	@Access({ "SuperAdmin","admin","operator" })
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		renderJson(ResultUtil.succeed(deleteHistoryService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
@@ -35,6 +37,7 @@ public class DeleteHistoryController extends Controller {
 	 * 下载删除记录备份
 	 * @param id
 	 */
+	@Access({ "SuperAdmin","admin"})
 	public void download(String id) {
 		File file = deleteHistoryService.download(id);
 		if (file != null) {
