@@ -167,7 +167,7 @@ public:
 /*	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0);*///因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
 
 
-	void InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num, BOOL RDAFlag = FALSE);
+	void InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num);
 
 	BOOL OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose = FALSE, BOOL RDAFlag = FALSE);
 
@@ -462,6 +462,7 @@ public:
 	CButton StopALL_Control;
 	CEdit *m_ResultArray[16];
 	CEdit *Final_Result_ControlArray[16];
+	CButton *m_StartControlArray[16];
 	CButton *m_StopControlArray[16];
 	CEdit m_ShowNumberPort1Control;
 	CEdit m_ShowNumberPort2Control;

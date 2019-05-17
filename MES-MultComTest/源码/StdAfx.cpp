@@ -14,6 +14,7 @@ int g_IsHideFlag = 0;
 int g_ToolFlag = 1;//SMT选择1，组装选择2，老化后选择3，会自动勾选一些选项
 int g_ExitFlag = 1;//为1表示是自己退出
 int g_WaitTimeoutFlag = 3;//初始设置为3，等待连接，1次时间是5秒
+CString g_TesterIdStr="NULL";
 
 CString g_BackDoorIP = "192.168.0.240";
 CString g_BackDoorDatabase = "GPSTest";

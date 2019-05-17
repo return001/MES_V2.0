@@ -37,6 +37,7 @@ extern int g_IsHideFlag;//是否隐藏窗口
 extern int g_ToolFlag;//分工位发工具
 extern int g_ExitFlag;//退出标志位
 extern int g_WaitTimeoutFlag;//等待连接超时标志位
+extern CString g_TesterIdStr;//测试人ID
 
 extern CString g_BackDoorIP;//这里是一个后门
 extern CString g_BackDoorDatabase;

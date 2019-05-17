@@ -179,6 +179,23 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 	m_StopControlArray[14] = &Stop15_Control;
 	m_StopControlArray[15] = &Stop16_Control;
 
+	m_StartControlArray[0] = &StartA_Control;
+	m_StartControlArray[1] = &StartB_Control;
+	m_StartControlArray[2] = &StartC_Control;
+	m_StartControlArray[3] = &StartD_Control;
+	m_StartControlArray[4] = &StartE_Control;
+	m_StartControlArray[5] = &StartF_Control;
+	m_StartControlArray[6] = &Start7_Control;
+	m_StartControlArray[7] = &Start8_Control;
+	m_StartControlArray[8] = &Start9_Control;
+	m_StartControlArray[9] = &Start10_Control;
+	m_StartControlArray[10] = &Start11_Control;
+	m_StartControlArray[11] = &Start12_Control;
+	m_StartControlArray[12] = &Start13_Control;
+	m_StartControlArray[13] = &Start14_Control;
+	m_StartControlArray[14] = &Start15_Control;
+	m_StartControlArray[15] = &Start16_Control;
+
 	m_ShowNumberPortControlArray[0] = &m_ShowNumberPort1Control;
 	m_ShowNumberPortControlArray[1] = &m_ShowNumberPort2Control;
 	m_ShowNumberPortControlArray[2] = &m_ShowNumberPort3Control;
@@ -1262,7 +1279,7 @@ BOOL IMEIWrite_MulAT::OnGetport()
 	LeaveCriticalSection(&GETPORT);
 	return TRUE;
 }
-void IMEIWrite_MulAT::InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num, BOOL RDAFlag)//初始化串口
+void IMEIWrite_MulAT::InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num)//初始化串口
 {
 	//init baud
 	m_Baud->AddString("460800");
@@ -3069,7 +3086,22 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 		Final_Result_ControlArray[HandleNum]->UpdateWindow();
 		Thread_State[HandleNum] = FALSE;
 		if (COM_State[HandleNum] == FALSE)
-			EnableWindow_Start(HandleNum);
+		{
+			if (GetRDAHostCheckValue == TRUE)
+			{
+					if (RdaHostInterface.ComInit[HandleNum] == FALSE)
+					{
+						EnableWindow_Start(HandleNum);
+					}
+					else
+					{
+						RdaHostInterface.RDAComShutdown(HandleNum);
+					}
+				//m_StopControlArray[HandleNum]->EnableWindow(TRUE);
+			}
+			else
+				EnableWindow_Start(HandleNum);
+		}
 	}
 	else if (State == 251)
 	{
@@ -3785,7 +3817,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			if (pos >= 0)
 				Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());//Serial_Order_Return_CS=Serial_Order_Return_CS.Mid(pos+8);
 
-			if (Serial_Order_Return_CS.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
+			if (Serial_Order_Return_CS.Find(":") != -1 && paraArray[i].Low_Limit_Value.Find(":") == -1)
 			{
 				Serial_Order_Return_CS = Serial_Order_Return_CS.Right(Serial_Order_Return_CS.GetLength() - Serial_Order_Return_CS.Find(":") - 1);
 			}
@@ -3793,7 +3825,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			int FindCount = Serial_Order_Return_CS.Find("\r\n");
 			if (FindCount != -1)
 			{
-				Serial_Order_Return_CS.Left(FindCount);
+				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(FindCount);
 			}
 
 			Serial_Order_Return_CS.Replace("\r", "");
@@ -3819,7 +3851,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			}
 			else
 			{
-				Serial_Order_Return_CS = Serial_Order_Return_CS.Left(32);
+				//Serial_Order_Return_CS = Serial_Order_Return_CS.Left(32);
 				if (Serial_Order_Return_CS.GetLength() != 32)
 					return false;
 			}
@@ -4178,7 +4210,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else
 				return false;
 
-			if (NumberStr.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
+			if (NumberStr.Find(":") != -1 && paraArray[i].Low_Limit_Value.Find(":") == -1)
 			{
 				CString ICount = NumberStr;
 				int count = ICount.Replace(":", "");
@@ -4211,7 +4243,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			int FindCount = NumberStr.Find("\r\n");
 			if (FindCount != -1)
 			{
-				NumberStr.Left(FindCount);
+				NumberStr = NumberStr.Left(FindCount);
 			}
 
 			NumberStr.Replace("\r", "");
@@ -4330,7 +4362,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else
 				return false;
 
-			if (NumberStr.Find(":") != -1 && IMEI_FT_Item.Find(":") == -1)
+			if (NumberStr.Find(":") != -1 && paraArray[i].Low_Limit_Value.Find(":") == -1)
 			{
 				CString ICount = NumberStr;
 				int count = ICount.Replace(":", "");
@@ -4581,7 +4613,7 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 	/*这里是部分功能连接前要做的事情---到这里结束*/
 
 
-	int ADCTWaitTimeout = 0;
+	int ADCTWaitTimeout = 0, RDAWaitTimeOut = 0;;
 	while (CheckConnect_Thread(m_Port, m_Baud, HandleNum, m_Result, Final_Result_Control) != TRUE)//
 	{
 		showtime = CTime::GetCurrentTime();
@@ -4590,7 +4622,11 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 		showtimeCS.Format("%02d:%02d:%02d", showtime.GetHour(), showtime.GetMinute(), showtime.GetSecond());
 
 		if (StopSign[HandleNum] == TRUE)
+		{
+			if (GetRDAHostCheckValue == TRUE)
+				RdaHostInterface.RDAComShutdown(HandleNum);
 			return FALSE;
+		}
 		if (showtime.GetSecond() % 5>2)
 		{
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "等待连接", HandleNum);
@@ -4655,6 +4691,15 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 					}
 					ADCTSetup(PortNum, 7, "ALL");
 				}
+				//else if (GetRDAHostCheckValue == TRUE)
+				//{
+				//	RDAWaitTimeOut++;
+				//	if (RDAWaitTimeOut == 4)
+				//	{
+				//		RdaHostInterface.ComInit[HandleNum] = TRUE;
+				//		RdaHostInterface.RDAComShutdown(HandleNum);
+				//	}
+				//}
 			}
 		}
 		/*这里是部分功能连接前要做的事情---在这里开始*/
@@ -4778,13 +4823,17 @@ GETPort:
 			{
 				//打开串口成功
 				COM_State[HandleNum] = TRUE;
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "打开串口成功！\r\n", HandleNum);													//第一次显示“测试中”
+				LogShow_exchange(m_Result, Final_Result_Control, 0, "打开串口成功！\r\n", HandleNum);												//第一次显示“测试中”
+				Sleep(1);
+				m_StartControlArray[HandleNum]->EnableWindow(FALSE);
 			}
 			else
 			{
 				//打开串口失败
 				COM_State[HandleNum] = FALSE;
 				LogShow_exchange(m_Result, Final_Result_Control, 128, "打开串口失败！\r\n", HandleNum);
+				Sleep(1);
+				m_StartControlArray[HandleNum]->EnableWindow(TRUE);
 				//return FALSE;
 				goto OVERDONE;//打开串口失败
 			}
@@ -5028,6 +5077,7 @@ GETPort:
 				
 				while (1)
 				{
+					Sleep(1000);
 					if (SocketServer[HandleNum]->m_SimpleData.Find(paraArray[i].Low_Limit_Value) != -1)
 					{
 						SocketServer[HandleNum]->CloseSimpleRecv();
@@ -5035,7 +5085,7 @@ GETPort:
 						break;
 					}
 
-					Sleep(300);
+
 
 					//默认超过8秒就当作超时处理
 					count++;
@@ -5962,7 +6012,12 @@ GETPort:
 										DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 									}
 									if (StopSign[HandleNum] == TRUE)
+									{
+										if (GetRDAHostCheckValue == TRUE)
+											RdaHostInterface.RDAComShutdown(HandleNum);
 										return FALSE;
+									}
+
 									Sleep(300);
 								}
 							}
@@ -6223,7 +6278,11 @@ GETPort:
 					{
 						DongleCheckRssiFlag[HandleNum] = TRUE;//打开蓝牙检测信号强度标志
 						if (StopSign[HandleNum] == TRUE)
+						{
+							if (GetRDAHostCheckValue == TRUE)
+								RdaHostInterface.RDAComShutdown(HandleNum);
 							return FALSE;
+						}
 						Sleep(300);
 					}
 				}
@@ -6314,7 +6373,11 @@ OVERDONE:
 			}
 			//if(FailRestart>10)
 			if (StopSign[HandleNum] == TRUE)
+			{
+				if (GetRDAHostCheckValue == TRUE)
+					RdaHostInterface.RDAComShutdown(HandleNum);
 				return FALSE;
+			}
 			Sleep(300);
 			//FailRestart++;
 		}
@@ -10150,7 +10213,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara(CAdoInterface& myado, int DataUpNum, CEdit
 			myado.OpenSheet("select SN,SoftModel,Version,OtherTestSign from dbo.Gps_TestResult WHERE SN ='" + ChipRfIDCurrent + "' AND Version='" + Software_Version[DataUpNum] + "'AND SoftModel='" + MachineType_CS + "'");
 			BOOL Barcode_Check = myado.Find("SN='" + ChipRfIDCurrent + "'");
 			Barcode_Check &= myado.Find("SoftModel='" + MachineType_CS + "'");
-			Barcode_Check &= myado.Find("Version='" + Software_Version[DataUpNum] + "'");
+			Barcode_Check &=   myado.Find("Version='" + Software_Version[DataUpNum] + "'");
 			ReduceBarcode_Check = Barcode_Check;
 
 			myado.CloseSheet();
@@ -10295,7 +10358,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara(CAdoInterface& myado, int DataUpNum, CEdit
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
+							  							  							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','" + g_TesterIdStr + "','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
 
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result");
@@ -10540,7 +10603,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara2(CAdoInterface& myado, int DataUpNum, CEdi
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result2(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3	
+							  							  							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','" + g_TesterIdStr + "','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3	
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result2");
 			UP_Barcode = myado.Execute(strSQL1, &var);
@@ -10875,7 +10938,7 @@ BOOL IMEIWrite_MulAT::Data_UpdatePara3(CAdoInterface& myado, int DataUpNum, CEdi
 		{
 			//直接上传
 			CString strSQL1 = "Insert into dbo.Gps_AutoTest_Result3(SN,IMEI,Version,SoftModel,Result,Remark,TesterId,ZhiDan,Computer,TestSetting)\
-							  							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','lbc','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
+							  							  							  							  							 values('" + ChipRfIDCurrent + "','','" + Software_Version[DataUpNum] + "','" + MachineType_CS + "','1','" + ProductType + "','"+g_TesterIdStr+"'','" + ZhiDanCS + "','" + Hostname + Ipaddress + "','" + ATCommandList_CSDBCompare + "')";//变3
 
 
 			//myado.OpenSheet("select * from dbo.Gps_AutoTest_Result3");
@@ -13782,7 +13845,7 @@ void IMEIWrite_MulAT::StopButtonGatherFun(int HandleNum)
 				DongleTestDataDeq.erase(pos);
 		}
 	}
-
+	
 	if (0)
 	{
 		BOOL Return = CloseHandle(hPort[HandleNum]);				//测试成功后
@@ -14220,6 +14283,71 @@ void IMEIWrite_MulAT::OnClose()
 		ADCTHwnd = ::FindWindow("ADCT", "AutoDownloadATETest");
 		::SendMessage(ADCTHwnd, WM_SimpleMessage, 3, 99);
 
+	}
+
+	//RDA产品记得退出的时候释放动态库
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (RdaHostInterface.ComInit[i] == FALSE)
+			{
+				continue;
+			}
+			switch (i)
+			{
+			case 0:
+				OnBnClickedButton2();
+				break;
+			case 1:
+				OnBnClickedButton15();
+				break;
+			case 2:
+				OnBnClickedButton17();
+				break;
+			case 3:
+				OnBnClickedButton19();
+				break;
+			case 4:
+				OnBnClickedButton21();
+				break;
+			case 5:
+				OnBnClickedButton23();
+				break;
+			case 6:
+				OnBnClickedButtonstop7();
+				break;
+			case 7:
+				OnBnClickedButtonstop8();
+				break;
+			case 8:
+				OnBnClickedButtonstop9();
+				break;
+			case 9:
+				OnBnClickedButtonstop10();
+				break;
+			case 10:
+				OnBnClickedButtonstop11();
+				break;
+			case 11:
+				OnBnClickedButtonstop12();
+				break;
+			case 12:
+				OnBnClickedButtonstop13();
+				break;
+			case 13:
+				OnBnClickedButtonstop14();
+				break;
+			case 14:
+				OnBnClickedButtonstop15();
+				break;
+			case 15:
+				OnBnClickedButtonstop16();
+				break;
+			}
+		}
+		Sleep(100);
+		RdaHostInterface.RDADeinitialization();
 	}
 
 	CResizableDialog::OnClose();

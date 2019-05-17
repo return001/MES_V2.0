@@ -51,7 +51,9 @@ BOOL RDAHostInterface::RDAComInit(int HandleNum, CString PortName)
 	char* a = (LPSTR)(LPCTSTR)PortName;
 	 if (ComInit[HandleNum] == FALSE)
 	{
-		if (HostComPortInit(HandleNum, a, NULL))
+		bool IsSusscc = HostComPortInit(HandleNum, a, NULL);
+		Sleep(100);
+		if (IsSusscc==true)
 		{
 			ComInit[HandleNum] = TRUE;
 			return TRUE;
@@ -66,6 +68,16 @@ BOOL RDAHostInterface::RDAComWriteData(int HandleNum, CString PortData)
 	char *PortDataChar;
 	PortData.Replace("AT^GT_CM=", "");//RDA平台的指令要去掉前缀
 	PortData.Replace("\r\n", "");
+
+	//RDA平台对标准AT指令做一些处理
+	if (PortData.Find("ATD112") != -1 || PortData.Find("ATA") != -1 || PortData.Find("ATH") != -1 || PortData.Find("AT+CSQ") != -1)
+	{
+		if (PortData.Find("2AT,")==-1)
+		{
+			PortData = "2AT," + PortData;
+		}
+	}
+
 	PortDataChar = (LPSTR)(LPCTSTR)PortData;
 	if (ComInit[HandleNum] == TRUE)
 	{
@@ -82,13 +94,23 @@ BOOL RDAHostInterface::RDAComWriteData(int HandleNum, CString PortData)
 //关串口函数
 BOOL RDAHostInterface::RDAComShutdown(int HandleNum)
 {
+	GetLastError();
 	if (ComInit[HandleNum] == TRUE)
 	{
-		HostComPortShutdown(HandleNum);
-		ComInit[HandleNum] = FALSE;
+		Sleep(100);
+		bool IsSusscc = HostComPortShutdown(HandleNum);
+		Sleep(100);
+		if (IsSusscc == true)
+		{
+			ComInit[HandleNum] = FALSE;
+		}
+		else
+		{
+			return FALSE;
+		}
 		return TRUE;
 	}
-
+	return FALSE;
 }
 
 //串口重新连接函数

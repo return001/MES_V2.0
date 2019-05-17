@@ -60,7 +60,7 @@ void CLogin3::OnBnClickedOk()
 			}
 			else
 			{
-				UserNameDB = m_s_name;
+				g_TesterIdStr = m_s_name;//这里拿到测试人的ID
 				OnOK();
 			}
 		}
@@ -208,6 +208,27 @@ void CLogin3::OnBnClickedButton1()
 	UserS.DoModal();
 }
 
+CString GetCurDir()
+{
+	CString strRet;
+	TCHAR strDir[MAX_PATH];
+	int intLen = GetModuleFileName(NULL, strDir, MAX_PATH);
+	strDir[intLen] = 0;
+	strRet = (CString)strDir;
+	int intTemp;
+	int intPos = strRet.Find(_T("\\"));
+	while (intPos > 0)
+	{
+		intTemp = intPos;
+		intPos = strRet.Find(_T("\\"), intPos + 1);
+	}
+	if (intTemp > 0)
+	{
+		strRet = strRet.Mid(0, intTemp + 1);
+	}
+	return strRet;
+}
+
 BOOL CLogin3::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -217,33 +238,39 @@ BOOL CLogin3::OnInitDialog()
 	CString str;
 	int ValueInt;
 
-	BOOL ifFind = finder.FindFile(_T(".\\SystemSetting.ini"));
+	CString strq, str1, str2; 
+	strq = GetCurDir();
+	str1 = strq + "SystemSetting.ini";
+	str2 = strq + "Systembackdoor.ini";
+
+	BOOL ifFind = finder.FindFile(str1);
 	if (ifFind)
 	{
-		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("IsHideFlag"), 0, _T(".\\SystemSetting.ini"));
+		//ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("IsHideFlag"), 0, _T(".\\SystemSetting.ini"));
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("IsHideFlag"), 0, str1);
 		g_IsHideFlag = ValueInt;
-		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ADCTFlag"), 0, _T(".\\SystemSetting.ini"));
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ADCTFlag"), 0, str1);
 		g_ADCTFlag = ValueInt;
-		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ToolFlag"), 0, _T(".\\SystemSetting.ini"));
+		ValueInt = GetPrivateProfileInt(_T("SimpleSetting"), _T("ToolFlag"), 0, str1);
 		g_ToolFlag = ValueInt;
 	}
 
-	ifFind = finder.FindFile(_T(".\\Systembackdoor.ini"));
+	ifFind = finder.FindFile(str2);
 	if (ifFind)
 	{
-		GetPrivateProfileString(_T("DatabaseInfo"), _T("IP"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
+		GetPrivateProfileString(_T("DatabaseInfo"), _T("IP"), _T(""), str.GetBuffer(50), 50, str2);
 		g_BackDoorIP = str;
 		str.ReleaseBuffer();
-		GetPrivateProfileString(_T("DatabaseInfo"), _T("Database"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
+		GetPrivateProfileString(_T("DatabaseInfo"), _T("Database"), _T(""), str.GetBuffer(50), 50, str2);
 		g_BackDoorDatabase = str;
 		str.ReleaseBuffer();
-		GetPrivateProfileString(_T("DatabaseInfo"), _T("User"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
+		GetPrivateProfileString(_T("DatabaseInfo"), _T("User"), _T(""), str.GetBuffer(50), 50, str2);
 		g_BackDoorUser = str;
 		str.ReleaseBuffer();
-		GetPrivateProfileString(_T("DatabaseInfo"), _T("Password"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
+		GetPrivateProfileString(_T("DatabaseInfo"), _T("Password"), _T(""), str.GetBuffer(50), 50, str2);
 		g_BackDoorPassword = str;
 		str.ReleaseBuffer();
-		GetPrivateProfileString(_T("DatabaseInfo"), _T("Socket"), _T(""), str.GetBuffer(50), 50, _T(".\\Systembackdoor.ini"));
+		GetPrivateProfileString(_T("DatabaseInfo"), _T("Socket"), _T(""), str.GetBuffer(50), 50, str2);
 		g_BackDoorSocket = str;
 		str.ReleaseBuffer();
 	}
@@ -260,3 +287,4 @@ BOOL CLogin3::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }
+
