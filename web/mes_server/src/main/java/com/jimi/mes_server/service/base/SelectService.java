@@ -124,13 +124,12 @@ public class SelectService {
 
 
 	private Page<Record> paginateAndFillWhereValues(Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues, Integer type) {
-		if((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
+		if ((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
 			throw new ParameterException("ascBy and descBy must be provided at the same time");
 		}
-		if(pageNo == null && pageSize == null) {
-			if(type != null) {
-				switch(type)
-				{
+		if (pageNo == null && pageSize == null) {
+			if (type != null) {
+				switch (type) {
 				case 0:
 					return Db.use("db1").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 				case 1:
@@ -141,21 +140,22 @@ public class SelectService {
 					return Db.use("db3").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 				case 4:
 					return Db.use("db3").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+				case 5:
+					return Db.use("db2").paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 				default:
 					break;
 				}
-			}else {	
+			} else {
 				try {
 					return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 			}
-		}else {
-			if(type != null) {
-				switch(type)
-				{
+		} else {
+			if (type != null) {
+				switch (type) {
 				case 0:
 					return Db.use("db1").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
 				case 1:
@@ -166,17 +166,19 @@ public class SelectService {
 					return Db.use("db3").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
 				case 4:
 					return Db.use("db3").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+				case 5:
+					return Db.use("db2").paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
 				default:
 					break;
 				}
-			}else {
+			} else {
 				return Db.paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
 			}
 		}
 		return null;
 	}
-	
-	
+
+
 	private Page<Record> paginateAndFillWhereValues( String resultSet, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
 		if ((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
 			throw new ParameterException("pageNo and pageSize must be provided at the same time");

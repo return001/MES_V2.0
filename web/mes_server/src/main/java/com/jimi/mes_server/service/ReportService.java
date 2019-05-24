@@ -195,7 +195,7 @@ public class ReportService extends SelectService{
 	 */
 	public boolean updateRelativeSheet(DataRelativeSheet dataRelativeSheet) {
 		if(dataRelativeSheet.getIMEI1() == null) {
-			throw new ParameterException("only update the dataRelativeSheet have the IMEI1");
+			throw new ParameterException("IMEI1不能为空");
 		}
 		DataRelativeSheet sheet = DataRelativeSheet.dao.findById(dataRelativeSheet.getIMEI1());
 		if (sheet == null) {

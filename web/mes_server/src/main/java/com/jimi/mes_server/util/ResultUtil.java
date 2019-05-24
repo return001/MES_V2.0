@@ -34,7 +34,7 @@ public class ResultUtil {
 
 	
 	public static ResultUtil succeed() {
-		return succeed("operation succeed");
+		return succeed("操作成功");
 	}
 	
 	
@@ -47,12 +47,12 @@ public class ResultUtil {
 	
 	
 	public static ResultUtil failed() {
-		return failed("operation failed");
+		return failed("操作失败");
 	}
 	
 	
 	public static ResultUtil failed(int result) {
-		return failed(result, "operation failed");
+		return failed(result, "操作失败");
 	}
 	
 	

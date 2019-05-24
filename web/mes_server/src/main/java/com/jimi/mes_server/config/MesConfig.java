@@ -18,6 +18,7 @@ import com.jimi.mes_server.controller.DeleteHistoryController;
 import com.jimi.mes_server.controller.OrderController;
 import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
+import com.jimi.mes_server.controller.ReworkController;
 import com.jimi.mes_server.controller.TestController;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
@@ -26,6 +27,7 @@ import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
 import com.jimi.mes_server.model.MappingKit;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
+import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.util.TokenBox;
 
 /**
@@ -106,6 +108,7 @@ public class MesConfig extends JFinalConfig {
 	    arp1.addMapping("TestSystemSettingFunc", "SoftWare", TestSystemSettingFunc.class);
 	    arp2.addMapping("TestSystemSetting", "SoftWare", TestSystemSetting.class);
 	    arp2.addMapping("TestSystemSettingFunc", "SoftWare", TestSystemSettingFunc.class);
+	    arp2.addMapping("TestSystemSettingOqc", "SoftWare", TestSystemSettingOqc.class);
 	    arp3.addMapping("TestSystemSetting", "SoftWare", TestSystemSetting.class);
 	    arp3.addMapping("TestSystemSettingFunc", "SoftWare", TestSystemSettingFunc.class);
 	    me.add(arp);
@@ -123,6 +126,7 @@ public class MesConfig extends JFinalConfig {
 		me.add("/redTea", RedTeaController.class);
 		me.add("/test", TestController.class);
 		me.add("/history", DeleteHistoryController.class);
+		me.add("/rework", ReworkController.class);
 	}
 	
 	
