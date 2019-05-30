@@ -95,12 +95,12 @@ public:
 	CString PrintBlankInterval;
 	CEdit TagsCurrNumControl;
 	CEdit Tags_CountControl;
-	afx_msg void OnBnClickedButton17();
+	afx_msg void OnBnClickedButtonstart17();
 
 public:
 	//优化数据存储、指针调用
 	CString *strContents;
-	afx_msg void OnBnClickedButton19();
+	afx_msg void OnBnClickedButtonstart19();
 	//CListCtrl Excell_show;
 	CComboListCtrl Excell_show;
 	CString		m_strExchangeFileName;//规则文件交换路径
@@ -111,7 +111,7 @@ public:
 	int TagsBits;
 	// 打印速度
 	int PrintSpeed;
-	afx_msg void OnBnClickedButton15();
+	afx_msg void OnBnClickedButtonstart15();
 	//停止标志
 	BOOL StopSign;
 	BOOL Sequence;

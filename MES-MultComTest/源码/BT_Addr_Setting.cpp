@@ -171,7 +171,7 @@ BEGIN_MESSAGE_MAP(CBT_Addr_Setting, CDialog)
 	//ON_NOTIFY(RVN_ITEMCLICK, IDC_CUSTOM1, OnRvnItemClick)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &CBT_Addr_Setting::OnTcnSelchangeTab1)
 	ON_BN_CLICKED(IDOK, &CBT_Addr_Setting::OnBnClickedOk)
-	ON_BN_CLICKED(IDC_BUTTON12, &CBT_Addr_Setting::OnBnClickedButton12)
+	ON_BN_CLICKED(IDC_BUTTON12, &CBT_Addr_Setting::OnBnClickedButtonstart12)
 END_MESSAGE_MAP()
 
 
@@ -340,7 +340,7 @@ void CBT_Addr_Setting::OnBnClickedOk()
 	OnOK();
 }
 
-void CBT_Addr_Setting::OnBnClickedButton12()
+void CBT_Addr_Setting::OnBnClickedButtonstart12()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	TCHAR pszDir[MAX_PATH];

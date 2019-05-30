@@ -275,6 +275,10 @@ double CurrentTest::currentAverage(char InstrName[], int testNum, double currRan
 	typedef int32_t(*CONFMEAS)(char * InstrName, double ManuaRange1, uintptr_t * VISAResourceNameOut);
 	CONFMEAS ConfMeas = (CONFMEAS)GetProcAddress(aEzdDLL, "ConfMeas");
 
+	typedef int32_t(*CONFMEASB)(char * InstrName, double ManuaRange1, uintptr_t * VISAResourceNameOut);
+	CONFMEASB ConfMeasB = (CONFMEASB)GetProcAddress(aEzdDLL, "ConfMeasB");
+
+
 	uintptr_t* VisaNameOut = 0;//串口号
 	LVBoolean DefaSetInit = false;
 	LVBoolean * DefaSetValid = &DefaSetInit;//默认初始化
@@ -290,17 +294,23 @@ double CurrentTest::currentAverage(char InstrName[], int testNum, double currRan
 	double curr_Average = 0;  //存放等待模式下电流的平均
 
 	ConfMeas(InstrName, currRange, VisaNameOut); //测试结束之前，将量程调小
+
+	ConfMeasB(InstrName, currRange, VisaNameOut);
+
 	for (int i = 0; i<testNum; i++)
 	{
 		ConfMeas(InstrName, currRange, VisaNameOut); //测试结束之前，将量程调小
+		ConfMeasB(InstrName, currRange, VisaNameOut);
 		CMeas(InstrName, CMeasValue, CMeasValid);
 		ConfMeas(InstrName, currRange, VisaNameOut); //测试结束之前，将量程调小
+		ConfMeasB(InstrName, currRange, VisaNameOut);
 		if (CMeasInit)
 		{
 			cur_Arr.push_back(CInit);
 		}
 	}
 	ConfMeas(InstrName, 3, VisaNameOut); //测试结束之后，将量程调大，调到3A的测试范围已经足够机子重启
+	ConfMeasB(InstrName, 3, VisaNameOut);
 	curr_Average = average(cur_Arr.begin(), cur_Arr.end(), cur_Arr.size());
 
 	FreeLibrary(hEzdDLL);

@@ -59,12 +59,12 @@ void TagsBatchPrint::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(TagsBatchPrint, CDialog)
 	ON_WM_TIMER()   //定时器
 	ON_WM_SYSCOMMAND()//PostMessage
-	ON_BN_CLICKED(IDC_BUTTON17, &TagsBatchPrint::OnBnClickedButton17)
-	ON_BN_CLICKED(IDC_BUTTON19, &TagsBatchPrint::OnBnClickedButton19)
+	ON_BN_CLICKED(IDC_BUTTON17, &TagsBatchPrint::OnBnClickedButtonstart17)
+	ON_BN_CLICKED(IDC_BUTTON19, &TagsBatchPrint::OnBnClickedButtonstart19)
 	ON_BN_CLICKED(IDC_BUTTON2, &TagsBatchPrint::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON15, &TagsBatchPrint::OnBnClickedButton15)
+	ON_BN_CLICKED(IDC_BUTTON15, &TagsBatchPrint::OnBnClickedButtonstart15)
 	ON_BN_CLICKED(IDC_BUTTON21, &TagsBatchPrint::OnBnClickedButton21)
-	ON_BN_CLICKED(IDC_BUTTON22, &TagsBatchPrint::OnBnClickedButton22)
+	ON_BN_CLICKED(IDC_BatchPrintOutput_BUTTON, &TagsBatchPrint::OnBnClickedButton22)
 END_MESSAGE_MAP()
 
 
@@ -829,7 +829,7 @@ BOOL TagsBatchPrint::PrintSpace(CString Count)//打印空白贴纸
 	////////////////////////////
 }
 
-void TagsBatchPrint::OnBnClickedButton17()//生成IMEI
+void TagsBatchPrint::OnBnClickedButtonstart17()//生成IMEI
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
@@ -837,7 +837,7 @@ void TagsBatchPrint::OnBnClickedButton17()//生成IMEI
 }
 
 
-void TagsBatchPrint::OnBnClickedButton19()//导入TXT		//AutoCreateTagsFunc
+void TagsBatchPrint::OnBnClickedButtonstart19()//导入TXT		//AutoCreateTagsFunc
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CFileDialog fDlg(TRUE,
@@ -955,7 +955,7 @@ void TagsBatchPrint::OnBnClickedButton2()
 	
 }
 
-void TagsBatchPrint::OnBnClickedButton15()
+void TagsBatchPrint::OnBnClickedButtonstart15()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	StopSign=TRUE;

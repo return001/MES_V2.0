@@ -32,7 +32,7 @@ void CPackingPrint::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPackingPrint, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON2, &CPackingPrint::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON1, &CPackingPrint::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CPackingPrint::OnBnClickedButtonstart1)
 	ON_BN_CLICKED(IDC_BUTTON3, &CPackingPrint::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
@@ -134,7 +134,7 @@ void CPackingPrint::PrintFun(CString IMEIData,CString PhoneNum)//打印功能
 	btFormat.PrintOut(0,0);
 	//btFormat.Print("lbc",TRUE,5000,NULL);
 }
-void CPackingPrint::OnBnClickedButton1()
+void CPackingPrint::OnBnClickedButtonstart1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);

@@ -41,6 +41,7 @@ CString Port1LogName;
 CString Port2LogName;
 CString Port3LogName;
 CString Port4LogName;
+CString AbnomalLogName;
 BOOL SinglePortAbnomal=FALSE;
 //CString LastPort1RID = L"";
 //CString LastPort1IMEI=L"";
@@ -302,6 +303,7 @@ BOOL CMFCP3SIMPORTDlg::OnInitDialog()
 	Port2LogName = GetLogTime() + L"Port2Log";
 	Port3LogName = GetLogTime() + L"Port3Log";
 	Port4LogName = GetLogTime() + L"Port4Log";
+	AbnomalLogName = GetLogTime() + L"AbnomalLog";
 
 	//国际版新增的,获取之前的语言和关老化、关数据的选择
 	if (GetUserDefaultUILanguage() != MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED))//获取当前系统语言
@@ -313,6 +315,35 @@ BOOL CMFCP3SIMPORTDlg::OnInitDialog()
 	GetSystemConfigInfoIni();
 
 
+
+	unsigned short tmp = 0xffff;
+	unsigned short ret1 = 0;
+	unsigned char buff[6] = { 0 };
+	buff[0] = 0xFE;
+	buff[1] = 0x05;
+	buff[2] = 0x00;
+	buff[3] = 0x00;
+	buff[4] = 0x00;
+	buff[5] = 0x00;
+
+	for (int n = 0; n < 6; n++){/*此处的6 -- 要校验的位数为6个*/
+		tmp = buff[n] ^ tmp;
+		for (int i = 0; i < 8; i++){  /*此处的8 -- 指每一个char类型又8bit，每bit都要处理*/
+			if (tmp & 0x01){
+				tmp = tmp >> 1;
+				tmp = tmp ^ 0xa001;
+			}
+			else{
+				tmp = tmp >> 1;
+			}
+		}
+	}
+	/*CRC校验后的值*/
+	printf("%X\n", tmp);
+	/*将CRC校验的高低位对换位置*/
+	ret1 = tmp >> 8;
+	ret1 = ret1 | (tmp << 8);
+	printf("ret: %X\n", ret1);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -1864,6 +1895,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedAutomultipleconnectButton()
 	{
 		OnBnClickedPort4connectButton();
 	}
+	GetDlgItem(IDOK)->SetFocus();//点击一键连接后转移焦点，防止键盘误触
 }
 
 //点击一键断开按钮
@@ -1886,6 +1918,7 @@ void CMFCP3SIMPORTDlg::OnBnClickedAutomultiplestartButton()
 	{
 		OnBnClickedPort4connectButton();
 	}
+	GetDlgItem(IDOK)->SetFocus();//点击一键连接后转移焦点，防止键盘误触
 }
 
 
@@ -2161,19 +2194,21 @@ void CMFCP3SIMPORTDlg::DownloadMainContralThread(LPVOID lpParam)
 						strFolderFile = strFolderpath + strCIDfile + L"\\assets.der";//文件夹名称
 						//直接判断种子文件是否已经下过，如果已经下载过就移动到OK文件夹里
 
-						if (!PathFileExists(strFolderFile))
-						{
-							if (LanguageFlag == FALSE)
-							{
-								MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
-							}
-							else if (LanguageFlag == TRUE)
-							{
-								MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
-							}
-							dlg->OnBnClickedAutomultiplestartButton();
-							return;
-						}
+						//if (!PathFileExists(strFolderFile))
+						//{
+						//	if (LanguageFlag == FALSE)
+						//	{
+						//		PrintLog(strFolderFile,5);
+						//		MessageBox(L"读取文件错误！请检查目录下是否存在不包含assets.der种子文件的文件夹！", L"提示信息", NULL);
+						//	}
+						//	else if (LanguageFlag == TRUE)
+						//	{
+						//		PrintLog(strFolderFile, 5);
+						//		MessageBox(L"Error!Please be sure all the folder have the 'assets.der' file in it!", L"Hint", NULL);
+						//	}
+						//	dlg->OnBnClickedAutomultiplestartButton();
+						//	return;
+						//}
 
 						//关数据库标志位为FALSE就代表要执行数据库操作
 						if (DatabaseFlag == FALSE)
@@ -2800,12 +2835,12 @@ void CMFCP3SIMPORTDlg::SingleDownloadRead2Port1Thread(LPVOID lpParam)
 									if (LanguageFlag == FALSE)
 									{
 										PrintLog(L"耦合漏测\r\n", 0);
-										SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
 									}
 									else if (LanguageFlag == TRUE)
 									{
 										PrintLog(L"Couple Fail\r\n", 0);
-										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
 									}
 									adoport1manage3.CloseAll();
 
@@ -3835,12 +3870,12 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port1Thread(LPVOID lpParam)
 									if (LanguageFlag == FALSE)
 									{
 										PrintLog(L"耦合漏测\r\n", 1);
-										SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"耦合漏测");
 									}
 									else if (LanguageFlag == TRUE)
 									{
 										PrintLog(L"Couple Fail\r\n", 1);
-										SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
+										dlg->SetDlgItemText(IDC_PORT1HINT_STATIC, L"Couple Fail");
 									}
 									adoport1manage3.CloseAll();
 
@@ -4926,12 +4961,12 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port2Thread(LPVOID lpParam)
 									if (LanguageFlag == FALSE)
 									{
 										PrintLog(L"耦合漏测\r\n", 2);
-										SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
+										dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"耦合漏测");
 									}
 									else if (LanguageFlag == TRUE)
 									{
 										PrintLog(L"Couple Fail\r\n", 2);
-										SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
+										dlg->SetDlgItemText(IDC_PORT2HINT_STATIC, L"Couple Fail");
 									}
 									adoport2manage4.CloseAll();
 
@@ -5995,12 +6030,12 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port3Thread(LPVOID lpParam)
 									if (LanguageFlag == FALSE)
 									{
 										PrintLog(L"耦合漏测\r\n", 3);
-										SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
+										dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"耦合漏测");
 									}
 									else if (LanguageFlag == TRUE)
 									{
 										PrintLog(L"Couple Fail\r\n", 3);
-										SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
+										dlg->SetDlgItemText(IDC_PORT3HINT_STATIC, L"Couple Fail");
 									}
 									adoport3manage5.CloseAll();
 
@@ -7066,12 +7101,12 @@ void CMFCP3SIMPORTDlg::DownloadRead2Port4Thread(LPVOID lpParam)
 									if (LanguageFlag == FALSE)
 									{
 										PrintLog(L"耦合漏测\r\n", 4);
-										SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
+										dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"耦合漏测");
 									}
 									else if (LanguageFlag == TRUE)
 									{
 										PrintLog(L"Couple Fail\r\n", 4);
-										SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
+										dlg->SetDlgItemText(IDC_PORT4HINT_STATIC, L"Couple Fail");
 									}
 									adoport4manage6.CloseAll();
 
@@ -7898,7 +7933,7 @@ CString CMFCP3SIMPORTDlg::GetLogTime()
 //日志打印函数
 void CMFCP3SIMPORTDlg::PrintLog(CString strMsg, int No)
 {
-	CLog Relog0,Relog1,Relog2,Relog3,Relog4;//日志文件
+	CLog Relog0,Relog1,Relog2,Relog3,Relog4,Relog5;//日志文件
 
 	switch (No)
 	{
@@ -7916,6 +7951,9 @@ void CMFCP3SIMPORTDlg::PrintLog(CString strMsg, int No)
 		break;
 	case 4:
 		Relog4.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), Port4LogName);
+		break;
+	case 5:
+		Relog5.WriteLog(CStringA(L"【" + GetTime() + L"】") + CStringA(strMsg), AbnomalLogName);
 		break;
 	default:
 		break;

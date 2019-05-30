@@ -59,7 +59,7 @@ void CDataBase::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CDataBase, CDialog)
-	ON_BN_CLICKED(IDC_BUTTON1, &CDataBase::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CDataBase::OnBnClickedButtonstart1)
 	ON_LBN_DBLCLK(IDC_LIST1, &CDataBase::OnDblclkList2)
 	ON_BN_CLICKED(IDOK, &CDataBase::OnBnClickedOk)
 	ON_BN_CLICKED(IDC_BUTTON9, &CDataBase::OnBnClickedButton9)
@@ -112,7 +112,7 @@ _RecordsetPtr&  CDataBase::GetRS(CString strSQL) //执行strSQL的SQL语句，返回集录
 	}
 	return m_pRS;
 }
-void CDataBase::OnBnClickedButton1()//连接数据库
+void CDataBase::OnBnClickedButtonstart1()//连接数据库
 {
 	// TODO: Add your control notification handler code here
 	//数据库连接

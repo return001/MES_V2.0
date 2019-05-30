@@ -40,11 +40,11 @@ BEGIN_MESSAGE_MAP(CUserSetting, CDialog)
 
 	ON_WM_TIMER()//定时器
 
-	ON_BN_CLICKED(IDC_BUTTON1, &CUserSetting::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CUserSetting::OnBnClickedButtonstart1)
 	ON_BN_CLICKED(IDC_BUTTON7, &CUserSetting::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON6, &CUserSetting::OnBnClickedButton6)
-	ON_BN_CLICKED(IDC_BUTTON10, &CUserSetting::OnBnClickedButton10)
-	ON_BN_CLICKED(IDC_BUTTON11, &CUserSetting::OnBnClickedButton11)
+	ON_BN_CLICKED(IDC_BUTTON10, &CUserSetting::OnBnClickedButtonstart10)
+	ON_BN_CLICKED(IDC_BUTTON11, &CUserSetting::OnBnClickedButtonstart11)
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CUserSetting::OnCbnSelchangeCombo2)
 END_MESSAGE_MAP()
 
@@ -140,7 +140,7 @@ CString CUserSetting::GetData(char* Serial_Order_Return, CString Start, CString 
 	return "NULL";
 }
 
-void CUserSetting::OnBnClickedButton1()
+void CUserSetting::OnBnClickedButtonstart1()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
@@ -408,7 +408,7 @@ BOOL CUserSetting::DeleteUserFromDb(CString Name, CString Password,BOOL UsePW)
 	return TRUE;
 }
 
-void CUserSetting::OnBnClickedButton10()
+void CUserSetting::OnBnClickedButtonstart10()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
@@ -498,7 +498,7 @@ BOOL CUserSetting::GetUsersFromDB()
 	return TRUE;
 }
 
-void CUserSetting::OnBnClickedButton11()
+void CUserSetting::OnBnClickedButtonstart11()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);

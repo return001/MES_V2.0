@@ -43,7 +43,7 @@ public:
 	void PrintFunEnd();//打印功能
 public:
 	afx_msg void OnBnClickedButton2();//重新打印
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonstart1();
 	// Bartender模板文件路径
 	CString BtwFile;
 	// 打印数据设置

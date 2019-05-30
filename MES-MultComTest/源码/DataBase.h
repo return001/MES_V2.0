@@ -29,7 +29,7 @@ protected:
 public:
 	bool    SQL_Wrong_Excute;
 
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonstart1();
 	BOOL Ado(CString strConn);
 	_RecordsetPtr&  GetRS(CString strSQL); //执行strSQL的SQL语句，返回集录集
 	CListBox m_list2;

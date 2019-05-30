@@ -12,6 +12,11 @@ extern "C" {
 int32_t __cdecl ConfMeas(char InstrName[], double ManualRange1, 
 	uintptr_t *VISAResourceNameOut);
 /*!
+ * ConfMeasB
+ */
+int32_t __cdecl ConfMeasB(char InstrName[], double ManualRange1, 
+	uintptr_t *VISAResourceNameOut);
+/*!
  * 使错误或警告代码转换为错误簇。 
  * 收到共享库调用的返回值或返回用户定义错误代码时，可使用该VI。
  */

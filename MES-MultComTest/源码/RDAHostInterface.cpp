@@ -49,10 +49,11 @@ BOOL RDAHostInterface::RDADllInit()
 BOOL RDAHostInterface::RDAComInit(int HandleNum, CString PortName)
 {
 	char* a = (LPSTR)(LPCTSTR)PortName;
-	 if (ComInit[HandleNum] == FALSE)
+
+	if (ComInit[HandleNum] == FALSE&&PortName!="")
 	{
 		bool IsSusscc = HostComPortInit(HandleNum, a, NULL);
-		Sleep(100);
+		Sleep(200);
 		if (IsSusscc==true)
 		{
 			ComInit[HandleNum] = TRUE;
@@ -95,11 +96,11 @@ BOOL RDAHostInterface::RDAComWriteData(int HandleNum, CString PortData)
 BOOL RDAHostInterface::RDAComShutdown(int HandleNum)
 {
 	GetLastError();
+	Sleep(100);
 	if (ComInit[HandleNum] == TRUE)
 	{
-		Sleep(100);
 		bool IsSusscc = HostComPortShutdown(HandleNum);
-		Sleep(100);
+		Sleep(200);
 		if (IsSusscc == true)
 		{
 			ComInit[HandleNum] = FALSE;

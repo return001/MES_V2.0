@@ -480,7 +480,7 @@ public:
 	long IMEI_Count_int;
 
 	
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonstart1();
 	// 蓝牙地址计数
 	//CString BtAddrCount_whole_situation;
 	CString BtAddrCount;
@@ -842,7 +842,7 @@ public:
 	bool   INITIAL_POWER;
 	afx_msg void OnBnClickedButton8();
 	CButton DB_Find_Control;
-	afx_msg void OnBnClickedButton10();
+	afx_msg void OnBnClickedButtonstart10();
 
 public:
 	PARAMETER_MAIN paraArray[MAXPARANUM];
@@ -870,10 +870,10 @@ public:
 	// 条码打印机控制配置脚本
 	CString PrinterScript;
 	CEdit PrinterScript_Control;
-	afx_msg void OnBnClickedButton11();
+	afx_msg void OnBnClickedButtonstart11();
 	// 手动选择打印贴纸
 	CButton Manul_Print_Control;
-	afx_msg void OnBnClickedButton13();
+	afx_msg void OnBnClickedButtonstart13();
 	afx_msg void OnBnClickedButton24();
 	afx_msg void OnBnClickedButton33();
 public:

@@ -30,7 +30,7 @@ void CLogin3::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLogin3, CDialog)
 	ON_BN_CLICKED(IDOK, &CLogin3::OnBnClickedOk)
-	ON_BN_CLICKED(IDC_BUTTON1, &CLogin3::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CLogin3::OnBnClickedButtonstart1)
 END_MESSAGE_MAP()
 
 
@@ -178,7 +178,7 @@ BOOL CLogin3::CheckUser(CString Name, CString Password, CString* Limits)
 	return TRUE;
 }
 
-void CLogin3::OnBnClickedButton1()
+void CLogin3::OnBnClickedButtonstart1()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);

@@ -166,5 +166,5 @@ public:
 	void FileSelectWizard(TCHAR *pszDir);
 	// LOG转存共享文件夹
 	CString DestFile;
-	afx_msg void OnBnClickedButton12();
+	afx_msg void OnBnClickedButtonstart12();
 };

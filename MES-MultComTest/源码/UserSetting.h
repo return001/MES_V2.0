@@ -39,7 +39,7 @@ public:
 	void ChangeCombo();
 	BOOL CheckUser(CString Name, CString Password, CString* Limits);
 public:
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonstart1();
 	// 用户
 	CString UserName;
 	CString Password;
@@ -47,9 +47,9 @@ public:
 	CString Limits;		//权限
 	afx_msg void OnBnClickedButton7();
 	afx_msg void OnBnClickedButton6();
-	afx_msg void OnBnClickedButton10();
+	afx_msg void OnBnClickedButtonstart10();
 	CComboBox LimitsControl;
-	afx_msg void OnBnClickedButton11();
+	afx_msg void OnBnClickedButtonstart11();
 	afx_msg void OnCbnSelchangeCombo2();
 	CComboBox AllUsersBox;
 };

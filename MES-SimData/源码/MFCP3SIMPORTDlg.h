@@ -28,6 +28,7 @@ extern CString Port1LogName;
 extern CString Port2LogName;
 extern CString Port3LogName;
 extern CString Port4LogName;
+extern CString AbnomalLogName;
 extern BOOL SinglePortAbnomal;//串口异常标志位
 //extern CString LastPort1RID;
 //extern CString LastPort1IMEI;
@@ -95,7 +96,8 @@ public:
 	afx_msg void OnBnClickedSingledownloadRadio();
 	afx_msg void OnBnClickedOpensimdatafolderpathButton();
 	afx_msg void OnBnClickedOpensimdatafilepathButton();
-	afx_msg void OnBnClickedOpenremodleButton();//打开返工模式
+	afx_msg void OnBnClickedOpenremodleButton();//打开
+
 	void SetInitConfigWindow();
 
 

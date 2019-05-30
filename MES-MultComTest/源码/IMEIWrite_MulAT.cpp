@@ -179,12 +179,12 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 	m_StopControlArray[14] = &Stop15_Control;
 	m_StopControlArray[15] = &Stop16_Control;
 
-	m_StartControlArray[0] = &StartA_Control;
-	m_StartControlArray[1] = &StartB_Control;
-	m_StartControlArray[2] = &StartC_Control;
-	m_StartControlArray[3] = &StartD_Control;
-	m_StartControlArray[4] = &StartE_Control;
-	m_StartControlArray[5] = &StartF_Control;
+	m_StartControlArray[0] = &Start1_Control;
+	m_StartControlArray[1] = &Start2_Control;
+	m_StartControlArray[2] = &Start3_Control;
+	m_StartControlArray[3] = &Start4_Control;
+	m_StartControlArray[4] = &Start5_Control;
+	m_StartControlArray[5] = &Start6_Control;
 	m_StartControlArray[6] = &Start7_Control;
 	m_StartControlArray[7] = &Start8_Control;
 	m_StartControlArray[8] = &Start9_Control;
@@ -220,6 +220,7 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		DongleTestRssiInfoArray[i] = "";
 		DongleStatusArray[i] = FALSE;
 	}
+
 }
 
 IMEIWrite_MulAT::~IMEIWrite_MulAT()
@@ -282,12 +283,12 @@ void IMEIWrite_MulAT::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO13, m_Baud6);
 	DDX_Text(pDX, IDC_IMEIA6, IMEI_InputF);
 	DDX_Control(pDX, IDC_IMEIA6, IMEI_InputF_Control);
-	DDX_Control(pDX, IDC_BUTTON1, StartA_Control);
-	DDX_Control(pDX, IDC_BUTTON14, StartB_Control);
-	DDX_Control(pDX, IDC_BUTTON16, StartC_Control);
-	DDX_Control(pDX, IDC_BUTTON18, StartD_Control);
-	DDX_Control(pDX, IDC_BUTTON20, StartE_Control);
-	DDX_Control(pDX, IDC_BUTTON22, StartF_Control);
+	DDX_Control(pDX, IDC_BUTTON1, Start1_Control);
+	DDX_Control(pDX, IDC_BUTTON14, Start2_Control);
+	DDX_Control(pDX, IDC_BUTTON16, Start3_Control);
+	DDX_Control(pDX, IDC_BUTTON18, Start4_Control);
+	DDX_Control(pDX, IDC_BUTTON20, Start5_Control);
+	DDX_Control(pDX, IDC_BUTTONSTART6, Start6_Control);
 	DDX_Control(pDX, IDC_COMBO14, ScanGunPort1);
 	DDX_Control(pDX, IDC_COMBO18, ScanGunPort2);
 	DDX_Control(pDX, IDC_COMBO20, ScanGunPort3);
@@ -424,22 +425,22 @@ BEGIN_MESSAGE_MAP(IMEIWrite_MulAT, CResizableDialog)
 	ON_WM_TIMER()   //定时器
 
 	ON_EN_CHANGE(IDC_IMEIA, &IMEIWrite_MulAT::OnEnChangeImeia)
-	ON_BN_CLICKED(IDC_BUTTON1, &IMEIWrite_MulAT::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &IMEIWrite_MulAT::OnBnClickedButtonstart1)
 	ON_BN_CLICKED(IDC_BUTTON2, &IMEIWrite_MulAT::OnBnClickedButton2)
 	ON_EN_CHANGE(IDC_IMEIA2, &IMEIWrite_MulAT::OnEnChangeImeia2)
-	ON_BN_CLICKED(IDC_BUTTON14, &IMEIWrite_MulAT::OnBnClickedButton14)
+	ON_BN_CLICKED(IDC_BUTTON14, &IMEIWrite_MulAT::OnBnClickedButtonstart2)
 	ON_BN_CLICKED(IDC_BUTTON15, &IMEIWrite_MulAT::OnBnClickedButton15)
 	ON_EN_CHANGE(IDC_IMEIA3, &IMEIWrite_MulAT::OnEnChangeImeia3)
-	ON_BN_CLICKED(IDC_BUTTON16, &IMEIWrite_MulAT::OnBnClickedButton16)
+	ON_BN_CLICKED(IDC_BUTTON16, &IMEIWrite_MulAT::OnBnClickedButtonstart3)
 	ON_BN_CLICKED(IDC_BUTTON17, &IMEIWrite_MulAT::OnBnClickedButton17)
 	ON_EN_CHANGE(IDC_IMEIA4, &IMEIWrite_MulAT::OnEnChangeImeia4)
-	ON_BN_CLICKED(IDC_BUTTON18, &IMEIWrite_MulAT::OnBnClickedButton18)
+	ON_BN_CLICKED(IDC_BUTTON18, &IMEIWrite_MulAT::OnBnClickedButtonstart4)
 	ON_BN_CLICKED(IDC_BUTTON19, &IMEIWrite_MulAT::OnBnClickedButton19)
 	ON_EN_CHANGE(IDC_IMEIA5, &IMEIWrite_MulAT::OnEnChangeImeia5)
-	ON_BN_CLICKED(IDC_BUTTON20, &IMEIWrite_MulAT::OnBnClickedButton20)
+	ON_BN_CLICKED(IDC_BUTTON20, &IMEIWrite_MulAT::OnBnClickedButtonstart5)
 	ON_BN_CLICKED(IDC_BUTTON21, &IMEIWrite_MulAT::OnBnClickedButton21)
 	ON_EN_CHANGE(IDC_IMEIA6, &IMEIWrite_MulAT::OnEnChangeImeia6)
-	ON_BN_CLICKED(IDC_BUTTON22, &IMEIWrite_MulAT::OnBnClickedButton22)
+	ON_BN_CLICKED(IDC_BUTTONSTART6, &IMEIWrite_MulAT::OnBnClickedButtonstart6)
 	ON_BN_CLICKED(IDC_BUTTON23, &IMEIWrite_MulAT::OnBnClickedButton23)
 	ON_BN_CLICKED(IDC_BUTTON6, &IMEIWrite_MulAT::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &IMEIWrite_MulAT::OnBnClickedButton7)
@@ -832,7 +833,7 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 	AddAnchor(IDC_BUTTON19, TOP_LEFT4);
 	AddAnchor(IDC_BUTTON20, TOP_LEFT6);
 	AddAnchor(IDC_BUTTON21, TOP_LEFT6);
-	AddAnchor(IDC_BUTTON22, TOP_LEFT7);
+	AddAnchor(IDC_BUTTONSTART6, TOP_LEFT7);
 	AddAnchor(IDC_BUTTON23, TOP_LEFT7);
 	AddAnchor(IDC_BUTTONSTART7, TOP_LEFT8);
 	AddAnchor(IDC_BUTTONSTOP7, TOP_LEFT8);
@@ -1725,7 +1726,7 @@ BOOL IMEIWrite_MulAT::CheckConnect_Thread(CComboBox* m_Port, CComboBox* m_Baud, 
 	if (PortType_CS == "终端跳动端口")
 		return TRUE;
 
-	if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0,GetRDAHostCheckValue) == TRUE)//CheckConnect_Thread
+	if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0) == TRUE)//CheckConnect_Thread
 	{
 		//打开串口成功
 	}
@@ -1750,7 +1751,7 @@ BOOL IMEIWrite_MulAT::CheckConnect_Thread(CComboBox* m_Port, CComboBox* m_Baud, 
 	return TRUE;
 }
 
-BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose, BOOL RDAFlag)		//打开串口
+BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose)		//打开串口
 {
 	CString sPort, sBaud;
 	int port, baud;
@@ -1771,7 +1772,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 	baud = atoi(sBaud);
 
 	/*如果是RDA平台的话则调用此串口初始化*/
-	if (RDAFlag == TRUE && CPUChoose == FALSE)
+	if (GetRDAHostCheckValue == TRUE && CPUChoose == FALSE)
 	{
 		//按照原始逻辑，先关串口-》再打开串口-》然后发AT指令
 		BOOL ComInitFlag;
@@ -2344,14 +2345,14 @@ BOOL IMEIWrite_MulAT::OPen_Serial_PortReadConstant(CComboBox* m_Port, CComboBox*
 	GetDlgItem(IDC_COMBO56)->GetWindowTextA(WorkStation);
 	if (TestType == "DAM继电器")
 	{
-		if (WorkStation == "SMT测试")
-		{
-			AfxMessageBox("DAM继电器在SMT中还未实现！");
-			if (hPort[16] != NULL)
-				CloseHandle(hPort[16]);									//打开串口时，接收失败
-			hPort[16] = NULL;
-			return FALSE;
-		}
+		//if (WorkStation == "SMT测试")
+		//{
+		//	AfxMessageBox("DAM继电器在SMT中还未实现！");
+		//	if (hPort[16] != NULL)
+		//		CloseHandle(hPort[16]);									//打开串口时，接收失败
+		//	hPort[16] = NULL;
+		//	return FALSE;
+		//}
 		BOOL DamFlag;
 		DamFlag = DamControlFun(0, "打开通路");
 		DamFlag = DamControlFun(0, "关闭通路");
@@ -2458,7 +2459,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_PortReadConstant(CComboBox* m_Port, CComboBox*
 
 	return TRUE;														//返回TRUE，打开串口正常
 }
-char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime, int HexFlag, BOOL RDAFlag)//通过串口发送命令
+char*  IMEIWrite_MulAT::Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime, int HexFlag)//通过串口发送命令
 {
 	int Vaule_Return_Count = -1;															//参数的个数
 	BOOL bReadStatus, bWriteStat;
@@ -3095,7 +3096,11 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 					}
 					else
 					{
-						RdaHostInterface.RDAComShutdown(HandleNum);
+						BOOL i=RdaHostInterface.RDAComShutdown(HandleNum);
+						if (i == TRUE)
+						{
+							EnableWindow_Start(HandleNum);
+						}
 					}
 				//m_StopControlArray[HandleNum]->EnableWindow(TRUE);
 			}
@@ -3607,11 +3612,11 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 		{
 			if (paraArray[i].showName.Find("Dongle蓝牙RSSI检查") != -1)
 			{
-				if (paraArray[i].showName.Find("打开") != -1 && HandleNum < 8)
+				if (paraArray[i].showName.Find("打开Dongle蓝牙") != -1 && HandleNum < 8)
 				{
 					DongleStatusArray[HandleNum] = TRUE;
 				}
-				else if (paraArray[i].showName.Find("关闭") != -1 && HandleNum < 8)
+				else if (paraArray[i].showName.Find("关闭Dongle蓝牙") != -1 && HandleNum < 8)
 				{
 					DongleStatusArray[HandleNum] = FALSE;
 				}
@@ -3861,7 +3866,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 
 
 			//这里需要去检查总表那里的SN号也就是芯片ID，如果是重新测试则不进行检查
-			if (IMEI_FT_Item.Find("检查") != -1 && WorkStationCS == "SMT测试")
+			if (IMEI_FT_Item.Find("ID检查") != -1 && WorkStationCS == "SMT测试")
 			{
 
 				//这里只进行数据库检查
@@ -3901,7 +3906,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 		else if (IMEI_FT_Item.Find("LINK防重复") != -1)//link初始默认是3，入库前要写入6，这里提前默认写个9
 		{
 			CString LowLimitStr = paraArray[i].Low_Limit_Value;
-			if (IMEI_FT_Item.Find("查") != -1)
+			if (IMEI_FT_Item.Find("查LINK") != -1)
 			{
 				Serial_Order_Return_CS.Replace(" ", "");
 				LowLimitStr.Replace(" ", "");
@@ -3926,7 +3931,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				}
 			}
 			//出现写的指令必须要将指令拿出来，免得有些写指令不一样
-			else if (IMEI_FT_Item.Find("写") != -1)
+			else if (IMEI_FT_Item.Find("写LINK") != -1)
 			{
 				AntiDupDataLinkFlag[HandleNum][1] = 1;
 				AntiDupDataLinkOrder[HandleNum] = paraArray[i].Other_ITEM;
@@ -4210,47 +4215,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else
 				return false;
 
-			if (NumberStr.Find(":") != -1 && paraArray[i].Low_Limit_Value.Find(":") == -1)
-			{
-				CString ICount = NumberStr;
-				int count = ICount.Replace(":", "");
-				if (count != 5)
-				{
-					NumberStr = NumberStr.Right(NumberStr.GetLength() - NumberStr.Find(":") - 1);
-				}
-			}
-
-			pos = NumberStr.Find('"');
-			if (pos >= 0)
-			{
-				NumberStr = NumberStr.Mid(pos + 1);
-				NumberStr = NumberStr.Left(NumberStr.Find('"'));
-			}
-			else
-			{
-			}
-
-			pos = NumberStr.Find('<');
-			if (pos >= 0)
-			{
-				NumberStr = NumberStr.Mid(pos + 1);
-				NumberStr = NumberStr.Left(NumberStr.Find('>'));
-			}
-			else
-			{
-			}
-
-			int FindCount = NumberStr.Find("\r\n");
-			if (FindCount != -1)
-			{
-				NumberStr = NumberStr.Left(FindCount);
-			}
-
-			NumberStr.Replace("\r", "");
-			NumberStr.Replace("\n", "");
-
-
-			//NumberStr = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, "", 1, HandleNum);
+			NumberStr = SectionNumberHandleFun(NumberStr, paraArray[i].Low_Limit_Value);
 
 			//判断前缀
 			if (ItemName.Find("(PRE)") != -1)
@@ -4362,50 +4327,119 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			else
 				return false;
 
-			if (NumberStr.Find(":") != -1 && paraArray[i].Low_Limit_Value.Find(":") == -1)
-			{
-				CString ICount = NumberStr;
-				int count = ICount.Replace(":", "");
-				if (count != 5)
-				{
-					NumberStr = NumberStr.Right(NumberStr.GetLength() - NumberStr.Find(":") - 1);
-				}
-			}
-
-			pos = NumberStr.Find('"');
-			if (pos >= 0)
-			{
-				NumberStr = NumberStr.Mid(pos + 1);
-				NumberStr = NumberStr.Left(NumberStr.Find('"'));
-			}
-			else
-			{
-			}
-
-			pos = NumberStr.Find('<');
-			if (pos >= 0)
-			{
-				NumberStr = NumberStr.Mid(pos + 1);
-				NumberStr = NumberStr.Left(NumberStr.Find('>'));
-			}
-			else
-			{
-			}
-
-			int FindCount = NumberStr.Find("\r\n");
-			if (FindCount != -1)
-			{
-				NumberStr.Left(FindCount);
-			}
-
-			NumberStr.Replace("\r", "");
-			NumberStr.Replace("\n", "");
-
+			NumberStr=SectionNumberHandleFun(NumberStr, paraArray[i].Low_Limit_Value);
+			
 			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(NumberStr);
 		}
 		else if (GetDongleCheckValue == TRUE)
 		{
 			m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA(Serial_Order_Return_CS);
+		}
+	}
+	else if (paraArray[i].showName.Find("字段检查") != -1)
+	{
+		CString ItemName = paraArray[i].showName;
+
+		CString LowLimitStr, PreStr, LengthStr, SectionNumberLowStr, SectionNumberHighStr, SectionNumberStr, NumberStr, DataNoStr;
+
+		//先将号码取出来
+		LowLimitStr = paraArray[i].Low_Limit_Value;
+		Serial_Order_Return_CS.Replace(" ", "");
+		LowLimitStr.Replace(" ", "");
+
+		int pos = Serial_Order_Return_CS.Find(LowLimitStr);
+		if (pos >= 0)
+			NumberStr = Serial_Order_Return_CS.Mid(pos + LowLimitStr.GetLength());
+		else
+			return false;
+
+		NumberStr = SectionNumberHandleFun(NumberStr, paraArray[i].Low_Limit_Value);
+
+		//判断前缀
+		if (ItemName.Find("(PRE)") != -1)
+		{
+			PreStr = ItemName.Left(ItemName.Find("(PRE)"));
+
+			if (NumberStr.Find(PreStr) != 0)//如果查找出来不等于0，那就代表前缀肯定不对
+			{
+				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段前缀错误", HandleNum);
+				return false;
+			}
+
+			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(PRE)") - 5);//截取掉PRE部分
+		}
+
+
+		//判断长度
+		if (ItemName.Find("(LENGTH)") != -1)
+		{
+			LengthStr = ItemName.Left(ItemName.Find("(LENGTH)"));
+
+			if (NumberStr.GetLength() != atoi(LengthStr))//长度不对就返回错误
+			{
+				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "字段长度错误", HandleNum);
+				return false;
+			}
+
+
+			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(LENGTH)") - 8);//截取掉LENGTH部分
+		}
+
+		//判断是否在范围内
+		if (ItemName.Find("(SectionNumber)") != -1)
+		{
+			SectionNumberStr = ItemName.Left(ItemName.Find("(SectionNumber)"));
+
+			SectionNumberHighStr = SectionNumberStr.Left(SectionNumberStr.Find("-"));
+
+			SectionNumberLowStr = SectionNumberStr.Right(SectionNumberStr.GetLength() - SectionNumberStr.Find("-") - 1);
+
+			if (NumberStr < SectionNumberHighStr || NumberStr >SectionNumberLowStr)//大于最大值或者小于最小值就返回错误
+			{
+				LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, "号段范围错误", HandleNum);
+				return false;
+			}
+
+			ItemName = ItemName.Right(ItemName.GetLength() - ItemName.Find("(SectionNumber)") - 15);//截取掉SectionNumber部分
+		}
+
+	}
+	else if (paraArray[i].showName.Find("开检查") != -1)
+	{
+		if (paraArray[i].showName.Find("开检查一") != -1)
+		{
+			CheckLockStatus[HandleNum][0] = TRUE;
+		}
+		else if (paraArray[i].showName.Find("开检查二") != -1)
+		{
+			CheckLockStatus[HandleNum][1] = TRUE;
+		}
+		else if (paraArray[i].showName.Find("开检查三") != -1)
+		{
+			CheckLockStatus[HandleNum][2] = TRUE;
+		}
+		else if (paraArray[i].showName.Find("开检查四") != -1)
+		{
+			CheckLockStatus[HandleNum][3] = TRUE;
+		}
+	}
+	else if (paraArray[i].showName.Find("关检查") != -1)
+	{
+		if (paraArray[i].showName.Find("关检查一") != -1)
+		{
+			CheckLockStatus[HandleNum][0] = FALSE;
+		}
+		else if (paraArray[i].showName.Find("关检查二") != -1)
+		{
+			CheckLockStatus[HandleNum][1] = FALSE;
+		}
+		else if (paraArray[i].showName.Find("关检查三") != -1)
+		{
+			CheckLockStatus[HandleNum][2] = FALSE;
+		}
+		else if (paraArray[i].showName.Find("关检查四") != -1)
+		{
+			CheckLockStatus[HandleNum][3] = FALSE;
 		}
 	}
 
@@ -4523,6 +4557,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	return true;
 }
 
+
 //指令解析函数，此函数用于所有端口的指令测试，同时会对一些特殊指令进行解析
 BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CEdit* Data_Input_Control)
 {
@@ -4610,6 +4645,12 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 
 	ParaItemName[HandleNum] = "";
 
+	//初始化一下开关检查的标志位
+	for (int i = 0; i < 4; i++)
+	{
+		CheckLockStatus[HandleNum][i] = FALSE;
+	}
+
 	/*这里是部分功能连接前要做的事情---到这里结束*/
 
 
@@ -4635,61 +4676,7 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 				ADCTWaitTimeout++;
 				if (ADCTWaitTimeout > g_WaitTimeoutFlag)
 				{
-					CString PortNum;
-					switch (HandleNum)
-					{
-					case 0:
-						GetDlgItemText(IDC_COMBO1, PortNum);
-						break;
-					case 1:
-						GetDlgItemText(IDC_COMBO4, PortNum);
-						break;
-					case 2:
-						GetDlgItemText(IDC_COMBO6, PortNum);
-						break;
-					case 3:
-						GetDlgItemText(IDC_COMBO8, PortNum);
-						break;
-					case 4:
-						GetDlgItemText(IDC_COMBO10, PortNum);
-						break;
-					case 5:
-						GetDlgItemText(IDC_COMBO12, PortNum);
-						break;
-					case 6:
-						GetDlgItemText(IDC_COMBO29, PortNum);
-						break;
-					case 7:
-						GetDlgItemText(IDC_COMBO31, PortNum);
-						break;
-					case 8:
-						GetDlgItemText(IDC_COMBO33, PortNum);
-						break;
-					case 9:
-						GetDlgItemText(IDC_COMBO35, PortNum);
-						break;
-					case 10:
-						GetDlgItemText(IDC_COMBO37, PortNum);
-						break;
-					case 11:
-						GetDlgItemText(IDC_COMBO39, PortNum);
-						break;
-					case 12:
-						GetDlgItemText(IDC_COMBO41, PortNum);
-						break;
-					case 13:
-						GetDlgItemText(IDC_COMBO43, PortNum);
-						break;
-					case 14:
-						GetDlgItemText(IDC_COMBO45, PortNum);
-						break;
-					case 15:
-						GetDlgItemText(IDC_COMBO47, PortNum);
-						break;
-					default:
-						break;
-					}
-					ADCTSetup(PortNum, 7, "ALL");
+					ADCTSetup(GetPortComByPortNo(HandleNum), 7, "ALL");
 				}
 				//else if (GetRDAHostCheckValue == TRUE)
 				//{
@@ -4819,7 +4806,7 @@ GETPort:
 	}
 	else
 	{
-			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0,GetRDAHostCheckValue) == TRUE)//仅打开一次串口，后续保持一直打开
+			if (OPen_Serial_Port(m_Port, m_Baud, HandleNum,0) == TRUE)//仅打开一次串口，后续保持一直打开
 			{
 				//打开串口成功
 				COM_State[HandleNum] = TRUE;
@@ -5873,7 +5860,7 @@ GETPort:
 			//因为Dongle高速蓝牙依旧分为十六进制指令发送和AT指令发送，所以指令发送要分两种情况，比如我们以MAC地址作为芯片ID时只能通过适配器的AT指令获取MAC地址
 			if (GetDongleCheckValue == FALSE)
 			{
-				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS),0,GetRDAHostCheckValue);
+				Send_Serial_Order(&Serial_Order_Return, PortOrder, HandleNum, (LPSTR)(LPCTSTR)paraArray[i].Low_Limit_Value, (LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, atoi(WaitTimeCS),0);
 
 				Serial_Order_Return_CS_Show = Vaule_Return_Count_CS[HandleNum];
 			}
@@ -6030,7 +6017,18 @@ GETPort:
 								m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 							}
 
-							EnableWindow_Start(HandleNum);
+							if (GetRDAHostCheckValue == TRUE)
+							{
+								if (RdaHostInterface.ComInit[HandleNum] == FALSE)
+								{
+									EnableWindow_Start(HandleNum);
+								}
+							}
+							else
+							{
+								EnableWindow_Start(HandleNum);
+							}
+
 							LogShow_exchange(m_Result, Final_Result_Control, 256, "循环开始", HandleNum);
 							return TRUE;
 						}
@@ -6106,7 +6104,7 @@ GETPort:
 				if ((t>1) && (hPort[HandleNum] != NULL || GetRDAHostCheckValue==TRUE))				//串口不稳定的时候
 				{
 					CloseHandleControl(hPort[HandleNum],GetRDAHostCheckValue,HandleNum);				//重新打开串口
-					OPen_Serial_Port(m_Port, m_Baud, HandleNum, 0, GetRDAHostCheckValue);	//串口不稳定的时候
+					OPen_Serial_Port(m_Port, m_Baud, HandleNum, 0);	//串口不稳定的时候
 				}
 			}
 			//虚拟串口的处理
@@ -6133,6 +6131,33 @@ GETPort:
 			LogShow_exchange(m_Result, Final_Result_Control, 128, "漏测SIM卡，必须测试SIM卡！！！", HandleNum, "功能测试:2-TEST");
 			goto OVERDONE;//测试失败且有关闭串口选择处理
 		}
+
+		//这里判断开关检查
+		if (CheckLockStatus[HandleNum][0])
+		{
+			ParaItemName[HandleNum] = "关检查一";
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "关检查一失败！！请检查测试项是否设置了开和关检查！！！", HandleNum, "功能测试:2-TEST");
+			goto OVERDONE;//测试失败且有关闭串口选择处理
+		}
+		else if (CheckLockStatus[HandleNum][1])
+		{
+			ParaItemName[HandleNum] = "关检查二";
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "关检查二失败！！请检查测试项是否设置了开和关检查！！！", HandleNum, "功能测试:2-TEST");
+			goto OVERDONE;//测试失败且有关闭串口选择处理
+		}
+		else if (CheckLockStatus[HandleNum][2])
+		{
+			ParaItemName[HandleNum] = "关检查三";
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "关检查三失败！！请检查测试项是否设置了开和关检查！！！", HandleNum, "功能测试:2-TEST");
+			goto OVERDONE;//测试失败且有关闭串口选择处理
+		}
+		else if (CheckLockStatus[HandleNum][3])
+		{
+			ParaItemName[HandleNum] = "关检查四";
+			LogShow_exchange(m_Result, Final_Result_Control, 128, "关检查四失败！！请检查测试项是否设置了开和关检查！！！", HandleNum, "功能测试:2-TEST");
+			goto OVERDONE;//测试失败且有关闭串口选择处理
+		}
+
 		//上传数据库
 		BOOL DBResult = FALSE;
 		if (BGConfirmChoose == TRUE)//后台确认，同时数据库不立即上传，给到后台处理
@@ -6296,7 +6321,17 @@ GETPort:
 				m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 			}
 
-			EnableWindow_Start(HandleNum);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[HandleNum] == FALSE)
+				{
+					EnableWindow_Start(HandleNum);
+				}
+			}
+			else
+			{
+				EnableWindow_Start(HandleNum);
+			}
 			LogShow_exchange(m_Result, Final_Result_Control, 256, "循环开始", HandleNum);
 			return TRUE;
 		}
@@ -6391,7 +6426,17 @@ OVERDONE:
 		m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 	}
 
-	EnableWindow_Start(HandleNum);
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		if (RdaHostInterface.ComInit[HandleNum] == FALSE)
+		{
+			EnableWindow_Start(HandleNum);
+		}
+	}
+	else
+	{
+		EnableWindow_Start(HandleNum);
+	}
 	LogShow_exchange(m_Result, Final_Result_Control, 256, "循环开始", HandleNum);
 	return FALSE;
 	//---------------------------11
@@ -6667,12 +6712,12 @@ void IMEIWrite_MulAT::EnableWindow_StartALL(BOOL Choose)
 	OnBnClickedButtonstop16();
 	if (1)
 	{
-		StartA_Control.EnableWindow(Choose);
-		StartB_Control.EnableWindow(Choose);
-		StartC_Control.EnableWindow(Choose);
-		StartD_Control.EnableWindow(Choose);
-		StartE_Control.EnableWindow(Choose);
-		StartF_Control.EnableWindow(Choose);
+		Start1_Control.EnableWindow(Choose);
+		Start2_Control.EnableWindow(Choose);
+		Start3_Control.EnableWindow(Choose);
+		Start4_Control.EnableWindow(Choose);
+		Start5_Control.EnableWindow(Choose);
+		Start6_Control.EnableWindow(Choose);
 		Start7_Control.EnableWindow(Choose);
 		Start8_Control.EnableWindow(Choose);
 		Start9_Control.EnableWindow(Choose);
@@ -6712,22 +6757,22 @@ void IMEIWrite_MulAT::EnableWindow_Start(int HandleNum)
 	switch (HandleNum)
 	{
 	case 0:
-		StartA_Control.EnableWindow(TRUE);
+		Start1_Control.EnableWindow(TRUE);
 		break;
 	case 1:
-		StartB_Control.EnableWindow(TRUE);
+		Start2_Control.EnableWindow(TRUE);
 		break;
 	case 2:
-		StartC_Control.EnableWindow(TRUE);
+		Start3_Control.EnableWindow(TRUE);
 		break;
 	case 3:
-		StartD_Control.EnableWindow(TRUE);
+		Start4_Control.EnableWindow(TRUE);
 		break;
 	case 4:
-		StartE_Control.EnableWindow(TRUE);
+		Start5_Control.EnableWindow(TRUE);
 		break;
 	case 5:
-		StartF_Control.EnableWindow(TRUE);
+		Start6_Control.EnableWindow(TRUE);
 		break;
 	case 6:
 		Start7_Control.EnableWindow(TRUE);
@@ -6768,7 +6813,7 @@ void IMEIWrite_MulAT::EnableWindow_Start(int HandleNum)
 			Start16_Control.EnableWindow(TRUE);
 		break;
 	default:
-		StartA_Control.EnableWindow(TRUE);
+		Start1_Control.EnableWindow(TRUE);
 		break;
 	}
 }
@@ -6848,116 +6893,243 @@ void IMEIWrite_MulAT::OnTimer(UINT nIDEvent)
 	switch (nIDEvent)
 	{
 	case 0:
-		if ((Thread_State[0] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(0);
-			OnBnClickedButton1();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 1:
-		if ((Thread_State[1] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(1);
-			OnBnClickedButton14();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 2:
-		if ((Thread_State[2] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(2);
-			OnBnClickedButton16();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 3:
-		if ((Thread_State[3] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(3);
-			OnBnClickedButton18();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 4:
-		if ((Thread_State[4] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(4);
-			OnBnClickedButton20();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 5:
-		if ((Thread_State[5] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(5);
-			OnBnClickedButton22();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
-
 	case 6:
-		if ((Thread_State[6] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(6);
-			OnBnClickedButtonstart7();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 7:
-		if ((Thread_State[7] == FALSE) || (BGConfirmChoose == TRUE))
+		if ((Thread_State[nIDEvent] == FALSE) || (BGConfirmChoose == TRUE))
 		{
-			KillTimer(7);
-			OnBnClickedButtonstart8();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 8:
-		if (Thread_State[8] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(8);
-			OnBnClickedButtonstart9();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 9:
-		if (Thread_State[9] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(9);
-			OnBnClickedButtonstart10();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 10:
-		if (Thread_State[10] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(10);
-			OnBnClickedButtonstart11();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 11:
-		if (Thread_State[11] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(11);
-			OnBnClickedButtonstart12();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 12:
-		if (Thread_State[12] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(12);
-			OnBnClickedButtonstart13();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 13:
-		if (Thread_State[13] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(13);
-			OnBnClickedButtonstart14();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 14:
-		if (Thread_State[14] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(14);
-			OnBnClickedButtonstart15();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 	case 15:
-		if (Thread_State[15] == FALSE)
+		if ((Thread_State[nIDEvent] == FALSE))
 		{
-			KillTimer(15);
-			OnBnClickedButtonstart16();
+			KillTimer(nIDEvent);
+			if (GetRDAHostCheckValue == TRUE)
+			{
+				if (RdaHostInterface.ComInit[nIDEvent] == FALSE)
+					ClickStartButtonFun(nIDEvent);
+			}
+			else
+			{
+				ClickStartButtonFun(nIDEvent);
+			}
 		}
 		break;
 
@@ -7324,7 +7496,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia()
 			IMEI_Input[0] = IMEI_InputA;
 			LogShow_exchange(&m_Result1, &Final_Result_Control1, 0, "扫描输入IMEI:" + IMEI_Input[0] + "成功...\r\n", 0);
 
-			OnBnClickedButton1();
+			OnBnClickedButtonstart1();
 		}
 	}
 }
@@ -7362,13 +7534,13 @@ UINT static __cdecl WriteIMEIFunction1(LPVOID pParam)
 	return 0;
 }
 
-void IMEIWrite_MulAT::OnBnClickedButton1()
+void IMEIWrite_MulAT::OnBnClickedButtonstart1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int ArraySign = 0;//一个数组标记，便于此函数一些数组的统一使用
 
 	StopSign[ArraySign] = FALSE;
-	StartA_Control.EnableWindow(FALSE);
+	Start1_Control.EnableWindow(FALSE);
 	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction1, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	SetTimer(32, 5000, NULL);
 
@@ -7505,7 +7677,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia2()
 			IMEI_Input[1] = IMEI_InputB;
 			LogShow_exchange(&m_Result2, &Final_Result_Control2, 0, "扫描输入IMEI:" + IMEI_Input[1] + "成功...\r\n", 1);
 
-			OnBnClickedButton14();
+			OnBnClickedButtonstart2();
 		}
 	}
 }
@@ -7543,13 +7715,13 @@ UINT static __cdecl WriteIMEIFunction2(LPVOID pParam)
 	return 0;
 }
 
-void IMEIWrite_MulAT::OnBnClickedButton14()
+void IMEIWrite_MulAT::OnBnClickedButtonstart2()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int ArraySign = 1;//一个数组标记，便于此函数一些数组的统一使用
 
 	StopSign[ArraySign] = FALSE;
-	StartB_Control.EnableWindow(FALSE);
+	Start2_Control.EnableWindow(FALSE);
 	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction2, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 
 	StartButtonGatherFun(ArraySign);
@@ -7681,7 +7853,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia3()
 			IMEI_Input[2] = IMEI_InputC;
 			LogShow_exchange(&m_Result3, &Final_Result_Control3, 0, "扫描输入IMEI:" + IMEI_Input[2] + "成功...\r\n", 2);
 
-			OnBnClickedButton16();
+			OnBnClickedButtonstart3();
 		}
 	}
 }
@@ -7717,13 +7889,13 @@ UINT static __cdecl WriteIMEIFunction3(LPVOID pParam)
 	}
 	return 0;
 }
-void IMEIWrite_MulAT::OnBnClickedButton16()
+void IMEIWrite_MulAT::OnBnClickedButtonstart3()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int ArraySign = 2;//一个数组标记，便于此函数一些数组的统一使用
 
 	StopSign[ArraySign] = FALSE;
-	StartC_Control.EnableWindow(FALSE);
+	Start3_Control.EnableWindow(FALSE);
 	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction3, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 	
 	StartButtonGatherFun(ArraySign);
@@ -7856,7 +8028,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia4()
 			IMEI_Input[3] = IMEI_InputD;
 			LogShow_exchange(&m_Result4, &Final_Result_Control4, 0, "扫描输入IMEI:" + IMEI_Input[3] + "成功...\r\n", 3);
 
-			OnBnClickedButton18();
+			OnBnClickedButtonstart4();
 		}
 	}
 }
@@ -7894,13 +8066,13 @@ UINT static __cdecl WriteIMEIFunction4(LPVOID pParam)
 	return 0;
 }
 
-void IMEIWrite_MulAT::OnBnClickedButton18()
+void IMEIWrite_MulAT::OnBnClickedButtonstart4()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int ArraySign = 3;//一个数组标记，便于此函数一些数组的统一使用
 
 	StopSign[ArraySign] = FALSE;
-	StartD_Control.EnableWindow(FALSE);
+	Start4_Control.EnableWindow(FALSE);
 	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction4, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 
 	StartButtonGatherFun(ArraySign);
@@ -8031,7 +8203,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia5()
 			IMEI_Input[4] = IMEI_InputE;
 			LogShow_exchange(&m_Result5, &Final_Result_Control5, 0, "扫描输入IMEI:" + IMEI_Input[4] + "成功...\r\n", 4);
 
-			OnBnClickedButton20();
+			OnBnClickedButtonstart5();
 		}
 	}
 }
@@ -8044,13 +8216,13 @@ UINT static __cdecl WriteIMEIFunction5(LPVOID pParam)
 	return 0;
 }
 
-void IMEIWrite_MulAT::OnBnClickedButton20()
+void IMEIWrite_MulAT::OnBnClickedButtonstart5()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	int ArraySign = 4;//一个数组标记，便于此函数一些数组的统一使用
 
 	StopSign[ArraySign] = FALSE;
-	StartE_Control.EnableWindow(FALSE);
+	Start5_Control.EnableWindow(FALSE);
 	Thread_Handle[ArraySign] = AfxBeginThread(WriteIMEIFunction5, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 
 	StartButtonGatherFun(ArraySign);
@@ -8181,7 +8353,7 @@ void IMEIWrite_MulAT::OnEnChangeImeia6()
 			IMEI_Input[5] = IMEI_InputF;
 			LogShow_exchange(&m_Result6, &Final_Result_Control6, 0, "扫描输入IMEI:" + IMEI_Input[5] + "成功...\r\n", 5);
 
-			OnBnClickedButton22();
+			OnBnClickedButtonstart6();
 		}
 	}
 }
@@ -8193,11 +8365,11 @@ UINT static __cdecl WriteIMEIFunction6(LPVOID pParam)
 	return 0;
 }
 
-void IMEIWrite_MulAT::OnBnClickedButton22()
+void IMEIWrite_MulAT::OnBnClickedButtonstart6()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	StopSign[5] = FALSE;
-	StartF_Control.EnableWindow(FALSE);
+	Start6_Control.EnableWindow(FALSE);
 	Thread_Handle[5] = AfxBeginThread(WriteIMEIFunction6, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, 0, NULL);
 }
 
@@ -8771,17 +8943,17 @@ void IMEIWrite_MulAT::OnBnClickedOk()
 	}
 	StopAutoStart = FALSE;
 	if (Thread_State[0] != TRUE)
-		OnBnClickedButton1();
+		OnBnClickedButtonstart1();
 	if (Thread_State[1] != TRUE)
-		OnBnClickedButton14();
+		OnBnClickedButtonstart2();
 	if (Thread_State[2] != TRUE)
-		OnBnClickedButton16();
+		OnBnClickedButtonstart3();
 	if (Thread_State[3] != TRUE)
-		OnBnClickedButton18();
+		OnBnClickedButtonstart4();
 	if (Thread_State[4] != TRUE)
-		OnBnClickedButton20();
+		OnBnClickedButtonstart5();
 	if (Thread_State[5] != TRUE)
-		OnBnClickedButton22();
+		OnBnClickedButtonstart6();
 
 	if (Thread_State[6] != TRUE)
 		OnBnClickedButtonstart7();
@@ -9863,12 +10035,12 @@ BOOL IMEIWrite_MulAT::CPUCommunication(CString CpuOrderName, int HandleNum, CStr
 	
 	if (TestType == "DAM继电器")
 	{
-		if (WorkStation == "SMT测试")
-		{
-			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "DAM继电器在SMT中还未实现！", HandleNum);
-			LeaveCriticalSection(&CPUCOMMUNICATE);
-			return FALSE;
-		}
+		//if (WorkStation == "SMT测试")
+		//{
+		//	LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 6, "DAM继电器在SMT中还未实现！", HandleNum);
+		//	LeaveCriticalSection(&CPUCOMMUNICATE);
+		//	return FALSE;
+		//}
 
 		if ((CpuOrderName.Find("通路") != -1) || (CpuOrderName.Find("外电") != -1))
 		{
@@ -11475,8 +11647,6 @@ void IMEIWrite_MulAT::Voice_Speak(CString Text)
 //获取配置线程函数
 UINT static __cdecl OnGetWebSetting_Thread(LPVOID pParam)
 {
-	BOOL flag;
-
 	IMEIWrite_MulAT* Mead_Main_Win = (IMEIWrite_MulAT*)pParam;
 	Mead_Main_Win->OnGetWebSetting_ThreadFun();
 	return 0;
@@ -11575,7 +11745,7 @@ void IMEIWrite_MulAT::OnGetWebSetting_ThreadFun()
 			AfxMessageBox("线程1串口已经打开");
 			goto WEBGETFAILE;
 		}
-		if (OPen_Serial_Port(&m_Port1, &m_Baud1, 0, 0, GetRDAHostCheckValue) == TRUE)//OnGetWebSetting
+		if (OPen_Serial_Port(&m_Port1, &m_Baud1, 0, 0) == TRUE)//OnGetWebSetting
 		{
 			//Dongle高速蓝牙适配器的时候在这里进行连接和初始化，连接失败就直接退出
 			if (GetDongleCheckValue == TRUE)
@@ -11605,7 +11775,7 @@ void IMEIWrite_MulAT::OnGetWebSetting_ThreadFun()
 		//要区分一下是否用的是蓝牙设备
 		if (GetDongleCheckValue == FALSE)
 		{
-			Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500, GetDongleCheckValue, GetRDAHostCheckValue);
+			Send_Serial_Order(&Serial_Order_Return, "AT^GT_CM=VERSION", 0, "NULL", "", 500, GetDongleCheckValue);
 		}
 		else if (GetDongleCheckValue == TRUE)
 		{
@@ -11743,7 +11913,7 @@ WEBGETFAILE:
 	//{
 	//	DongleDisConnect(0);
 	//}
-	StartA_Control.EnableWindow(FALSE);
+	Start1_Control.EnableWindow(FALSE);
 	m_bVar = 0;
 	return;
 }
@@ -12437,13 +12607,18 @@ void IMEIWrite_MulAT::OnBnClickedRdahostCheck()
 		if (InitFlag == FALSE)
 		{
 			MessageBox("RDA平台透传模块初始化失败！",NULL);
-			GetRDAHostCheckValue == FALSE;
+			GetRDAHostCheckValue = FALSE;
 			UpdateData(FALSE);
 		}
+		
 	}
 	else if (GetRDAHostCheckValue == FALSE)
 	{
 		RdaHostInterface.RDADeinitialization();
+	}
+	for (int i = 0; i < 16; i++)
+	{
+		RDAStartCount[i] = 0;
 	}
 }
 
@@ -13886,6 +14061,180 @@ void IMEIWrite_MulAT::StopButtonGatherFun(int HandleNum)
 	}
 }
 
+//根据HandleNum去触发开始按钮
+void IMEIWrite_MulAT::ClickStartButtonFun(int HandleNum)
+{
+	switch (HandleNum)
+	{
+	case 0:
+		OnBnClickedButtonstart1();
+		break;
+	case 1:
+		OnBnClickedButtonstart2();
+		break;
+	case 2:
+		OnBnClickedButtonstart3();
+		break;
+	case 3:
+		OnBnClickedButtonstart4();
+		break;
+	case 4:
+		OnBnClickedButtonstart5();
+		break;
+	case 5:
+		OnBnClickedButtonstart6();
+		break;
+	case 6:
+		OnBnClickedButtonstart7();
+		break;
+	case 7:
+		OnBnClickedButtonstart8();
+		break;
+	case 8:
+		OnBnClickedButtonstart9();
+		break;
+	case 9:
+		OnBnClickedButtonstart10();
+		break;
+	case 10:
+		OnBnClickedButtonstart11();
+		break;
+	case 11:
+		OnBnClickedButtonstart12();
+		break;
+	case 12:
+		OnBnClickedButtonstart13();
+		break;
+	case 13:
+		OnBnClickedButtonstart14();
+		break;
+	case 14:
+		OnBnClickedButtonstart15();
+		break;
+	case 15:
+		OnBnClickedButtonstart16();
+		break;
+	default:
+		break;
+	}
+}
+
+//根据HandleNum去触发关闭按钮
+void IMEIWrite_MulAT::ClickStopButtonFun(int HandleNum)
+{
+	switch (HandleNum)
+	{
+	case 0:
+			OnBnClickedButton2();
+		break;
+	case 1:
+			OnBnClickedButton15();
+		break;
+	case 2:
+			OnBnClickedButton17();
+		break;
+	case 3:
+			OnBnClickedButton19();
+		break;
+	case 4:
+			OnBnClickedButton21();
+		break;
+	case 5:
+			OnBnClickedButton23();
+		break;
+	case 6:
+			OnBnClickedButtonstop7();
+		break;
+	case 7:
+			OnBnClickedButtonstop8();
+		break;
+	case 8:
+			OnBnClickedButtonstop9();
+		break;
+	case 9:
+			OnBnClickedButtonstop10();
+		break;
+	case 10:
+			OnBnClickedButtonstop11();
+		break;
+	case 11:
+			OnBnClickedButtonstop12();
+		break;
+	case 12:
+			OnBnClickedButtonstop13();
+		break;
+	case 13:
+			OnBnClickedButtonstop14();
+		break;
+	case 14:
+			OnBnClickedButtonstop15();
+		break;
+	case 15:
+			OnBnClickedButtonstop16();
+		break;
+	}
+}
+
+//根据HandleNum去获得对应的串口号
+CString IMEIWrite_MulAT::GetPortComByPortNo(int HandleNum)
+{
+	CString PortNum;
+	switch (HandleNum)
+	{
+	case 0:
+		GetDlgItemText(IDC_COMBO1, PortNum);
+		break;
+	case 1:
+		GetDlgItemText(IDC_COMBO4, PortNum);
+		break;
+	case 2:
+		GetDlgItemText(IDC_COMBO6, PortNum);
+		break;
+	case 3:
+		GetDlgItemText(IDC_COMBO8, PortNum);
+		break;
+	case 4:
+		GetDlgItemText(IDC_COMBO10, PortNum);
+		break;
+	case 5:
+		GetDlgItemText(IDC_COMBO12, PortNum);
+		break;
+	case 6:
+		GetDlgItemText(IDC_COMBO29, PortNum);
+		break;
+	case 7:
+		GetDlgItemText(IDC_COMBO31, PortNum);
+		break;
+	case 8:
+		GetDlgItemText(IDC_COMBO33, PortNum);
+		break;
+	case 9:
+		GetDlgItemText(IDC_COMBO35, PortNum);
+		break;
+	case 10:
+		GetDlgItemText(IDC_COMBO37, PortNum);
+		break;
+	case 11:
+		GetDlgItemText(IDC_COMBO39, PortNum);
+		break;
+	case 12:
+		GetDlgItemText(IDC_COMBO41, PortNum);
+		break;
+	case 13:
+		GetDlgItemText(IDC_COMBO43, PortNum);
+		break;
+	case 14:
+		GetDlgItemText(IDC_COMBO45, PortNum);
+		break;
+	case 15:
+		GetDlgItemText(IDC_COMBO47, PortNum);
+		break;
+	default:
+		break;
+	}
+	return PortNum;
+}
+
 //统一对队列进行管理，在队列有数据进入之时，就判断这条线程有没有被关闭，是否轮到当前这条线程工作了
 BOOL IMEIWrite_MulAT::DequeContinueControlFun(int HandleNum, deque<int> &ContinueDeq)
 {
@@ -13922,6 +14271,56 @@ BOOL IMEIWrite_MulAT::DequeContinueControlFun(int HandleNum, deque<int> &Continu
 	}
 	return TRUE;
 }
+
+//对串口的返回值进行处理
+CString IMEIWrite_MulAT::SectionNumberHandleFun(CString SectionNumber, CString LowLimitValue)
+{
+	int pos;
+	if (SectionNumber.Find(":") != -1 && LowLimitValue.Find(":") == -1)
+	{
+		CString ICount = SectionNumber;
+		int count = ICount.Replace(":", "");
+		if (count != 5)
+		{
+			SectionNumber = SectionNumber.Right(SectionNumber.GetLength() - SectionNumber.Find(":") - 1);
+		}
+	}
+
+	int FindCount = SectionNumber.Find("\r\n");
+	if (FindCount != -1)
+	{
+		SectionNumber.Left(FindCount);
+	}
+
+	SectionNumber.Replace("\r", "");
+	SectionNumber.Replace("\n", "");
+
+	pos = SectionNumber.Find('"');
+	if (pos >= 0)
+	{
+		SectionNumber = SectionNumber.Mid(pos + 1);
+		SectionNumber = SectionNumber.Left(SectionNumber.Find('"'));
+	}
+
+
+	pos = SectionNumber.Find('<');
+	if (pos >= 0)
+	{
+		SectionNumber = SectionNumber.Mid(pos + 1);
+		SectionNumber = SectionNumber.Left(SectionNumber.Find('>'));
+	}
+
+	pos = SectionNumber.Find('(');
+	if (pos >= 0)
+	{
+		SectionNumber = SectionNumber.Mid(pos + 1);
+		SectionNumber = SectionNumber.Left(SectionNumber.Find(')'));
+	}
+
+
+	return SectionNumber;
+}
+
 
 /*三合一新增功能*/
 
@@ -14361,7 +14760,11 @@ int IMEIWrite_MulAT::InitSetting(CString Zhidan, CString Version)
 	m_SoftVersion = Version;
 	OnGetWebSetting();
 
-	return m_bVar;
+	Sleep(3000);
+	if (m_bVar != 0)
+		return 1;
+	else
+		return 0;
 }
 
 //实现串口开始
@@ -14396,27 +14799,27 @@ int IMEIWrite_MulAT::StartPortTest(CString PortNo)
 	{
 	case 0:
 		SetDlgItemText(IDC_COMBO1, PortNo);
-		OnBnClickedButton1();
+		OnBnClickedButtonstart1();
 		break;
 	case 1:
 		SetDlgItemText(IDC_COMBO4, PortNo);
-		OnBnClickedButton14();
+		OnBnClickedButtonstart2();
 		break;
 	case 2:
 		SetDlgItemText(IDC_COMBO6, PortNo);
-		OnBnClickedButton16();
+		OnBnClickedButtonstart3();
 		break;
 	case 3:
 		SetDlgItemText(IDC_COMBO8, PortNo);
-		OnBnClickedButton18();
+		OnBnClickedButtonstart4();
 		break;
 	case 4:
 		SetDlgItemText(IDC_COMBO10, PortNo);
-		OnBnClickedButton20();
+		OnBnClickedButtonstart5();
 		break;
 	case 5:
 		SetDlgItemText(IDC_COMBO12, PortNo);
-		OnBnClickedButton22();
+		OnBnClickedButtonstart6();
 		break;
 	case 6:
 		SetDlgItemText(IDC_COMBO29, PortNo);
@@ -14667,7 +15070,7 @@ void IMEIWrite_MulAT::BleStartPortTest(CString MACStr)
 	case 0:
 		if (BluetoothConnect(0, MACStr, &m_Port1, &m_Baud1) == 1)
 		{
-			OnBnClickedButton1();
+			OnBnClickedButtonstart1();
 			BluetoothHint(1, "可扫");
 		}
 		else
@@ -14680,7 +15083,7 @@ void IMEIWrite_MulAT::BleStartPortTest(CString MACStr)
 	case 1:
 		if (BluetoothConnect(1, MACStr, &m_Port2, &m_Baud2) == 1)
 		{
-			OnBnClickedButton14();
+			OnBnClickedButtonstart2();
 			BluetoothHint(2, "可扫");
 		}
 		else
@@ -14693,7 +15096,7 @@ void IMEIWrite_MulAT::BleStartPortTest(CString MACStr)
 	case 2:
 		if (BluetoothConnect(2, MACStr, &m_Port3, &m_Baud3) == 1)
 		{
-			OnBnClickedButton16();
+			OnBnClickedButtonstart3();
 			BluetoothHint(3, "可扫");
 		}
 		else
@@ -14704,13 +15107,13 @@ void IMEIWrite_MulAT::BleStartPortTest(CString MACStr)
 		}
 		break;
 	case 3:
-		OnBnClickedButton18();
+		OnBnClickedButtonstart4();
 		break;
 	case 4:
-		OnBnClickedButton20();
+		OnBnClickedButtonstart5();
 		break;
 	case 5:
-		OnBnClickedButton22();
+		OnBnClickedButtonstart6();
 		break;
 	case 6:
 		OnBnClickedButtonstart7();
@@ -15658,7 +16061,7 @@ BOOL  IMEIWrite_MulAT::DongleScanRssiFun(int HandleNum, CString SoftModel)
 	//开始处理获取到的设备
 	CString BleTemp, InfoTemp, BleTime, BleInfo[30][3];
 
-	int InfoCut, CutTime, RSSICount = 0, RSSIMAX = -100, RSSITemp;
+	int InfoCut, CutTime, RSSICount = 0, RSSIMAX = -100;
 
 	BleTemp = Vaule_Return_Count_CS[HandleNum];
 	InfoCut = BleTemp.Find(_T("Devices Found:"));
@@ -15888,7 +16291,6 @@ void IMEIWrite_MulAT::PowerControlInitSetting()
 	CString ValueStr, SettringStr,tempStr;
 	CString SettringTitle1 = "MachineAddress", SettringTitle2 = "RelaySetting";
 	int ValueInt;
-	double ValueDouble;
 
 	BOOL ifFind = finder.FindFile(IniFileName);//先检测文件存不存在
 
@@ -16128,7 +16530,6 @@ BOOL IMEIWrite_MulAT::Data_AntiDupSNCheck(CAdoInterface& myado, int HandleNum, C
 		myado.OpenSheet("select SN from [GPSTest].[dbo].[Gps_AutoTest_AntiDup] WHERE SN ='" + ChipIDStr + "' ");//变1
 		BOOL Barcode_Check = myado.Find("SN='" + ChipIDStr + "'");
 		myado.CloseSheet();
-		BOOL UP_Barcode, Barcode_Check_UP;
 
 		if (Barcode_Check == TRUE)
 		{
@@ -16409,7 +16810,7 @@ BOOL IMEIWrite_MulAT::Data_AntiDupDataNoUpload(CAdoInterface& myado, int HandleN
 			return FALSE;
 		}
 
-		BOOL UP_Barcode = FALSE, Barcode_Check_UP = FALSE, Barcode_Check = FALSE, Barcode_Check_Sub;
+		BOOL UP_Barcode = FALSE, Barcode_Check_UP = FALSE, Barcode_Check = FALSE;
 
 		//BOOL UP_Barcode, Barcode_Check_UP;
 
@@ -16528,7 +16929,6 @@ CString IMEIWrite_MulAT::PowerSet(int Address, bool PowerAction)
 	//CPublicFunction pf;
 	CString HexTemp, SendText, DictateNum;
 	int HexLen = 1;
-	unsigned short CrcTemp;
 	//SendText.Format("%X", atoi(RadioAddress));
 	SendText.Format("%X", 254);//254是继电器广播的默认地址
 	if (Address == -1)             //暂时不做

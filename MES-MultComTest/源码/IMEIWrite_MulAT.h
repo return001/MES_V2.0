@@ -160,21 +160,13 @@ public:
 	void Delay_Clock(UINT mSecond);
 
 	BOOL OnGetport();
-	//void InitCOM(CComboBox* m_Port,CComboBox* m_Baud,int num);//初始化串口
-	//BOOL OPen_Serial_Port(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
+	void InitCOM(CComboBox* m_Port,CComboBox* m_Baud,int num);//初始化串口
+	BOOL OPen_Serial_Port(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL OPen_Serial_PortReadConstant(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,BOOL CPUChoose=FALSE);
 	BOOL CheckConnect_Thread(CComboBox* m_Port,CComboBox* m_Baud,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
-/*	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0);*///因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
-
-
-	void InitCOM(CComboBox* m_Port, CComboBox* m_Baud, int num);
-
-	BOOL OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, BOOL CPUChoose = FALSE, BOOL RDAFlag = FALSE);
-
-	char*  Send_Serial_Order(CString* Vaule_Return, CString strCommand_Vaule, int HandleNum, char* EndSign, char* StartSign, int WaitTime = 3, int HexFlag = 0, BOOL RDAFlag = FALSE);
+	char*  Send_Serial_Order(CString* Vaule_Return,CString strCommand_Vaule,int HandleNum,char* EndSign,char* StartSign,int WaitTime=3,int HexFlag=0); //因蓝牙需要发送十六进制数据，特增加一个十六进制的默认参数，为1的时候就发送和接收十六进制数据
 
 	BOOL CloseHandleControl(HANDLE hObject, BOOL RDAFlag = FALSE,int HandleNum=255);
-
 
 	void LogShow_exchange(CEdit* m_Result,CEdit* Final_Result_Control,int State,CString Msg_Log,int HandleNum,CString Category="-1",CString ChipRfIDbg=""); 
 	bool IMEI_Function_Judge(int i,CString IMEI_FT_Item,char* Serial_Order_Return,int HandleNum,CEdit* m_Result,CEdit* Final_Result_Control);
@@ -234,11 +226,8 @@ public:
 	afx_msg void OnEnChangeImeia();
 	CString IMEI_InputA;
 	CEdit IMEI_InputA_Control;
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonstart1();
 	afx_msg void OnBnClickedButton2();
-
-
-
 
 	// 线程2
 	CEdit Final_Result_Control2;
@@ -249,7 +238,7 @@ public:
 	afx_msg void OnEnChangeImeia2();
 	CString IMEI_InputB;
 	CEdit IMEI_InputB_Control;
-	afx_msg void OnBnClickedButton14();
+	afx_msg void OnBnClickedButtonstart2();
 	afx_msg void OnBnClickedButton15();
 
 
@@ -261,7 +250,7 @@ public:
 	CString IMEI_InputC;
 	CEdit IMEI_InputC_Control;
 	afx_msg void OnEnChangeImeia3();
-	afx_msg void OnBnClickedButton16();
+	afx_msg void OnBnClickedButtonstart3();
 	afx_msg void OnBnClickedButton17();
 	// 线程4
 	CEdit Final_Result_Control4;
@@ -271,7 +260,7 @@ public:
 	CString IMEI_InputD;
 	CEdit IMEI_InputD_Control;
 	afx_msg void OnEnChangeImeia4();
-	afx_msg void OnBnClickedButton18();
+	afx_msg void OnBnClickedButtonstart4();
 	afx_msg void OnBnClickedButton19();
 	// 线程5
 	CEdit Final_Result_Control5;
@@ -281,7 +270,7 @@ public:
 	CString IMEI_InputE;
 	CEdit IMEI_InputE_Control;
 	afx_msg void OnEnChangeImeia5();
-	afx_msg void OnBnClickedButton20();
+	afx_msg void OnBnClickedButtonstart5();
 	afx_msg void OnBnClickedButton21();
 	// 线程6
 	CEdit Final_Result_Control6;
@@ -291,22 +280,22 @@ public:
 	CString IMEI_InputF;
 	CEdit IMEI_InputF_Control;
 	afx_msg void OnEnChangeImeia6();
-	afx_msg void OnBnClickedButton22();
+	afx_msg void OnBnClickedButtonstart6();
 	afx_msg void OnBnClickedButton23();
 	afx_msg void OnBnClickedButton6();
 	afx_msg void OnBnClickedButton7();
 	// 线程一
-	CButton StartA_Control;
+	CButton Start1_Control;
 	// 线程二
-	CButton StartB_Control;
+	CButton Start2_Control;
 	// 线程3
-	CButton StartC_Control;
+	CButton Start3_Control;
 	// 线程四
-	CButton StartD_Control;
+	CButton Start4_Control;
 	// 线程五
-	CButton StartE_Control;
+	CButton Start5_Control;
 	// 线程六
-	CButton StartF_Control;
+	CButton Start6_Control;
 
 
 	// 扫描枪端口
@@ -637,7 +626,13 @@ public:
 	void StartButtonGatherFun(int HandleNum);//将开始按钮需要处理的流程集合成一个函数
 	void StopButtonGatherFun(int HandleNum);//将停止按钮需要处理的流程集合成一个函数
 
+	void ClickStartButtonFun(int HandleNum);//根据HandleNum去触发开始按钮
+	void ClickStopButtonFun(int HandleNum);//根据HandleNum去触发关闭按钮
+	CString GetPortComByPortNo(int HandleNum);//根据HandleNum去获得对应的串口号
+
 	BOOL DequeContinueControlFun(int HandleNum,deque<int> &ContinueDeq);//统一对队列进行管理，在队列有数据进入之时，就判断这条线程有没有被关闭，是否轮到当前这条线程工作了
+
+	CString SectionNumberHandleFun(CString SectionNumber,CString LowLimitValue);//对串口的返回值进行处理
 
 	/*三合一新增功能*/
 	
@@ -766,6 +761,7 @@ public:
 		int DongleRssiArrayCount;//计算数组目前现有的MAC地址数量
 
 		BOOL GetDongleScanCheckValue;
+		BOOL CheckLockStatus[16][4];//开关检查标志位
 
 	/*网络摄像头新增功能*/
 	public:
@@ -855,6 +851,8 @@ public:
 
 
 		BOOL GetRDAHostCheckValue;
+
+		int RDAStartCount[16];
 
 		void OnGetWebSetting_ThreadFun();//获取配置线程函数
 		afx_msg void OnBnClickedRdahostCheck();
