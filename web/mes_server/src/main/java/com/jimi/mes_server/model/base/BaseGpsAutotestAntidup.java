@@ -90,4 +90,22 @@ public abstract class BaseGpsAutotestAntidup<M extends BaseGpsAutotestAntidup<M>
 		return get("TestTime");
 	}
 
+	public M setVersion(java.lang.String Version) {
+		set("Version", Version);
+		return (M)this;
+	}
+	
+	public java.lang.String getVersion() {
+		return getStr("Version");
+	}
+
+	public M setSoftModel(java.lang.String SoftModel) {
+		set("SoftModel", SoftModel);
+		return (M)this;
+	}
+	
+	public java.lang.String getSoftModel() {
+		return getStr("SoftModel");
+	}
+
 }

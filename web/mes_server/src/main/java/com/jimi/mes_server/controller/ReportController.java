@@ -7,12 +7,16 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jfinal.kit.StrKit;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.entity.DeleteTable;
 import com.jimi.mes_server.exception.OperationException;
+import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.DataRelativeSheet;
 import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.service.ReportService;
@@ -29,23 +33,14 @@ import com.jimi.mes_server.util.TokenBox;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class ReportController extends Controller {
-	
+
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
-	
+
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
-	
+
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
-	
+
 	private static UserService userService = Enhancer.enhance(UserService.class);
-	/*
-	 * public static void main(String[] args) { PropKit.use("properties.ini");
-	 * DruidPlugin dp = new DruidPlugin(PropKit.get("d_url"), PropKit.get("d_user"),
-	 * PropKit.get("d_password")); ActiveRecordPlugin arp = new
-	 * ActiveRecordPlugin(dp); arp.setDialect(new SqlServerDialect()); //
-	 * 用什么数据库，就设置什么Dialect arp.setShowSql(true); MappingKit.mapping(arp);
-	 * dp.start(); arp.start(); selectGpsManuPrintParam( 1, 1024, null,
-	 * null,"12","45", null, new Date(), new Date(), 1); }
-	 */
 
 
 	/**
@@ -58,7 +53,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		ResultUtil result = ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, type));
 		renderJson(result);
@@ -73,7 +68,7 @@ public class ReportController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter, isReferred));
 		renderJson(result);
@@ -93,7 +88,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -136,7 +131,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -156,7 +151,8 @@ public class ReportController extends Controller {
 			String endTimeString = formatDateToString(endTime, "yyyy/MM/dd HH:mm:ss");
 			filter = filter + " (((ReSDTime >= '" + startTimeString + "' and ReSDTime <= '" + endTimeString + "'))" + " or ((ReSDTime is null) and (SDTime >= '" + startTimeString + "' and SDTime <= '" + endTimeString + "')))";
 		}
-		ResultUtil result = ResultUtil.succeed(reportService.selectGpsManuSimDataParam(pageNo, pageSize, ascBy, descBy, filter));
+		ResultUtil result = ResultUtil
+				.succeed(reportService.selectGpsManuSimDataParam(pageNo, pageSize, ascBy, descBy, filter));
 		renderJson(result);
 	}
 
@@ -167,7 +163,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
-	@Access({"SuperAdmin", "admin"})
+	@Access({ "SuperAdmin", "admin" })
 	public void delete(String table, String filter, Integer type) {
 		if (table.equals("Gps_ManuCpParam")) {
 			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
@@ -180,7 +176,7 @@ public class ReportController extends Controller {
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.delete(table, filter, type);
 			renderJson(ResultUtil.succeed());
-			return ;
+			return;
 		}
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
@@ -195,15 +191,15 @@ public class ReportController extends Controller {
 		}
 		throw new OperationException("当前用户无权限删除");
 	}
-	
-	
+
+
 	/**
 	 * 根据条件删除数据库记录
 	 * @param table
 	 * @param filter
 	 * @param type
 	 */
-	@Access({"SuperAdmin", "admin"})
+	@Access({ "SuperAdmin", "admin" })
 	public void deleteByIds(String table, String filter, Integer type) {
 		if (table.equals("Gps_ManuCpParam")) {
 			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
@@ -216,7 +212,7 @@ public class ReportController extends Controller {
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.deleteByIds(table, filter, type);
 			renderJson(ResultUtil.succeed());
-			return ;
+			return;
 		}
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
@@ -242,7 +238,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({"SuperAdmin", "admin"})
+	@Access({ "SuperAdmin", "admin" })
 	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		String table = "Gps_ManuPrintParam";
@@ -272,7 +268,7 @@ public class ReportController extends Controller {
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
 			reportService.deleteGpsManuPrintParam(filter);
 			renderJson(ResultUtil.succeed());
-			return ;
+			return;
 		}
 		if (user.getDeletePermission() == null) {
 			throw new OperationException("当前用户无权限删除");
@@ -282,11 +278,10 @@ public class ReportController extends Controller {
 			if (deletePermissions[i].equals("1") && DeleteTable.getNameById(i).equals(table)) {
 				reportService.deleteGpsManuPrintParam(filter);
 				renderJson(ResultUtil.succeed());
-				return ;
+				return;
 			}
 		}
 		throw new OperationException("当前用户无权限删除");
-
 	}
 
 
@@ -299,7 +294,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({"SuperAdmin", "admin"})
+	@Access({ "SuperAdmin", "admin" })
 	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
@@ -350,13 +345,14 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @date 2018年10月11日 下午5:58:28
 	 */
-	@Access({"SuperAdmin"})
+	@Access({ "SuperAdmin" })
 	public void download(String table, String ascBy, String descBy, String filter, Integer type) {
 		OutputStream output = null;
 		try {
 			// 设置响应
 			HttpServletResponse response = getResponse();
-			reportService.download(table, ascBy, descBy, filter, type, response);
+			output = response.getOutputStream();
+			reportService.download(table, ascBy, descBy, filter, type, response, output);
 		} catch (Exception e) {
 			renderJson(ResultUtil.failed());
 		} finally {
@@ -383,7 +379,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({"SuperAdmin"})
+	@Access({ "SuperAdmin" })
 	public void downloadGpsManuPrintParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -411,7 +407,8 @@ public class ReportController extends Controller {
 		try {
 			// 设置响应
 			HttpServletResponse response = getResponse();
-			reportService.download("Gps_ManuPrintParam", ascBy, descBy, filter, null, response);
+			output = response.getOutputStream();
+			reportService.download("Gps_ManuPrintParam", ascBy, descBy, filter, null, response, output);
 		} catch (Exception e) {
 			renderJson(ResultUtil.failed());
 		} finally {
@@ -438,7 +435,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({"SuperAdmin"})
+	@Access({ "SuperAdmin" })
 	public void downloadGpsManuSimDataParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -462,7 +459,8 @@ public class ReportController extends Controller {
 		try {
 			// 设置响应
 			HttpServletResponse response = getResponse();
-			reportService.download("Gps_ManuSimDataParam", ascBy, descBy, filter, null, response);
+			output = response.getOutputStream();
+			reportService.download("Gps_ManuSimDataParam", ascBy, descBy, filter, null, response, output);
 		} catch (Exception e) {
 			renderJson(ResultUtil.failed());
 		} finally {
@@ -490,6 +488,102 @@ public class ReportController extends Controller {
 		} else {
 			renderJson(ResultUtil.failed());
 		}
+	}
+
+
+	/**@author HCJ
+	 * 根据IMEI1清空关联表相关字段
+	 * @param imeis IMEI1集合
+	 * @param items 需要进行操作的字段
+	 * @date 2019年5月29日 下午3:39:32
+	 */
+	@Access({ "SuperAdmin" })
+	public void cleanupInRel(String imei, String items) {
+		if (StrKit.isBlank(imei) || StrKit.isBlank(items)) {
+			throw new ParameterException("参数不能存在空值");
+		}
+		if (reportService.cleanupInRel(imei, items)) {
+			renderJson(ResultUtil.succeed());
+		}
+	}
+
+
+	@Access({ "SuperAdmin","admin","operator" })
+	public void selectZhiDanInfo(String zhiDan) {
+		if(StringUtils.isBlank(zhiDan)) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(reportService.selectZhiDanInfo(zhiDan)));
+	}
+
+
+	@Access({ "SuperAdmin","admin","operator" })
+	public void selectUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
+		if(StringUtils.isAnyBlank(zhiDan,startIMEI,endIMEI)) {
+			throw new ParameterException("参数不能为空");
+		}
+		if(startIMEI.length()!=endIMEI.length()) {
+			throw new ParameterException("起止IMEI长度必须相等");
+		}
+		renderJson(ResultUtil.succeed(reportService.selectUnusedIMEI(startIMEI, endIMEI, zhiDan)));
+	}
+
+
+	@Access({"SuperAdmin"})
+	public void downloadUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
+		OutputStream output = null;
+		try {
+			// 设置响应
+			HttpServletResponse response = getResponse();
+			output = response.getOutputStream();
+			reportService.downloadUnusedIMEI(startIMEI,  endIMEI,  zhiDan, response,output);
+		} catch (Exception e) {
+			renderJson(ResultUtil.failed());
+		} finally {
+			try {
+				if (output != null) {
+					output.close();
+				}
+			} catch (IOException e) {
+				renderJson(ResultUtil.failed());
+			}
+		}
+		renderNull();
+	}
+
+
+	/*@Access({ "SuperAdmin", "admin", "operator" })*/
+	public void multiTableQuery(String imei, String sn, String zhiDan) {
+		if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
+			throw new ParameterException("参数不能全部为空");
+		}
+		renderJson(ResultUtil.succeed(reportService.multiTableQuery(imei, sn, zhiDan)));
+	}
+
+
+	/*@Access({ "SuperAdmin" })*/
+	public void multiTableDelete(String imei, String sn, String zhiDan) {
+		if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
+			throw new ParameterException("参数不能全部为空");
+		}
+		/*String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+			reportService.multiTableDelete(imei, sn, zhiDan);
+			renderJson(ResultUtil.succeed());
+			return;
+		}
+		if (user.getDeletePermission() == null) {
+			throw new OperationException("当前用户无权限删除");
+		}
+		String[] deletePermissions = user.getDeletePermission().split(",");
+		for (int i = 0; i < deletePermissions.length; i++) {
+			if (!deletePermissions[i].equals("1")) {
+				throw new OperationException("当前用户无权限批量删除");
+			}
+		}*/
+		reportService.multiTableDelete(imei, sn, zhiDan);
+		renderJson(ResultUtil.succeed());
 	}
 
 

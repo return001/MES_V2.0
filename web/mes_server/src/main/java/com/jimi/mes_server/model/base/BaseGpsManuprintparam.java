@@ -270,4 +270,22 @@ public abstract class BaseGpsManuprintparam<M extends BaseGpsManuprintparam<M>> 
 		return getStr("RFID");
 	}
 
+	public M setJSUserName(java.lang.String JSUserName) {
+		set("JSUserName", JSUserName);
+		return (M)this;
+	}
+	
+	public java.lang.String getJSUserName() {
+		return getStr("JSUserName");
+	}
+
+	public M setCHUserName(java.lang.String CHUserName) {
+		set("CHUserName", CHUserName);
+		return (M)this;
+	}
+	
+	public java.lang.String getCHUserName() {
+		return getStr("CHUserName");
+	}
+
 }

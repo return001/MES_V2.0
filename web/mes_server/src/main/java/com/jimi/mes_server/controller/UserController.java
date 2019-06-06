@@ -105,10 +105,11 @@ public class UserController extends Controller {
 	 * 校验传入的参数与内存中记录的TOKEN是否一致
 	 * @date 2019年5月14日 下午5:19:31
 	 */
-	@Access({ "SuperAdmin","admin"})
-	public void validate(String name, String password, String TOKEN) {
+	@Access({ "SuperAdmin", "admin" })
+	public void validate(String name, String password) {
 		userService.validate(name, password);
-		LUserAccount user = TokenBox.get(TOKEN, SESSION_KEY_LOGIN_USER);
+		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccount user = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
 		if (user == null || !user.getName().equals(name) || !user.getPassword().equals(password)) {
 			throw new OperationException("用户校验失败");
 		}

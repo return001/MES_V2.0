@@ -25,6 +25,7 @@ import com.jimi.mes_server.interceptor.AccessInterceptor;
 import com.jimi.mes_server.interceptor.CORSInterceptor;
 import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
 import com.jimi.mes_server.model.MappingKit;
+import com.jimi.mes_server.model.NetMarkIMEI;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
@@ -106,6 +107,7 @@ public class MesConfig extends JFinalConfig {
 	    MappingKit.mapping(arp);
 	    arp1.addMapping("TestSystemSetting", "SoftWare", TestSystemSetting.class);
 	    arp1.addMapping("TestSystemSettingFunc", "SoftWare", TestSystemSettingFunc.class);
+	    arp1.addMapping("NetMarkIMEI", "Id", NetMarkIMEI.class);
 	    arp2.addMapping("TestSystemSetting", "SoftWare", TestSystemSetting.class);
 	    arp2.addMapping("TestSystemSettingFunc", "SoftWare", TestSystemSettingFunc.class);
 	    arp2.addMapping("TestSystemSettingOqc", "SoftWare", TestSystemSettingOqc.class);
