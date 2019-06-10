@@ -508,6 +508,11 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 根据订单名称获取所有相似的订单信息
+	 * @param zhiDan 订单名称
+	 * @date 2019年6月5日 下午3:53:14
+	 */
 	@Access({ "SuperAdmin","admin","operator" })
 	public void selectZhiDanInfo(String zhiDan) {
 		if(StringUtils.isBlank(zhiDan)) {
@@ -517,6 +522,13 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 查询未使用的IMEI
+	 * @param startIMEI 开始IMEI
+	 * @param endIMEI 结束IMEI
+	 * @param zhiDan 订单名称
+	 * @date 2019年6月5日 下午3:53:59
+	 */
 	@Access({ "SuperAdmin","admin","operator" })
 	public void selectUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		if(StringUtils.isAnyBlank(zhiDan,startIMEI,endIMEI)) {
@@ -529,6 +541,15 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 下载未使用的IMEI文件格式为Excel
+	 * @param startIMEI 开始IMEI
+	 * @param endIMEI 结束IMEI
+	 * @param zhiDan 订单名称
+	 * @param response http响应
+	 * @param output 输出流
+	 * @date 2019年6月5日 下午3:57:01
+	 */
 	@Access({"SuperAdmin"})
 	public void downloadUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		OutputStream output = null;
@@ -552,24 +573,76 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 根据条件进行多表查询
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
 	/*@Access({ "SuperAdmin", "admin", "operator" })*/
-	public void multiTableQuery(String imei, String sn, String zhiDan) {
-		if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
-			throw new ParameterException("参数不能全部为空");
+	public void multiTableQuery(String imei, String sn, String zhiDan,Integer type) {
+		if (type==null) {
+			throw new ParameterException("类型不能为空");
 		}
-		renderJson(ResultUtil.succeed(reportService.multiTableQuery(imei, sn, zhiDan)));
+		switch (type) {
+		case 0:
+		case 1:	
+			if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
+				throw new ParameterException("IMEI、SN和ZhiDan不能全部为空");
+			}
+			break;
+		case 2:	
+			if (StringUtils.isBlank(imei)) {
+				throw new ParameterException("当前类型下IMEI号不能为空");
+			}
+			if (!imei.contains(",")||imei.split(",").length != 2||StringUtils.isAnyBlank(imei.split(","))) {
+				throw new ParameterException("当前类型下IMEI格式错误");
+			}
+			break;
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		renderJson(ResultUtil.succeed(reportService.multiTableQuery(imei, sn, zhiDan,type)));
 	}
 
 
+	/**@author HCJ
+	 * 根据条件进行多表删除
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
 	/*@Access({ "SuperAdmin" })*/
-	public void multiTableDelete(String imei, String sn, String zhiDan) {
-		if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
-			throw new ParameterException("参数不能全部为空");
+	public void multiTableDelete(String imei, String sn, String zhiDan,Integer type) {
+		if (type==null) {
+			throw new ParameterException("类型不能为空");
+		}
+		switch (type) {
+		case 0:
+		case 1:	
+			if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
+				throw new ParameterException("IMEI、SN和ZhiDan不能全部为空");
+			}
+			break;
+		case 2:	
+			if (StringUtils.isBlank(imei)) {
+				throw new ParameterException("当前类型下IMEI号不能为空");
+			}
+			if (!imei.contains(",")||imei.split(",").length != 2||StringUtils.isAnyBlank(imei.split(","))) {
+				throw new ParameterException("当前类型下IMEI格式错误");
+			}
+			break;
+		default:
+			throw new ParameterException("无法识别的类型");
 		}
 		/*String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
-			reportService.multiTableDelete(imei, sn, zhiDan);
+			reportService.multiTableDelete(imei, sn, zhiDan,type);
 			renderJson(ResultUtil.succeed());
 			return;
 		}
@@ -582,7 +655,7 @@ public class ReportController extends Controller {
 				throw new OperationException("当前用户无权限批量删除");
 			}
 		}*/
-		reportService.multiTableDelete(imei, sn, zhiDan);
+		reportService.multiTableDelete(imei, sn, zhiDan,type);
 		renderJson(ResultUtil.succeed());
 	}
 

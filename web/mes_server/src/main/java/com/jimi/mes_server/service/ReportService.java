@@ -496,27 +496,28 @@ public class ReportService extends SelectService{
 	 * @param imei IMEI号
 	 * @param sn SN号
 	 * @param zhiDan ZhiDan号
-	 * @date 2019年6月6日 上午11:30:51
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
 	 */
-	public MultiTableQueryInfo multiTableQuery(String imei, String sn, String zhiDan) {
-		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan).get("imeiSnZhiDan");
-		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan).get("zhiDanDATA1");
-		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan).get("zhiDanIMEI1");
-		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan).get("zhiDanIMEI");
-		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan).get("zhidanIMEI");
-		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan).get("ridIMEI");
+	public MultiTableQueryInfo multiTableQuery(String imei, String sn, String zhiDan, Integer type) {
+		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan, type).get("imeiSnZhiDan");
+		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanDATA1");
+		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI1");
+		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI");
+		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhidanIMEI");
+		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("ridIMEI");
 
-		List<Record> dataRelativeSheets = null;
-		List<Record> dataRelativeUniques = null;
-		List<Record> gpsAutotestResults = null;
-		List<Record> gpsAutotestResult3s = null;
-		List<Record> gpsCartonboxtwentyResults = null;
-		List<Record> gpsCoupletestResults = null;
-		List<Record> gpsManucpparams = null;
-		List<Record> gpsManuprintparams = null;
-		List<Record> gpsTestresults = null;
-		List<Record> netMarkIMEIs = null;
-		List<Record> gpsManusimdataparams = null;
+		List<Record> dataRelativeSheets = new ArrayList<>();
+		List<Record> dataRelativeUniques = new ArrayList<>();
+		List<Record> gpsAutotestResults = new ArrayList<>();
+		List<Record> gpsAutotestResult3s = new ArrayList<>();
+		List<Record> gpsCartonboxtwentyResults = new ArrayList<>();
+		List<Record> gpsCoupletestResults = new ArrayList<>();
+		List<Record> gpsManucpparams = new ArrayList<>();
+		List<Record> gpsManuprintparams = new ArrayList<>();
+		List<Record> gpsTestresults = new ArrayList<>();
+		List<Record> netMarkIMEIs = new ArrayList<>();
+		List<Record> gpsManusimdataparams = new ArrayList<>();
 
 		if (!zhiDanDATA1.toString().isEmpty()) {
 			dataRelativeUniques = Db.find(SQL.SELECT_DATARELATIVEUNIQUE_SQL_FRAGMENT + zhiDanDATA1);
@@ -541,23 +542,32 @@ public class ReportService extends SelectService{
 		if (!ridIMEI.toString().isEmpty()) {
 			gpsManusimdataparams = Db.find(SQL.SELECT_MANUSIM_RESULT_SQL_FRAGMENT + ridIMEI);
 		}
+
 		return new MultiTableQueryInfo(dataRelativeSheets, dataRelativeUniques, gpsAutotestResults, gpsAutotestResult3s, gpsCartonboxtwentyResults, gpsCoupletestResults, gpsManucpparams, gpsManuprintparams, gpsTestresults, netMarkIMEIs, gpsManusimdataparams);
 	}
 
 
-	public void multiTableDelete(String imei, String sn, String zhiDan) {
+	/**@author HCJ
+	 * 根据条件进行多表删除
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type) {
 		try {
-			multiTableBackup(imei, sn, zhiDan);
+			multiTableBackup(imei, sn, zhiDan, type);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new OperationException("备份数据失败，删除失败");
 		}
-		batchDelete(imei, sn, zhiDan);
+		batchDelete(imei, sn, zhiDan, type);
 	}
 
 
 	public static void main(String[] args) {
-		
+
 	}
 
 
@@ -621,7 +631,15 @@ public class ReportService extends SelectService{
 	}
 
 
-	private Map<String, StringBuilder> concatSqlParameter(String imei, String sn, String zhiDan) {
+	/**@author HCJ
+	 * 根据参数拼接sql语句
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
+	private Map<String, StringBuilder> concatSqlParameter(String imei, String sn, String zhiDan, Integer type) {
 		Map<String, StringBuilder> map = new HashMap<>();
 		StringBuilder imeiSnZhiDanWithAnd = new StringBuilder();
 		StringBuilder zhiDanDATA1WithAnd = new StringBuilder();
@@ -629,24 +647,43 @@ public class ReportService extends SelectService{
 		StringBuilder zhiDanIMEIWithAnd = new StringBuilder();
 		StringBuilder zhidanIMEIWithAnd = new StringBuilder();
 		StringBuilder ridIMEIWithAnd = new StringBuilder();
-		if (!StrKit.isBlank(imei)) {
-			imeiSnZhiDanWithAnd.append("IMEI = '" + imei + "' and ");
-			zhiDanDATA1WithAnd.append("DATA1 = '" + imei + "' and ");
-			zhiDanIMEI1WithAnd.append("IMEI1 = '" + imei + "' and ");
-			zhiDanIMEIWithAnd.append("IMEI = '" + imei + "' and ");
-			zhidanIMEIWithAnd.append("IMEI = '" + imei + "' and ");
-			ridIMEIWithAnd.append("IMEI = '" + imei + "' and ");
-		}
-		if (!StrKit.isBlank(sn)) {
-			imeiSnZhiDanWithAnd.append("SN = '" + sn + "' and ");
-			ridIMEIWithAnd.append("RID = '" + sn + "' and ");
-		}
-		if (!StrKit.isBlank(zhiDan)) {
-			imeiSnZhiDanWithAnd.append("ZhiDan = '" + zhiDan + "'");
-			zhiDanDATA1WithAnd.append("ZhiDan = '" + zhiDan + "'");
-			zhiDanIMEI1WithAnd.append("ZhiDan = '" + zhiDan + "'");
-			zhiDanIMEIWithAnd.append("ZhiDan = '" + zhiDan + "'");
-			zhidanIMEIWithAnd.append("Zhidan = '" + zhiDan + "'");
+		switch (type) {
+		case 0:
+		case 1:
+			if (!StrKit.isBlank(imei)) {
+				StringBuilder imeiValue = concatSqlParamValue(imei);
+				imeiSnZhiDanWithAnd.append("IMEI IN (" + imeiValue + ") and ");
+				zhiDanDATA1WithAnd.append("DATA1 IN (" + imeiValue + ") and ");
+				zhiDanIMEI1WithAnd.append("IMEI1 IN (" + imeiValue + ") and ");
+				zhiDanIMEIWithAnd.append("IMEI IN (" + imeiValue + ") and ");
+				zhidanIMEIWithAnd.append("IMEI IN (" + imeiValue + ") and ");
+				ridIMEIWithAnd.append("IMEI IN (" + imeiValue + ") and ");
+			}
+			if (!StrKit.isBlank(sn)) {
+				StringBuilder snValue = concatSqlParamValue(sn);
+				imeiSnZhiDanWithAnd.append("SN IN (" + snValue + ") and ");
+				ridIMEIWithAnd.append("RID IN (" + snValue + ") and ");
+			}
+			if (!StrKit.isBlank(zhiDan)) {
+				StringBuilder zhiDanValue = concatSqlParamValue(zhiDan);
+				imeiSnZhiDanWithAnd.append("ZhiDan IN (" + zhiDanValue + ")");
+				zhiDanDATA1WithAnd.append("ZhiDan IN (" + zhiDanValue + ")");
+				zhiDanIMEI1WithAnd.append("ZhiDan IN (" + zhiDanValue + ")");
+				zhiDanIMEIWithAnd.append("ZhiDan IN (" + zhiDanValue + ")");
+				zhidanIMEIWithAnd.append("Zhidan IN (" + zhiDanValue + ")");
+			}
+			break;
+		case 2:
+			String[] imeiRange = imei.split(",");
+			imeiSnZhiDanWithAnd.append("IMEI >= '" + imeiRange[0] + "' and IMEI <= '" + imeiRange[1] + "'");
+			zhiDanDATA1WithAnd.append("DATA1 >= '" + imeiRange[0] + "' and DATA1 <= '" + imeiRange[1] + "'");
+			zhiDanIMEI1WithAnd.append("IMEI1 >= '" + imeiRange[0] + "' and IMEI1 <= '" + imeiRange[1] + "'");
+			zhiDanIMEIWithAnd.append("IMEI >= '" + imeiRange[0] + "' and IMEI <= '" + imeiRange[1] + "'");
+			zhidanIMEIWithAnd.append("IMEI >= '" + imeiRange[0] + "' and IMEI <= '" + imeiRange[1] + "'");
+			ridIMEIWithAnd.append("IMEI >= '" + imeiRange[0] + "' and IMEI <= '" + imeiRange[1] + "'");
+			break;
+		default:
+			break;
 		}
 		map.put("imeiSnZhiDan", deleteAndCharacter(imeiSnZhiDanWithAnd));
 		map.put("zhiDanDATA1", deleteAndCharacter(zhiDanDATA1WithAnd));
@@ -655,6 +692,22 @@ public class ReportService extends SelectService{
 		map.put("zhidanIMEI", deleteAndCharacter(zhidanIMEIWithAnd));
 		map.put("ridIMEI", deleteAndCharacter(ridIMEIWithAnd));
 		return map;
+	}
+
+
+	/**@author HCJ
+	 * 根据参数的值拼接sql语句
+	 * @param content 参数值
+	 * @date 2019年6月10日 下午3:37:05
+	 */
+	private StringBuilder concatSqlParamValue(String content) {
+		StringBuilder valueStringBuilder = new StringBuilder();
+		for (String value : content.split(",")) {
+			valueStringBuilder.append("'" + value + "',");
+		}
+		valueStringBuilder.deleteCharAt(valueStringBuilder.lastIndexOf(","));
+		return valueStringBuilder;
+
 	}
 
 
@@ -670,8 +723,16 @@ public class ReportService extends SelectService{
 	}
 
 
-	private void multiTableBackup(String imei, String sn, String zhiDan) throws Exception {
-		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan);
+	/**@author HCJ
+	 * 多表删除前将数据备份为Excel文件
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
+	private void multiTableBackup(String imei, String sn, String zhiDan, Integer type) throws Exception {
+		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		Date time = new Date();
 		StringBuilder paramStringBuilder = new StringBuilder();
@@ -785,8 +846,15 @@ public class ReportService extends SelectService{
 			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
 			helper.fill(multiTableQueryInfo.getGpsManusimdataparams(), "Gps_ManuSimDataParam", field, head);
 		}
+
 		try {
-			helper.write(output, true);
+			if (helper.getBook().getNumberOfSheets() == 0) {
+				helper.getBook().createSheet("当前选择的条件没有可以备份的数据");
+				helper.write(output, false);
+			} else {
+				helper.write(output, true);
+				deleteHistoryService.add(fileName, file.getAbsolutePath(), time);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -797,13 +865,21 @@ public class ReportService extends SelectService{
 	}
 
 
-	private void batchDelete(String imei, String sn, String zhiDan) {
-		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan).get("imeiSnZhiDan");
-		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan).get("zhiDanDATA1");
-		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan).get("zhiDanIMEI1");
-		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan).get("zhiDanIMEI");
-		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan).get("zhidanIMEI");
-		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan).get("ridIMEI");
+	/**@author HCJ
+	 * 根据条件进行批量删除
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月10日 下午3:34:01
+	 */
+	private void batchDelete(String imei, String sn, String zhiDan, Integer type) {
+		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan, type).get("imeiSnZhiDan");
+		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanDATA1");
+		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI1");
+		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI");
+		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhidanIMEI");
+		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("ridIMEI");
 		try {
 			if (!zhiDanDATA1.toString().isEmpty()) {
 				Db.update(SQL.DELETE_DATARELATIVEUNIQUE_SQL_FRAGMENT + zhiDanDATA1);

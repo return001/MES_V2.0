@@ -120,10 +120,7 @@ public class MultiTableQueryInfo {
 		this.dataRelativeUniques = dataRelativeUniques;
 	}
 
-	public MultiTableQueryInfo(List<Record> dataRelativeSheets, List<Record> dataRelativeUniques,
-			List<Record> gpsAutotestResults, List<Record> gpsAutotestResult3s, List<Record> gpsCartonboxtwentyResults,
-			List<Record> gpsCoupletestResults, List<Record> gpsManucpparams, List<Record> gpsManuprintparams,
-			List<Record> gpsTestresults, List<Record> netMarkIMEIs, List<Record> gpsManusimdataparams) {
+	public MultiTableQueryInfo(List<Record> dataRelativeSheets, List<Record> dataRelativeUniques, List<Record> gpsAutotestResults, List<Record> gpsAutotestResult3s, List<Record> gpsCartonboxtwentyResults, List<Record> gpsCoupletestResults, List<Record> gpsManucpparams, List<Record> gpsManuprintparams, List<Record> gpsTestresults, List<Record> netMarkIMEIs, List<Record> gpsManusimdataparams) {
 		super();
 		this.dataRelativeSheets = dataRelativeSheets;
 		this.dataRelativeUniques = dataRelativeUniques;
