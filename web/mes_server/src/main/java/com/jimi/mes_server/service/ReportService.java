@@ -420,7 +420,7 @@ public class ReportService extends SelectService{
 		} catch (Exception e) {
 			throw new ParameterException("起止IMEI格式错误");
 		}
-		if (start <= 0 || end <= 0 || start > end || start == end) {
+		if (start <= 0 || end <= 0 || start >= end) {
 			throw new ParameterException("IMEI必须大于0并且结束IMEI必须大于开始IMEI");
 		}
 		Record imeiRecord = Db.findFirst(SQL.SELECT_IMEI_BEGIN_END_BY_ZHIDAN, zhiDan + "%");
@@ -478,7 +478,7 @@ public class ReportService extends SelectService{
 		if (unusedIMEIs == null || unusedIMEIs.isEmpty()) {
 			throw new OperationException("不存在符合条件的记录");
 		}
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		String fileName = "Gps_ManuPrintParam" + "_" + simpleDateFormat.format(new Date()) + "_" + zhiDan + "_" + "未使用的IMEI" + ".xls";
 		response.reset();
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
@@ -500,12 +500,13 @@ public class ReportService extends SelectService{
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	public MultiTableQueryInfo multiTableQuery(String imei, String sn, String zhiDan, Integer type) {
-		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan, type).get("imeiSnZhiDan");
-		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanDATA1");
-		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI1");
-		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI");
-		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhidanIMEI");
-		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("ridIMEI");
+		Map<String, StringBuilder> sqlParameterMap = concatSqlParameter(imei, sn, zhiDan, type);
+		StringBuilder imeiSnZhiDan = sqlParameterMap.get("imeiSnZhiDan");
+		StringBuilder zhiDanDATA1 = sqlParameterMap.get("zhiDanDATA1");
+		StringBuilder zhiDanIMEI1 = sqlParameterMap.get("zhiDanIMEI1");
+		StringBuilder zhiDanIMEI = sqlParameterMap.get("zhiDanIMEI");
+		StringBuilder zhidanIMEI = sqlParameterMap.get("zhidanIMEI");
+		StringBuilder ridIMEI = sqlParameterMap.get("ridIMEI");
 
 		List<Record> dataRelativeSheets = new ArrayList<>();
 		List<Record> dataRelativeUniques = new ArrayList<>();
@@ -745,8 +746,8 @@ public class ReportService extends SelectService{
 		if (!StrKit.isBlank(zhiDan)) {
 			paramStringBuilder.append("订单号-" + zhiDan);
 		}
-		if (StringUtils.endsWith(paramStringBuilder, "-")) {
-			paramStringBuilder.delete(paramStringBuilder.lastIndexOf("-"), paramStringBuilder.length());
+		if (StringUtils.endsWith(paramStringBuilder, "_")) {
+			paramStringBuilder.delete(paramStringBuilder.lastIndexOf("_"), paramStringBuilder.length());
 		}
 		String fileName = "批量删除数据备份" + "_" + simpleDateFormat.format(time) + "_" + paramStringBuilder + ".xls";
 		System.err.println(fileName);
@@ -874,12 +875,13 @@ public class ReportService extends SelectService{
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	private void batchDelete(String imei, String sn, String zhiDan, Integer type) {
-		StringBuilder imeiSnZhiDan = concatSqlParameter(imei, sn, zhiDan, type).get("imeiSnZhiDan");
-		StringBuilder zhiDanDATA1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanDATA1");
-		StringBuilder zhiDanIMEI1 = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI1");
-		StringBuilder zhiDanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhiDanIMEI");
-		StringBuilder zhidanIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("zhidanIMEI");
-		StringBuilder ridIMEI = concatSqlParameter(imei, sn, zhiDan, type).get("ridIMEI");
+		Map<String, StringBuilder> sqlParameterMap = concatSqlParameter(imei, sn, zhiDan, type);
+		StringBuilder imeiSnZhiDan = sqlParameterMap.get("imeiSnZhiDan");
+		StringBuilder zhiDanDATA1 = sqlParameterMap.get("zhiDanDATA1");
+		StringBuilder zhiDanIMEI1 = sqlParameterMap.get("zhiDanIMEI1");
+		StringBuilder zhiDanIMEI = sqlParameterMap.get("zhiDanIMEI");
+		StringBuilder zhidanIMEI = sqlParameterMap.get("zhidanIMEI");
+		StringBuilder ridIMEI = sqlParameterMap.get("ridIMEI");
 		try {
 			if (!zhiDanDATA1.toString().isEmpty()) {
 				Db.update(SQL.DELETE_DATARELATIVEUNIQUE_SQL_FRAGMENT + zhiDanDATA1);

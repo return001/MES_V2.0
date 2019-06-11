@@ -513,9 +513,9 @@ public class ReportController extends Controller {
 	 * @param zhiDan 订单名称
 	 * @date 2019年6月5日 下午3:53:14
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectZhiDanInfo(String zhiDan) {
-		if(StringUtils.isBlank(zhiDan)) {
+		if (StringUtils.isBlank(zhiDan)) {
 			throw new ParameterException("参数不能为空");
 		}
 		renderJson(ResultUtil.succeed(reportService.selectZhiDanInfo(zhiDan)));
@@ -529,12 +529,12 @@ public class ReportController extends Controller {
 	 * @param zhiDan 订单名称
 	 * @date 2019年6月5日 下午3:53:59
 	 */
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
-		if(StringUtils.isAnyBlank(zhiDan,startIMEI,endIMEI)) {
+		if (StringUtils.isAnyBlank(zhiDan, startIMEI, endIMEI)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if(startIMEI.length()!=endIMEI.length()) {
+		if (startIMEI.length() != endIMEI.length()) {
 			throw new ParameterException("起止IMEI长度必须相等");
 		}
 		renderJson(ResultUtil.succeed(reportService.selectUnusedIMEI(startIMEI, endIMEI, zhiDan)));
@@ -550,14 +550,14 @@ public class ReportController extends Controller {
 	 * @param output 输出流
 	 * @date 2019年6月5日 下午3:57:01
 	 */
-	@Access({"SuperAdmin"})
+	@Access({ "SuperAdmin" })
 	public void downloadUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		OutputStream output = null;
 		try {
 			// 设置响应
 			HttpServletResponse response = getResponse();
 			output = response.getOutputStream();
-			reportService.downloadUnusedIMEI(startIMEI,  endIMEI,  zhiDan, response,output);
+			reportService.downloadUnusedIMEI(startIMEI, endIMEI, zhiDan, response, output);
 		} catch (Exception e) {
 			renderJson(ResultUtil.failed());
 		} finally {
@@ -582,29 +582,29 @@ public class ReportController extends Controller {
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	/*@Access({ "SuperAdmin", "admin", "operator" })*/
-	public void multiTableQuery(String imei, String sn, String zhiDan,Integer type) {
-		if (type==null) {
+	public void multiTableQuery(String imei, String sn, String zhiDan, Integer type) {
+		if (type == null) {
 			throw new ParameterException("类型不能为空");
 		}
 		switch (type) {
 		case 0:
-		case 1:	
+		case 1:
 			if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
 				throw new ParameterException("IMEI、SN和ZhiDan不能全部为空");
 			}
 			break;
-		case 2:	
+		case 2:
 			if (StringUtils.isBlank(imei)) {
 				throw new ParameterException("当前类型下IMEI号不能为空");
 			}
-			if (!imei.contains(",")||imei.split(",").length != 2||StringUtils.isAnyBlank(imei.split(","))) {
+			if (!imei.contains(",") || imei.split(",").length != 2 || StringUtils.isAnyBlank(imei.split(","))) {
 				throw new ParameterException("当前类型下IMEI格式错误");
 			}
 			break;
 		default:
 			throw new ParameterException("无法识别的类型");
 		}
-		renderJson(ResultUtil.succeed(reportService.multiTableQuery(imei, sn, zhiDan,type)));
+		renderJson(ResultUtil.succeed(reportService.multiTableQuery(imei, sn, zhiDan, type)));
 	}
 
 
@@ -617,28 +617,7 @@ public class ReportController extends Controller {
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	/*@Access({ "SuperAdmin" })*/
-	public void multiTableDelete(String imei, String sn, String zhiDan,Integer type) {
-		if (type==null) {
-			throw new ParameterException("类型不能为空");
-		}
-		switch (type) {
-		case 0:
-		case 1:	
-			if (StringUtils.isAllBlank(imei, sn, zhiDan)) {
-				throw new ParameterException("IMEI、SN和ZhiDan不能全部为空");
-			}
-			break;
-		case 2:	
-			if (StringUtils.isBlank(imei)) {
-				throw new ParameterException("当前类型下IMEI号不能为空");
-			}
-			if (!imei.contains(",")||imei.split(",").length != 2||StringUtils.isAnyBlank(imei.split(","))) {
-				throw new ParameterException("当前类型下IMEI格式错误");
-			}
-			break;
-		default:
-			throw new ParameterException("无法识别的类型");
-		}
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type) {
 		/*String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
@@ -655,7 +634,7 @@ public class ReportController extends Controller {
 				throw new OperationException("当前用户无权限批量删除");
 			}
 		}*/
-		reportService.multiTableDelete(imei, sn, zhiDan,type);
+		reportService.multiTableDelete(imei, sn, zhiDan, type);
 		renderJson(ResultUtil.succeed());
 	}
 
