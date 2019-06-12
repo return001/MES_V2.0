@@ -617,7 +617,7 @@ public class ReportController extends Controller {
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	/*@Access({ "SuperAdmin" })*/
-	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type) {
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type,String deleteTable) {
 		/*String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
