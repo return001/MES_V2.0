@@ -49,7 +49,7 @@ public class ReworkService {
 			sql = concatInValueSql(" Data1 in (", mac.split(","));
 			gpsAutotestAntidups = GpsAutotestAntidup.dao.find(SQL.SELECT_AUTOTEST_ANTIDUP_SQL_FRAGMENT + sql);
 			if (gpsAutotestAntidups == null || gpsAutotestAntidups.isEmpty()) {
-				throw new OperationException("Gps_AutoTest_AntiDup表格不存在此MAC记录");
+				throw new OperationException("Gps_AutoTest_AntiDup表格不存在符合条件的记录");
 			}
 			gpsAutotestResult2s = GpsAutotestResult2.dao.find(SQL.SELECT_TABLE_DETAIL_SQL_FRAGMENT1 + sql + SQL.SELECT_TABLE_DETAIL_SQL_FRAGMENT2);
 			if (gpsAutotestResult2s == null || gpsAutotestResult2s.isEmpty()) {

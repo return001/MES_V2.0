@@ -42,6 +42,8 @@ public class ReportController extends Controller {
 
 	private static UserService userService = Enhancer.enhance(UserService.class);
 
+	private static final int tableNum = 10;
+
 
 	/**
 	 * 根据表名和其他条件查询数据库
@@ -581,7 +583,7 @@ public class ReportController extends Controller {
 	 * @param type 参数类型
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	/*@Access({ "SuperAdmin", "admin", "operator" })*/
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void multiTableQuery(String imei, String sn, String zhiDan, Integer type) {
 		if (type == null) {
 			throw new ParameterException("类型不能为空");
@@ -614,14 +616,18 @@ public class ReportController extends Controller {
 	 * @param sn SN号
 	 * @param zhiDan ZhiDan号
 	 * @param type 参数类型
+	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	/*@Access({ "SuperAdmin" })*/
-	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type,String deleteTable) {
-		/*String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+	@Access({ "SuperAdmin" })
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable) {
+		if (StrKit.notBlank(deleteTable) && (!deleteTable.contains(",") || deleteTable.split(",").length != tableNum)) {
+			throw new ParameterException("deleteTable参数格式错误");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
-			reportService.multiTableDelete(imei, sn, zhiDan,type);
+			reportService.multiTableDelete(imei, sn, zhiDan, type, deleteTable);
 			renderJson(ResultUtil.succeed());
 			return;
 		}
@@ -629,12 +635,22 @@ public class ReportController extends Controller {
 			throw new OperationException("当前用户无权限删除");
 		}
 		String[] deletePermissions = user.getDeletePermission().split(",");
-		for (int i = 0; i < deletePermissions.length; i++) {
-			if (!deletePermissions[i].equals("1")) {
-				throw new OperationException("当前用户无权限批量删除");
+		if (StrKit.isBlank(deleteTable)) {
+			for (String deletePermission : deletePermissions) {
+				if (!"1".equals(deletePermission)) {
+					throw new OperationException("当前用户无权限批量删除");
+				}
 			}
-		}*/
-		reportService.multiTableDelete(imei, sn, zhiDan, type);
+			deleteTable = "1,1,1,1,1,1,1,1,1,1";
+		} else {
+			String[] tables = deleteTable.split(",");
+			for (int i = 0; i < tables.length; i++) {
+				if (Integer.parseInt(tables[i]) > Integer.parseInt(deletePermissions[i])) {
+					throw new OperationException("当前用户无权限删除选中的全部表格");
+				}
+			}
+		}
+		reportService.multiTableDelete(imei, sn, zhiDan, type, deleteTable);
 		renderJson(ResultUtil.succeed());
 	}
 

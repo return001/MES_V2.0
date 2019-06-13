@@ -21,23 +21,25 @@ public class AccessInterceptor implements Interceptor {
 
 	@Override
 	public void intercept(Invocation invocation) {
-		 Access access = invocation.getMethod().getAnnotation(Access.class);
-		 if(access == null) {
-			 invocation.invoke();
-			 return;
-		 }
-		 UserService userService = Aop.get(UserService.class);
-		 String token = invocation.getController().getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		 LUserAccount user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
-		 if(user == null) {
-			 throw new AccessException("未登录");
-		 }
-		 if(!user.getInService()) {
-			 throw new AccessException("此用户未启用");
-		 }
-		 String[] accessUserTypes = access.value();
-		 for (String userType : accessUserTypes) {
-			if(userType.equals(userService.getTypeName(user.getWebUserType()))){
+		Access access = invocation.getMethod().getAnnotation(Access.class);
+		if (access == null) {
+			invocation.invoke();
+			return;
+		}
+		UserService userService = Aop.get(UserService.class);
+		String token = invocation.getController().getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccount user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
+		if (user == null) {
+			throw new AccessException("未登录");
+		}
+		LUserAccount realUser = userService.login(user.getName(), user.getPassword());
+		TokenBox.put(token, UserController.SESSION_KEY_LOGIN_USER, realUser);
+		if (!realUser.getInService()) {
+			throw new AccessException("此用户未启用");
+		}
+		String[] accessUserTypes = access.value();
+		for (String userType : accessUserTypes) {
+			if (userType.equals(userService.getTypeName(realUser.getWebUserType()))) {
 				invocation.invoke();
 				return;
 			}

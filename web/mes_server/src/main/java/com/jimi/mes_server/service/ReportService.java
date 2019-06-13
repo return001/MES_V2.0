@@ -47,6 +47,8 @@ public class ReportService extends SelectService{
 
 	private static final Integer IMEI_LENGTH = 14;
 
+	private static final String DELETE_TABLE_FLAG = "1";
+
 
 	/**
 	 * 导出列表
@@ -554,16 +556,17 @@ public class ReportService extends SelectService{
 	 * @param sn SN号
 	 * @param zhiDan ZhiDan号
 	 * @param type 参数类型
+	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type) {
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable) {
 		try {
-			multiTableBackup(imei, sn, zhiDan, type);
+			multiTableBackup(imei, sn, zhiDan, type, deleteTable);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new OperationException("备份数据失败，删除失败");
 		}
-		batchDelete(imei, sn, zhiDan, type);
+		batchDelete(imei, sn, zhiDan, type, deleteTable);
 	}
 
 
@@ -641,7 +644,7 @@ public class ReportService extends SelectService{
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	private Map<String, StringBuilder> concatSqlParameter(String imei, String sn, String zhiDan, Integer type) {
-		Map<String, StringBuilder> map = new HashMap<>();
+		Map<String, StringBuilder> map = new HashMap<>(6);
 		StringBuilder imeiSnZhiDanWithAnd = new StringBuilder();
 		StringBuilder zhiDanDATA1WithAnd = new StringBuilder();
 		StringBuilder zhiDanIMEI1WithAnd = new StringBuilder();
@@ -730,9 +733,10 @@ public class ReportService extends SelectService{
 	 * @param sn SN号
 	 * @param zhiDan ZhiDan号
 	 * @param type 参数类型
+	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	private void multiTableBackup(String imei, String sn, String zhiDan, Integer type) throws Exception {
+	private void multiTableBackup(String imei, String sn, String zhiDan, Integer type, String deleteTable) throws Exception {
 		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		Date time = new Date();
@@ -765,8 +769,9 @@ public class ReportService extends SelectService{
 		OutputStream output = new FileOutputStream(file);
 		String[] field = null;
 		String[] head = null;
+		String[] tables = deleteTable.split(",");
 
-		if (multiTableQueryInfo.getDataRelativeSheets() != null && !multiTableQueryInfo.getDataRelativeSheets().isEmpty()) {
+		if (multiTableQueryInfo.getDataRelativeSheets() != null && !multiTableQueryInfo.getDataRelativeSheets().isEmpty() && DELETE_TABLE_FLAG.equals(tables[0])) {
 			helper.getBook().setSheetName(0, "DataRelativeSheet");
 			helper.switchSheet(0);
 			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
@@ -776,7 +781,7 @@ public class ReportService extends SelectService{
 			helper.getBook().removeSheetAt(0);
 		}
 
-		if (multiTableQueryInfo.getDataRelativeUniques() != null && !multiTableQueryInfo.getDataRelativeUniques().isEmpty()) {
+		if (multiTableQueryInfo.getDataRelativeUniques() != null && !multiTableQueryInfo.getDataRelativeUniques().isEmpty() && DELETE_TABLE_FLAG.equals(tables[1])) {
 			helper.getBook().createSheet("DataRelativeUnique");
 			helper.switchSheet("DataRelativeUnique");
 			field = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
@@ -784,7 +789,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getDataRelativeUniques(), "DataRelativeUnique", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsAutotestResults() != null && !multiTableQueryInfo.getGpsAutotestResults().isEmpty()) {
+		if (multiTableQueryInfo.getGpsAutotestResults() != null && !multiTableQueryInfo.getGpsAutotestResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[2])) {
 			helper.getBook().createSheet("Gps_AutoTest_Result");
 			helper.switchSheet("Gps_AutoTest_Result");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
@@ -792,7 +797,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsAutotestResults(), "Gps_AutoTest_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsAutotestResult3s() != null && !multiTableQueryInfo.getGpsAutotestResult3s().isEmpty()) {
+		if (multiTableQueryInfo.getGpsAutotestResult3s() != null && !multiTableQueryInfo.getGpsAutotestResult3s().isEmpty() && DELETE_TABLE_FLAG.equals(tables[3])) {
 			helper.getBook().createSheet("Gps_AutoTest_Result3");
 			helper.switchSheet("Gps_AutoTest_Result3");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
@@ -800,7 +805,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsAutotestResult3s(), "Gps_AutoTest_Result3", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsCartonboxtwentyResults() != null && !multiTableQueryInfo.getGpsCartonboxtwentyResults().isEmpty()) {
+		if (multiTableQueryInfo.getGpsCartonboxtwentyResults() != null && !multiTableQueryInfo.getGpsCartonboxtwentyResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[4])) {
 			helper.getBook().createSheet("Gps_CartonBoxTwenty_Result");
 			helper.switchSheet("Gps_CartonBoxTwenty_Result");
 			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
@@ -808,7 +813,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsCartonboxtwentyResults(), "Gps_CartonBoxTwenty_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsCoupletestResults() != null && !multiTableQueryInfo.getGpsCoupletestResults().isEmpty()) {
+		if (multiTableQueryInfo.getGpsCoupletestResults() != null && !multiTableQueryInfo.getGpsCoupletestResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[5])) {
 			helper.getBook().createSheet("Gps_CoupleTest_Result");
 			helper.switchSheet("Gps_CoupleTest_Result");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
@@ -816,7 +821,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsCoupletestResults(), "Gps_CoupleTest_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsManuprintparams() != null && !multiTableQueryInfo.getGpsManuprintparams().isEmpty()) {
+		if (multiTableQueryInfo.getGpsManuprintparams() != null && !multiTableQueryInfo.getGpsManuprintparams().isEmpty() && DELETE_TABLE_FLAG.equals(tables[6])) {
 			helper.getBook().createSheet("Gps_ManuPrintParam");
 			helper.switchSheet("Gps_ManuPrintParam");
 			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
@@ -824,7 +829,7 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsManuprintparams(), "Gps_ManuPrintParam", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsTestresults() != null && !multiTableQueryInfo.getGpsTestresults().isEmpty()) {
+		if (multiTableQueryInfo.getGpsTestresults() != null && !multiTableQueryInfo.getGpsTestresults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[7])) {
 			helper.getBook().createSheet("Gps_TestResult");
 			helper.switchSheet("Gps_TestResult");
 			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
@@ -832,15 +837,15 @@ public class ReportService extends SelectService{
 			helper.fill(multiTableQueryInfo.getGpsTestresults(), "Gps_TestResult", field, head);
 		}
 
-		if (multiTableQueryInfo.getNetMarkIMEIs() != null && !multiTableQueryInfo.getNetMarkIMEIs().isEmpty()) {
+		if (multiTableQueryInfo.getNetMarkIMEIs() != null && !multiTableQueryInfo.getNetMarkIMEIs().isEmpty() && DELETE_TABLE_FLAG.equals(tables[8])) {
 			helper.getBook().createSheet("NetMarkIMEI");
 			helper.switchSheet("NetMarkIMEI");
-			field = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
-			head = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
+			field = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN", "JS_PrintTime", "JS_TemPlate", "NMTime", "RFID", "RePrintEndTime", "RePrintFirstTime", "RePrintNum", "Zhidan" };
+			head = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN", "JS_PrintTime", "JS_TemPlate", "NMTime", "RFID", "RePrintEndTime", "RePrintFirstTime", "RePrintNum", "Zhidan" };
 			helper.fill(multiTableQueryInfo.getNetMarkIMEIs(), "NetMarkIMEI", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsManusimdataparams() != null && !multiTableQueryInfo.getGpsManusimdataparams().isEmpty()) {
+		if (multiTableQueryInfo.getGpsManusimdataparams() != null && !multiTableQueryInfo.getGpsManusimdataparams().isEmpty() && DELETE_TABLE_FLAG.equals(tables[9])) {
 			helper.getBook().createSheet("Gps_ManuSimDataParam");
 			helper.switchSheet("Gps_ManuSimDataParam");
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
@@ -872,9 +877,10 @@ public class ReportService extends SelectService{
 	 * @param sn SN号
 	 * @param zhiDan ZhiDan号
 	 * @param type 参数类型
+	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	private void batchDelete(String imei, String sn, String zhiDan, Integer type) {
+	private void batchDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable) {
 		Map<String, StringBuilder> sqlParameterMap = concatSqlParameter(imei, sn, zhiDan, type);
 		StringBuilder imeiSnZhiDan = sqlParameterMap.get("imeiSnZhiDan");
 		StringBuilder zhiDanDATA1 = sqlParameterMap.get("zhiDanDATA1");
@@ -882,27 +888,40 @@ public class ReportService extends SelectService{
 		StringBuilder zhiDanIMEI = sqlParameterMap.get("zhiDanIMEI");
 		StringBuilder zhidanIMEI = sqlParameterMap.get("zhidanIMEI");
 		StringBuilder ridIMEI = sqlParameterMap.get("ridIMEI");
+		String[] tables = deleteTable.split(",");
 		try {
-			if (!zhiDanDATA1.toString().isEmpty()) {
+			if (!zhiDanDATA1.toString().isEmpty() && DELETE_TABLE_FLAG.equals(tables[1])) {
 				Db.update(SQL.DELETE_DATARELATIVEUNIQUE_SQL_FRAGMENT + zhiDanDATA1);
 			}
-			if (!zhiDanIMEI1.toString().isEmpty()) {
+			if (!zhiDanIMEI1.toString().isEmpty() && DELETE_TABLE_FLAG.equals(tables[0])) {
 				Db.update(SQL.DELETE_DATARELATIVESHEET_SQL_FRAGMENT + zhiDanIMEI1);
 			}
 			if (!imeiSnZhiDan.toString().isEmpty()) {
-				Db.update(SQL.DELETE_AUTOTEST_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
-				Db.update(SQL.DELETE_AUTOTEST_RESULT3_SQL_FRAGMENT + imeiSnZhiDan);
-				Db.update(SQL.DELETE_COUPLE_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
-				Db.update(SQL.DELETE_TEST_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
+				if (DELETE_TABLE_FLAG.equals(tables[2])) {
+					Db.update(SQL.DELETE_AUTOTEST_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
+				}
+				if (DELETE_TABLE_FLAG.equals(tables[3])) {
+					Db.update(SQL.DELETE_AUTOTEST_RESULT3_SQL_FRAGMENT + imeiSnZhiDan);
+				}
+				if (DELETE_TABLE_FLAG.equals(tables[5])) {
+					Db.update(SQL.DELETE_COUPLE_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
+				}
+				if (DELETE_TABLE_FLAG.equals(tables[7])) {
+					Db.update(SQL.DELETE_TEST_RESULT_SQL_FRAGMENT + imeiSnZhiDan);
+				}
 			}
 			if (!zhiDanIMEI.toString().isEmpty()) {
-				Db.update(SQL.DELETE_CARTONBOX_RESULT_SQL_FRAGMENT + zhiDanIMEI);
-				Db.update(SQL.DELETE_MANUPRINT_RESULT_SQL_FRAGMENT + zhiDanIMEI);
+				if (DELETE_TABLE_FLAG.equals(tables[4])) {
+					Db.update(SQL.DELETE_CARTONBOX_RESULT_SQL_FRAGMENT + zhiDanIMEI);
+				}
+				if (DELETE_TABLE_FLAG.equals(tables[6])) {
+					Db.update(SQL.DELETE_MANUPRINT_RESULT_SQL_FRAGMENT + zhiDanIMEI);
+				}
 			}
-			if (!zhidanIMEI.toString().isEmpty()) {
+			if (!zhidanIMEI.toString().isEmpty() && DELETE_TABLE_FLAG.equals(tables[8])) {
 				Db.use("db1").update(SQL.DELETE_NETMARKIMEI_RESULT_SQL_FRAGMENT + zhidanIMEI);
 			}
-			if (!ridIMEI.toString().isEmpty()) {
+			if (!ridIMEI.toString().isEmpty() && DELETE_TABLE_FLAG.equals(tables[9])) {
 				Db.update(SQL.DELETE_MANUSIM_RESULT_SQL_FRAGMENT + ridIMEI);
 			}
 		} catch (Exception e) {
