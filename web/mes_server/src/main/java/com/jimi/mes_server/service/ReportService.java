@@ -2,6 +2,7 @@ package com.jimi.mes_server.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -567,6 +568,37 @@ public class ReportService extends SelectService{
 			throw new OperationException("备份数据失败，删除失败");
 		}
 		batchDelete(imei, sn, zhiDan, type, deleteTable);
+	}
+
+
+	public Page<Record> selectGpsCartonBoxTwentyResult(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
+		if (isReferred) {
+			return daoService.select(SQL.SELECT_DATARELATIVESHEET_AND_CARTONBOX, pageNo, pageSize, ascBy, descBy, filter);
+		}
+		return daoService.select("Gps_CartonBoxTwenty_Result", pageNo, pageSize, ascBy, descBy, filter, null);
+	}
+
+
+	public void downloadGpsCartonBoxTwentyResult(String ascBy, String descBy, String filter, Boolean isReferred, HttpServletResponse response, OutputStream output) throws Exception {
+		List<Record> records = selectGpsCartonBoxTwentyResult(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter, isReferred).getList();
+		if (records == null || records.isEmpty()) {
+			throw new OperationException("当前条件下不存在可以导出的数据");
+		}
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+		String fileName = null;
+		String[] field = null;
+		String[] head = null;
+		String title = null;
+			fileName = "Gps_CartonBoxTwenty_Result" + "_" +"DataRelativeSheet"+ simpleDateFormat.format(new Date()) + "_" + "关联表、卡通箱表相互关联的数据导出" +records.size()+ ".xls";
+			field = new String[] { "GpsCartonBoxTwentyResult_Id", "GpsCartonBoxTwentyResult_BoxNo", "GpsCartonBoxTwentyResult_IMEI", "GpsCartonBoxTwentyResult_ZhiDan", "GpsCartonBoxTwentyResult_SoftModel", "GpsCartonBoxTwentyResult_Version", "GpsCartonBoxTwentyResult_ProductCode", "GpsCartonBoxTwentyResult_Color", "GpsCartonBoxTwentyResult_Qty", "GpsCartonBoxTwentyResult_Weight", "GpsCartonBoxTwentyResult_Date", "GpsCartonBoxTwentyResult_TACInfo", "GpsCartonBoxTwentyResult_CompanyName", "GpsCartonBoxTwentyResult_TesterId", "GpsCartonBoxTwentyResult_TestTime", "GpsCartonBoxTwentyResult_Remark1", "GpsCartonBoxTwentyResult_Remark2", "GpsCartonBoxTwentyResult_Remark3", "GpsCartonBoxTwentyResult_Remark4", "GpsCartonBoxTwentyResult_Remark5", "GpsCartonBoxTwentyResult_Computer","DataRelativeSheet_SN", "DataRelativeSheet_IMEI1", "DataRelativeSheet_IMEI2", "DataRelativeSheet_IMEI3", "DataRelativeSheet_IMEI4", "DataRelativeSheet_IMEI5", "DataRelativeSheet_IMEI6", "DataRelativeSheet_IMEI7", "DataRelativeSheet_IMEI8", "DataRelativeSheet_IMEI9", "DataRelativeSheet_IMEI10", "DataRelativeSheet_IMEI11", "DataRelativeSheet_IMEI12", "DataRelativeSheet_IMEI13", "DataRelativeSheet_ZhiDan", "DataRelativeSheet_TestTime", "DataRelativeSheet_SimEffectiveDate" };
+			head = field;
+			title = "Gps_CartonBoxTwenty_Result————DataRelativeSheet";
+		response.reset();
+		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
+		response.setContentType("application/vnd.ms-excel");
+		ExcelHelper helper = ExcelHelper.create(false);
+		helper.fill(records, title, field, head);
+		helper.write(output, true);
 	}
 
 

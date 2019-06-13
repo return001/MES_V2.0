@@ -655,6 +655,42 @@ public class ReportController extends Controller {
 	}
 
 
+	/*@Access({ "SuperAdmin", "admin", "operator" })*/
+	public void selectGpsCartonBoxTwentyResult(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
+		if (isReferred == null) {
+			throw new ParameterException("isReferred不能为空");
+		}
+		ResultUtil result = ResultUtil.succeed(reportService.selectGpsCartonBoxTwentyResult(pageNo, pageSize, ascBy, descBy, filter, isReferred));
+		renderJson(result);
+	}
+	
+	
+	/*@Access({ "SuperAdmin" })*/
+	public void downloadGpsCartonBoxTwentyResult(String ascBy, String descBy, String filter, Boolean isReferred) {
+		if (isReferred == null || !isReferred) {
+			throw new ParameterException("isReferred必须为true");
+		}
+		OutputStream output = null;
+		try {
+			// 设置响应
+			HttpServletResponse response = getResponse();
+			output = response.getOutputStream();
+			reportService.downloadGpsCartonBoxTwentyResult(ascBy, descBy, filter, isReferred, response, output);
+		} catch (Exception e) {
+			renderJson(ResultUtil.failed());
+		} finally {
+			try {
+				if (output != null) {
+					output.close();
+				}
+			} catch (IOException e) {
+				renderJson(ResultUtil.failed());
+			}
+		}
+		renderNull();
+	}
+
+
 	/**
 	 * 根据模板转换时间为字符串
 	 * @param time
