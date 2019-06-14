@@ -655,18 +655,36 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 查询卡通箱表数据
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param ascBy 以哪个字段增序
+	 * @param descBy 以哪个字段降序
+	 * @param filter 查询条件
+	 * @param isReferred 是否与关联表相关联
+	 * @date 2019年6月14日 上午8:51:06
+	 */
 	/*@Access({ "SuperAdmin", "admin", "operator" })*/
-	public void selectGpsCartonBoxTwentyResult(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
+	public void selectGpsCartonBox(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null) {
 			throw new ParameterException("isReferred不能为空");
 		}
-		ResultUtil result = ResultUtil.succeed(reportService.selectGpsCartonBoxTwentyResult(pageNo, pageSize, ascBy, descBy, filter, isReferred));
+		ResultUtil result = ResultUtil.succeed(reportService.selectGpsCartonBox(pageNo, pageSize, ascBy, descBy, filter, isReferred));
 		renderJson(result);
 	}
-	
-	
+
+
+	/**@author HCJ
+	 * 下载卡通箱表和关联表相互关联的数据
+	 * @param ascBy 以哪个字段增序
+	 * @param descBy 以哪个字段降序
+	 * @param filter 查询条件
+	 * @param isReferred 是否与关联表相关联
+	 * @date 2019年6月14日 上午8:52:47
+	 */
 	/*@Access({ "SuperAdmin" })*/
-	public void downloadGpsCartonBoxTwentyResult(String ascBy, String descBy, String filter, Boolean isReferred) {
+	public void downloadGpsCartonBox(String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null || !isReferred) {
 			throw new ParameterException("isReferred必须为true");
 		}
@@ -675,7 +693,7 @@ public class ReportController extends Controller {
 			// 设置响应
 			HttpServletResponse response = getResponse();
 			output = response.getOutputStream();
-			reportService.downloadGpsCartonBoxTwentyResult(ascBy, descBy, filter, isReferred, response, output);
+			reportService.downloadGpsCartonBox(ascBy, descBy, filter, isReferred, response, output);
 		} catch (Exception e) {
 			renderJson(ResultUtil.failed());
 		} finally {

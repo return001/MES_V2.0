@@ -2,7 +2,6 @@ package com.jimi.mes_server.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -571,7 +570,17 @@ public class ReportService extends SelectService{
 	}
 
 
-	public Page<Record> selectGpsCartonBoxTwentyResult(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
+	/**@author HCJ
+	 * 查询卡通箱表数据
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param ascBy 以哪个字段增序
+	 * @param descBy 以哪个字段降序
+	 * @param filter 查询条件
+	 * @param isReferred 是否与关联表相关联
+	 * @date 2019年6月14日 上午8:51:06
+	 */
+	public Page<Record> selectGpsCartonBox(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred) {
 			return daoService.select(SQL.SELECT_DATARELATIVESHEET_AND_CARTONBOX, pageNo, pageSize, ascBy, descBy, filter);
 		}
@@ -579,8 +588,16 @@ public class ReportService extends SelectService{
 	}
 
 
-	public void downloadGpsCartonBoxTwentyResult(String ascBy, String descBy, String filter, Boolean isReferred, HttpServletResponse response, OutputStream output) throws Exception {
-		List<Record> records = selectGpsCartonBoxTwentyResult(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter, isReferred).getList();
+	/**@author HCJ
+	 * 下载卡通箱表和关联表相互关联的数据
+	 * @param ascBy 以哪个字段增序
+	 * @param descBy 以哪个字段降序
+	 * @param filter 查询条件
+	 * @param isReferred 是否与关联表相关联
+	 * @date 2019年6月14日 上午8:52:47
+	 */
+	public void downloadGpsCartonBox(String ascBy, String descBy, String filter, Boolean isReferred, HttpServletResponse response, OutputStream output) throws Exception {
+		List<Record> records = selectGpsCartonBox(1, PropKit.use("properties.ini").getInt("defaultPageSize"), ascBy, descBy, filter, isReferred).getList();
 		if (records == null || records.isEmpty()) {
 			throw new OperationException("当前条件下不存在可以导出的数据");
 		}
@@ -589,10 +606,10 @@ public class ReportService extends SelectService{
 		String[] field = null;
 		String[] head = null;
 		String title = null;
-			fileName = "Gps_CartonBoxTwenty_Result" + "_" +"DataRelativeSheet"+ simpleDateFormat.format(new Date()) + "_" + "关联表、卡通箱表相互关联的数据导出" +records.size()+ ".xls";
-			field = new String[] { "GpsCartonBoxTwentyResult_Id", "GpsCartonBoxTwentyResult_BoxNo", "GpsCartonBoxTwentyResult_IMEI", "GpsCartonBoxTwentyResult_ZhiDan", "GpsCartonBoxTwentyResult_SoftModel", "GpsCartonBoxTwentyResult_Version", "GpsCartonBoxTwentyResult_ProductCode", "GpsCartonBoxTwentyResult_Color", "GpsCartonBoxTwentyResult_Qty", "GpsCartonBoxTwentyResult_Weight", "GpsCartonBoxTwentyResult_Date", "GpsCartonBoxTwentyResult_TACInfo", "GpsCartonBoxTwentyResult_CompanyName", "GpsCartonBoxTwentyResult_TesterId", "GpsCartonBoxTwentyResult_TestTime", "GpsCartonBoxTwentyResult_Remark1", "GpsCartonBoxTwentyResult_Remark2", "GpsCartonBoxTwentyResult_Remark3", "GpsCartonBoxTwentyResult_Remark4", "GpsCartonBoxTwentyResult_Remark5", "GpsCartonBoxTwentyResult_Computer","DataRelativeSheet_SN", "DataRelativeSheet_IMEI1", "DataRelativeSheet_IMEI2", "DataRelativeSheet_IMEI3", "DataRelativeSheet_IMEI4", "DataRelativeSheet_IMEI5", "DataRelativeSheet_IMEI6", "DataRelativeSheet_IMEI7", "DataRelativeSheet_IMEI8", "DataRelativeSheet_IMEI9", "DataRelativeSheet_IMEI10", "DataRelativeSheet_IMEI11", "DataRelativeSheet_IMEI12", "DataRelativeSheet_IMEI13", "DataRelativeSheet_ZhiDan", "DataRelativeSheet_TestTime", "DataRelativeSheet_SimEffectiveDate" };
-			head = field;
-			title = "Gps_CartonBoxTwenty_Result————DataRelativeSheet";
+		fileName = "GpsCartonBoxTwentyResult_DataRelativeSheet_" + simpleDateFormat.format(new Date()) + "_关联表与卡通箱表相互关联的数据导出_" + records.size() + ".xls";
+		field = new String[] { "GpsCartonBoxTwentyResult_Id", "GpsCartonBoxTwentyResult_BoxNo", "GpsCartonBoxTwentyResult_IMEI", "GpsCartonBoxTwentyResult_ZhiDan", "GpsCartonBoxTwentyResult_SoftModel", "GpsCartonBoxTwentyResult_Version", "GpsCartonBoxTwentyResult_ProductCode", "GpsCartonBoxTwentyResult_Color", "GpsCartonBoxTwentyResult_Qty", "GpsCartonBoxTwentyResult_Weight", "GpsCartonBoxTwentyResult_Date", "GpsCartonBoxTwentyResult_TACInfo", "GpsCartonBoxTwentyResult_CompanyName", "GpsCartonBoxTwentyResult_TesterId", "GpsCartonBoxTwentyResult_TestTime", "GpsCartonBoxTwentyResult_Remark1", "GpsCartonBoxTwentyResult_Remark2", "GpsCartonBoxTwentyResult_Remark3", "GpsCartonBoxTwentyResult_Remark4", "GpsCartonBoxTwentyResult_Remark5", "GpsCartonBoxTwentyResult_Computer", "DataRelativeSheet_SN", "DataRelativeSheet_IMEI1", "DataRelativeSheet_IMEI2", "DataRelativeSheet_IMEI3", "DataRelativeSheet_IMEI4", "DataRelativeSheet_IMEI5", "DataRelativeSheet_IMEI6", "DataRelativeSheet_IMEI7", "DataRelativeSheet_IMEI8", "DataRelativeSheet_IMEI9", "DataRelativeSheet_IMEI10", "DataRelativeSheet_IMEI11", "DataRelativeSheet_IMEI12", "DataRelativeSheet_IMEI13", "DataRelativeSheet_ZhiDan", "DataRelativeSheet_TestTime", "DataRelativeSheet_SimEffectiveDate" };
+		head = field;
+		title = "Gps_CartonBoxTwenty_Result————DataRelativeSheet";
 		response.reset();
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
