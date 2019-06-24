@@ -12,40 +12,40 @@ import com.jimi.mes_server.model.GpsTestresult;
  */
 public class MacReworkInfo {
 
-	private List<GpsAutotestAntidup> gpsAutotestAntidups;
+	private List<GpsAutotestAntidup> Gps_AutoTest_AntiDup;
 
-	private List<GpsAutotestResult2> gpsAutotestResult2s;
+	private List<GpsAutotestResult2> Gps_AutoTest_Result2;
 
-	private List<GpsTestresult> gpsTestresults;
+	private List<GpsTestresult> Gps_TestResult;
 
-	public List<GpsAutotestAntidup> getGpsAutotestAntidups() {
-		return gpsAutotestAntidups;
+	public List<GpsAutotestAntidup> getGps_AutoTest_AntiDup() {
+		return Gps_AutoTest_AntiDup;
 	}
 
-	public void setGpsAutotestAntidups(List<GpsAutotestAntidup> gpsAutotestAntidups) {
-		this.gpsAutotestAntidups = gpsAutotestAntidups;
+	public void setGps_AutoTest_AntiDup(List<GpsAutotestAntidup> gps_AutoTest_AntiDup) {
+		Gps_AutoTest_AntiDup = gps_AutoTest_AntiDup;
 	}
 
-	public List<GpsAutotestResult2> getGpsAutotestResult2s() {
-		return gpsAutotestResult2s;
+	public List<GpsAutotestResult2> getGps_AutoTest_Result2() {
+		return Gps_AutoTest_Result2;
 	}
 
-	public void setGpsAutotestResult2s(List<GpsAutotestResult2> gpsAutotestResult2s) {
-		this.gpsAutotestResult2s = gpsAutotestResult2s;
+	public void setGps_AutoTest_Result2(List<GpsAutotestResult2> gps_AutoTest_Result2) {
+		Gps_AutoTest_Result2 = gps_AutoTest_Result2;
 	}
 
-	public List<GpsTestresult> getGpsTestresults() {
-		return gpsTestresults;
+	public List<GpsTestresult> getGps_TestResult() {
+		return Gps_TestResult;
 	}
 
-	public void setGpsTestresults(List<GpsTestresult> gpsTestresults) {
-		this.gpsTestresults = gpsTestresults;
+	public void setGps_TestResult(List<GpsTestresult> gps_TestResult) {
+		Gps_TestResult = gps_TestResult;
 	}
 
-	public MacReworkInfo(List<GpsAutotestAntidup> gpsAutotestAntidups, List<GpsAutotestResult2> gpsAutotestResult2s, List<GpsTestresult> gpsTestresults) {
+	public MacReworkInfo(List<GpsAutotestAntidup> gps_AutoTest_AntiDup, List<GpsAutotestResult2> gps_AutoTest_Result2, List<GpsTestresult> gps_TestResult) {
 		super();
-		this.gpsAutotestAntidups = gpsAutotestAntidups;
-		this.gpsAutotestResult2s = gpsAutotestResult2s;
-		this.gpsTestresults = gpsTestresults;
+		Gps_AutoTest_AntiDup = gps_AutoTest_AntiDup;
+		Gps_AutoTest_Result2 = gps_AutoTest_Result2;
+		Gps_TestResult = gps_TestResult;
 	}
 }

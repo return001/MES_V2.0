@@ -820,86 +820,86 @@ public class ReportService extends SelectService{
 		String[] head = null;
 		String[] tables = deleteTable.split(",");
 
-		if (multiTableQueryInfo.getDataRelativeSheets() != null && !multiTableQueryInfo.getDataRelativeSheets().isEmpty() && DELETE_TABLE_FLAG.equals(tables[0])) {
+		if (multiTableQueryInfo.getDataRelativeSheet() != null && !multiTableQueryInfo.getDataRelativeSheet().isEmpty() && DELETE_TABLE_FLAG.equals(tables[0])) {
 			helper.getBook().setSheetName(0, "DataRelativeSheet");
 			helper.switchSheet(0);
 			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
 			head = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
-			helper.fill(multiTableQueryInfo.getDataRelativeSheets(), "DataRelativeSheet", field, head);
+			helper.fill(multiTableQueryInfo.getDataRelativeSheet(), "DataRelativeSheet", field, head);
 		} else {
 			helper.getBook().removeSheetAt(0);
 		}
 
-		if (multiTableQueryInfo.getDataRelativeUniques() != null && !multiTableQueryInfo.getDataRelativeUniques().isEmpty() && DELETE_TABLE_FLAG.equals(tables[1])) {
+		if (multiTableQueryInfo.getDataRelativeUnique() != null && !multiTableQueryInfo.getDataRelativeUnique().isEmpty() && DELETE_TABLE_FLAG.equals(tables[1])) {
 			helper.getBook().createSheet("DataRelativeUnique");
 			helper.switchSheet("DataRelativeUnique");
 			field = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
 			head = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
-			helper.fill(multiTableQueryInfo.getDataRelativeUniques(), "DataRelativeUnique", field, head);
+			helper.fill(multiTableQueryInfo.getDataRelativeUnique(), "DataRelativeUnique", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsAutotestResults() != null && !multiTableQueryInfo.getGpsAutotestResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[2])) {
+		if (multiTableQueryInfo.getGps_AutoTest_Result() != null && !multiTableQueryInfo.getGps_AutoTest_Result().isEmpty() && DELETE_TABLE_FLAG.equals(tables[2])) {
 			helper.getBook().createSheet("Gps_AutoTest_Result");
 			helper.switchSheet("Gps_AutoTest_Result");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
 			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
-			helper.fill(multiTableQueryInfo.getGpsAutotestResults(), "Gps_AutoTest_Result", field, head);
+			helper.fill(multiTableQueryInfo.getGps_AutoTest_Result(), "Gps_AutoTest_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsAutotestResult3s() != null && !multiTableQueryInfo.getGpsAutotestResult3s().isEmpty() && DELETE_TABLE_FLAG.equals(tables[3])) {
+		if (multiTableQueryInfo.getGps_AutoTest_Result3() != null && !multiTableQueryInfo.getGps_AutoTest_Result3().isEmpty() && DELETE_TABLE_FLAG.equals(tables[3])) {
 			helper.getBook().createSheet("Gps_AutoTest_Result3");
 			helper.switchSheet("Gps_AutoTest_Result3");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
 			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
-			helper.fill(multiTableQueryInfo.getGpsAutotestResult3s(), "Gps_AutoTest_Result3", field, head);
+			helper.fill(multiTableQueryInfo.getGps_AutoTest_Result3(), "Gps_AutoTest_Result3", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsCartonboxtwentyResults() != null && !multiTableQueryInfo.getGpsCartonboxtwentyResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[4])) {
+		if (multiTableQueryInfo.getGps_CartonBoxTwenty_Result() != null && !multiTableQueryInfo.getGps_CartonBoxTwenty_Result().isEmpty() && DELETE_TABLE_FLAG.equals(tables[4])) {
 			helper.getBook().createSheet("Gps_CartonBoxTwenty_Result");
 			helper.switchSheet("Gps_CartonBoxTwenty_Result");
 			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
 			head = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
-			helper.fill(multiTableQueryInfo.getGpsCartonboxtwentyResults(), "Gps_CartonBoxTwenty_Result", field, head);
+			helper.fill(multiTableQueryInfo.getGps_CartonBoxTwenty_Result(), "Gps_CartonBoxTwenty_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsCoupletestResults() != null && !multiTableQueryInfo.getGpsCoupletestResults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[5])) {
+		if (multiTableQueryInfo.getGps_CoupleTest_Result() != null && !multiTableQueryInfo.getGps_CoupleTest_Result().isEmpty() && DELETE_TABLE_FLAG.equals(tables[5])) {
 			helper.getBook().createSheet("Gps_CoupleTest_Result");
 			helper.switchSheet("Gps_CoupleTest_Result");
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
 			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
-			helper.fill(multiTableQueryInfo.getGpsCoupletestResults(), "Gps_CoupleTest_Result", field, head);
+			helper.fill(multiTableQueryInfo.getGps_CoupleTest_Result(), "Gps_CoupleTest_Result", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsManuprintparams() != null && !multiTableQueryInfo.getGpsManuprintparams().isEmpty() && DELETE_TABLE_FLAG.equals(tables[6])) {
+		if (multiTableQueryInfo.getGps_ManuPrintParam() != null && !multiTableQueryInfo.getGps_ManuPrintParam().isEmpty() && DELETE_TABLE_FLAG.equals(tables[6])) {
 			helper.getBook().createSheet("Gps_ManuPrintParam");
 			helper.switchSheet("Gps_ManuPrintParam");
 			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
 			head = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
-			helper.fill(multiTableQueryInfo.getGpsManuprintparams(), "Gps_ManuPrintParam", field, head);
+			helper.fill(multiTableQueryInfo.getGps_ManuPrintParam(), "Gps_ManuPrintParam", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsTestresults() != null && !multiTableQueryInfo.getGpsTestresults().isEmpty() && DELETE_TABLE_FLAG.equals(tables[7])) {
+		if (multiTableQueryInfo.getGps_TestResult() != null && !multiTableQueryInfo.getGps_TestResult().isEmpty() && DELETE_TABLE_FLAG.equals(tables[7])) {
 			helper.getBook().createSheet("Gps_TestResult");
 			helper.switchSheet("Gps_TestResult");
 			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
 			head = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
-			helper.fill(multiTableQueryInfo.getGpsTestresults(), "Gps_TestResult", field, head);
+			helper.fill(multiTableQueryInfo.getGps_TestResult(), "Gps_TestResult", field, head);
 		}
 
-		if (multiTableQueryInfo.getNetMarkIMEIs() != null && !multiTableQueryInfo.getNetMarkIMEIs().isEmpty() && DELETE_TABLE_FLAG.equals(tables[8])) {
+		if (multiTableQueryInfo.getNetMarkIMEI() != null && !multiTableQueryInfo.getNetMarkIMEI().isEmpty() && DELETE_TABLE_FLAG.equals(tables[8])) {
 			helper.getBook().createSheet("NetMarkIMEI");
 			helper.switchSheet("NetMarkIMEI");
 			field = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN", "JS_PrintTime", "JS_TemPlate", "NMTime", "RFID", "RePrintEndTime", "RePrintFirstTime", "RePrintNum", "Zhidan" };
 			head = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN", "JS_PrintTime", "JS_TemPlate", "NMTime", "RFID", "RePrintEndTime", "RePrintFirstTime", "RePrintNum", "Zhidan" };
-			helper.fill(multiTableQueryInfo.getNetMarkIMEIs(), "NetMarkIMEI", field, head);
+			helper.fill(multiTableQueryInfo.getNetMarkIMEI(), "NetMarkIMEI", field, head);
 		}
 
-		if (multiTableQueryInfo.getGpsManusimdataparams() != null && !multiTableQueryInfo.getGpsManusimdataparams().isEmpty() && DELETE_TABLE_FLAG.equals(tables[9])) {
+		if (multiTableQueryInfo.getGps_ManuSimDataParam() != null && !multiTableQueryInfo.getGps_ManuSimDataParam().isEmpty() && DELETE_TABLE_FLAG.equals(tables[9])) {
 			helper.getBook().createSheet("Gps_ManuSimDataParam");
 			helper.switchSheet("Gps_ManuSimDataParam");
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
 			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
-			helper.fill(multiTableQueryInfo.getGpsManusimdataparams(), "Gps_ManuSimDataParam", field, head);
+			helper.fill(multiTableQueryInfo.getGps_ManuSimDataParam(), "Gps_ManuSimDataParam", field, head);
 		}
 
 		try {

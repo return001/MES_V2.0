@@ -10,128 +10,128 @@ import com.jfinal.plugin.activerecord.Record;
  */
 public class MultiTableQueryInfo {
 
-	private List<Record> dataRelativeSheets;
+	private List<Record> DataRelativeSheet;
 
-	private List<Record> dataRelativeUniques;
+	private List<Record> DataRelativeUnique;
 
-	private List<Record> gpsAutotestResults;
+	private List<Record> Gps_AutoTest_Result;
 
-	private List<Record> gpsAutotestResult3s;
+	private List<Record> Gps_AutoTest_Result3;
 
-	private List<Record> gpsCartonboxtwentyResults;
+	private List<Record> Gps_CartonBoxTwenty_Result;
 
-	private List<Record> gpsCoupletestResults;
+	private List<Record> Gps_CoupleTest_Result;
 
-	private List<Record> gpsManucpparams;
+	private List<Record> Gps_ManuCpParam;
 
-	private List<Record> gpsManuprintparams;
+	private List<Record> Gps_ManuPrintParam;
 
-	private List<Record> gpsTestresults;
+	private List<Record> Gps_TestResult;
 
-	private List<Record> netMarkIMEIs;
+	private List<Record> NetMarkIMEI;
 
-	private List<Record> gpsManusimdataparams;
+	private List<Record> Gps_ManuSimDataParam;
 
-	public List<Record> getDataRelativeSheets() {
-		return dataRelativeSheets;
+	public List<Record> getDataRelativeSheet() {
+		return DataRelativeSheet;
 	}
 
-	public void setDataRelativeSheets(List<Record> dataRelativeSheets) {
-		this.dataRelativeSheets = dataRelativeSheets;
+	public void setDataRelativeSheet(List<Record> dataRelativeSheet) {
+		DataRelativeSheet = dataRelativeSheet;
 	}
 
-	public List<Record> getGpsAutotestResults() {
-		return gpsAutotestResults;
+	public List<Record> getDataRelativeUnique() {
+		return DataRelativeUnique;
 	}
 
-	public void setGpsAutotestResults(List<Record> gpsAutotestResults) {
-		this.gpsAutotestResults = gpsAutotestResults;
+	public void setDataRelativeUnique(List<Record> dataRelativeUnique) {
+		DataRelativeUnique = dataRelativeUnique;
 	}
 
-	public List<Record> getGpsAutotestResult3s() {
-		return gpsAutotestResult3s;
+	public List<Record> getGps_AutoTest_Result() {
+		return Gps_AutoTest_Result;
 	}
 
-	public void setGpsAutotestResult3s(List<Record> gpsAutotestResult3s) {
-		this.gpsAutotestResult3s = gpsAutotestResult3s;
+	public void setGps_AutoTest_Result(List<Record> gps_AutoTest_Result) {
+		Gps_AutoTest_Result = gps_AutoTest_Result;
 	}
 
-	public List<Record> getGpsCartonboxtwentyResults() {
-		return gpsCartonboxtwentyResults;
+	public List<Record> getGps_AutoTest_Result3() {
+		return Gps_AutoTest_Result3;
 	}
 
-	public void setGpsCartonboxtwentyResults(List<Record> gpsCartonboxtwentyResults) {
-		this.gpsCartonboxtwentyResults = gpsCartonboxtwentyResults;
+	public void setGps_AutoTest_Result3(List<Record> gps_AutoTest_Result3) {
+		Gps_AutoTest_Result3 = gps_AutoTest_Result3;
 	}
 
-	public List<Record> getGpsCoupletestResults() {
-		return gpsCoupletestResults;
+	public List<Record> getGps_CartonBoxTwenty_Result() {
+		return Gps_CartonBoxTwenty_Result;
 	}
 
-	public void setGpsCoupletestResults(List<Record> gpsCoupletestResults) {
-		this.gpsCoupletestResults = gpsCoupletestResults;
+	public void setGps_CartonBoxTwenty_Result(List<Record> gps_CartonBoxTwenty_Result) {
+		Gps_CartonBoxTwenty_Result = gps_CartonBoxTwenty_Result;
 	}
 
-	public List<Record> getGpsManucpparams() {
-		return gpsManucpparams;
+	public List<Record> getGps_CoupleTest_Result() {
+		return Gps_CoupleTest_Result;
 	}
 
-	public void setGpsManucpparams(List<Record> gpsManucpparams) {
-		this.gpsManucpparams = gpsManucpparams;
+	public void setGps_CoupleTest_Result(List<Record> gps_CoupleTest_Result) {
+		Gps_CoupleTest_Result = gps_CoupleTest_Result;
 	}
 
-	public List<Record> getGpsManuprintparams() {
-		return gpsManuprintparams;
+	public List<Record> getGps_ManuCpParam() {
+		return Gps_ManuCpParam;
 	}
 
-	public void setGpsManuprintparams(List<Record> gpsManuprintparams) {
-		this.gpsManuprintparams = gpsManuprintparams;
+	public void setGps_ManuCpParam(List<Record> gps_ManuCpParam) {
+		Gps_ManuCpParam = gps_ManuCpParam;
 	}
 
-	public List<Record> getGpsTestresults() {
-		return gpsTestresults;
+	public List<Record> getGps_ManuPrintParam() {
+		return Gps_ManuPrintParam;
 	}
 
-	public void setGpsTestresults(List<Record> gpsTestresults) {
-		this.gpsTestresults = gpsTestresults;
+	public void setGps_ManuPrintParam(List<Record> gps_ManuPrintParam) {
+		Gps_ManuPrintParam = gps_ManuPrintParam;
 	}
 
-	public List<Record> getNetMarkIMEIs() {
-		return netMarkIMEIs;
+	public List<Record> getGps_TestResult() {
+		return Gps_TestResult;
 	}
 
-	public void setNetMarkIMEIs(List<Record> netMarkIMEIs) {
-		this.netMarkIMEIs = netMarkIMEIs;
+	public void setGps_TestResult(List<Record> gps_TestResult) {
+		Gps_TestResult = gps_TestResult;
 	}
 
-	public List<Record> getGpsManusimdataparams() {
-		return gpsManusimdataparams;
+	public List<Record> getNetMarkIMEI() {
+		return NetMarkIMEI;
 	}
 
-	public void setGpsManusimdataparams(List<Record> gpsManusimdataparams) {
-		this.gpsManusimdataparams = gpsManusimdataparams;
+	public void setNetMarkIMEI(List<Record> netMarkIMEI) {
+		NetMarkIMEI = netMarkIMEI;
 	}
 
-	public List<Record> getDataRelativeUniques() {
-		return dataRelativeUniques;
+	public List<Record> getGps_ManuSimDataParam() {
+		return Gps_ManuSimDataParam;
 	}
 
-	public void setDataRelativeUniques(List<Record> dataRelativeUniques) {
-		this.dataRelativeUniques = dataRelativeUniques;
+	public void setGps_ManuSimDataParam(List<Record> gps_ManuSimDataParam) {
+		Gps_ManuSimDataParam = gps_ManuSimDataParam;
 	}
 
-	public MultiTableQueryInfo(List<Record> dataRelativeSheets, List<Record> dataRelativeUniques, List<Record> gpsAutotestResults, List<Record> gpsAutotestResult3s, List<Record> gpsCartonboxtwentyResults, List<Record> gpsCoupletestResults, List<Record> gpsManucpparams, List<Record> gpsManuprintparams, List<Record> gpsTestresults, List<Record> netMarkIMEIs, List<Record> gpsManusimdataparams) {
+	public MultiTableQueryInfo(List<Record> dataRelativeSheet, List<Record> dataRelativeUnique, List<Record> gps_AutoTest_Result, List<Record> gps_AutoTest_Result3, List<Record> gps_CartonBoxTwenty_Result, List<Record> gps_CoupleTest_Result, List<Record> gps_ManuCpParam, List<Record> gps_ManuPrintParam, List<Record> gps_TestResult, List<Record> netMarkIMEI, List<Record> gps_ManuSimDataParam) {
 		super();
-		this.dataRelativeSheets = dataRelativeSheets;
-		this.dataRelativeUniques = dataRelativeUniques;
-		this.gpsAutotestResults = gpsAutotestResults;
-		this.gpsAutotestResult3s = gpsAutotestResult3s;
-		this.gpsCartonboxtwentyResults = gpsCartonboxtwentyResults;
-		this.gpsCoupletestResults = gpsCoupletestResults;
-		this.gpsManucpparams = gpsManucpparams;
-		this.gpsManuprintparams = gpsManuprintparams;
-		this.gpsTestresults = gpsTestresults;
-		this.netMarkIMEIs = netMarkIMEIs;
-		this.gpsManusimdataparams = gpsManusimdataparams;
+		DataRelativeSheet = dataRelativeSheet;
+		DataRelativeUnique = dataRelativeUnique;
+		Gps_AutoTest_Result = gps_AutoTest_Result;
+		Gps_AutoTest_Result3 = gps_AutoTest_Result3;
+		Gps_CartonBoxTwenty_Result = gps_CartonBoxTwenty_Result;
+		Gps_CoupleTest_Result = gps_CoupleTest_Result;
+		Gps_ManuCpParam = gps_ManuCpParam;
+		Gps_ManuPrintParam = gps_ManuPrintParam;
+		Gps_TestResult = gps_TestResult;
+		NetMarkIMEI = netMarkIMEI;
+		Gps_ManuSimDataParam = gps_ManuSimDataParam;
 	}
 }
