@@ -709,6 +709,37 @@ public class ReportController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 将多表查询的结果导出为Excel文件
+	 * @param imei IMEI号
+	 * @param sn SN号
+	 * @param zhiDan ZhiDan号
+	 * @param type 参数类型
+	 * @date 2019年6月25日 下午3:25:43
+	 */
+	/*@Access({ "SuperAdmin" })*/
+	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type) {
+		OutputStream output = null;
+		try {
+			// 设置响应
+			HttpServletResponse response = getResponse();
+			output = response.getOutputStream();
+			reportService.downloadMultiTable(imei, sn, zhiDan, type, response, output);
+		} catch (Exception e) {
+			renderJson(ResultUtil.failed());
+		} finally {
+			try {
+				if (output != null) {
+					output.close();
+				}
+			} catch (IOException e) {
+				renderJson(ResultUtil.failed());
+			}
+		}
+		renderNull();
+	}
+
+
 	/**
 	 * 根据模板转换时间为字符串
 	 * @param time
