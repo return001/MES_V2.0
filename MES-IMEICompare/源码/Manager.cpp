@@ -6,7 +6,7 @@
 #include "MFCP2CPDlg.h"
 #include "Manager.h"
 #include "afxdialogex.h"
-
+#include "ADOManage.h"
 
 // CManager 对话框
 
@@ -43,7 +43,7 @@ BOOL CManager::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 
 	//初始化配置模块
-	SetDlgItemText(IDC_PASSWORD_STATIC, L"请输入密码:");
+	SetDlgItemText(IDC_PASSWORD_STATIC, L"密码:");
 	SetDlgItemText(IDOK, L"确定");
 	SetDlgItemText(IDCANCEL, L"取消");
 
@@ -54,16 +54,37 @@ BOOL CManager::OnInitDialog()
 
 void CManager::OnBnClickedOk()
 {
-	CString password;
+	ADOManage adomanageCheckUser;
+	CString name,password,ChcekResult;
+	GetDlgItemText(IDC_USERNAME_EDIT, name);
 	GetDlgItemText(IDC_MANAGERPASSWORD_EDIT, password);
-
-	if (password != L"jimi")
+	
+	if (name == "" || password == "")
 	{
-		MessageBox(L"密码错误！", L"提示信息", NULL);
+		MessageBox(L"账号或密码不能为空！", L"提示信息", NULL);
+		return;
+	}
+	adomanageCheckUser.ConnSQL();
+	ChcekResult = adomanageCheckUser.CheckUserAuthority(name, password);
+	adomanageCheckUser.CloseAll();
+	if (ChcekResult == L"CheckFail")
+	{
+		MessageBox(L"账号或密码错误！", L"提示信息", NULL);
+		return;
+	}
+	else if (ChcekResult.Find(g_UserTypeNeed) != -1)
+	{
+		g_UserNameStr = name;
+		g_CheckUserType = ChcekResult; 
+		CDialogEx::OnOK();
+	}
+	else
+	{
+		MessageBox(L"当前账号没有权限！", L"提示信息", NULL);
 		return;
 	}
 
-	CDialogEx::OnOK();
+
 	// TODO:  在此添加控件通知处理程序代码
 
 }

@@ -27,7 +27,7 @@
 map<int, CString>CMFCP2CPDlg::SyllableMap;
 map<int, CString>CMFCP2CPDlg::BindMap;
 BOOL Imei3Flag;
-
+ADOManage adomanage;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 
@@ -80,16 +80,10 @@ CMFCP2CPDlg::CMFCP2CPDlg(CWnd* pParent /*=NULL*/)
 	, strimeiend(L"")
 	, LockFlag(FALSE)
 	, m_imei3Edit(_T(""))
+	, m_SinglePCScanRadioValue(0)
+	, m_MutiPC1RadioValue(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	notypename[0] = L"IMEI";
-	notypename[1] = L"SN";
-	notypename[2] = L"SIM";
-	notypename[3] = L"VIP";
-	notypename[4] = L"ICCID";
-	notypename[5] = L"BAT";
-	notypename[6] = L"MAC";
-	notypename[7] = L"Equipment";
 	SyllablestrSql = L"";
 }
 
@@ -125,6 +119,14 @@ void CMFCP2CPDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_OPENIMEI3EDIT_CHECK, m_OpenImei3EditCheck);
 	DDX_Control(pDX, IDC_RFIDBIND_CHECK, m_rfidBindCheck);
 	DDX_Control(pDX, IDC_RFIDSYLLABLE_CHECK, m_rfidSyllableCheck);
+	DDX_Control(pDX, IDC_SinglePCScan_RADIO, m_SinglePCScanRadioControl);
+	DDX_Control(pDX, IDC_MutiPCScan_RADIO, m_MutiPCScanRadioControl);
+	DDX_Radio(pDX, IDC_SinglePCScan_RADIO, m_SinglePCScanRadioValue);
+	DDX_Control(pDX, IDC_MutiPC1_RADIO, m_MutiPC1RadioControl);
+	DDX_Control(pDX, IDC_MutiPC2_RADIO, m_MutiPC2RadioControl);
+	DDX_Radio(pDX, IDC_MutiPC1_RADIO, m_MutiPC1RadioValue);
+	DDX_Control(pDX, IDC_IMEI2SYLLABLE_CHECK, m_imei2SyllableCheck);
+	DDX_Control(pDX, IDC_IMEI2BIND_CHECK, m_imei2BindCheck);
 }
 
 BEGIN_MESSAGE_MAP(CMFCP2CPDlg, CDialogEx)
@@ -172,6 +174,12 @@ BEGIN_MESSAGE_MAP(CMFCP2CPDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_RFIDSYLLABLE_CHECK, &CMFCP2CPDlg::OnBnClickedRfidsyllableCheck)
 	ON_BN_CLICKED(IDC_RFIDBIND_CHECK, &CMFCP2CPDlg::OnBnClickedRfidbindCheck)
 	ON_EN_SETFOCUS(IDC_IMEI1_EDIT, &CMFCP2CPDlg::OnEnSetfocusImei1Edit)
+	ON_BN_CLICKED(IDC_SinglePCScan_RADIO, &CMFCP2CPDlg::OnBnClickedSinglepcscanRadio)
+	ON_BN_CLICKED(IDC_MutiPCScan_RADIO, &CMFCP2CPDlg::OnBnClickedSinglepcscanRadio)
+	ON_BN_CLICKED(IDC_MutiPC1_RADIO, &CMFCP2CPDlg::OnBnClickedMutipc1Radio)
+	ON_BN_CLICKED(IDC_MutiPC2_RADIO, &CMFCP2CPDlg::OnBnClickedMutipc1Radio)
+	ON_BN_CLICKED(IDC_IMEI2BIND_CHECK, &CMFCP2CPDlg::OnBnClickedImei2bindCheck)
+	ON_BN_CLICKED(IDC_IMEI2SYLLABLE_CHECK, &CMFCP2CPDlg::OnBnClickedImei2syllableCheck)
 END_MESSAGE_MAP()
 
 
@@ -235,6 +243,25 @@ BOOL CMFCP2CPDlg::OnInitDialog()
 	//默认IMEI一定为选中
 	m_imeiSyllableCheck.SetCheck(BST_CHECKED);
 	OnBnClickedImeisyllableCheck();
+	ScanType = "Single";
+
+	//判断账号权限
+	//g_UserTypeNeed = "";
+	//INT_PTR nRes;
+	//CManager *manager = new CManager;
+	//nRes = manager->DoModal();
+
+	//if (IDCANCEL == nRes)
+	//{
+	//	DestroyWindow();
+	//	return FALSE;
+	//}
+	//else if (IDOK == nRes)
+	//{
+
+	//}
+	SetDlgItemText(IDC_EmployeeID_EDIT, L"未登录");
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -294,7 +321,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 	CString str1 = L"", str2 = L"", str3 = L"";//分别装载IMEI1扫描框，IMEI2扫描框，IMEI3扫描框的字符串
 	int mm;
 	int resultflag1, resultflag2, resultflag3;//分别装载IMEI1扫描框，IMEI2扫描框，IMEI3扫描框的一些查询结果，根据这些结果来判定成功与否
-	ADOManage adomanage;
+	CString CHResultStr = L"1";//不判断彩盒贴标志位，1代表有判断，0代表不判断
 
 	//如果为空就不要继续往下面执行了
 	if (Imei3Flag == TRUE)
@@ -327,6 +354,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 			//下面这里是勾选不判断彩盒贴工位做的事情
 			if (chjudgeflag == 1)
 			{
+				CHResultStr = "0";
 				if (pMsg->hwnd == GetDlgItem(IDC_IMEI3_EDIT)->GetSafeHwnd())
 				{
 					GetDlgItemText(IDC_IMEI3_EDIT, str3);
@@ -335,10 +363,8 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 					//如果带有非法字符则直接提示号码错误
 					if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 
@@ -355,10 +381,8 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 					//如果带有非法字符则直接提示号码错误
 					if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 
@@ -379,28 +403,22 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						mm = IsNumber(str1);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str2);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str3);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 
@@ -411,21 +429,11 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 
 							if (adomanage.JudgeZhidan(str1, strzhidan))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"制单号错误", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"制单号错误");
-								SetEditEmpty();//清空编辑框
-								GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"不存在此IMEI号", IDC_IMEI3_EDIT, CHResultStr);
 								return CDialogEx::PreTranslateMessage(pMsg);
 							}
 
-							PlaySound(L"通过.wav", NULL, SND_FILENAME | SND_ASYNC);
-							adomanage.InsertCorrectImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"NULL", L"1");
-							SetDlgItemText(IDC_HINT_STATIC, L"通过");
-							adomanage.CloseAll();
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							UsualResultGatherFun(str1, str2, str3, L"通过.wav", L"1", L"通过", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						//不等就上传失败数据
@@ -435,20 +443,12 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 							//三个号码都在范围内，那错误肯定就是号码不匹配
 							if (judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend) && judgeimeirang(str3, strimeistart, strimeiend))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"IMEI号不匹配", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"失败");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"IMEI号不匹配", IDC_IMEI3_EDIT, CHResultStr);
 							}
 							else
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"号段在范围外", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"号段在范围外");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段在范围外", IDC_IMEI3_EDIT, CHResultStr);
 							}
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -462,19 +462,15 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						mm = IsNumber(str1);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str2);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 
@@ -485,21 +481,11 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 
 							if (adomanage.JudgeZhidan(str1, strzhidan))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"制单号错误", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"制单号错误");
-								SetEditEmpty();//清空编辑框
-								GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"不存在此IMEI号", IDC_IMEI1_EDIT, CHResultStr);
 								return CDialogEx::PreTranslateMessage(pMsg);
 							}
 
-							PlaySound(L"通过.wav", NULL, SND_FILENAME | SND_ASYNC);
-							adomanage.InsertCorrectImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"NULL", L"1");
-							SetDlgItemText(IDC_HINT_STATIC, L"通过");
-							adomanage.CloseAll();
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							UsualResultGatherFun(str1, str2, str3, L"通过.wav", L"1", L"通过", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						//不等就上传失败数据
@@ -508,20 +494,12 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 							adomanage.ConnSQL();
 							if (judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"IMEI号不匹配", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"失败");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"IMEI号不匹配", IDC_IMEI1_EDIT, CHResultStr);
 							}
 							else
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, L"IMEI", L"号段在范围外", L"0");
-								adomanage.CloseAll();
-								SetDlgItemText(IDC_HINT_STATIC, L"号段在范围外");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段在范围外", IDC_IMEI1_EDIT, CHResultStr);
 							}
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -530,17 +508,17 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 
 
 			//下面这里是没勾选不判断彩盒贴工位做的事情
-
+			CHResultStr = "1";
 			//假设勾选了第三个IMEI框
 			if (pMsg->hwnd == GetDlgItem(IDC_IMEI3_EDIT)->GetSafeHwnd())
 			{
 				adomanage.ConnSQL();//连接数据库
 
-				//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前已经没用了
+				//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前为字段选择的总数
 				if (notype > 0)
 				{
 					GetDlgItemText(IDC_IMEI3_EDIT, strno3);
-					resultflag3 = adomanage.CpImeiByNo(SyllablestrSql, notypename[notype], strno3, strzhidan);//根据用户输入的数据去找IMEI
+					resultflag3 = adomanage.CpImeiByNo(SyllablestrSql, strno3, strzhidan);//根据用户输入的数据去找IMEI
 
 					//返回2代表成功找到
 					if (resultflag3 == 2)
@@ -559,10 +537,8 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 				//如果带有非法字符则直接提示号码错误
 				if (mm == FALSE)
 				{
-					PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-					SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-					SetEditEmpty();//清空编辑框
-					GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+					//无需上传数据库
+					UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 					return CDialogEx::PreTranslateMessage(pMsg);
 				}
 
@@ -577,11 +553,11 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 				{
 					adomanage.ConnSQL();//连接数据库
 
-					//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前已经没用了
+					//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前为字段选择的总数
 					if (notype > 0)
 					{
 						GetDlgItemText(IDC_IMEI1_EDIT, strno1);
-						resultflag1 = adomanage.CpImeiByNo(SyllablestrSql, notypename[notype], strno1, strzhidan);//根据用户输入的数据去找IMEI
+						resultflag1 = adomanage.CpImeiByNo(SyllablestrSql, strno1, strzhidan);//根据用户输入的数据去找IMEI
 
 						//返回2代表成功找到
 						if (resultflag1 == 2)
@@ -600,10 +576,8 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 					//如果带有非法字符则直接提示号码错误
 					if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 
@@ -620,7 +594,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						GetDlgItemText(IDC_IMEI2_EDIT, strno2);
 
 						//根据输入的数据去查找IMEI，返回0代表不存在此号段，返回1代表不存在IMEI，返回2代表成功，返回3代表这个是个IMEI号，直接继续往下执行了
-						resultflag2 = adomanage.CpImeiByNo(SyllablestrSql, notypename[notype], strno2, strzhidan);
+						resultflag2 = adomanage.CpImeiByNo(SyllablestrSql, strno2, strzhidan);
 						if (resultflag2 == 2)
 						{
 							str2 = adomanage.m_pRecordSet->GetCollect("IMEI");
@@ -629,12 +603,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						//else if (resultflag2 == 0 || resultflag2 == 1)
 						else if (resultflag2 == 0)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-							adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
-							adomanage.CloseAll();
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段不存在或错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -647,28 +616,22 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						mm = IsNumber(str1);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							      GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str2);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							      GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str3);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -678,109 +641,34 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 
 					if (mm == TRUE&&resultflag1 == 1)
 					{
+						//判断三个值是否相等而且是否都在订单范围内，不是的话就直接失败
 						if (str1 == str2&&str2 == str3&&judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend) && judgeimeirang(str3, strimeistart, strimeiend))
 						{
-							resultflag2 = adomanage.CpCaiheByImei(str2, strzhidan);
-
-							//根据返回值来提示错误
-							switch (resultflag2)
-							{
-							case 1:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3,strno1, strno2, strpcip, notypename[notype], L"漏打彩盒贴", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"漏打彩盒贴");
-								break;
-							case 2:
-								PlaySound(L"通过.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertCorrectImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"NULL", L"1");
-								SetDlgItemText(IDC_HINT_STATIC, L"通过");
-								break;
-							case 3:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"制单号错误", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"制单号错误");
-								break;
-							case d_SimBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"SIM号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"SIM号缺绑定");
-								break;
-							case d_VipBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"VIP号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"VIP号缺绑定");
-								break;
-							case d_IccidBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"ICCID号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"ICCID号缺绑定");
-								break;
-							case d_BatBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"BAT号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"BAT号缺绑定");
-								break;
-							case d_MacBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"MAC号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"MAC号缺绑定");
-								break;
-							case d_EquipmentBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"设备号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"设备号缺绑定");
-								break;
-							case d_RfidBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"RFID缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"RFID缺绑定");
-								break;
-							default:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-								break;
-							}
-
-							adomanage.CloseAll();
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+							InsertCorrectOrFailResultGatherFun(str1, str2, str3, IDC_IMEI3_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						else
 						{
 							if (judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend) && judgeimeirang(str3, strimeistart, strimeiend))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3,strno1, strno2, strpcip, notypename[notype], L"IMEI号不匹配", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"失败");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"IMEI号不匹配", IDC_IMEI3_EDIT, CHResultStr);
 							}
 							else
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3,strno1, strno2, strpcip, notypename[notype], L"号段在范围外", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"号段在范围外");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段在范围外", IDC_IMEI3_EDIT, CHResultStr);
 							}
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
 					else if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						      GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI3_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 					else
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-						SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段不存在或错误", IDC_IMEI3_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 				}
@@ -792,11 +680,11 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 				{
 					adomanage.ConnSQL();//连接数据库
 
-					//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前已经没用了
+					//当用户选择的不是IMEI的时候才需要根据用户输入的数据去将它对应的IMEI找出来，因为改了需求，所以notype目前为字段选择的总数
 					if (notype > 0)
 					{
 						GetDlgItemText(IDC_IMEI1_EDIT, strno1);
-						resultflag1 = adomanage.CpImeiByNo(SyllablestrSql, notypename[notype], strno1, strzhidan);//根据用户输入的数据去找IMEI
+						resultflag1 = adomanage.CpImeiByNo(SyllablestrSql, strno1, strzhidan);//根据用户输入的数据去找IMEI
 
 						//返回2代表成功找到
 						if (resultflag1 == 2)
@@ -815,10 +703,8 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 					//如果带有非法字符则直接提示号码错误
 					if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 
@@ -834,7 +720,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						GetDlgItemText(IDC_IMEI2_EDIT, strno2);
 
 						//根据输入的数据去查找IMEI，返回0代表不存在此号段，返回1代表不存在IMEI，返回2代表成功，返回3代表这个是个IMEI号，直接继续往下执行了
-						resultflag2 = adomanage.CpImeiByNo(SyllablestrSql, notypename[notype], strno2, strzhidan);
+						resultflag2 = adomanage.CpImeiByNo(SyllablestrSql, strno2, strzhidan);
 						if (resultflag2 == 2)
 						{
 							str2 = adomanage.m_pRecordSet->GetCollect("IMEI");
@@ -843,12 +729,7 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						//else if (resultflag2 == 0 || resultflag2 == 1)
 						else if (resultflag2 == 0)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-							adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
-							adomanage.CloseAll();
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段不存在或错误", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -861,19 +742,15 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 						mm = IsNumber(str1);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						mm = IsNumber(str2);
 						if (mm == FALSE)
 						{
-							PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-							SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							//无需上传数据库
+							UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
@@ -883,109 +760,34 @@ BOOL CMFCP2CPDlg::PreTranslateMessage(MSG* pMsg)
 
 					if (mm == TRUE&&resultflag1 == 1)
 					{
+						//判断两个值是否相等，不是的话直接报失败
 						if (str1 == str2&&judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend))
 						{
-							resultflag2 = adomanage.CpCaiheByImei(str2, strzhidan);
-
-							//根据返回值来提示错误
-							switch (resultflag2)
-							{
-							case 1:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"漏打彩盒贴", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"漏打彩盒贴");
-								break;
-							case 2:
-								PlaySound(L"通过.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertCorrectImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"NULL", L"1");
-								SetDlgItemText(IDC_HINT_STATIC, L"通过");
-								break;
-							case 3:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"制单号错误", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"制单号错误");
-								break;
-							case d_SimBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"SIM号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"SIM号缺绑定");
-								break;
-							case d_VipBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"VIP号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"VIP号缺绑定");
-								break;
-							case d_IccidBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"ICCID号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"ICCID号缺绑定");
-								break;
-							case d_BatBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"BAT号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"BAT号缺绑定");
-								break;
-							case d_MacBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"MAC号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"MAC号缺绑定");
-								break;
-							case d_EquipmentBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"设备号缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"设备号缺绑定");
-								break;
-							case d_RfidBindCheck:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"RFID缺绑定", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"RFID缺绑定");
-								break;
-							default:
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-								break;
-							}
-
-							adomanage.CloseAll();
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+							InsertCorrectOrFailResultGatherFun(str1, str2, str3, IDC_IMEI1_EDIT, CHResultStr);
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 						else
 						{
 							if (judgeimeirang(str2, strimeistart, strimeiend) && judgeimeirang(str1, strimeistart, strimeiend))
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"IMEI号不匹配", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"失败");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"IMEI号不匹配", IDC_IMEI1_EDIT, CHResultStr);
 							}
 							else
 							{
-								PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-								adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"号段在范围外", L"0");
-								SetDlgItemText(IDC_HINT_STATIC, L"号段在范围外");
+								UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段在范围外", IDC_IMEI1_EDIT, CHResultStr);
 							}
-							SetEditEmpty();//清空编辑框
-							GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
 							return CDialogEx::PreTranslateMessage(pMsg);
 						}
 					}
 					else if (mm == FALSE)
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						SetDlgItemText(IDC_HINT_STATIC, L"号码错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+						//无需上传数据库
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"2", L"号码错误", IDC_IMEI1_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 					else
 					{
-						PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
-						adomanage.InsertWrongImei(strzhidan, str1, str2, str3, strno1, strno2, strpcip, notypename[notype], L"所输号段不存在或错误", L"0");
-						SetDlgItemText(IDC_HINT_STATIC, L"号段不存在或错误");
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+						UsualResultGatherFun(str1, str2, str3, L"失败_对比失败.wav", L"0", L"号段不存在或错误", IDC_IMEI1_EDIT, CHResultStr);
 						return CDialogEx::PreTranslateMessage(pMsg);
 					}
 				}
@@ -1099,6 +901,8 @@ void CMFCP2CPDlg::CleanImei3Check()
 {
 	m_OpenImei3EditCheck.SetCheck(0);
 	OnBnClickedOpenimei3editCheck();
+	m_SinglePCScanRadioValue = 0;
+	UpdateData(FALSE);
 }
 
 
@@ -1106,7 +910,6 @@ void CMFCP2CPDlg::CleanImei3Check()
 void CMFCP2CPDlg::OnBnClickedImeiRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 0;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI");
 	SetEditEmpty();//清空编辑框
@@ -1117,7 +920,6 @@ void CMFCP2CPDlg::OnBnClickedImeiRadio()
 void CMFCP2CPDlg::OnBnClickedSnRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 1;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/SN");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/SN");
 	SetEditEmpty();//清空编辑框
@@ -1128,7 +930,6 @@ void CMFCP2CPDlg::OnBnClickedSnRadio()
 void CMFCP2CPDlg::OnBnClickedSimRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 2;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/SIM");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/SIM");
 	SetEditEmpty();//清空编辑框
@@ -1139,7 +940,6 @@ void CMFCP2CPDlg::OnBnClickedSimRadio()
 void CMFCP2CPDlg::OnBnClickedVipRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 3;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/VIP");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/VIP");
 	SetEditEmpty();//清空编辑框
@@ -1150,7 +950,6 @@ void CMFCP2CPDlg::OnBnClickedVipRadio()
 void CMFCP2CPDlg::OnBnClickedIccidRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 4;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/ICC");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/ICC");
 	SetEditEmpty();//清空编辑框
@@ -1161,7 +960,6 @@ void CMFCP2CPDlg::OnBnClickedIccidRadio()
 void CMFCP2CPDlg::OnBnClickedBatRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 5;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/BAT");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/BAT");
 	SetEditEmpty();//清空编辑框
@@ -1172,7 +970,6 @@ void CMFCP2CPDlg::OnBnClickedBatRadio()
 void CMFCP2CPDlg::OnBnClickedMacRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 6;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/MAC");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/MAC");
 	SetEditEmpty();//清空编辑框
@@ -1183,7 +980,6 @@ void CMFCP2CPDlg::OnBnClickedMacRadio()
 void CMFCP2CPDlg::OnBnClickedEquipmentRadio()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	notype = 7;
 	SetDlgItemText(IDC_IMEI1_STATIC, L"机身IMEI/EQU");
 	SetDlgItemText(IDC_IMEI2_STATIC, L"彩盒IMEI/EQU");
 	SetEditEmpty();//清空编辑框
@@ -1228,6 +1024,8 @@ void CMFCP2CPDlg::CleanSyllableCheck()
 	OnBnClickedEquipmentsyllableCheck();
 	m_rfidSyllableCheck.SetCheck(0);
 	OnBnClickedRfidsyllableCheck();
+	m_imei2SyllableCheck.SetCheck(0);
+	OnBnClickedImei2syllableCheck();
 }
 
 
@@ -1361,6 +1159,20 @@ void CMFCP2CPDlg::OnBnClickedRfidsyllableCheck()
 	}
 }
 
+//点击IMEI2字段选择复选框
+void CMFCP2CPDlg::OnBnClickedImei2syllableCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	if (m_imei2SyllableCheck.GetCheck())
+	{
+		SyllableMap[9] = L"IMEI2";
+	}
+	else
+	{
+		SyllableMap.erase(9);
+	}
+}
+
 
 /*绑定关系模块*/
 //点击保存
@@ -1395,6 +1207,8 @@ void CMFCP2CPDlg::CleanBindCheck()
 	OnBnClickedEquipmentbindCheck();
 	m_rfidBindCheck.SetCheck(0);
 	OnBnClickedRfidbindCheck();
+	m_imei2BindCheck.SetCheck(0);
+	OnBnClickedImei2bindCheck();
 }
 
 
@@ -1489,7 +1303,7 @@ void CMFCP2CPDlg::OnBnClickedRfidbindCheck()
 	// TODO:  在此添加控件通知处理程序代码
 	if (m_rfidBindCheck.GetCheck())
 	{
-		BindMap[6] = L"IMEI8";
+		BindMap[6] = L"IMEI13";
 	}
 	else
 	{
@@ -1497,12 +1311,31 @@ void CMFCP2CPDlg::OnBnClickedRfidbindCheck()
 	}
 }
 
+//点击IMEI2绑定复选框
+void CMFCP2CPDlg::OnBnClickedImei2bindCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	if (m_imei2BindCheck.GetCheck())
+	{
+		BindMap[7] = L"IMEI14";
+	}
+	else
+	{
+		BindMap.erase(7);
+	}
+}
+
+
 //锁定按钮
 void CMFCP2CPDlg::OnBnClickedLockButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
+	
+	//解锁的时候需要拥有管理权限的帐号密码，锁定的时候需要拥有对比工具测试的权限账号密码
 	if (LockFlag == TRUE)
 	{
+		g_UserTypeNeed = "";
+		
 		INT_PTR nRes;
 		CManager *manager = new CManager;
 		nRes = manager->DoModal();
@@ -1511,9 +1344,9 @@ void CMFCP2CPDlg::OnBnClickedLockButton()
 		{
 			return;
 		}
-
 		else if (IDOK == nRes)
 		{
+			LockFlag = FALSE;
 			OtherEnableWindow(TRUE);
 			if (m_caihejudgeCheck.GetCheck() == 0)
 			{
@@ -1522,25 +1355,38 @@ void CMFCP2CPDlg::OnBnClickedLockButton()
 			}
 			ImeiInputEnableWindow(FALSE);
 			SetDlgItemText(IDC_LOCK_BUTTON, L"锁定");
-			LockFlag = FALSE;
 		}
+		SetDlgItemText(IDC_EmployeeID_EDIT, g_UserNameStr);
 
 		SetEditEmpty();//清空编辑框
 		SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 	}
 	else if (LockFlag == FALSE)
-	{
-		//先保存配置
-		OnBnClickedSavebindButton();
-		OnBnClickedSavesyllableButton();
-		Saveconfig();
+	{	
+		g_UserTypeNeed = "";
+		INT_PTR nRes;
+		CManager *manager = new CManager;
+		nRes = manager->DoModal();
 
-		OtherEnableWindow(FALSE);
-		RelationEnableWindow(FALSE);
-		ChImei3EnableWindow(FALSE);
-		ImeiInputEnableWindow(TRUE);
-		SetDlgItemText(IDC_LOCK_BUTTON, L"解锁");
-		LockFlag = TRUE;
+		if (IDCANCEL == nRes)
+		{
+			return;
+		}
+		else if (IDOK == nRes)
+		{
+			LockFlag = TRUE;
+			//先保存配置
+			OnBnClickedSavebindButton();
+			OnBnClickedSavesyllableButton();
+			Saveconfig();
+
+			OtherEnableWindow(FALSE);
+			RelationEnableWindow(FALSE);
+			ChImei3EnableWindow(FALSE);
+			ImeiInputEnableWindow(TRUE);
+			SetDlgItemText(IDC_LOCK_BUTTON, L"解锁");
+			SetDlgItemText(IDC_EmployeeID_EDIT, g_UserNameStr);
+		}
 
 		//将查询字段的后半段sql语句提前生成出来，提高效率
 
@@ -1596,65 +1442,102 @@ void CMFCP2CPDlg::OnBnClickedLockButton()
 		{
 			GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
 		}
+
+		/*其它数据初始化*/
+		CString ScanTypeStr;
+		GetDlgItemText(IDC_ModeHint_STATIC, ScanTypeStr);
+		//判断是单机还是多机
+		if (ScanTypeStr == L"单电脑")
+		{
+			ScanType = "Single";
+		}
+		else if (ScanTypeStr == L"电脑1")
+		{
+			ScanType = "MutiPC1";
+		}
+		else if (ScanTypeStr == L"电脑2")
+		{
+			ScanType = "MutiPC2";
+		}
 	}
 }
 
 //使字段和绑定控件使能
-void CMFCP2CPDlg::RelationEnableWindow(BOOL chose)
+void CMFCP2CPDlg::RelationEnableWindow(BOOL choose)
 {
-	GetDlgItem(IDC_SIMBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_VIPBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_ICCIDBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_BATBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_MACBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_EQUIPMENTBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_RFIDBIND_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_SAVEBIND_BUTTON)->EnableWindow(chose);
-	GetDlgItem(IDC_READBIND_BUTTON)->EnableWindow(chose);
+	GetDlgItem(IDC_SIMBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_VIPBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_ICCIDBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_BATBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_MACBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_EQUIPMENTBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_RFIDBIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_IMEI2BIND_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_SAVEBIND_BUTTON)->EnableWindow(choose);
+	GetDlgItem(IDC_READBIND_BUTTON)->EnableWindow(choose);
 
-	GetDlgItem(IDC_SNSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_SIMSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_VIPSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_ICCIDSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_BATSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_MACSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_EQUIPMENTSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_RFIDSYLLABLE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_SAVESYLLABLE_BUTTON)->EnableWindow(chose);
-	GetDlgItem(IDC_READSYLLABLE_BUTTON)->EnableWindow(chose);
+
+	GetDlgItem(IDC_SNSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_SIMSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_VIPSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_ICCIDSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_BATSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_MACSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_EQUIPMENTSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_RFIDSYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_IMEI2SYLLABLE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_SAVESYLLABLE_BUTTON)->EnableWindow(choose);
+	GetDlgItem(IDC_READSYLLABLE_BUTTON)->EnableWindow(choose);
 }
 
 //使不判断彩盒和开启IMEI编辑框控件使能
-void CMFCP2CPDlg::ChImei3EnableWindow(BOOL chose)
+void CMFCP2CPDlg::ChImei3EnableWindow(BOOL choose)
 {
-	GetDlgItem(IDC_CHJUDGE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_OPENIMEI3EDIT_CHECK)->EnableWindow(chose);
+	GetDlgItem(IDC_CHJUDGE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_OPENIMEI3EDIT_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_SinglePCScan_RADIO)->EnableWindow(choose);
+	GetDlgItem(IDC_MutiPCScan_RADIO)->EnableWindow(choose);
+	if (LockFlag == TRUE)
+	{
+		GetDlgItem(IDC_MutiPC1_RADIO)->EnableWindow(FALSE);
+		GetDlgItem(IDC_MutiPC2_RADIO)->EnableWindow(FALSE);
+	}
+	else
+	{
+		GetDlgItem(IDC_MutiPC1_RADIO)->EnableWindow(m_SinglePCScanRadioValue);
+		GetDlgItem(IDC_MutiPC2_RADIO)->EnableWindow(m_SinglePCScanRadioValue);
+	}
+
 }
 
 //使订单配置、不判断彩盒、数据库配置控件使能
-void CMFCP2CPDlg::OtherEnableWindow(BOOL chose)
+void CMFCP2CPDlg::OtherEnableWindow(BOOL choose)
 {
-	GetDlgItem(IDC_ZHIDAN_COMBO)->EnableWindow(chose);
-	GetDlgItem(IDC_UPDATEORDERNUMBER_BUTTON)->EnableWindow(chose);
-	GetDlgItem(IDC_CHJUDGE_CHECK)->EnableWindow(chose);
-	GetDlgItem(IDC_DBCONFIG_BUTTON)->EnableWindow(chose);
-	GetDlgItem(IDC_OPENIMEI3EDIT_CHECK)->EnableWindow(chose);
+	GetDlgItem(IDC_ZHIDAN_COMBO)->EnableWindow(choose);
+	GetDlgItem(IDC_UPDATEORDERNUMBER_BUTTON)->EnableWindow(choose);
+	GetDlgItem(IDC_CHJUDGE_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_DBCONFIG_BUTTON)->EnableWindow(choose);
+	GetDlgItem(IDC_OPENIMEI3EDIT_CHECK)->EnableWindow(choose);
+	GetDlgItem(IDC_SinglePCScan_RADIO)->EnableWindow(choose);
+	GetDlgItem(IDC_MutiPCScan_RADIO)->EnableWindow(choose);
+	GetDlgItem(IDC_MutiPC1_RADIO)->EnableWindow(choose);
+	GetDlgItem(IDC_MutiPC2_RADIO)->EnableWindow(choose);
 }
 
 //使IMEI输入框控件使能
-void CMFCP2CPDlg::ImeiInputEnableWindow(BOOL chose)
+void CMFCP2CPDlg::ImeiInputEnableWindow(BOOL choose)
 {
-	GetDlgItem(IDC_IMEI1_EDIT)->EnableWindow(chose);
-	GetDlgItem(IDC_IMEI2_EDIT)->EnableWindow(chose);
+	GetDlgItem(IDC_IMEI1_EDIT)->EnableWindow(choose);
+	GetDlgItem(IDC_IMEI2_EDIT)->EnableWindow(choose);
 
 	//当IMEI复选框被选中的时候IMEI扫描框才会被开启
 	if (Imei3Flag == TRUE)
 	{
-	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(chose);
+		GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(choose);
 	}
 	else
 	{
-	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
 	}
 }
 
@@ -1702,6 +1585,7 @@ void CMFCP2CPDlg::fontinit()
 	GetDlgItem(IDC_BATSYLLABLE_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_SIMSYLLABLE_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_RFIDSYLLABLE_CHECK)->SetFont(&checkfont);
+	GetDlgItem(IDC_IMEI2SYLLABLE_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_SAVESYLLABLE_BUTTON)->SetFont(&checkfont);
 	GetDlgItem(IDC_READSYLLABLE_BUTTON)->SetFont(&checkfont);
 
@@ -1713,6 +1597,7 @@ void CMFCP2CPDlg::fontinit()
 	GetDlgItem(IDC_MACBIND_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_EQUIPMENTBIND_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_RFIDBIND_CHECK)->SetFont(&checkfont);
+	GetDlgItem(IDC_IMEI2BIND_CHECK)->SetFont(&checkfont);
 	GetDlgItem(IDC_SAVEBIND_BUTTON)->SetFont(&checkfont);
 	GetDlgItem(IDC_READBIND_BUTTON)->SetFont(&checkfont);
 
@@ -1723,12 +1608,8 @@ void CMFCP2CPDlg::fontinit()
 	GetDlgItem(IDC_PCIP_STATIC)->SetFont(&checkfont);
 	GetDlgItem(IDC_PCNAME_EDIT)->SetFont(&checkfont);
 	GetDlgItem(IDC_PCIP_EDIT)->SetFont(&checkfont);
-
-	GetDlgItem(IDC_GROUP3_STATIC)->SetFont(&checkfont);
-	GetDlgItem(IDC_PCNAME_STATIC)->SetFont(&checkfont);
-	GetDlgItem(IDC_PCIP_STATIC)->SetFont(&checkfont);
-	GetDlgItem(IDC_PCNAME_EDIT)->SetFont(&checkfont);
-	GetDlgItem(IDC_PCIP_EDIT)->SetFont(&checkfont);
+	GetDlgItem(IDC_EmployeeID_STATIC)->SetFont(&checkfont);
+	GetDlgItem(IDC_EmployeeID_EDIT)->SetFont(&checkfont);
 
 	GetDlgItem(IDC_GROUP4_STATIC)->SetFont(&checkfont);
 	GetDlgItem(IDC_ZHIDAN1_STATIC)->SetFont(&checkfont);
@@ -1748,7 +1629,7 @@ HBRUSH CMFCP2CPDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	GetDlgItemText(IDC_HINT_STATIC, str);
 	if (pWnd->GetDlgCtrlID() == IDC_HINT_STATIC)
 	{
-		if (str.Find(L"号缺绑定")!=-1||str == "号码错误" || str == "失败" || str == "漏打彩盒贴"||str=="号段不存在或错误"||str=="号段在范围外"||str=="制单号错误")
+		if (str.Find(L"缺绑定") != -1 || str.Find(L"错误") != -1 || str.Find(L"IMEI号") != -1 || str == "失败" || str == "漏打彩盒贴" || str == "号段在范围外" || str == "关联表无IMEI号")
 		{
 			pDC->SetTextColor(RGB(255, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticfont2);
@@ -1762,6 +1643,20 @@ HBRUSH CMFCP2CPDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		{
 			pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色 
 			pDC->SelectObject(&staticfont2);
+		}
+	}
+	else if (pWnd->GetDlgCtrlID() == IDC_ModeHint_STATIC)
+	{
+		GetDlgItemText(IDC_ModeHint_STATIC, str);
+		if (str=="单电脑")
+		{
+			pDC->SetTextColor(RGB(0, 0, 0));//用RGB宏改变颜色 
+			pDC->SelectObject(&editfont);
+		}
+		else if(str == "电脑1" || str == "电脑2")
+		{
+			pDC->SetTextColor(RGB(200, 0, 0));//用RGB宏改变颜色 
+			pDC->SelectObject(&editfont);
 		}
 	}
 	// TODO:  如果默认的不是所需画笔，则返回另一个画笔
@@ -1846,29 +1741,21 @@ void CMFCP2CPDlg::OnBnClickedUpdateordernumberButton()
 void CMFCP2CPDlg::OnCbnSelchangeZhidanCombo()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	readimei();
-	SetEditEmpty();//清空编辑框
-	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
-	if (m_caihejudgeCheck.GetCheck() == 0)
-	{
-		RelationEnableWindow(TRUE);
-	}
-	ChImei3EnableWindow(TRUE);
-	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
-	CleanSyllableCheck();
-	CleanBindCheck();
-	CleanImei3Check();
-	Readbind(FALSE);
-	Readsyllable(FALSE);
-	Readconfig();
-
-	GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
+	SelectZhidanFun();
 }
 
 //这个是按回车后触发操作
 void CMFCP2CPDlg::OnCbnSelendokZhidanCombo()
 {
 	// TODO:  在此添加控件通知处理程序代码
+	SelectZhidanFun();
+}
+
+//选择订单后的统一操作
+void CMFCP2CPDlg::SelectZhidanFun()
+{
+	int PCScanFlag;
+	PCScanFlag = m_SinglePCScanRadioValue;
 	readimei();
 	SetEditEmpty();//清空编辑框
 	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
@@ -1884,6 +1771,9 @@ void CMFCP2CPDlg::OnCbnSelendokZhidanCombo()
 	Readbind(FALSE);
 	Readsyllable(FALSE);
 	Readconfig();
+	OnBnClickedSinglepcscanRadio();
+	if (m_SinglePCScanRadioValue == 1 && PCScanFlag != m_SinglePCScanRadioValue)
+		MessageBox(L"当前选择了多电脑扫描，请注意在两台电脑上分别选择电脑1和电脑2！！", NULL);
 
 	GetDlgItem(IDC_IMEI1_EDIT)->SetFocus();
 }
@@ -1896,7 +1786,7 @@ void CMFCP2CPDlg::readimei()
 	int nSel;
 	nSel = m_zhidanCombo.GetCurSel();
 	m_zhidanCombo.GetLBText(nSel, strWea);
-
+	UpdateData(FALSE);
 	SetDlgItemText(IDC_ZHIDAN_COMBO, strWea);//选中的那一瞬间是没有及时更新到编辑框的，所以得先获取临时数据后更新到编辑框中
 	_RecordsetPtr GetIMEI;
 	GetDlgItemText(IDC_ZHIDAN_COMBO, strzhidan);
@@ -2076,7 +1966,7 @@ void CMFCP2CPDlg::InitComboBox()
 //保存字段选择
 void CMFCP2CPDlg::Savesyllable()
 {
-	BOOL IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID;
+	BOOL IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID,IMEI2;
 	IMEI = m_imeiSyllableCheck.GetCheck();
 	SN = m_snSyllableCheck.GetCheck();
 	SIM = m_simSyllableCheck.GetCheck();
@@ -2086,10 +1976,10 @@ void CMFCP2CPDlg::Savesyllable()
 	MAC = m_macSyllableCheck.GetCheck();
 	Equipment = m_equipmentSyllableCheck.GetCheck();
 	RFID = m_rfidSyllableCheck.GetCheck();
-
+	IMEI2 = m_imei2SyllableCheck.GetCheck();
 	ADOManage adomanage;
 	adomanage.ConnSQL();
-	adomanage.Savesyllable(strzhidan, IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID);
+	adomanage.Savesyllable(strzhidan, IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment, RFID, IMEI2);
 	adomanage.CloseAll();
 }
 
@@ -2131,7 +2021,7 @@ void CMFCP2CPDlg::Readsyllable(BOOL CheckEx)
 	//m_imeiSyllableCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("IMEISyllable"));
 	//OnBnClickedImeisyllableCheck();
 
-	//设置对应控件状态
+	//设置对应控件状态(一定要触发点击函数)
 	m_snSyllableCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("SNSyllable"));
 	OnBnClickedSnsyllableCheck();
 	m_simSyllableCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("SIMSyllable"));
@@ -2148,13 +2038,15 @@ void CMFCP2CPDlg::Readsyllable(BOOL CheckEx)
 	OnBnClickedEquipmentsyllableCheck();
 	m_rfidSyllableCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("RFIDSyllable"));
 	OnBnClickedRfidsyllableCheck();
+	m_imei2SyllableCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("IMEI2Syllable"));
+	OnBnClickedImei2syllableCheck();
 	adomanage.CloseAll();
 }
 
 //保存绑定选择
 void CMFCP2CPDlg::Savebind()
 {
-	BOOL SIM, VIP, ICCID, BAT, MAC, Equipment, RFID;
+	BOOL SIM, VIP, ICCID, BAT, MAC, Equipment, RFID,IMEI2;
 	SIM = m_simBindCheck.GetCheck();
 	VIP = m_vipBindCheck.GetCheck();
 	ICCID = m_iccidBindCheck.GetCheck();
@@ -2162,10 +2054,11 @@ void CMFCP2CPDlg::Savebind()
 	MAC = m_macBindCheck.GetCheck();
 	Equipment = m_equipmentBindCheck.GetCheck();
 	RFID = m_rfidBindCheck.GetCheck();
+	IMEI2 = m_imei2BindCheck.GetCheck();
 
 	ADOManage adomanage;
 	adomanage.ConnSQL();
-	adomanage.Savebind(strzhidan, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID);
+	adomanage.Savebind(strzhidan, SIM, VIP, ICCID, BAT, MAC, Equipment, RFID, IMEI2);
 	adomanage.CloseAll();
 }
 
@@ -2202,7 +2095,7 @@ void CMFCP2CPDlg::Readbind(BOOL CheckEx)
 			}
 		}
 	}
-	//设置对应控件状态
+	//设置对应控件状态(一定要触发点击函数)
 	m_simBindCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("SIMBind"));
 	OnBnClickedSimbindCheck();
 	m_vipBindCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("VIPBind"));
@@ -2217,29 +2110,33 @@ void CMFCP2CPDlg::Readbind(BOOL CheckEx)
 	OnBnClickedEquipmentbindCheck();
 	m_rfidBindCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("RFIDBind"));
 	OnBnClickedRfidbindCheck();
+	m_imei2BindCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("IMEI2Bind"));
+	OnBnClickedImei2bindCheck();
 	adomanage.CloseAll();
 }
 
 //保存一些配置
 void CMFCP2CPDlg::Saveconfig()
 {
-	BOOL imei3flag;
+	UpdateData(FALSE);
+	BOOL imei3flag,IsSinglePcFlag;
 	imei3flag = m_OpenImei3EditCheck.GetCheck(); 
+	IsSinglePcFlag = m_SinglePCScanRadioValue;
 
 	ADOManage adomanage;
 	adomanage.ConnSQL();
-	adomanage.SaveConfig(strzhidan, imei3flag);
+	adomanage.SaveConfig(strzhidan, imei3flag, IsSinglePcFlag);
 	adomanage.CloseAll();
 }
 
 //读取一些配置
 void CMFCP2CPDlg::Readconfig()
 {
-	_variant_t imeitemp;//用来放getcollect变量的
+	_variant_t imeitemp1, imeitemp2;//用来放getcollect变量的
 
 	ADOManage adomanage;
 	adomanage.ConnSQL();
-	adomanage.Readsyllable(strzhidan);
+	adomanage.ReadConfig(strzhidan);
 	//先判断有无记录，有记录，就直接判断要不要报错，没记录，就先判断该字段是否为NULL，再判断是否要报错
 	if (adomanage.m_pRecordSet->adoEOF)
 	{
@@ -2247,8 +2144,14 @@ void CMFCP2CPDlg::Readconfig()
 	}
 	else if (!adomanage.m_pRecordSet->adoEOF)
 	{
-		imeitemp = adomanage.m_pRecordSet->GetCollect("IMEI3Flag");
-		if (imeitemp.vt == VT_NULL)
+		imeitemp1 = adomanage.m_pRecordSet->GetCollect("IMEI3Flag");
+		if (imeitemp1.vt == VT_NULL)
+		{
+			return;
+		}
+
+		imeitemp2 = adomanage.m_pRecordSet->GetCollect("PCModeFlag");
+		if (imeitemp2.vt == VT_NULL)
 		{
 			return;
 		}
@@ -2257,7 +2160,177 @@ void CMFCP2CPDlg::Readconfig()
 	//设置对应控件状态
 	m_OpenImei3EditCheck.SetCheck(adomanage.m_pRecordSet->GetCollect("IMEI3Flag"));
 	OnBnClickedOpenimei3editCheck();
+	m_SinglePCScanRadioValue = adomanage.m_pRecordSet->GetCollect("PCModeFlag");
+	UpdateData(FALSE);
 	adomanage.CloseAll();
+}
+
+//插入正确与错误数据的一个整合操作（将带有SWITCH的操作整合成一个函数）
+void CMFCP2CPDlg::InsertCorrectOrFailResultGatherFun(CString imei1, CString imei2, CString imei3,int IDC_IMEIEdit,CString CHResult)
+{
+	CString CPResult = L"1", CPReason = L"NULL";
+	int resultflag2 = adomanage.CpCaiheByImei(imei2, strzhidan);
+
+	//根据返回值来提示错误
+	switch (resultflag2)
+	{
+	case 1:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "漏打彩盒贴";
+		break;
+	case 2:
+		PlaySound(L"通过.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "1";
+		CPReason = "通过";
+		break;
+	case 3:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "制单号错误";
+		break;
+	case d_SimBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "SIM号缺绑定";
+		break;
+	case d_VipBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "VIP号缺绑定";
+		break;
+	case d_IccidBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "ICCID号缺绑定";
+		break;
+	case d_BatBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "BAT号缺绑定";
+		break;
+	case d_MacBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "MAC号缺绑定";
+		break;
+	case d_EquipmentBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "设备号缺绑定";
+		break;
+	case d_RfidBindCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "RFID缺绑定";
+		break;
+	case d_DataRelativeImeiCheck:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "关联表无IMEI号";
+		break;
+	default:
+		PlaySound(L"失败_对比失败.wav", NULL, SND_FILENAME | SND_ASYNC);
+		CPResult = "0";
+		CPReason = "号段不存在或错误";
+		break;
+	}
+
+	//插入成功或失败语句
+	if (CPResult == "1")
+	{
+		adomanage.InsertCorrectImei(strzhidan, imei1, imei2, imei3, strpcip, ScanType, CPReason, CPResult, CHResult);
+		SetDlgItemText(IDC_HINT_STATIC, CPReason);
+	}
+	else if (CPResult == "0")
+	{
+		adomanage.InsertWrongImei(strzhidan, imei1, imei2, imei3, strpcip, ScanType, CPReason, CPResult, CHResult);
+		SetDlgItemText(IDC_HINT_STATIC, CPReason);
+
+	}
+
+	adomanage.CloseAll();
+	SetEditEmpty();//清空编辑框
+	GetDlgItem(IDC_IMEIEdit)->SetFocus();
+}
+
+//一个整合操作函数（包含是否插入数据，插入正确还是错误数据等）
+void CMFCP2CPDlg::UsualResultGatherFun(CString imei1, CString imei2, CString imei3, CString PlaySoundStr,CString IsCorrectStr,CString ErrorReason,int IDC_IMEIEdit,CString CHResult)
+{
+	PlaySound(PlaySoundStr, NULL, SND_FILENAME | SND_ASYNC);
+	
+	//0的话插入失败记录，1的话插入成功记录，2的话不做数据库操作
+	if (IsCorrectStr == "0")
+	{
+		adomanage.InsertWrongImei(strzhidan, imei1, imei2, imei3, strpcip, ScanType, ErrorReason, L"0", CHResult);
+		adomanage.CloseAll();
+	}
+	else if (IsCorrectStr == "1")
+	{
+		adomanage.InsertCorrectImei(strzhidan, imei1, imei2, imei3, strpcip, ScanType, ErrorReason, L"1", CHResult);
+		adomanage.CloseAll();
+	}
+	else if (IsCorrectStr == "2")
+	{
+
+	}
+
+	SetDlgItemText(IDC_HINT_STATIC, ErrorReason);
+	SetEditEmpty();//清空编辑框
+	GetDlgItem(IDC_IMEIEdit)->SetFocus();
+}
+
+/*新需求所添加的新功能：两台电脑同时扫描*/
+
+void CMFCP2CPDlg::OnBnClickedSinglepcscanRadio()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	int Flag;
+	Flag = m_SinglePCScanRadioValue;
+	UpdateData(TRUE);
+	switch (m_SinglePCScanRadioValue)
+	{
+	case 0:
+		m_MutiPC1RadioControl.EnableWindow(FALSE);
+		m_MutiPC2RadioControl.EnableWindow(FALSE);
+		break;
+	case 1:
+		m_MutiPC1RadioControl.EnableWindow(TRUE);
+		m_MutiPC2RadioControl.EnableWindow(TRUE);
+		if (Flag != m_SinglePCScanRadioValue)
+			MessageBox(L"当前选择了多电脑扫描，请注意在两台电脑上分别选择电脑1和电脑2！！", NULL);
+		break;
+	}
+	if (m_SinglePCScanRadioValue == 0)
+	{
+		GetDlgItem(IDC_ModeHint_STATIC)->SetWindowTextW(L"单电脑");
+	}
+	else if (m_SinglePCScanRadioValue == 1)
+	{
+		if (m_MutiPC1RadioValue == 0)
+		{
+			GetDlgItem(IDC_ModeHint_STATIC)->SetWindowTextW(L"电脑1");
+		}
+		else if (m_MutiPC1RadioValue == 1)
+		{
+			GetDlgItem(IDC_ModeHint_STATIC)->SetWindowTextW(L"电脑2");
+		}
+	}
+}
+
+
+void CMFCP2CPDlg::OnBnClickedMutipc1Radio()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	if (m_MutiPC1RadioValue == 0)
+	{
+		GetDlgItem(IDC_ModeHint_STATIC)->SetWindowTextW(L"电脑1");
+	}
+	else if (m_MutiPC1RadioValue == 1)
+	{
+		GetDlgItem(IDC_ModeHint_STATIC)->SetWindowTextW(L"电脑2");
+	}
 }
 
 
@@ -2267,4 +2340,8 @@ void CMFCP2CPDlg::OnBnClickedOk()
 	// TODO:  在此添加控件通知处理程序代码
 	//CDialogEx::OnOK();
 }
+
+
+
+
 

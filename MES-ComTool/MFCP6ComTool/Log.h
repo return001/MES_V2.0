@@ -20,6 +20,6 @@ public:
 	
 	CString GetModuleFullPath(void);
 	void WriteLog(const char *pTemp, CString LogName);
-	CString g_strLogFile;
+	CString RectValuetrLogFile;
 };
 

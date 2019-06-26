@@ -11,6 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
+extern CHistogramDlg *HistogramDlgHandle;//柱形图窗口指针
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -56,8 +57,10 @@ CMFCP6ComToolDlg::CMFCP6ComToolDlg(CWnd* pParent /*=NULL*/)
 	, m_IsAddTimeCheckValue(FALSE)
 	, m_AutoSendTimeValue(0)
 	, m_AutoSendCheckValue(FALSE)
-	, m_ListControlDelayTimeiValue(0)
+	//, m_ListControlDelayTimeiValue(0)
 	, ListloopsendFlag(FALSE)
+	, m_GPSIsOpenFlag(FALSE)
+	, m_IsTaiDouCheckValue(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	PortNo = "";
@@ -82,7 +85,7 @@ void CMFCP6ComToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_MtkPort_RADIO, m_PortRadioValue);
 	DDX_Check(pDX, IDC_WithEnter_CHECK, m_WithEnterCheckValue);
 	DDX_Check(pDX, IDC_OutputLocalLog_CHECK, m_OutputLocalLogCheckValue);
-	DDX_Control(pDX, IDC_BLESETTING_LIST, m_BleSettingControl);
+	DDX_Control(pDX, IDC_BLESETTING_LIST, m_ListSettingControl);
 	DDX_Control(pDX, IDC_ListControl_EDIT, m_ListControlEdit);
 	DDX_Control(pDX, IDC_LISTCONTROL_COMBO, m_ListControlCombo);
 	DDX_Control(pDX, IDC_MtkPort_RADIO, m_MtkPortRadioControl);
@@ -93,11 +96,15 @@ void CMFCP6ComToolDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_HexSend_CHECK, m_HexSendCheckValue);
 	DDX_Check(pDX, IDC_IsAddTime_CHECK, m_IsAddTimeCheckValue);
 	DDX_Text(pDX, IDC_AutoSendTime_EDIT, m_AutoSendTimeValue);
-	DDV_MinMaxInt(pDX, m_AutoSendTimeValue, 0, 999999);
 	DDX_Check(pDX, IDC_AutoSend_CHECK, m_AutoSendCheckValue);
 	DDX_Control(pDX, IDC_AutoSend_CHECK, m_AutoSendCheckControl);
-	DDX_Text(pDX, IDC_ListControlDelayTime_EDIT, m_ListControlDelayTimeiValue);
+	//DDX_Text(pDX, IDC_ListControlDelayTime_EDIT, m_ListControlDelayTimeiValue);
 	DDX_Control(pDX, IDC_ListControlDelayTime_EDIT, m_ListControlDelayTimeControl);
+	DDX_Control(pDX, IDC_GPSHint_STATIC, m_GPSHintControl);
+	DDX_Control(pDX, IDC_GPSDrawPaint_TAB, m_PageControlTabControl);
+	DDX_Control(pDX, IDC_GPSDisplay_LIST, m_GPSDisplayListControl);
+	DDX_Check(pDX, IDC_ISTaiDou_CHECK, m_IsTaiDouCheckValue);
+	DDX_Control(pDX, IDC_SendGpsOrder_BUTTON, m_SendGpsOrderControl);
 }
 
 BEGIN_MESSAGE_MAP(CMFCP6ComToolDlg, CDialogEx)
@@ -134,6 +141,11 @@ BEGIN_MESSAGE_MAP(CMFCP6ComToolDlg, CDialogEx)
 	ON_EN_KILLFOCUS(IDC_ListControlDelayTime_EDIT, &CMFCP6ComToolDlg::OnEnKillfocusListcontroldelaytimeEdit)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_BLESETTING_LIST, &CMFCP6ComToolDlg::OnNMCustomdrawBlesettingList)
 	ON_EN_KILLFOCUS(IDC_AutoSendTime_EDIT, &CMFCP6ComToolDlg::OnEnKillfocusAutosendtimeEdit)
+	ON_BN_CLICKED(IDC_ISTaiDou_CHECK, &CMFCP6ComToolDlg::OnBnClickedIstaidouCheck)
+	ON_BN_CLICKED(IDC_SendGpsOrder_BUTTON, &CMFCP6ComToolDlg::OnBnClickedSendgpsorderButton)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_GPSDrawPaint_TAB, &CMFCP6ComToolDlg::OnTcnSelchangePagecontrolTab)
+	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_ClearGpsList_BUTTON, &CMFCP6ComToolDlg::OnBnClickedCleargpslistButton)
 END_MESSAGE_MAP()
 
 
@@ -237,12 +249,23 @@ void  CMFCP6ComToolDlg::InitToolSetting()
 	LogName = GetLogTime() + "PortLog";
 	SettingSrc = "";
 	OnCbnDropdownPortnoCombo();
-	InitBleSetting(&m_BleSettingControl);
+	InitListSetting(&m_ListSettingControl);
 	IniLoadConig();
 	if (PortBaud == "")
 	   m_PortBaudComboControl.SetWindowTextA("115200");
 	UpdateData(FALSE);
 	EnbleWindowIsOpenPort(PortIsOpenFlag);
+
+	//CMFCButton改变颜色
+	fn.CreatePointFont(100, "微软雅黑", NULL);
+	//m_DividiControl.SetFaceColor(RGB(100, 149, 237));
+	//m_DividiControl.SetTextColor(RGB(0, 0, 0));
+	//m_DividiControl.SetFont(&fn);
+	m_GPSHintControl.SetFont(&fn);/*
+	m_DividiControl.m_bTransparent = FALSE;
+	m_DividiControl.m_bDontUseWinXPTheme = TRUE;*/
+	InitTabControl();
+	InitGPSList(&m_GPSDisplayListControl);
 }
 
 //读取INI文件自动保存的信息
@@ -267,6 +290,9 @@ void  CMFCP6ComToolDlg::IniLoadConig()
 
 		ValueInt = GetPrivateProfileInt(SettringTitle, _T("IsHexSendCheck"), 0, IniFileName);
 		m_HexSendCheckValue = ValueInt;
+
+		ValueInt = GetPrivateProfileInt(SettringTitle, _T("IsTaiDouCheckValue"), 0, IniFileName);
+		m_IsTaiDouCheckValue = ValueInt;
 
 		ValueInt = GetPrivateProfileInt(SettringTitle, _T("AutoSendTime"), 0, IniFileName);
 		m_AutoSendTimeValue = ValueInt;
@@ -308,7 +334,6 @@ void  CMFCP6ComToolDlg::IniSaveConig()
 	CFileFind finder;
 	CString IniFileName = ".\\ComConfig.ini";
 	CString ValueStr, SettringStr, SettringTitle="Config";
-	int ValueInt;
 
 	int nSel1;
 	nSel1 = m_PortNoComboControl.GetCurSel();
@@ -333,6 +358,9 @@ void  CMFCP6ComToolDlg::IniSaveConig()
 	ValueStr.Format("%d", m_OutputLocalLogCheckValue);
 	WritePrivateProfileString(SettringTitle, _T("IsLogCheck"), ValueStr, IniFileName);
 
+	ValueStr.Format("%d", m_IsTaiDouCheckValue);
+	WritePrivateProfileString(SettringTitle, _T("IsTaiDouCheck"), ValueStr, IniFileName);
+
 	ValueStr.Format("%d", m_WithEnterCheckValue);
 	WritePrivateProfileString(SettringTitle, _T("IsEnterCheck"), ValueStr, IniFileName);
 
@@ -348,7 +376,6 @@ void  CMFCP6ComToolDlg::IniSaveConig()
 	ValueStr.Format("%d", m_AutoSendTimeValue);
 	WritePrivateProfileString(SettringTitle, _T("AutoSendTime"), ValueStr, IniFileName);
 }
-
 
 
 /*界面控件函数*/
@@ -391,6 +418,24 @@ void CMFCP6ComToolDlg::OnBnClickedOpenportButton()
 	else if (PortIsOpenFlag == TRUE)
 	{
 		IsOpenFlag = CloseCom(Porthandler);
+
+		if (m_AutoSendCheckValue == TRUE)
+		{
+			m_AutoSendCheckValue = FALSE;
+			UpdateData(FALSE);
+			OnBnClickedAutosendCheck();
+		}
+
+		if (ListloopsendFlag == TRUE)
+		{
+			OnBnClickedListloopsendButton();
+		}
+
+		if (m_GPSIsOpenFlag == TRUE)
+		{
+			OnBnClickedSendgpsorderButton();
+		}
+
 		if (IsOpenFlag == FALSE)
 		{
 			GetDlgItem(IDC_OpenPort_BUTTON)->EnableWindow(TRUE);
@@ -427,13 +472,17 @@ void CMFCP6ComToolDlg::OnBnClickedSendorderButton()
 //串口发送指令的综合处理函数
 void CMFCP6ComToolDlg::SendComOrderHandleFun(CString PortOrder)
 {
+	if (m_HexSendCheckValue == TRUE&&PortOrder=="")
+	{
+		return;
+	}
+
+
 	//如果没有勾上不带回车换行就加上\r\n
 	if (m_WithEnterCheckValue == 0)
 	{
 		PortOrder += "\r\n";
 	}
-
-	SetRicheditText("发->□" + PortOrder, 0);
 
 	if (m_PortRadioValue == 0)
 	{
@@ -442,6 +491,37 @@ void CMFCP6ComToolDlg::SendComOrderHandleFun(CString PortOrder)
 	else if (m_PortRadioValue == 1)
 	{
 		RdaHostInterface.RDAComWriteData(0, PortOrder);
+	}
+
+	if (m_HexDisplayCheckValue == TRUE)
+	{
+		CString charVtemp1, charVtemp2, charVtemp3;
+		unsigned char *str = (unsigned char*)PortOrder.GetBuffer(0);
+		for (int i = 0; i < PortOrder.GetLength(); i++)
+		{
+			charVtemp1.Format(_T("%02X "), (unsigned char)str[i]);
+			charVtemp3 += charVtemp1;
+		}
+		SetRicheditText("发->□" + charVtemp3, 0);
+	}
+	else
+		SetRicheditText("发->□" + PortOrder, 0);
+
+}
+
+//开启GPS解析
+void CMFCP6ComToolDlg::OnBnClickedSendgpsorderButton()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	if (m_GPSIsOpenFlag == FALSE)
+	{
+		GetDlgItem(IDC_SendGpsOrder_BUTTON)->SetWindowTextA("GPS解析中，请勿发送\r\n其它指令");
+		m_GPSIsOpenFlag = TRUE;
+	}
+	else if (m_GPSIsOpenFlag == TRUE)
+	{
+		GetDlgItem(IDC_SendGpsOrder_BUTTON)->SetWindowTextA("打开GPS解析");
+		m_GPSIsOpenFlag = FALSE;
 	}
 }
 
@@ -488,11 +568,14 @@ void CMFCP6ComToolDlg::OnBnClickedIsaddtimeCheck()
 	UpdateData(TRUE);
 }
 
+void CMFCP6ComToolDlg::OnBnClickedIstaidouCheck()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+}
 
 UINT static __cdecl AutoSend_Thread(LPVOID pParam)
 {
-	BOOL flag;
-
 	CMFCP6ComToolDlg* Mead_Main_Win = (CMFCP6ComToolDlg*)pParam;
 	Mead_Main_Win->AutoSendComOrder();
 	return 0;
@@ -531,6 +614,7 @@ void CMFCP6ComToolDlg::EnbleWindowIsOpenPort(BOOL Chooes)
 	m_SendOrderControl.EnableWindow(Chooes);
 	m_ListLoopSendControl.EnableWindow(Chooes);
 	m_AutoSendCheckControl.EnableWindow(Chooes);
+	m_SendGpsOrderControl.EnableWindow(Chooes);
 }
 
 
@@ -741,7 +825,7 @@ void  CMFCP6ComToolDlg::SendComOrder(HANDLE PortHandler, CString SendOrder)
 	DWORD dwBytesWrite;
 	COMSTAT ComStat;
 	DWORD dwErrorFlags;
-	BOOL bWriteStat, bReadStatus;
+	BOOL bWriteStat;
 	char *buffer;
 
 	ClearCommError(PortHandler, &dwErrorFlags, &ComStat);
@@ -759,27 +843,28 @@ void  CMFCP6ComToolDlg::SendComOrder(HANDLE PortHandler, CString SendOrder)
 		int len = SendOrder.GetLength() / 2-1;
 		BYTE *pBData = new BYTE[len];
 		pBData = CStrToByte(len, SendOrder);
-
+		SendOrder=pBData;
 		//发送十六进制数据
 		bWriteStat = WriteFile(PortHandler, (LPVOID)pBData, len, &dwBytesWrite, NULL);
 	}
+
 	Sleep(1);
 }
 
 //串口收到回复
 void  CMFCP6ComToolDlg::ReceiveComOrder(HANDLE PortHandler)
 {
-	CString ReceiveData="";
+	CString ReceiveData = "";
 	DWORD dwBytesRead;
 	BOOL bReadStatus;
-	char *buffer,buf[1024];
+	char *buffer, buf[2048];
 	while (PortIsOpenFlag)
 	{
 		if (m_PortRadioValue == 0)
 		{
 			memset(buf, 0, sizeof(buf));
 			buffer = buf;
-			bReadStatus = ReadFile(PortHandler, buffer, 512, &dwBytesRead, NULL);
+			bReadStatus = ReadFile(PortHandler, buffer, 1024, &dwBytesRead, NULL);
 			if (dwBytesRead != 0)
 			{
 				ReceiveData = buffer;
@@ -790,14 +875,13 @@ void  CMFCP6ComToolDlg::ReceiveComOrder(HANDLE PortHandler)
 			ReceiveData = RDAComReceive[0];
 		}
 
+		//日志显示
 		if (m_HexDisplayCheckValue == FALSE)
 		{
 			if (ReceiveData != "")
 			{
 				SetRicheditText("收<-■" + ReceiveData, 0);
 			}
-			ReceiveData = "";
-			RDAComReceive[0] = "";
 		}
 		else if (m_HexDisplayCheckValue == TRUE)
 		{
@@ -812,11 +896,264 @@ void  CMFCP6ComToolDlg::ReceiveComOrder(HANDLE PortHandler)
 				}
 				SetRicheditText("收<-■" + charVtemp3, 0);
 			}
-			RDAComReceive[0] = "";
-			ReceiveData = "";
 		}
+
+		do{
+			if (m_GPSIsOpenFlag == TRUE)
+			{
+				CString GpsID[20] = { "" };
+				CString GpsSNR[20] = { "" };
+				CString GpsSNRTemp[20] = { "" };
+				CString GpsIDTemp[20] = { "" };
+				int GpsNumber = -1;
+				int GpsMessage = -1;
+				int GpsMessageFirst = -1;
+				int pos = ReceiveData.Find("GPGSV");
+				int SuccessFlag = TRUE;
+				if (pos >= 0)
+				{
+					ReceiveData = ReceiveData.Mid(pos + 5);
+					GpsMessage = atoi(GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 1));//有效GPS数据条数 
+					SetRicheditText("解析GPS信息数量===" + GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 1), 0);
+
+					GpsMessageFirst = atoi(GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 2));//有效GPS数据条数 
+					if (GpsMessageFirst != 1)
+					{
+						SetRicheditText("GPS解析失败，解析GPS当前信息非第一条===" + GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 2), 1);
+						SuccessFlag = FALSE;
+						break;
+					}
+					else
+					{
+						SetRicheditText("解析GPS当前信息是第一条===" + GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 2) + " 开始解析", 0);
+					}
+
+					GpsNumber = atoi(GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3));//卫星数量
+					SetRicheditText("解析GPS数据:搜到卫星数量===" + GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3), 0);
+					for (int j = 0; j < GpsNumber; j++)
+					{
+						if (m_IsTaiDouCheckValue == TRUE)
+						{
+							if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 + 4 * (j + 1));//4+===>每条语句，最后一颗星有4个逗号乘以1
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 + 4 * (j + 1) + 3);
+							}
+							else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 8 + 4 * (j + 1));//8+===>每条语句，最后一颗星有4个逗号乘以2
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 8 + 4 * (j + 1) + 3);
+							}
+							else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 12 + 4 * (j + 1));//12+===>每条语句，最后一颗星有4个逗号乘以3
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 12 + 4 * (j + 1) + 3);
+							}
+							else if ((GpsMessage >= 1) && (j <= 3))
+							{
+								GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 0 + 4 * (j + 1));//4+===>每条语句，最后一颗星有4个逗号乘以0
+								GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 0 + 4 * (j + 1) + 3);
+							}
+							if (GpsSNR[j] == "")
+								GpsSNR[j] = "0";
+							if (GpsSNR[j].Find(",") != -1 || GpsID[j].Find(",") != -1)
+							{
+								SetRicheditText("GPS解析失败，请检查是否需要勾上泰斗或者不勾泰斗！", 1);
+								SuccessFlag = FALSE;
+								break;
+							}
+						}
+						else//正常GPS数据格式
+						{
+							if ((GpsMessage >= 2) && ((j >= 4) && (j <= 7)))//第2条信息
+							{
+								if ((GpsNumber <= 8) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3 + 4 * (j + 1));//4+===>$GPGSV,2,2,7,				//3+===>每条语句，最后一颗星有3个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 3 + 4 * (j + 1) + 3);
+								}
+								else if ((GpsNumber > 8) && (j == 7))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3 + 4 * (j + 1));//4+===>$GPGSV,2,2,7,
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 3 + 4 * (j + 1) + 3);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3 + 4 * (j + 1));//4+===>$GPGSV,2,2,7,
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 3 + 4 * (j + 1) + 3);
+								}
+							}
+							else if ((GpsMessage >= 3) && ((j >= 8) && (j <= 11)))//第3条信息
+							{
+								if ((GpsNumber <= 12) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 6 + 4 * (j + 1));									//6+===>每条语句，最后一颗星有3个逗号乘以2
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 6 + 4 * (j + 1) + 3);
+								}
+								else if ((GpsNumber > 12) && (j == 11))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 6 + 4 * (j + 1));
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 6 + 4 * (j + 1) + 3);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 6 + 4 * (j + 1));
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 6 + 4 * (j + 1) + 3);
+								}
+							}
+							else if ((GpsMessage >= 4) && ((j >= 12) && (j <= 15)))//第4条信息
+							{
+								if ((GpsNumber <= 16) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 9 + 4 * (j + 1));									//9+===>每条语句，最后一颗星有3个逗号乘以3
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 9 + 4 * (j + 1) + 3);
+								}
+								else if ((GpsNumber > 16) && (j == 15))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 9 + 4 * (j + 1));
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 9 + 4 * (j + 1) + 3);
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 9 + 4 * (j + 1));
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 9 + 4 * (j + 1) + 3);
+								}
+							}
+							else if ((GpsMessage >= 1) && (j <= 3))
+							{
+								if ((GpsNumber <= 4) && (j == GpsNumber - 1))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 * (j + 1));	//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 4 * (j + 1) + 3);//除了GPGSV第7个逗号
+								}
+								else if ((GpsNumber > 4) && (j == 3))
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 * (j + 1));	//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", "*", 4 * (j + 1) + 3);//除了GPGSV第7个逗号
+								}
+								else
+								{
+									GpsID[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 * (j + 1));//除了GPGSV,第4个逗号
+									GpsSNR[j] = GetData((LPSTR)(LPCTSTR)ReceiveData, ",", ",", 4 * (j + 1) + 3);//除了GPGSV第7个逗号
+								}
+							}
+							if (GpsSNR[j] == "")
+								GpsSNR[j] = "0";
+							if (GpsSNR[j].Find(",") != -1 || GpsID[j].Find(",") != -1)
+							{
+								SetRicheditText("GPS解析失败，请检查是否需要勾上泰斗或者不勾泰斗！", 1);
+								SuccessFlag = FALSE;
+								break;
+							}
+						}
+						//LogShow_exchange(m_Result,Final_Result_Control,0,"解析GPS数据:卫星编码= "+GpsID[j]+" 信噪比= "+GpsSNR[j],HandleNum);
+					}
+					if (SuccessFlag == FALSE)
+					{
+						break;
+					}
+					//按信号强弱排序
+					for (int j = 0; j < GpsNumber; j++)
+					{
+						for (int i = j + 1; i < GpsNumber; i++)
+						{
+							if (atoi(GpsSNR[j]) < atoi(GpsSNR[i]))
+							{
+								GpsSNRTemp[j] = GpsSNR[j];
+								GpsIDTemp[j] = GpsID[j];
+
+								GpsSNR[j] = GpsSNR[i];
+								GpsID[j] = GpsID[i];
+
+								GpsSNR[i] = GpsSNRTemp[j];
+								GpsID[i] = GpsIDTemp[j];
+							}
+						}
+						SetRicheditText( "GPS解析成功，排序后GPS数据:卫星编码= " + GpsID[j] + " 信噪比= " + GpsSNR[j], 0);
+					}
+					InsertGPSList(&m_GPSDisplayListControl, GpsID, GpsSNR, GpsNumber);
+					Invalidate(TRUE);
+				}
+				Sleep(300);
+			}
+		} while (0);
+		//GPS解析
+		
+		RDAComReceive[0] = "";
+		ReceiveData = "";
 		Sleep(50);
-	}	
+	}
+}
+
+CString CMFCP6ComToolDlg::GetData(char* Serial_Order_Return, CString Start, CString End, int Count)
+{
+	CString DataGet;
+	//CString DataGetTemp;
+	int pos = -1;
+	CString Serial_Order_Return_CS;
+	Serial_Order_Return_CS.Format("%s", Serial_Order_Return);
+	for (int i = 0; i<Count; i++)
+	{
+		if (i == Count - 1)
+		{
+			if ((Start == "NULL") || (Start == ""))
+			{
+				pos = Serial_Order_Return_CS.Find(End);
+				if (pos >= 0)
+				{
+					DataGet = Serial_Order_Return_CS.Left(pos);
+				}
+				else
+				{
+					return Serial_Order_Return_CS;
+				}
+			}
+			else
+			{
+				pos = Serial_Order_Return_CS.Find(Start);
+				if (pos >= 0)
+				{
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + Start.GetLength());
+					pos = Serial_Order_Return_CS.Find(End);
+					if (pos >= 0)
+					{
+						DataGet = Serial_Order_Return_CS.Left(pos);
+					}
+					else
+					{
+						return Serial_Order_Return_CS;//return "NULL";
+					}
+				}
+				else
+				{
+					return "NULL";
+				}
+			}
+		}
+		else
+		{
+			if ((Start == "NULL") || (Start == ""))
+			{
+				continue;
+			}
+			else
+			{
+				pos = Serial_Order_Return_CS.Find(Start);
+				if (pos >= 0)
+				{
+					Serial_Order_Return_CS = Serial_Order_Return_CS.Mid(pos + Start.GetLength());
+					continue;
+				}
+				else
+				{
+					return "NULL";
+				}
+			}
+		}
+
+		return DataGet;
+	}
+	return "NULL";
 }
 
 //串口指令收发
@@ -951,7 +1288,7 @@ void CMFCP6ComToolDlg::PrintLog(CString strMsg, int No)
 
 /*配置工具模块*/
 //初始化配置列表
-void CMFCP6ComToolDlg::InitBleSetting(CListCtrl *m_ListControl)
+void CMFCP6ComToolDlg::InitListSetting(CListCtrl *m_ListControl)
 {
 	//初始化列表控件
 	CRect rect;
@@ -980,55 +1317,53 @@ void CMFCP6ComToolDlg::InitBleSetting(CListCtrl *m_ListControl)
 void CMFCP6ComToolDlg::OnBnClickedSettinginsertButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingInsert(&m_BleSettingControl);
+	ListSettingInsert(&m_ListSettingControl);
 }
 
 //点击向上移动按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingupButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingUp(&m_BleSettingControl);
+	ListSettingUp(&m_ListSettingControl);
 }
 
 //点击向下移动按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingdownButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingDown(&m_BleSettingControl);
+	ListSettingDown(&m_ListSettingControl);
 }
 
 //点击复制按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingcopyButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingCopy(&m_BleSettingControl);
+	ListSettingCopy(&m_ListSettingControl);
 }
 
 //点击删除按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingdeleteButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingDelete(&m_BleSettingControl);
+	ListSettingDelete(&m_ListSettingControl);
 }
 
 //点击保存按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingsaveButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingSave(&m_BleSettingControl);
+	ListSettingSave(&m_ListSettingControl);
 }
 
 //点击读取按钮
 void CMFCP6ComToolDlg::OnBnClickedSettingreadButton()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	ListSettingLoad(&m_BleSettingControl);
+	ListSettingLoad(&m_ListSettingControl);
 }
 
 UINT static __cdecl ListLoop_Thread(LPVOID pParam)
 {
-	BOOL flag;
-
 	CMFCP6ComToolDlg* Mead_Main_Win = (CMFCP6ComToolDlg*)pParam;
 	Mead_Main_Win->ListLoopSendComOrder();
 	return 0;
@@ -1041,11 +1376,11 @@ void CMFCP6ComToolDlg::ListLoopSendComOrder()
 	while (ListloopsendFlag)
 	{
 		int SendCountTempArray[100];
-		int ListItemCountInt = m_BleSettingControl.GetItemCount();
+		int ListItemCountInt = m_ListSettingControl.GetItemCount();
 		SendCountTemp = 0;
 		for (int i = 0; i < ListItemCountInt; i++)
 		{
-			SendCountStr = m_BleSettingControl.GetItemText(i, 3);
+			SendCountStr = m_ListSettingControl.GetItemText(i, 3);
 			if (SendCountStr == "0")
 			{
 				continue;
@@ -1084,13 +1419,13 @@ void CMFCP6ComToolDlg::ListLoopSendComOrder()
 		int ColorInt;
 		for (int i = 0; i < ListItemCountInt; i++)
 		{
-			SendNo = m_BleSettingControl.GetItemText(i, 3);
-			m_BleSettingControl.SetItemData(ColorInt, 0);
+			SendNo = m_ListSettingControl.GetItemText(i, 3);
+			m_ListSettingControl.SetItemData(ColorInt, 0);
 			if (SendCountint == atoi(SendNo))
 			{
-				PortOrderStr = m_BleSettingControl.GetItemText(i, 2);
-				PortDelayStr = m_BleSettingControl.GetItemText(i, 4);
-				m_BleSettingControl.SetItemData(i, 1);
+				PortOrderStr = m_ListSettingControl.GetItemText(i, 2);
+				PortDelayStr = m_ListSettingControl.GetItemText(i, 4);
+				m_ListSettingControl.SetItemData(i, 1);
 				ColorInt = i;
 				SendComOrderHandleFun(PortOrderStr);
 				Sleep(atoi(PortDelayStr));
@@ -1142,7 +1477,8 @@ void CMFCP6ComToolDlg::ListSettingInsert(CListCtrl *m_ListControl)
 	if (SelectMark == -1 || SelectCount>1 || SelectCount == 0)
 	{
 		m_ListControl->InsertItem(ListItemCountInt, ListItemCountStr);
-
+		m_ListControl->SetItemText(ListItemCountInt, 3, "0");
+		m_ListControl->SetItemText(ListItemCountInt, 4, "0");
 		//让插入行高亮
 		for (int i = 0; i < ListItemCountInt; i++)
 		{
@@ -1155,7 +1491,8 @@ void CMFCP6ComToolDlg::ListSettingInsert(CListCtrl *m_ListControl)
 	else if (SelectMark != -1 && SelectCount == 1)
 	{
 		m_ListControl->InsertItem(SelectMark + 1, ListItemCountStr);
-
+		m_ListControl->SetItemText(SelectMark + 1, 3, "0");
+		m_ListControl->SetItemText(SelectMark + 1, 4, "0");
 		CString TempSelectMark;
 		for (int i = SelectMark, j = 0; i <= ListItemCountInt; i++, j++)
 		{
@@ -1169,8 +1506,6 @@ void CMFCP6ComToolDlg::ListSettingInsert(CListCtrl *m_ListControl)
 		m_ListControl->SetFocus();
 		m_ListControl->SetSelectionMark(SelectMark + 1);
 	}
-	m_ListControl->SetItemText(SelectMark + 1, 3, "0");
-	m_ListControl->SetItemText(SelectMark + 1, 4, "0");
 }
 
 //配置列表选中行向上移动
@@ -1378,7 +1713,6 @@ void CMFCP6ComToolDlg::ListSettingSave(CListCtrl *m_ListControl)
 
 	CFileFind finder;
 	CString ValueStr, StrSetting = "ListSetting", StrValue;
-	int ValueInt;
 
 	BOOL ifFind = finder.FindFile(SettingSrc);
 	if (ifFind)
@@ -1443,7 +1777,6 @@ void CMFCP6ComToolDlg::ListSettingLoad(CListCtrl *m_ListControl)
 
 	CFileFind finder;
 	CString ValueStr, StrSetting = "ListSetting", StrValue;
-	int ValueInt;
 
 	BOOL ifFind = finder.FindFile(SettingSrc);
 	if (ifFind)
@@ -1457,7 +1790,6 @@ BOOL CMFCP6ComToolDlg::ListSettingLoadFun(CString SettingSrc)
 	CString ListControlSingleData = "";
 	int ListSettingCount = 0;
 	CString ValueStr, StrSetting = "ListSetting", StrValue;
-	int ValueInt;
 	ListSettingCount = GetPrivateProfileInt("Config", "SettingCount", -1, SettingSrc);
 
 	if (SettingSrc == "")
@@ -1465,31 +1797,36 @@ BOOL CMFCP6ComToolDlg::ListSettingLoadFun(CString SettingSrc)
 		return FALSE;
 	}
 
-	if (ListSettingCount == -1)
+	CFileFind finder;
+	BOOL ifFind = finder.FindFile(StrSetting);//先检测文件存不存在
+	if (ifFind)
 	{
-		MessageBox("配置文件已损坏！请选择其它配置文件！", "警告！");
-		return FALSE;
-	}
-	m_BleSettingControl.DeleteAllItems();
-
-	for (int i = 0; i < ListSettingCount; i++)
-	{
-		CString SettingCut;
-		StrSetting.Format("ListSetting%d", i);
-		GetPrivateProfileString("Config", StrSetting, _T(""), ListControlSingleData.GetBuffer(128), 128, SettingSrc);
-		ListControlSingleData.ReleaseBuffer();
-
-		SettingCut = ListControlSingleData.Left(ListControlSingleData.Find("#$&"));
-		ListControlSingleData = ListControlSingleData.Right(ListControlSingleData.GetLength() - ListControlSingleData.Find("#$&") - 3);
-		m_BleSettingControl.InsertItem(i, SettingCut);
-
-		for (int j = 1; j < 5; j++)
+		if (ListSettingCount == -1)
 		{
+			MessageBox("配置文件已损坏！请选择其它配置文件！", "警告！");
+			return FALSE;
+		}
+		m_ListSettingControl.DeleteAllItems();
+
+		for (int i = 0; i < ListSettingCount; i++)
+		{
+			CString SettingCut;
+			StrSetting.Format("ListSetting%d", i);
+			GetPrivateProfileString("Config", StrSetting, _T(""), ListControlSingleData.GetBuffer(128), 128, SettingSrc);
+			ListControlSingleData.ReleaseBuffer();
+
 			SettingCut = ListControlSingleData.Left(ListControlSingleData.Find("#$&"));
 			ListControlSingleData = ListControlSingleData.Right(ListControlSingleData.GetLength() - ListControlSingleData.Find("#$&") - 3);
-			m_BleSettingControl.SetItemText(i, j, SettingCut);
+			m_ListSettingControl.InsertItem(i, SettingCut);
+
+			for (int j = 1; j < 5; j++)
+			{
+				SettingCut = ListControlSingleData.Left(ListControlSingleData.Find("#$&"));
+				ListControlSingleData = ListControlSingleData.Right(ListControlSingleData.GetLength() - ListControlSingleData.Find("#$&") - 3);
+				m_ListSettingControl.SetItemText(i, j, SettingCut);
+			}
+			ListControlSingleData = "";
 		}
-		ListControlSingleData = "";
 	}
 	return TRUE;
 }
@@ -1515,26 +1852,26 @@ void CMFCP6ComToolDlg::OnNMDblclkBlesettingList(NMHDR *pNMHDR, LRESULT *pResult)
 	case 0:
 		//if (PortIsOpenFlag)
 		//{
-		//	PortOrderStr = m_BleSettingControl.GetItemText(m_Row, 2);
+		//	PortOrderStr = m_ListSettingControl.GetItemText(m_Row, 2);
 		//	SendComOrderHandleFun(PortOrderStr);
 		//}
 		break;
 	case 3:
 	case 4:
-		m_BleSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
-		m_ListControlDelayTimeControl.SetParent(&m_BleSettingControl);//转换坐标为列表框中的坐标
+		m_ListSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
+		m_ListControlDelayTimeControl.SetParent(&m_ListSettingControl);//转换坐标为列表框中的坐标
 		m_ListControlDelayTimeControl.MoveWindow(rc);//移动Eidt编辑框到RECT所在的位置
-		m_ListControlDelayTimeControl.SetWindowText(m_BleSettingControl.GetItemText(m_Row, m_Colum));//将该子项的数据显示到编辑框中
+		m_ListControlDelayTimeControl.SetWindowText(m_ListSettingControl.GetItemText(m_Row, m_Colum));//将该子项的数据显示到编辑框中
 		m_ListControlDelayTimeControl.ShowWindow(SW_SHOW);//显示Edit控件
 		m_ListControlDelayTimeControl.SetFocus();//设置Edit焦点
 		m_ListControlDelayTimeControl.ShowCaret();//显示光标
 		m_ListControlDelayTimeControl.SetSel(-1);//将光标移动到最后
 		break;
 	default:
-		m_BleSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
-		m_ListControlEdit.SetParent(&m_BleSettingControl);//转换坐标为列表框中的坐标
+		m_ListSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
+		m_ListControlEdit.SetParent(&m_ListSettingControl);//转换坐标为列表框中的坐标
 		m_ListControlEdit.MoveWindow(rc);//移动Eidt编辑框到RECT所在的位置
-		m_ListControlEdit.SetWindowText(m_BleSettingControl.GetItemText(m_Row, m_Colum));//将该子项的数据显示到编辑框中
+		m_ListControlEdit.SetWindowText(m_ListSettingControl.GetItemText(m_Row, m_Colum));//将该子项的数据显示到编辑框中
 		m_ListControlEdit.ShowWindow(SW_SHOW);//显示Edit控件
 		m_ListControlEdit.SetFocus();//设置Edit焦点
 		m_ListControlEdit.ShowCaret();//显示光标
@@ -1544,10 +1881,10 @@ void CMFCP6ComToolDlg::OnNMDblclkBlesettingList(NMHDR *pNMHDR, LRESULT *pResult)
 
 	//if (pNMListView->iSubItem != 0)
 	//{
-	//	m_BleSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
-	//	m_ListControlEdit.SetParent(&m_BleSettingControl);//转换坐标为列表框中的坐标
+	//	m_ListSettingControl.GetSubItemRect(m_Row, m_Colum, LVIR_LABEL, rc);//获取子项在RECT的位置
+	//	m_ListControlEdit.SetParent(&m_ListSettingControl);//转换坐标为列表框中的坐标
 	//	m_ListControlEdit.MoveWindow(rc);//移动Eidt编辑框到RECT所在的位置
-	//	m_ListControlEdit.SetWindowText(m_BleSettingControl.GetItemText(m_Row,m_Colum));//将该子项的数据显示到编辑框中
+	//	m_ListControlEdit.SetWindowText(m_ListSettingControl.GetItemText(m_Row,m_Colum));//将该子项的数据显示到编辑框中
 	//	m_ListControlEdit.ShowWindow(SW_SHOW);//显示Edit控件
 	//	m_ListControlEdit.SetFocus();//设置Edit焦点
 	//	m_ListControlEdit.ShowCaret();//显示光标
@@ -1583,7 +1920,7 @@ void CMFCP6ComToolDlg::OnNMClickBlesettingList(NMHDR *pNMHDR, LRESULT *pResult)
 	case 0:
 		if (PortIsOpenFlag)
 		{
-			PortOrderStr = m_BleSettingControl.GetItemText(m_Row, 2);
+			PortOrderStr = m_ListSettingControl.GetItemText(m_Row, 2);
 			SendComOrderHandleFun(PortOrderStr);
 		}
 		break;
@@ -1611,7 +1948,7 @@ void CMFCP6ComToolDlg::OnNMCustomdrawBlesettingList(NMHDR *pNMHDR, LRESULT *pRes
 		}
 		else if (1 == nmCustomDraw.lItemlParam)
 		{
-			pNMCD->clrTextBk = RGB(255, 0, 0);		//背景颜色
+			pNMCD->clrTextBk = RGB(0, 255, 147);		//背景颜色
 			pNMCD->clrText = RGB(255, 255, 255);		//文字颜色
 		}
 		else if (2 == nmCustomDraw.lItemlParam)
@@ -1644,7 +1981,7 @@ void CMFCP6ComToolDlg::OnEnKillfocusAutosendtimeEdit()
 	GetDlgItem(IDC_AutoSendTime_EDIT)->GetWindowText(str);//取得编辑框的内容
 	judge = str;
 	judge.Trim("0123546789");
-	if (judge != "")
+	if (judge != "" || str=="")
 	{
 		UpdateData(FALSE);
 		MessageBox("请输入有效数字", NULL);
@@ -1659,7 +1996,7 @@ void CMFCP6ComToolDlg::OnEnKillfocusListcontrolEdit()
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
 	m_ListControlEdit.GetWindowText(str);//取得编辑框的内容
-	m_BleSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
+	m_ListSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
 	m_ListControlEdit.ShowWindow(SW_HIDE);//隐藏编辑框
 }
 
@@ -1669,7 +2006,7 @@ void CMFCP6ComToolDlg::OnCbnKillfocusListcontrolCombo()
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
 	m_ListControlCombo.GetWindowText(str);//取得编辑框的内容
-	m_BleSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
+	m_ListSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
 	m_ListControlCombo.ShowWindow(SW_HIDE);//隐藏编辑框
 }
 
@@ -1681,15 +2018,129 @@ void CMFCP6ComToolDlg::OnEnKillfocusListcontroldelaytimeEdit()
 	m_ListControlDelayTimeControl.GetWindowText(str);//取得编辑框的内容
 	judge = str;
 	judge.Trim("0123546789");
-	if (judge != "")
+	if (judge != "" || str=="")
 	{
+		UpdateData(FALSE);
 		m_ListControlDelayTimeControl.ShowWindow(SW_HIDE);//隐藏编辑框
 		MessageBox("请输入有效数字",NULL);
 		return;
 	}
 
-	m_BleSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
+	m_ListSettingControl.SetItemText(m_Row, m_Colum, str);//将该内容更新到列表对应的项中
 	m_ListControlDelayTimeControl.ShowWindow(SW_HIDE);//隐藏编辑框
+}
+
+
+/*GPS模块*/
+
+//初始化GPS列表
+void CMFCP6ComToolDlg::InitGPSList(CListCtrl *m_ListControl)
+{
+	//初始化列表控件
+	CRect rect;
+	// 获取编程语言列表视图控件的位置和大小   
+	m_ListControl->GetClientRect(&rect);
+
+	// 为列表视图控件添加全行选中和栅格风格   
+	m_ListControl->SetExtendedStyle(m_ListControl->GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	//删除掉所有的表头
+	while (1) {
+		if (!m_ListControl->DeleteColumn(0)) {
+			break;
+		}
+	}
+
+	// 为列表视图控件添加列
+	m_ListControl->InsertColumn(0, "卫星号", LVCFMT_CENTER, rect.Width() / 3*1.3, 0);
+	m_ListControl->InsertColumn(1, "信噪比", LVCFMT_CENTER, rect.Width() / 3*1.3, 0);
+}
+
+//插入数据到GPS列表中，同时处理柱形图的数据
+void CMFCP6ComToolDlg::InsertGPSList(CListCtrl *m_ListControl, CString GPSIDList[20], CString GPSSNRList[20], int GPSCount)
+{
+	m_ListControl->DeleteAllItems();
+	int *RectValue = new int[GPSCount];
+	CString *RectName = new CString[GPSCount];
+
+	for (int i = 0; i < GPSCount; i++)
+	{
+		m_ListControl->InsertItem(i, GPSIDList[i]);
+		m_ListControl->SetItemText(i, 1, GPSSNRList[i]);
+		*(RectName + i) = GPSIDList[i];
+		*(RectValue + i) = atoi(GPSSNRList[i]);
+	}
+	HistogramDlgHandle->DrawPrev(GPSCount, RectName, RectValue);
+	delete[]RectValue;
+	delete[]RectName;
+}
+
+//清除GPS图表
+void CMFCP6ComToolDlg::OnBnClickedCleargpslistButton()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	m_GPSDisplayListControl.DeleteAllItems();
+	HistogramDlgHandle->ClearPoint();
+}
+
+//初始化Tab模块
+void CMFCP6ComToolDlg::InitTabControl()
+{
+	//添加页面函数
+	m_PageControlTabControl.InsertItem(0, "柱形图");
+
+	//设定在Tab内显示的范围
+	CRect rc;
+	m_PageControlTabControl.GetClientRect(rc);//获取当前主窗口Tab控件的坐标
+
+	//定位选项卡页的位置
+	rc.top += 20;
+	rc.bottom -= 0;
+	rc.left += 0;
+	rc.right -= 0;
+
+	//创建选项卡对话框子页面
+	m_HistogramPage.Create(IDD_Histogram, &m_PageControlTabControl);
+
+	//将子页面移动到指定的位置
+	m_HistogramPage.MoveWindow(&rc);
+
+	//显示初始页面
+	m_HistogramPage.ShowWindow(SW_SHOW);
+
+	//保存当前选择
+	m_CurSelTab = 0;
+	m_PageControlTabControl.SetCurSel(m_CurSelTab);
+}
+
+//切换选项卡
+void CMFCP6ComToolDlg::OnTcnSelchangePagecontrolTab(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO:  在此添加控件通知处理程序代码
+	*pResult = 0;
+	switch (m_PageControlTabControl.GetCurSel())
+	{
+	case 0:
+		m_HistogramPage.ShowWindow(SW_SHOW);
+		break;
+	default:
+		break;
+	}
+}
+
+HBRUSH CMFCP6ComToolDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	// TODO:  在此更改 DC 的任何特性
+	if (pWnd->m_hWnd == m_GPSHintControl.m_hWnd)
+	{
+		pDC->SetBkColor(RGB(100, 149, 237));
+		HBRUSH b = CreateSolidBrush(RGB(100, 149, 237));
+		return b;
+	}
+	// TODO:  如果默认的不是所需画笔，则返回另一个画笔
+	return hbr;
 }
 
 
@@ -1703,7 +2154,7 @@ void CMFCP6ComToolDlg::OnBnClickedOk()
 void CMFCP6ComToolDlg::OnBnClickedCancel()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	int ISSaveFlag = m_BleSettingControl.GetItemCount();
+	int ISSaveFlag = m_ListSettingControl.GetItemCount();
 
 	if (ISSaveFlag != 0)
 	{
@@ -1714,7 +2165,7 @@ void CMFCP6ComToolDlg::OnBnClickedCancel()
 		}
 		else
 		{
-			ListSettingSave(&m_BleSettingControl);
+			ListSettingSave(&m_ListSettingControl);
 		}
 	}
 
@@ -1729,5 +2180,11 @@ void CMFCP6ComToolDlg::OnBnClickedCancel()
 
 	CDialogEx::OnCancel();
 }
+
+
+
+
+
+
 
 

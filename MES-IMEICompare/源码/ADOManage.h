@@ -23,17 +23,17 @@ public:
 
 
 
-	int CpImeiByNo(CString Syllablesqlstr, CString noname, CString no, CString strzhidan);//根据其它号段寻找IMEI
+	int CpImeiByNo(CString Syllablesqlstr, CString no, CString strzhidan);//根据其它号段寻找IMEI
 	int CpCaiheByImei(CString imei, CString ZhiDan);//根据IMEI寻找彩盒时间
-	int InsertCorrectImei(CString zhidan, CString imei1, CString imei2,CString imei3,CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入正确数据到表中
-	int InsertWrongImei(CString zhidan, CString imei1, CString imei2, CString imei3, CString no1, CString no2, CString ip, CString notype, CString errorreason, CString result);//插入错误数据到表中
+	int InsertCorrectImei(CString zhidan, CString imei1, CString imei2, CString imei3, CString ip, CString ScanType, CString errorreason, CString result, CString CHResult);//插入正确数据到表中
+	int InsertWrongImei(CString zhidan, CString imei1, CString imei2, CString imei3, CString ip, CString ScanType, CString errorreason, CString result, CString CHResult);//插入错误数据到表中
 	int JudgeImei(CString imei);//判断IMEI号是否存在
 	int JudgeZhidan(CString imei,CString Zhidan);//判断制单号是否对得上
-	void Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment,int RFID);//保存订单所选择的字段
+	void Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID, int IMEI2);//保存订单所选择的字段
 	void Readsyllable(CString order);//读取订单所选择的字段
-	void Savebind(CString order, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID);//保存订单所绑定的字段
+	void Savebind(CString order, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID, int IMEI2);//保存订单所绑定的字段
 	void Readbind(CString order);//读取订单所绑定的字段
-	void SaveConfig(CString order, int imei3Flag);//保存一些配置
+	void SaveConfig(CString order, int imei3Flag, int IsSinglePcFlag);//保存一些配置
 	void ReadConfig(CString order);//读取一些配置
 	_RecordsetPtr GetOrderNumber();//获取订单号
 	_RecordsetPtr GetIMEIByOrderNumber(CString ordernumber);//根据订单号获取IMEI号
@@ -41,6 +41,8 @@ public:
 
 	CString ADOManage::GetTime();//获取当前系统时间
 
+
+	CString CheckUserAuthority(CString UserName,CString UserPassword);//通常返回值是此用户权限，返回CheckFail表示不存在此用户
 
 	//目前还未使用的函数
 	_RecordsetPtr GetRst();

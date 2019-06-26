@@ -52,12 +52,17 @@ BOOL RDAHostInterface::RDAComInit(int HandleNum, CString PortName)
 
 	if (ComInit[HandleNum] == FALSE&&PortName!="")
 	{
+		try{
 		bool IsSusscc = HostComPortInit(HandleNum, a, NULL);
-		Sleep(200);
+		//Sleep(20);
 		if (IsSusscc==true)
 		{
 			ComInit[HandleNum] = TRUE;
 			return TRUE;
+		}
+		}
+		catch (...)
+		{
 		}
 	}
 		return FALSE;
@@ -99,15 +104,21 @@ BOOL RDAHostInterface::RDAComShutdown(int HandleNum)
 	Sleep(100);
 	if (ComInit[HandleNum] == TRUE)
 	{
-		bool IsSusscc = HostComPortShutdown(HandleNum);
-		Sleep(200);
-		if (IsSusscc == true)
-		{
-			ComInit[HandleNum] = FALSE;
+		try{
+			bool IsSusscc = HostComPortShutdown(HandleNum);
+			//Sleep(20);
+			if (IsSusscc == true)
+			{
+				ComInit[HandleNum] = FALSE;
+			}
+			else
+			{
+				return FALSE;
+			}
+
 		}
-		else
+		catch (...)
 		{
-			return FALSE;
 		}
 		return TRUE;
 	}

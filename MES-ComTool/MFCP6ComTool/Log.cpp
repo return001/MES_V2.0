@@ -3,7 +3,7 @@
 #include "semaphoreclass.h"
 
 static CSemaphoreClass g_tSemaphore;
-//static CString g_strLogFile;
+//static CString RectValuetrLogFile;
 
 CLog::CLog()
 {
@@ -50,7 +50,7 @@ CString CLog::GetModuleFullPath(void)
 
 void CLog::WriteLog(const char *pTemp,CString LogName)
 {
-	if (g_strLogFile.IsEmpty())
+	if (RectValuetrLogFile.IsEmpty())
 	{
 		CString strPath = GetModuleFullPath();
 		CString strLogDir = strPath + LOG_DIR;
@@ -61,17 +61,17 @@ void CLog::WriteLog(const char *pTemp,CString LogName)
 			CreateDirectory(strLogDir, NULL);
 		}
 
-		g_strLogFile = strLogDir +LogName+_T(".log");
-		//g_strLogFile = strLogDir + LOG_FILE;
+		RectValuetrLogFile = strLogDir +LogName+_T(".log");
+		//RectValuetrLogFile = strLogDir + LOG_FILE;
 	}
 
 	CAutoLock cAuto(&g_tSemaphore);
 	CFile cfile;
 
 	//´ò¿ª
-	if (!PathFileExists(g_strLogFile))
+	if (!PathFileExists(RectValuetrLogFile))
 	{
-		BOOL bFlag = cfile.Open(g_strLogFile, CFile::modeCreate | CFile::modeWrite);
+		BOOL bFlag = cfile.Open(RectValuetrLogFile, CFile::modeCreate | CFile::modeWrite);
 		if (!bFlag)
 		{
 			return;
@@ -80,7 +80,7 @@ void CLog::WriteLog(const char *pTemp,CString LogName)
 	else
 	{
 		CFileStatus fileStaus;
-		if (CFile::GetStatus(g_strLogFile, fileStaus))
+		if (CFile::GetStatus(RectValuetrLogFile, fileStaus))
 		{
 			UINT nOpenFlag = 0;
 			if (fileStaus.m_size > LOG_SIZE)
@@ -92,7 +92,7 @@ void CLog::WriteLog(const char *pTemp,CString LogName)
 				nOpenFlag = CFile::modeCreate | CFile::modeWrite | CFile::modeNoTruncate;
 			}
 
-			BOOL bFlag = cfile.Open(g_strLogFile, nOpenFlag);
+			BOOL bFlag = cfile.Open(RectValuetrLogFile, nOpenFlag);
 			if (!bFlag)
 			{
 				return;

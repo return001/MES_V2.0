@@ -6,6 +6,9 @@
 #include "RDAHostInterface.h"
 #include "Log.h"
 #include "afxwin.h"
+#include "afxbutton.h"
+#include "HistogramDlg.h"
+#include "afxcmn.h"
 
 // CMFCP6ComToolDlg 对话框
 class CMFCP6ComToolDlg : public CDialogEx
@@ -42,14 +45,14 @@ public:
 	int m_AutoSendTimeValue;
 	BOOL m_AutoSendCheckValue;
 	CButton m_AutoSendCheckControl;
-	int m_ListControlDelayTimeiValue;
+	//int m_ListControlDelayTimeiValue;
 	CEdit m_ListControlDelayTimeControl;
 	CComboBox m_PortNoComboControl;
 	CComboBox m_PortBaudComboControl;
 	int m_PortRadioValue;
 	BOOL m_WithEnterCheckValue;
 	BOOL m_OutputLocalLogCheckValue;
-
+	CFont fn;
 	RDAHostInterface  RdaHostInterface;
 
 	BOOL ListloopsendFlag;//顺序发送标志
@@ -89,14 +92,14 @@ public:
 	CString LogName;
 
 	/*配置工具模块变量和函数*/
-	CListCtrl m_BleSettingControl;
+	CListCtrl m_ListSettingControl;
 	CString ListHeaderName[8];
 	CEdit m_ListControlEdit;
 	CComboBox m_ListControlCombo;
 	int m_Row, m_Colum;
 	CString SettingSrc;
 
-	void InitBleSetting(CListCtrl *m_ListControl);//初始化配置列表
+	void InitListSetting(CListCtrl *m_ListControl);//初始化配置列表
 	void ListSettingInsert(CListCtrl *m_ListControl);//配置列表插入新行
 	void ListSettingUp(CListCtrl *m_ListControl);//配置列表选中行向上移动
 	void ListSettingDown(CListCtrl *m_ListControl);//配置列表选中行向下移动
@@ -116,6 +119,20 @@ public:
 	afx_msg void OnEnKillfocusListcontrolEdit();
 	afx_msg void OnCbnKillfocusListcontrolCombo();
 
+	/*GPS模块变量和函数*/
+	int m_CurSelTab;
+	BOOL m_GPSIsOpenFlag;
+	CListCtrl m_GPSDisplayListControl;
+	CTabCtrl m_PageControlTabControl;
+	CHistogramDlg m_HistogramPage;
+	CStatic m_GPSHintControl;
+
+	CString GetData(char* Serial_Order_Return, CString Start, CString End, int Count);
+	void InitGPSList(CListCtrl *m_ListControl);//初始化GPS列表
+	void InsertGPSList(CListCtrl *m_ListControl, CString GPSIDList[20], CString GPSSNRList[20], int GPSCount);//插入数据到GPS列表中，同时处理柱形图的数据
+
+	void InitTabControl();//初始化Tab模块
+	afx_msg void OnTcnSelchangePagecontrolTab(NMHDR *pNMHDR, LRESULT *pResult);//切换选项卡
 
 	/*其它函数*/
 	afx_msg void OnBnClickedOk();
@@ -138,4 +155,11 @@ public:
 	afx_msg void OnEnKillfocusListcontroldelaytimeEdit();
 	afx_msg void OnNMCustomdrawBlesettingList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnEnKillfocusAutosendtimeEdit();
+	afx_msg void OnBnClickedIstaidouCheck();
+	afx_msg void OnBnClickedSendgpsorderButton();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+
+	BOOL m_IsTaiDouCheckValue;
+	afx_msg void OnBnClickedCleargpslistButton();
+	CButton m_SendGpsOrderControl;
 };

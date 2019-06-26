@@ -622,6 +622,7 @@ public:
 
 
 	/*新增功能的整合函数*/
+	int TheardCountFlag[16];
 
 	void StartButtonGatherFun(int HandleNum);//将开始按钮需要处理的流程集合成一个函数
 	void StopButtonGatherFun(int HandleNum);//将停止按钮需要处理的流程集合成一个函数
@@ -633,6 +634,9 @@ public:
 	BOOL DequeContinueControlFun(int HandleNum,deque<int> &ContinueDeq);//统一对队列进行管理，在队列有数据进入之时，就判断这条线程有没有被关闭，是否轮到当前这条线程工作了
 
 	CString SectionNumberHandleFun(CString SectionNumber,CString LowLimitValue);//对串口的返回值进行处理
+
+	BOOL ValueCompareFun(CString ItemName,CString ReturnValue,CString LowValue,CString HighValue,int HandleNum,int type);//语音细化，根据返回值添加具体报错原因,参数type为0时，以int型来判断，1的时候为float型，其它的时候为特殊的测试项
+	CString ValueCompareVoiceStr[16];//存放细化的语音
 
 	/*三合一新增功能*/
 	

@@ -213,6 +213,7 @@ IMEIWrite_MulAT::IMEIWrite_MulAT(CWnd* pParent /*=NULL*/)
 		DongleCheckRssiFlag[i] = FALSE;
 		DongleInfo[i][0] = "";
 		DongleInfo[i][1] = "";
+		TheardCountFlag[i] = 0;
 	}
 
 	for (int i = 0; i < 8; i++)
@@ -1035,6 +1036,12 @@ BOOL IMEIWrite_MulAT::OnInitDialog()//初始化程序
 		CheckSMTChoose = TRUE;
 		CheckAutoTestChoose = TRUE;
 		SetDlgItemText(IDC_COMBO56, "老化后测试");
+	}
+
+	if (g_ADCTFlag==FALSE)
+	{
+		ModifyStyleEx(0, WS_EX_APPWINDOW);
+		ShowWindow(SW_SHOW);
 	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -2042,7 +2049,7 @@ BOOL IMEIWrite_MulAT::OPen_Serial_Port(CComboBox* m_Port, CComboBox* m_Baud, int
 				bWriteStat = WriteFile(hPort[HandleNum], buffer, command.GetLength(), &dwBytesWritten, NULL);
 				if (dwBytesWritten != command.GetLength())
 				{
-					Sleep(500);
+					Sleep(150);
 					continue;
 				}
 
@@ -2862,8 +2869,17 @@ void IMEIWrite_MulAT::LogShow_exchange(CEdit* m_Result, CEdit* Final_Result_Cont
 
 			}
 			else
-				FailInfo += "失败";
-		
+			{
+				//语音细化为空的时候就报失败，不为空的时候报数值偏高、偏低等错误
+				if (ValueCompareVoiceStr[HandleNum] == "")
+				{
+					FailInfo += "失败";
+				}
+				FailInfo += ValueCompareVoiceStr[HandleNum];
+			}
+
+			FailInfo.Replace("截取括号", "");
+			FailInfo.Replace("逗号一", "");
 			Final_Result_ControlArray[HandleNum]->SetFont(font_fail);
 			Final_Result_ControlArray[HandleNum]->SetWindowTextA(FailInfo + HandleNumCS);
 		}
@@ -3455,15 +3471,20 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				CString Temperature = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " C", 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(Temperature) < atof(CountLow)) || (atof(Temperature) > atof(CountHigh)))
+				if (ValueCompareFun(IMEI_FT_Item, Temperature, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "温度异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "温度正常..", HandleNum);
-				}
+
+				//if ((atof(Temperature) < atof(CountLow)) || (atof(Temperature) > atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "温度异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "温度正常..", HandleNum);
+				//}
 				NteTemperature[HandleNum] = Serial_Order_Return_CS;
 
 				break;
@@ -3476,15 +3497,25 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				CString iu = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, " A", 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(iu) < atof(CountLow)) || (atof(iu) > atof(CountHigh)))
+
+				if (ValueCompareFun(IMEI_FT_Item, iu, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					if (atof(iu) == 0)
+					{
+						ValueCompareVoiceStr[HandleNum] = "没有电流";
+					}
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流正常..", HandleNum);
-				}
+
+				//if ((atof(iu) < atof(CountLow)) || (atof(iu) > atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "充电电流正常..", HandleNum);
+				//}
 				InchargeI[HandleNum] = Serial_Order_Return_CS;
 
 				break;
@@ -3513,15 +3544,20 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 
 				Vaule_Return_Count_CS[HandleNum].Format("%f", PortCurrentVauleArray[HandleNum]);
 
-				if (((PortCurrentVauleArray[HandleNum])<atof(CountLow)) || ((PortCurrentVauleArray[HandleNum])>atof(CountHigh)))
+				if (ValueCompareFun(IMEI_FT_Item, Vaule_Return_Count_CS[HandleNum], CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-				}
+
+				//if (((PortCurrentVauleArray[HandleNum])<atof(CountLow)) || ((PortCurrentVauleArray[HandleNum])>atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "电流值：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//}
 
 				break;
 			}
@@ -3539,15 +3575,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, ':', "Vdc", 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+
+
+				if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-				}
+				//if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "外电电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//}
 
 				break;
 			}
@@ -3561,15 +3603,20 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 					Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'V', 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+
+				if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-				}
+				//if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "只有电压正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//}
 
 				break;
 			}
@@ -3632,17 +3679,24 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 
 					//Vaule_Return_Count_CS[HandleNum].Format("%d", Vaule_Return_Count_CS[HandleNum]);
 
-					if ((atoi(Vaule_Return_Count_CS[HandleNum]) < atoi(CountLow)) || (atoi(Vaule_Return_Count_CS[HandleNum]) > atoi(CountHigh)))
+					if (ValueCompareFun(IMEI_FT_Item, Vaule_Return_Count_CS[HandleNum], CountLow, CountHigh, HandleNum, 0) == FALSE)
 					{
-						LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 						CString str;
 						Send_Serial_Order(&str, "AT+RSSI?", HandleNum, "Cancelled", "");
 						return false;
 					}
-					else
-					{
-						LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-					}
+
+					//if ((atoi(Vaule_Return_Count_CS[HandleNum]) < atoi(CountLow)) || (atoi(Vaule_Return_Count_CS[HandleNum]) > atoi(CountHigh)))
+					//{
+					//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					//	CString str;
+					//	Send_Serial_Order(&str, "AT+RSSI?", HandleNum, "Cancelled", "");
+					//	return false;
+					//}
+					//else
+					//{
+					//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + Vaule_Return_Count_CS[HandleNum] + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+					//}
 				}
 				else if (GetDongleScanCheckValue == TRUE)
 				{
@@ -3670,20 +3724,31 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 						CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 						CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
 
-						if (MacRssiInt < atoi(CountLow) || MacRssiInt > atoi(CountHigh))
+						if (ValueCompareFun(IMEI_FT_Item, MacRssiStr, CountLow, CountHigh, HandleNum, 0) == FALSE)
 						{
-							LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 							DongleRssiMap.erase(iter);
 							DongleTestRssiDeq.pop_front();
 							return false;
 						}
-						else
-						{
-							LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-							DongleRssiMap.erase(iter);
-							DongleTestRssiDeq.pop_front();
-							break;
-						}
+
+						DongleRssiMap.erase(iter);
+						DongleTestRssiDeq.pop_front();
+						break;
+
+						//if (MacRssiInt < atoi(CountLow) || MacRssiInt > atoi(CountHigh))
+						//{
+						//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+						//	DongleRssiMap.erase(iter);
+						//	DongleTestRssiDeq.pop_front();
+						//	return false;
+						//}
+						//else
+						//{
+						//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "RSSI信号强度：" + MacRssiStr + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+						//	DongleRssiMap.erase(iter);
+						//	DongleTestRssiDeq.pop_front();
+						//	break;
+						//}
 					}
 					else
 					{
@@ -3700,15 +3765,20 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ']', 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+
+				if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-				}
+				//if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//}
 
 				break;
 			}
@@ -3742,15 +3812,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				//CString CountLow=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,"NULL",   ",",1,HandleNum);
 				//CString CountHigh=GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value,",",   ",",1,HandleNum);
 				//if((atof(Vext)<atof(CountLow))||(atof(Vext)>atof(CountHigh)))
-				if ((atof(Vext)<atof(LowDataMul[HandleNum])) || (atof(Vext)>atof(HighDataMul[HandleNum])))
+
+				if (ValueCompareFun(IMEI_FT_Item, Vext, LowDataMul[HandleNum], HighDataMul[HandleNum], HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
-				}
+
+				//if ((atof(Vext)<atof(LowDataMul[HandleNum])) || (atof(Vext)>atof(HighDataMul[HandleNum])))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + LowDataMul[HandleNum] + " <" + HighDataMul[HandleNum], HandleNum);
+				//}
 
 				break;
 			}
@@ -3759,15 +3835,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
 				CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 				CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-				if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+
+				if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 					return false;
 				}
-				else
-				{
-					LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-				}
+
+				//if ((atof(Vext) < atof(CountLow)) || (atof(Vext) > atof(CountHigh)))
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//	return false;
+				//}
+				//else
+				//{
+				//	LogShow_exchange(m_Result, Final_Result_Control, 0, "RSSI正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+				//}
 
 				break;
 			}
@@ -4003,17 +4085,25 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			CString iu = GetData((LPSTR)(LPCTSTR)SimulationCurrent[HandleNum], "", " A", 1, HandleNum);
 			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-			if ((atof(iu)<atof(CountLow)) || (atof(iu)>atof(CountHigh)))
+
+			if (ValueCompareFun(IMEI_FT_Item, iu, CountLow, CountHigh, HandleNum, 1) == FALSE)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, SimulationCurrent[HandleNum] + "模拟电流异常！！！" + iu + "参考(>" + CountLow + " <" + CountHigh, HandleNum);
 				SimulationCurrent[HandleNum] = "";
 				return false;
 			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, "模拟电流正常.." + iu, HandleNum);
-				SimulationCurrent[HandleNum] = "";
-			}
+
+			SimulationCurrent[HandleNum] = "";
+			//if ((atof(iu)<atof(CountLow)) || (atof(iu)>atof(CountHigh)))
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, SimulationCurrent[HandleNum] + "模拟电流异常！！！" + iu + "参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//	SimulationCurrent[HandleNum] = "";
+			//	return false;
+			//}
+			//else
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, "模拟电流正常.." + iu, HandleNum);
+			//	SimulationCurrent[HandleNum] = "";
+			//}
 			InchargeI[HandleNum] = Serial_Order_Return_CS;
 
 			break;
@@ -4037,15 +4127,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ')', 1, HandleNum);
 			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+
+			if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 				return false;
 			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			}
+
+			//if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//	return false;
+			//}
+			//else
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//}
 
 			break;
 		}
@@ -4055,15 +4151,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, ',', 1, HandleNum);
 			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+
+			if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 				return false;
 			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			}
+
+			//if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//	return false;
+			//}
+			//else
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//}
 
 			break;
 		}
@@ -4072,15 +4174,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			CString Vext = GetData((LPSTR)(LPCTSTR)Serial_Order_Return_CS, paraArray[i].Low_Limit_Value, 'T', 1, HandleNum);
 			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+
+			if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 				return false;
 			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			}
+
+			//if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//	return false;
+			//}
+			//else
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//}
 
 			break;
 		}
@@ -4107,15 +4215,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 
 			CString CountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 			CString CountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-			if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+
+			if (ValueCompareFun(IMEI_FT_Item, Vext, CountLow, CountHigh, HandleNum, 1) == FALSE)
 			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
 				return false;
 			}
-			else
-			{
-				LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
-			}
+
+			//if ((atof(Vext)<atof(CountLow)) || (atof(Vext)>atof(CountHigh)))
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "异常！！！参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//	return false;
+			//}
+			//else
+			//{
+			//	LogShow_exchange(m_Result, Final_Result_Control, 0, IMEI_FT_Item + "正常..参考(>" + CountLow + " <" + CountHigh, HandleNum);
+			//}
 
 			break;
 		}
@@ -4450,6 +4564,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	case 1://GPS-30,-40,   -30,-40,   -30,-40,   -30,-40,   -30,-40,   -30,-40,   -30,-40,   //1,1    2,3   4,5  6,7
 		if (GpsNumber<atoi(paraArray[3].High_Limit_Value))//卫星数量不够
 		{
+			ValueCompareVoiceStr[HandleNum] = "卫星数量不足";
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "搜索到的卫星数量不足" + paraArray[3].High_Limit_Value + " 个,继续...", HandleNum);
 			return false;
 		}
@@ -4480,6 +4595,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 			if ((atoi(GpsSNR[j])<atoi(GpsSNRStandardLow[HandleNum])) || (atoi(GpsSNR[j])>atoi(GpsSNRStandardHigh[HandleNum])))//GPS不达标
 			{
 				GPSresult = FALSE;
+				ValueCompareVoiceStr[HandleNum] = "达标数量不足";
 				LogShow_exchange(m_Result, Final_Result_Control, 0, "卫星号" + GpsID[j] + " 信噪比异常！！！参考(>" + GpsSNRStandardLow[HandleNum] + " <" + GpsSNRStandardHigh[HandleNum], HandleNum);
 			}
 			else
@@ -4489,6 +4605,7 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 		}
 		if (GPSresult == FALSE)
 			return false;
+		ValueCompareVoiceStr[HandleNum] = "";
 		GPSSnrAve[HandleNum] = GpsSNR[0];
 		break;
 	case 2:
@@ -4497,15 +4614,21 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	case 3:
 		RestartCountLow = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, "NULL", ",", 1, HandleNum);
 		RestartCountHigh = GetData((LPSTR)(LPCTSTR)paraArray[i].High_Limit_Value, ",", ",", 1, HandleNum);
-		if ((atoi(RestartCount)<atoi(RestartCountLow)) || (atoi(RestartCount)>atoi(RestartCountHigh)))
+
+		if (ValueCompareFun(IMEI_FT_Item, RestartCount, RestartCountLow, RestartCountHigh, HandleNum, 0) == FALSE)
 		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数异常！！！参考(>" + RestartCountLow + " <" + RestartCountHigh, HandleNum);
 			return false;
 		}
-		else
-		{
-			LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数正常..", HandleNum);
-		}
+
+		//if ((atoi(RestartCount)<atoi(RestartCountLow)) || (atoi(RestartCount)>atoi(RestartCountHigh)))
+		//{
+		//	LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数异常！！！参考(>" + RestartCountLow + " <" + RestartCountHigh, HandleNum);
+		//	return false;
+		//}
+		//else
+		//{
+		//	LogShow_exchange(m_Result, Final_Result_Control, 0, "重启次数正常..", HandleNum);
+		//}
 		break;
 	case 4:
 		//charge in, vBat=4.13V,iChr=0.20A,vChr=4.79V
@@ -4535,17 +4658,51 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 				|| (atof(VCharge)<atof(BBCSettingLow[2 + 3])) || (atof(VCharge)>atof(BBCSettingHigh[2 + 3])) \
 				)
 			{
+				if (Serial_Order_Return_CS.Find("NO CHARGE") != -1 || Serial_Order_Return_CS.Find("no charge") != -1)
+				{
+					ValueCompareVoiceStr[HandleNum] = "不充电";
+				}
+				else if (atof(IBat) == 0)
+				{
+					ValueCompareVoiceStr[HandleNum] = "没有电流";
+				}
+				else if (atof(VBat) < atof(BBCSettingLow[0 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "电池电压数值偏低";
+				}
+				else if (atof(VBat) > atof(BBCSettingHigh[0 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "电池电压数值偏高";
+				}
+				else if (atof(IBat)<atof(BBCSettingLow[1 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "电流数值偏低";
+				}
+				else if (atof(IBat)>atof(BBCSettingHigh[1 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "电流数值偏高";
+				}
+				else if (atof(VCharge)<atof(BBCSettingLow[2 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "充电电压数值偏低";
+				}
+				else if (atof(VCharge)>atof(BBCSettingHigh[2 + 3]))
+				{
+					ValueCompareVoiceStr[HandleNum] = "充电电压数值偏高";
+				}
 				LogShow_exchange(m_Result, Final_Result_Control, 0, "电池电压、电流、充电电压异常！！！参考2(>" + BBCSettingLow[0 + 3] + " <" + BBCSettingHigh[0 + 3] + "(>" + BBCSettingLow[1 + 3] + " <" + BBCSettingHigh[1 + 3] + "(>" + BBCSettingLow[2 + 3] + " <" + BBCSettingHigh[2 + 3], HandleNum);
 				return false;
 			}
 			else
 			{
+				ValueCompareVoiceStr[HandleNum] = "";
 				LogShow_exchange(m_Result, Final_Result_Control, 0, "电池电压、电流、充电电压正常..参考2(>" + BBCSettingLow[0 + 3] + " <" + BBCSettingHigh[0 + 3] + "(>" + BBCSettingLow[1 + 3] + " <" + BBCSettingHigh[1 + 3] + "(>" + BBCSettingLow[2 + 3] + " <" + BBCSettingHigh[2 + 3], HandleNum);
 			}
 
 		}
 		else
 		{
+			ValueCompareVoiceStr[HandleNum] = "";
 			LogShow_exchange(m_Result, Final_Result_Control, 0, "电池电压、电流、充电电压正常..参考1(>" + BBCSettingLow[0] + " <" + BBCSettingHigh[0] + "(>" + BBCSettingLow[1] + " <" + BBCSettingHigh[1] + "(>" + BBCSettingLow[2] + " <" + BBCSettingHigh[2], HandleNum);
 		}
 
@@ -4557,10 +4714,71 @@ bool IMEIWrite_MulAT::IMEI_Function_Judge(int i, CString IMEI_FT_Item, char* Ser
 	return true;
 }
 
+//语音细化，根据返回值添加具体报错原因
+BOOL IMEIWrite_MulAT::ValueCompareFun(CString ItemName,CString ReturnValue, CString LowValue, CString HighValue, int HandleNum, int type)
+{
+	switch (type)
+	{
+	case 0:
+		if (atoi(ReturnValue)<atoi(LowValue))
+		{
+			ValueCompareVoiceStr[HandleNum] = "数值偏低";
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "异常！！！参考(>" + LowValue + " <" + HighValue, HandleNum);
+			return FALSE;
+		}
+		else if (atoi(ReturnValue) > atoi(HighValue))
+		{
+			ValueCompareVoiceStr[HandleNum] = "数值偏高";
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "异常！！！参考(>" + LowValue + " <" + HighValue, HandleNum);
+			return FALSE;
+		}
+		else
+		{
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "正常..参考(>" + LowValue + " <" + HighValue, HandleNum);
+		}
+		break;
+	case 1:
+		if (atof(ReturnValue)<atof(LowValue))
+		{
+			ValueCompareVoiceStr[HandleNum] = "数值偏低";
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "异常！！！参考(>" + LowValue + " <" + HighValue, HandleNum);
+			return FALSE;
+		}
+		else if (atof(ReturnValue) > atof(HighValue))
+		{
+			ValueCompareVoiceStr[HandleNum] = "数值偏高";
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "异常！！！参考(>" + LowValue + " <" + HighValue, HandleNum);
+			return FALSE;
+		}
+		else
+		{
+			LogShow_exchange(m_ResultArray[HandleNum], Final_Result_ControlArray[HandleNum], 0, ItemName + "正常..参考(>" + LowValue + " <" + HighValue, HandleNum);
+		}
+		break;
+	default:
+		break;
+	}
+	ValueCompareVoiceStr[HandleNum] = "";
+	return TRUE;
+}
+
 
 //指令解析函数，此函数用于所有端口的指令测试，同时会对一些特殊指令进行解析
 BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_Baud, int HandleNum, CEdit* m_Result, CEdit* Final_Result_Control, CEdit* Data_Input_Control)
 {
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		TheardCountFlag[HandleNum]++;
+	}
+
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		if (TheardCountFlag[HandleNum] > 1)
+		{
+			return false;
+		}
+	}
+
 	//---------------------------11
 	CString PortType_CS;
 	PortType.GetWindowTextA(PortType_CS);
@@ -4644,6 +4862,7 @@ BOOL IMEIWrite_MulAT::WriteIMEIFunction_Thread(CComboBox* m_Port, CComboBox* m_B
 	}
 
 	ParaItemName[HandleNum] = "";
+	ValueCompareVoiceStr[HandleNum] = "";
 
 	//初始化一下开关检查的标志位
 	for (int i = 0; i < 4; i++)
@@ -6023,6 +6242,7 @@ GETPort:
 								{
 									EnableWindow_Start(HandleNum);
 								}
+								TheardCountFlag[HandleNum] = 0;
 							}
 							else
 							{
@@ -6327,6 +6547,7 @@ GETPort:
 				{
 					EnableWindow_Start(HandleNum);
 				}
+				TheardCountFlag[HandleNum] = 0;
 			}
 			else
 			{
@@ -6432,6 +6653,7 @@ OVERDONE:
 		{
 			EnableWindow_Start(HandleNum);
 		}
+		TheardCountFlag[HandleNum] = 0;
 	}
 	else
 	{
@@ -14059,6 +14281,12 @@ void IMEIWrite_MulAT::StopButtonGatherFun(int HandleNum)
 		DongleTestRssiInfoArray[HandleNum] = "";
 		m_ShowNumberPortControlArray[HandleNum]->SetWindowTextA("");
 	}
+
+	if (GetRDAHostCheckValue == TRUE)
+	{
+		TheardCountFlag[HandleNum] = 0;
+	}
+
 }
 
 //根据HandleNum去触发开始按钮

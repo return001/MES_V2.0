@@ -89,3 +89,4 @@ G:\github\MES_V2.0\MES_Print\源码\obj\Debug\WindowsForms_print.Properties.Reso
 G:\github\MES_V2.0\MES_Print\源码\obj\Debug\WindowsForms_print.JS_Unlock.resources
 G:\github\MES_V2.0\MES_Print\源码\obj\Debug\WindowsForms_print.UpdateSqlConn.resources
 G:\github\MES_V2.0\MES_Print\源码\obj\Debug\WindowsForms_print.csproj.GenerateResource.Cache
+G:\github\MES_V2.0\MES_Print\源码\bin\Debug\Seagull.BarTender.Print.xml

@@ -60,10 +60,10 @@ public:
 	CButton m_funtestCheck;
 	BOOL LockFlag;//锁定标志位
 
-	void RelationEnableWindow(BOOL chose);//使字段和绑定控件使能
-	void ChImei3EnableWindow(BOOL chose);//使不判断彩盒和开启IMEI编辑框控件使能
-	void OtherEnableWindow(BOOL chose);//使订单配置、不判断彩盒、数据库配置控件使能
-	void ImeiInputEnableWindow(BOOL chose);//使IMEI输入框控件使能
+	void RelationEnableWindow(BOOL choose);//使字段和绑定控件使能
+	void ChImei3EnableWindow(BOOL choose);//使不判断彩盒和开启IMEI编辑框控件使能
+	void OtherEnableWindow(BOOL choose);//使订单配置、不判断彩盒、数据库配置控件使能
+	void ImeiInputEnableWindow(BOOL choose);//使IMEI输入框控件使能
 	void SetEditEmpty();//将编辑框置为空
 	void CleanImei3Check();//清除IMEI复选框
 
@@ -132,9 +132,10 @@ public:
 	afx_msg void OnEnSetfocusImei2Edit();
 
 	//其它变量
+
 	CString strpcip, strpcname;//主机名称和ip
 	int notype;//代表目前要扫的类型
-	CString notypename[8];//里面放着IMEI、VIP等字符串 注意，notypename目前因为需求更改而被废弃掉，但因为它属于核心逻辑的东西，不好随意改，目前不会对程序有影响，所以暂时保留。
+	CString ScanType;
 	CString strno1,strno2,strno3;//存放其它扫描类型的值，比如选中SN时，里面放着的就是SN号
 	CString strzhidan;//存放当前选中的制单号
 	int chjudgeflag;//彩盒复选框的标志
@@ -152,6 +153,21 @@ public:
 	void Readbind(BOOL CheckEx);//读取绑定选择
 	void Saveconfig();//保存一些配置
 	void Readconfig();//读取一些配置
+	void SelectZhidanFun();//选择订单后的统一操作
+	void InsertCorrectOrFailResultGatherFun(CString imei1, CString imei2, CString imei3,int IDC_IMEIEdit,CString CHResult);//插入正确与错误数据的一个整合操作（将带有SWITCH的操作整合成一个函数）
+	void UsualResultGatherFun(CString imei1, CString imei2, CString imei3, CString PlaySoundStr, CString IsCorrectStr, CString ErrorReason, int IDC_IMEIEdit,CString CHResult);//一个整合操作函数（包含是否插入数据，插入正确还是错误数据等）
+
+	/*新需求所添加的新功能：两台电脑同时扫描*/
+	CButton m_SinglePCScanRadioControl;
+	CButton m_MutiPCScanRadioControl;
+	CButton m_MutiPC1RadioControl;
+	CButton m_MutiPC2RadioControl;
+
+	int m_SinglePCScanRadioValue;
+	int m_MutiPC1RadioValue;
+
+	afx_msg void OnBnClickedSinglepcscanRadio();
+	afx_msg void OnBnClickedMutipc1Radio();
 
 
     //其它函数
@@ -193,4 +209,11 @@ public:
 	afx_msg void OnBnClickedOpenimei3editCheck();
 
 	afx_msg void OnEnSetfocusImei1Edit();
+
+
+
+	afx_msg void OnBnClickedImei2bindCheck();
+	afx_msg void OnBnClickedImei2syllableCheck();
+	CButton m_imei2SyllableCheck;
+	CButton m_imei2BindCheck;
 };

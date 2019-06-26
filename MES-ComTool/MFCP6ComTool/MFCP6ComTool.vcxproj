@@ -99,6 +99,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HistogramDlg.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MFCP6ComTool.h" />
     <ClInclude Include="MFCP6ComToolDlg.h" />
@@ -109,6 +110,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HistogramDlg.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MFCP6ComTool.cpp" />
     <ClCompile Include="MFCP6ComToolDlg.cpp" />
