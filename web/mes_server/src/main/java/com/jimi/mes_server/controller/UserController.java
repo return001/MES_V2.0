@@ -33,7 +33,7 @@ public class UserController extends Controller {
 
 	public void login(String name, String password) {
 		System.out.println("a" + name + password);
-		LUserAccount user = userService.login(name, password);
+		LUserAccount user = userService.login(name, password, true);
 		// 判断重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if (tokenId != null) {
@@ -110,7 +110,7 @@ public class UserController extends Controller {
 		userService.validate(name, password);
 		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
-		if (user == null || !user.getName().equals(name) || !user.getPassword().equals(password)) {
+		if (user == null || !user.getName().equalsIgnoreCase(name) || !user.getPassword().equalsIgnoreCase(password)) {
 			throw new OperationException("用户校验失败");
 		}
 		renderJson(ResultUtil.succeed());

@@ -32,7 +32,7 @@ public class AccessInterceptor implements Interceptor {
 		if (user == null) {
 			throw new AccessException("未登录");
 		}
-		LUserAccount realUser = userService.login(user.getName(), user.getPassword());
+		LUserAccount realUser = userService.login(user.getName(), user.getPassword(), false);
 		TokenBox.put(token, UserController.SESSION_KEY_LOGIN_USER, realUser);
 		if (!realUser.getInService()) {
 			throw new AccessException("此用户未启用");

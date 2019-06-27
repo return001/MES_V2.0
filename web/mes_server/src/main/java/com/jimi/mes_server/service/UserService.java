@@ -3,6 +3,7 @@ package com.jimi.mes_server.service;
 import java.util.Date;
 import java.util.List;
 
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.UserType;
 import com.jimi.mes_server.exception.OperationException;
@@ -19,13 +20,20 @@ import com.jimi.mes_server.util.ResultUtil;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class UserService extends SelectService{
-	
+
 	private static final String loginSql = "SELECT * FROM LUserAccount WHERE Name = ? AND Password = ?";
 	private static final String userTypeSql = "SELECT * FROM WebUserType WHERE  TypeId = ?";
 	private static final String uniqueCheckSql = "SELECT * FROM LUserAccount WHERE Name = ?";
 
 
-	public LUserAccount login(String name, String password) {
+	/**@author HCJ
+	 * 登录
+	 * @param name 用户名
+	 * @param password 用户密码
+	 * @param isNeedUpdate 是否需要更新登录时间
+	 * @date 2019年6月27日 上午9:56:19
+	 */
+	public LUserAccount login(String name, String password, Boolean isNeedUpdate) {
 		LUserAccount user = LUserAccount.dao.findFirst(loginSql, name, password);
 		if (user == null) {
 			throw new OperationException("用户名或者密码错误");
@@ -33,8 +41,10 @@ public class UserService extends SelectService{
 		if (!user.getInService()) {
 			throw new OperationException("此用户未启用");
 		}
-		user.setLoginTime(new Date());
-		user.update();
+		if (isNeedUpdate) {
+			user.setLoginTime(new Date());
+			user.update();
+		}
 		return user;
 	}
 
@@ -48,7 +58,7 @@ public class UserService extends SelectService{
 			throw new OperationException("用户名已存在");
 		}
 		user.setLoginTime(new Date());
-		return user.save();
+		return setDeletePermission(user).save();
 	}
 
 
@@ -66,7 +76,7 @@ public class UserService extends SelectService{
 		if (user.getLoginTime() == null) {
 			user.remove("LoginTime");
 		}
-		return user.update();
+		return setDeletePermission(user).update();
 	}
 
 
@@ -114,5 +124,17 @@ public class UserService extends SelectService{
 		if (user.getUserDes() == null || user.getUserDes().trim().isEmpty()) {
 			throw new ParameterException("用户描述不能为空");
 		}
+	}
+
+
+	private LUserAccount setDeletePermission(LUserAccount user) {
+		if (user.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE)) {
+			user.setDeletePermission(Constant.SUPER_ADMIN_DELETEPERMISSION);
+		} else if (user.getWebUserType().equals(Constant.ADMIN_USERTYPE)) {
+			return user;
+		} else {
+			user.setDeletePermission(Constant.ORDINARY_DELETEPERMISSION);
+		}
+		return user;
 	}
 }

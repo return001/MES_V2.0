@@ -14,6 +14,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.kit.StrKit;
 import com.jimi.mes_server.annotation.Access;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.DeleteTable;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -39,8 +40,6 @@ public class ReportController extends Controller {
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
-
-	private static UserService userService = Enhancer.enhance(UserService.class);
 
 	private static final int tableNum = 10;
 
@@ -175,7 +174,7 @@ public class ReportController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
 			reportService.delete(table, filter, type);
 			renderJson(ResultUtil.succeed());
 			return;
@@ -211,7 +210,7 @@ public class ReportController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
 			reportService.deleteByIds(table, filter, type);
 			renderJson(ResultUtil.succeed());
 			return;
@@ -267,7 +266,7 @@ public class ReportController extends Controller {
 				filter = filter + "(((JS_ReEndPrintTime >= '" + startTimeString + "' and JS_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReEndPrintTime is null) and (JS_ReFirstPrintTime >= '" + startTimeString + "' and JS_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReFirstPrintTime is null) and (JS_PrintTime >= '" + startTimeString + "' and JS_PrintTime <= '" + endTimeString + "')))";
 			}
 		}
-		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
 			reportService.deleteGpsManuPrintParam(filter);
 			renderJson(ResultUtil.succeed());
 			return;
@@ -319,7 +318,7 @@ public class ReportController extends Controller {
 			String endTimeString = formatDateToString(endTime, "yyyy/MM/dd HH:mm:ss");
 			filter = filter + " (((ReSDTime >= '" + startTimeString + "' and ReSDTime <= '" + endTimeString + "'))" + " or ((ReSDTime is null) and (SDTime >= '" + startTimeString + "' and SDTime <= '" + endTimeString + "')))";
 		}
-		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
 			reportService.deleteGpsManuSimDataParam(filter);
 			renderJson(ResultUtil.succeed());
 			return;
@@ -504,6 +503,21 @@ public class ReportController extends Controller {
 		if (StrKit.isBlank(imei) || StrKit.isBlank(items)) {
 			throw new ParameterException("参数不能存在空值");
 		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
+			if (reportService.cleanupInRel(imei, items)) {
+				renderJson(ResultUtil.succeed());
+			}
+			return;
+		}
+		if (user.getDeletePermission() == null) {
+			throw new OperationException("当前用户无权限清空关联表数据");
+		}
+		String relativeSheetDeletePermission = user.getDeletePermission().split(",")[0];
+		if (!Constant.EXIST_DELETEPERMISSION.equals(relativeSheetDeletePermission)) {
+			throw new OperationException("当前用户无权限清空关联表数据");
+		}
 		if (reportService.cleanupInRel(imei, items)) {
 			renderJson(ResultUtil.succeed());
 		}
@@ -619,14 +633,14 @@ public class ReportController extends Controller {
 	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "admin" })
 	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable) {
 		if (StrKit.notBlank(deleteTable) && (!deleteTable.contains(",") || deleteTable.split(",").length != tableNum)) {
 			throw new ParameterException("deleteTable参数格式错误");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (userService.getTypeName(user.getWebUserType()).equals("SuperAdmin")) {
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
 			reportService.multiTableDelete(imei, sn, zhiDan, type, deleteTable);
 			renderJson(ResultUtil.succeed());
 			return;
@@ -637,11 +651,11 @@ public class ReportController extends Controller {
 		String[] deletePermissions = user.getDeletePermission().split(",");
 		if (StrKit.isBlank(deleteTable)) {
 			for (String deletePermission : deletePermissions) {
-				if (!"1".equals(deletePermission)) {
+				if (!Constant.EXIST_DELETEPERMISSION.equals(deletePermission)) {
 					throw new OperationException("当前用户无权限批量删除");
 				}
 			}
-			deleteTable = "1,1,1,1,1,1,1,1,1,1";
+			deleteTable = Constant.SUPER_ADMIN_DELETEPERMISSION;
 		} else {
 			String[] tables = deleteTable.split(",");
 			for (int i = 0; i < tables.length; i++) {
@@ -665,7 +679,7 @@ public class ReportController extends Controller {
 	 * @param isReferred 是否与关联表相关联
 	 * @date 2019年6月14日 上午8:51:06
 	 */
-	/*@Access({ "SuperAdmin", "admin", "operator" })*/
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void selectGpsCartonBox(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null) {
 			throw new ParameterException("isReferred不能为空");
@@ -683,7 +697,7 @@ public class ReportController extends Controller {
 	 * @param isReferred 是否与关联表相关联
 	 * @date 2019年6月14日 上午8:52:47
 	 */
-	/*@Access({ "SuperAdmin" })*/
+	@Access({ "SuperAdmin" })
 	public void downloadGpsCartonBox(String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null || !isReferred) {
 			throw new ParameterException("isReferred必须为true");
@@ -717,7 +731,7 @@ public class ReportController extends Controller {
 	 * @param type 参数类型
 	 * @date 2019年6月25日 下午3:25:43
 	 */
-	/*@Access({ "SuperAdmin" })*/
+	@Access({ "SuperAdmin" })
 	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type) {
 		OutputStream output = null;
 		try {

@@ -637,7 +637,7 @@ public class ReportService extends SelectService{
 		response.setContentType("application/vnd.ms-excel");
 		ExcelHelper helper = getExcelHelper(multiTableQueryInfo, null);
 		if (helper.getBook().getNumberOfSheets() == 0) {
-			helper.getBook().createSheet("当前选择的条件没有可以备份的数据");
+			helper.getBook().createSheet("当前选择的条件没有可以导出的数据");
 			helper.write(output, false);
 		} else {
 			helper.write(output, true);
