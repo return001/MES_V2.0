@@ -19,29 +19,35 @@ public class ReworkController extends Controller {
 
 	/**@author HCJ
 	 * 获取mac返工信息
-	 * @param SN SN号
-	 * @date 2019年5月29日 上午9:47:37
+	 * @param sn SN号
+	 * @param version 软件版本
+	 * @param softModel 机型
+	 * @param mac MAC
+	 * @date 2019年6月28日 上午10:21:18
 	 */
 	@Access({ "SuperAdmin" })
-	public void getMacReworkInfo(String sn,String version,String softModel,String mac) {
-		if(!(StrKit.isBlank(sn)&&!StrKit.isBlank(mac)||!StrKit.isBlank(sn)&&StrKit.isBlank(mac))) {
+	public void getMacReworkInfo(String sn, String version, String softModel, String mac) {
+		if (!(StrKit.isBlank(sn) && !StrKit.isBlank(mac) || !StrKit.isBlank(sn) && StrKit.isBlank(mac))) {
 			throw new ParameterException("SN号和MAC地址不能同时为空或者同时存在");
 		}
-		renderJson(reworkService.getMacReworkInfo(sn,version,softModel,mac));
+		renderJson(reworkService.getMacReworkInfo(sn, version, softModel, mac));
 	}
 
 
 	/**@author HCJ
 	 * 进行mac返工操作
-	 * @param SN SN号
-	 * @date 2019年5月29日 上午9:47:57
+	 * @param sn SN号
+	 * @param version 软件版本
+	 * @param softModel 机型
+	 * @param mac MAC
+	 * @date 2019年6月28日 上午10:21:57
 	 */
 	@Access({ "SuperAdmin" })
-	public void macRework(String sn,String version,String softModel,String mac) {
-		if(!(StrKit.isBlank(sn)&&!StrKit.isBlank(mac)||!StrKit.isBlank(sn)&&StrKit.isBlank(mac))) {
+	public void macRework(String sn, String version, String softModel, String mac) {
+		if (!(StrKit.isBlank(sn) && !StrKit.isBlank(mac) || !StrKit.isBlank(sn) && StrKit.isBlank(mac))) {
 			throw new ParameterException("SN号和MAC地址不能同时为空或者同时存在");
 		}
-		if (reworkService.macRework(sn,version,softModel,mac)) {
+		if (reworkService.macRework(sn, version, softModel, mac)) {
 			renderJson(ResultUtil.succeed());
 		}
 	}

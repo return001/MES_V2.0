@@ -17,15 +17,16 @@ import com.jimi.mes_server.util.ResultUtil;
 public class OrderController extends Controller {
 
 	private static OrderService orderService = Enhancer.enhance(OrderService.class);
-	
+
 	public static final String ORDER_TABLE_NAME = "Gps_ManuOrderParam";
-	
+
+
 	@Access({ "SuperAdmin","admin","operator" })
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
 		renderJson(ResultUtil.succeed(orderService.select(ORDER_TABLE_NAME, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void update(@Para("") GpsManuorderparam order) {
 		if(orderService.update(order)) {
@@ -34,8 +35,8 @@ public class OrderController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void create(@Para("") GpsManuorderparam order) {
 		if(orderService.create(order)) {
@@ -44,8 +45,8 @@ public class OrderController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void copy(String key) {
 		if(orderService.copy(key)) {
@@ -54,8 +55,8 @@ public class OrderController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void start(String key) {
 		if(orderService.start(key)) {
@@ -64,8 +65,8 @@ public class OrderController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void finish(String key) {
 		if(orderService.finish(key)) {
@@ -74,8 +75,8 @@ public class OrderController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	
+
+
 	@Access({"SuperAdmin"})
 	public void cancel(String key) {
 		if(orderService.cancel(key)) {

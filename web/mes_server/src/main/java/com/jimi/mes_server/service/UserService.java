@@ -127,6 +127,11 @@ public class UserService extends SelectService{
 	}
 
 
+	/**@author HCJ
+	 * 根据用户类型设置表格删除权限
+	 * @param user 用户信息
+	 * @date 2019年6月28日 上午10:40:20
+	 */
 	private LUserAccount setDeletePermission(LUserAccount user) {
 		if (user.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE)) {
 			user.setDeletePermission(Constant.SUPER_ADMIN_DELETEPERMISSION);
