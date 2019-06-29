@@ -818,8 +818,8 @@ public class ReportService extends SelectService{
 		if (!dir.exists() || !dir.isDirectory()) {
 			dir.mkdirs();
 		}
-		/* File file = new File(getFilePath() + fileName); */
-		File file = new File("D:\\" + fileName);
+		File file = new File(getFilePath() + fileName);
+		/* File file = new File("D:\\" + fileName); */
 		if (file.exists()) {
 			file.delete();
 		}
