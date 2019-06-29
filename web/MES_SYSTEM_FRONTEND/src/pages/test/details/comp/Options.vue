@@ -3,17 +3,14 @@
 <template>
   <div class="options-area">
     <div class="form-row">
-      <div v-for="item in queryOptions" class="row no-gutters pl-3 pr-3">
+      <div v-for="item in queryOptions">
         <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
       </div>
-      <div class="form-group row align-items-end">
-        <div class="btn btn-secondary ml-3 mr-4" @click="initForm('test_manage')">清空条件</div>
+      <div class="form-group-btn">
+        <el-button type="primary" @click="thisFetch">查询</el-button>
       </div>
-      <div class="form-group row align-items-end">
-        <div class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</div>
-      </div>
-      <div class="form-group row align-items-end">
-        <div class="btn btn-primary ml-3 mr-4" @click="addOrder">新增</div>
+      <div class="form-group-btn">
+        <el-button type="primary" @click="addOrder">新增</el-button>
       </div>
     </div>
   </div>
@@ -26,15 +23,16 @@
   import {Datetime} from 'vue-datetime'
   import 'vue-datetime/dist/vue-datetime.css'
   import _ from 'lodash'
+  import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "Options",
     components: {
       'text-comp': {
         props: ['opt', 'callback'],
-        template: '<div class="form-group col pr-3"">\n' +
+        template: '<div class="form-group">\n' +
         '           <label :for="opt.id">{{opt.name}}</label>\n' +
-        '           <input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback">\n' +
+        '           <el-input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback" clearable></el-input>\n' +
         '          </div>'
       },
       'date-comp': {
@@ -72,9 +70,9 @@
       ]),
     },
     watch: {
-      // tableRouterApi: function (val) {
-      //   this.initForm(val);
-      // }
+      $route: function (val) {
+        this.initForm('test_manage');
+      }
     },
     methods: {
       ...mapActions(['setLoading', 'setEditing', 'setEditData']),
@@ -82,79 +80,68 @@
         let routerConfig = getTestConfig(opt);
         this.queryOptions = JSON.parse(JSON.stringify(routerConfig.data.queryOptions));
       },
+
+
       createQueryString: function () {
-        this.queryString = "";
-        this.copyQueryOptions = this.queryOptions.filter((item) => {
-          if (!(item.model === "" || item.modelFrom === "" || item.modelTo === "")) {
-            return true;
-          }
-        });
+        return new Promise((resolve, reject) => {
 
-        this.copyQueryOptions.map((item, index) => {
-          if (item.type === 'text') {
-            if (_.trim(item.model) !== "") {
-
-              if (index === 0) {
-                this.queryString += (item.id + "=" + _.trim(item.model))
-              } else {
-                this.queryString += ("&" + item.id + "=" + _.trim(item.model))
-              }
-
-            } else {
-              this.setLoading(false)
+          this.queryString = "";
+          this.copyQueryOptions = this.queryOptions.filter((item) => {
+            if (!(item.model === "" || item.modelFrom === "" || item.modelTo === "")) {
+              return true;
             }
-          } else if (item.type === 'date') {
-            if (item.modelFrom !== '' && item.modelTo !== '') {
-              let tempFrom = item.modelFrom.replace('T', ' ').replace('Z', '');
-              let tempTo = item.modelTo.replace('T', ' ').replace('Z', '');
-              if (this.compareDate(tempFrom, tempTo) >= 0) {
+          });
+
+          this.copyQueryOptions.map((item, index) => {
+            if (item.type === 'text') {
+              if (_.trim(item.model) !== "") {
+
                 if (index === 0) {
-                  this.queryString += (item.id + '>=' + tempFrom + '&' + item.id + '<=' + tempTo)
+                  this.queryString += (item.id + "#like#" + _.trim(item.model))
                 } else {
-                  this.queryString += ('&' + item.id + '>=' + tempFrom + '&' + item.id + '<=' + tempTo)
+                  this.queryString += ("#&#" + item.id + "#like#" + _.trim(item.model))
                 }
-              } else {
-                this.$alertWarning('日期格式错误');
-                this.setLoading(false)
+
+              }
+            } else if (item.type === 'date') {
+              if (item.modelFrom !== '' && item.modelTo !== '') {
+                let tempFrom = item.modelFrom.replace('T', ' ').replace('Z', '');
+                let tempTo = item.modelTo.replace('T', ' ').replace('Z', '');
+                if (this.compareDate(tempFrom, tempTo) >= 0) {
+                  if (index === 0) {
+                    this.queryString += (item.id + "#>=#" + tempFrom + "#&#" + item.id + "#<=#" + tempTo)
+                  } else {
+                    this.queryString += ("#&#" + item.id + "#>=#" + tempFrom + "#&#" + item.id + "#<=#" + tempTo)
+                  }
+                } else {
+                  reject('日期格式错误');
+                }
               }
             }
-          }
-
+          });
+          resolve()
         })
-      },
-      fetchData: function () {
-        let options = {
-          url: testSelectUrl,
-          data: {
-            pageNo: 1,
-            pageSize: 20,
-            type: this.testType,
-            descBy: 'RecordTime'
-          }
-        };
-        if (this.queryString !== "") {
-          options.data.filter = this.queryString
-        }
-        //this.setTableRouter(obj.type);
-        //this.$router.push('/_empty');
-        this.$router.replace({
-          path: '/test/test_manage',
-          query: options
-        })
-
       },
       thisFetch: function () {
-        this.createQueryString();
-        this.fetchData()
+        this.createQueryString().then(() => {
+          eventBus.$emit('testQueryData', this.queryString)
+        }).catch(err => {
+          this.$alertInfo(err);
+        });
       },
+
       compareDate: function (dateFrom, dateTo) {
         let compFrom = new Date(dateFrom);
         let compTo = new Date(dateTo);
         return (compTo - compFrom);
       },
+
       addOrder: function () {
-        this.setEditData([]);
-        this.setEditing(true)
+        if (this.$route.query.type === '2' || this.$route.query.type === '4') {
+          eventBus.$emit('editTest', ['add', []])
+        } else {
+          eventBus.$emit('editTestFunc', ['add', []])
+        }
       }
     }
   }
@@ -166,5 +153,31 @@
     border: 1px solid #eeeeee;
     border-radius: 8px;
     padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .form-group {
+    width: 200px;
+    margin-right: 20px;
+  }
+
+  .form-group /deep/ label {
+    line-height: 40px;
+  }
+
+  .form-group-btn {
+    width: 120px;
+    margin-right: 20px;
+  }
+
+  .form-group-btn .el-button {
+    width: 100%;
+    margin-top: 10px;
   }
 </style>

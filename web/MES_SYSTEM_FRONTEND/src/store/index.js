@@ -14,7 +14,22 @@ const state = {
   isEditing: false,
   editData: [],
   copyData: [],
-  testType: -1
+  testType: -1,
+  userType: '',
+  userTypeList: {},
+  tableDeleteGroup: {
+    'DataRelativeSheet': [],
+    'DataRelativeUnique': [],
+    'Gps_AutoTest_Result': [],
+    'Gps_AutoTest_Result3': [],
+    'Gps_CartonBoxTwenty_Result': [],
+    'Gps_CoupleTest_Result': [],
+    'Gps_ManuPrintParam': [],
+    'NetMarkIMEI': [],
+    'Gps_ManuSimDataParam': [],
+    'Gps_TestResult': []
+  },
+  delPermission: []
 };
 
 const store = new Vuex.Store({

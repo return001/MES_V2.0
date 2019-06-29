@@ -49,7 +49,7 @@
       linkTo: function (obj) {
         if (this.$route.fullPath !== (obj.link + '?type=' + obj.type)) {
           //this.setTableRouter(obj.type);
-          this.setLoading(true);
+          this.$openLoading();
           this.$router.push({
             path: obj.link,
             query: {

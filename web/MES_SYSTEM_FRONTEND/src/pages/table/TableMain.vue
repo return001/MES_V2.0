@@ -3,12 +3,12 @@
   <div>
     <!--<Header/>-->
     <loading v-if="$store.state.isLoading"/>
-    <div class="" style="margin-left: 60px;">
-      <div class="row main-style">
+    <div class="main-container" style="margin-left: 52px;">
+      <div class="main-style">
         <div class="side-bar">
           <side-bar/>
         </div>
-        <div class="col router-style mt-3 mb-3" style="margin-left: 255px;">
+        <div class="router-style" style="margin-left: 252px;">
           <router-view/>
         </div>
       </div>
@@ -18,10 +18,10 @@
 </template>
 
 <script>
-  import Header from '../../components/PageHeader'
+  import Header from '@/components/PageHeader'
   import SideBar from './details/comp/SideBar'
   import Loading from '@/components/Loading'
-  import SideSetting from '../../components/SideSetting'
+  import SideSetting from '@/components/SideSetting'
 
   export default {
     name: "Main",
@@ -60,6 +60,8 @@
     box-shadow: 5px 0 5px 0 #ddd;
     height: 100%;
     padding: 0 20px;
+    overflow-y: auto;
+    width: 200px;
   }
 
   .main-style {

@@ -3,12 +3,12 @@
   <div>
     <!--<Header/>-->
     <loading v-if="$store.state.isLoading"/>
-    <div class="" style="margin-left: 60px;">
+    <div class="" style="margin-left: 52px;">
       <div class="row main-style">
           <div class="side-bar">
             <side-bar/>
           </div>
-        <div class="col router-style mt-3 mb-3" style="margin-left: 255px;" v-if="$store.state.testType !== -1">
+        <div class="router-style" style="margin-left: 217px;" v-if="$store.state.testType !== -1">
           <router-view/>
         </div>
       </div>
@@ -43,11 +43,11 @@
 <style scoped>
   @media (min-width: 640px) {
     .side-bar {
-      width: 250px;
+      width: 160px;
     }
 
     .router-style {
-      min-width: 340px;
+      min-width: 290px;
     }
   }
 

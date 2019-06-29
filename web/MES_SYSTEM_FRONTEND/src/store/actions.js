@@ -25,3 +25,17 @@ export const setCopyData = ({commit}, copyData) => {
 export const setTestType = ({commit}, testType) => {
   commit('setTestType', testType)
 };
+export const setUserType = ({commit}, userType) => {
+  commit('setUserType', userType)
+};
+export const setUserTypeList = ({commit}, userTypeList) => {
+  commit('setUserTypeList', userTypeList)
+};
+
+export const setDelPermission = ({commit}, list) => {
+  commit('setDelPermission', list)
+};
+
+export const setTableDeleteGroup = ({commit}, object) => {
+  commit('setTableDeleteGroup', object)
+};

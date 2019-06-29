@@ -24,3 +24,16 @@ export const setCopyData = (state, copyData) => {
 export const setTestType = (state, testType) => {
   state.testType = testType
 };
+export const setUserType = (state, userType) => {
+  state.userType = userType
+};
+export const setUserTypeList = (state, userTypeList) => {
+  Object.assign(state.userTypeList, userTypeList);
+};
+export const setDelPermission = (state, list) => {
+  Object.assign(state.delPermission, list);
+};
+
+export const setTableDeleteGroup = (state, obj) => {
+  state.tableDeleteGroup[obj.key] = obj.val
+};

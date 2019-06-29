@@ -46,8 +46,7 @@
   import Bus from '@/utils/eventBus'
   import CreateRelation from '../comp/CreateRelation'
   import {mapActions} from 'vuex'
-  import {getOrderConfig, orderSelectUrl} from "../../../../config/orderApiConfig";
-  import {orderOperUrl} from "../../../../config/orderApiConfig";
+  import {getOrderConfig, orderSelectUrl, orderOperUrl} from "../../../../config/orderApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
   import {errHandler} from "../../../../utils/errorHandler";
 
@@ -65,6 +64,7 @@
     },
     props: ['row'],
     mounted(){
+      Bus.$off('closeRelPanel');
       Bus.$on('closeRelPanel', (val) => {
         this.isCreatingRel = val;
       })

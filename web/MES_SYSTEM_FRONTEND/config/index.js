@@ -10,14 +10,14 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/mes_system',
-    proxyTable: [
-      {
-        context: ['/api'],
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false
-      }
-    ],
+    // proxyTable: [
+    //   {
+    //     context: ['/api'],
+    //     target: 'http://10.10.11.90:10000/mock/5c1a00070a62aa1c2dde4ce4',
+    //     changeOrigin: true,
+    //     secure: false
+    //   }
+    // ],
 
     // Various Dev Server settings
     host: '0.0.0.0', // can be overwritten by process.env.HOST
@@ -50,7 +50,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/mes_system',
+    assetsPublicPath: '/mes_system/',
 
     /**
      * Source Maps

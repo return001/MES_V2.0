@@ -177,7 +177,7 @@
           return;
         }
         if (!this.isPending) {
-          //this.setLoading(true);
+          //this.$openLoading();
           let options = {
             url: relationUpdateUrl,
             data: {
@@ -193,7 +193,7 @@
             }
           }
           axiosFetch(options).then(response => {
-            this.setLoading(false);
+            this.$closeLoading();
             this.isPending = false;
             if (response.data.result === 200){
               this.$alertSuccess("添加成功");
@@ -204,7 +204,7 @@
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
-            this.setLoading(false);
+            this.$closeLoading();
             this.isPending = false;
             console.log(JSON.stringify(err));
             this.$alertDanger('请求超时，清刷新重试')

@@ -1,16 +1,14 @@
 <!--顶栏组件-->
 
 <template>
-  <nav class="navbar navbar-light shadow-sm">
+  <div class="navbar">
     <div class="container">
-
-      <a class="navbar-brand" draggable="false">
-        <span>
-          <img src="/mes_system/static/img/logo.png" class="nav-logo" draggable="false">
-        </span>
-        智能生产控制系统</a>
+      <div class="navbar-brand">
+        <img src="/mes_system/static/img/logo.png" class="nav-logo" draggable="false">
+      </div>
+      <span class="navbar-text" draggable="false">智能生产控制系统</span>
     </div>
-  </nav>
+  </div>
 </template>
 
 <script>
@@ -18,20 +16,27 @@
 </script>
 
 <style scoped>
-  .nav-logo {
-    width: 56px;
+  .navbar {
+    background: #3875ff;
+  }
+
+  .container {
+    display: flex;
+    width: 400px;
+    height: 58px;
   }
 
   .navbar-brand {
-    font-size: 1.6em;
-    color: #fff !important;
+    margin: 0 6px;
   }
 
-  nav a:not, nav a:hover {
-    color: #fff !important;
+  .navbar-brand, .navbar-brand img {
+    width: 54px;
   }
 
-  nav {
-    background: #3875ff;
+  .navbar-text {
+    color: #ffffff;
+    line-height: 58px;
+    font-size: 24px;
   }
 </style>

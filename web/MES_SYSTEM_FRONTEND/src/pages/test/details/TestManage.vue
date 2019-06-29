@@ -1,17 +1,17 @@
 <!--订单配置页面根组件-->
 <template>
-  <div>
+  <div class="test-manager">
     <options/>
     <table-details/>
-    <transition name="fade">
-      <edit-panel v-if="isEditing" :editData="editData"/>
-    </transition>
+    <edit-func-panel/>
+    <edit-panel/>
   </div>
 </template>
 
 <script>
   import Options from './comp/Options'
   import TableDetails from './comp/TableDetails'
+  import EditFuncPanel from './comp/EditFuncPanel'
   import EditPanel from './comp/EditPanel'
   import {mapGetters, mapActions} from 'vuex'
 
@@ -26,15 +26,21 @@
     components: {
       Options,
       TableDetails,
+      EditFuncPanel,
       EditPanel
     }
   }
 </script>
 
 <style scoped>
+  .test-manager {
+    padding-top: 20px;
+    padding-right: 20px;
+  }
   .fade-enter-active, .fade-leave-active {
     transition: opacity .5s;
   }
+
   .fade-enter, .fade-leave-to {
     opacity: 0;
   }

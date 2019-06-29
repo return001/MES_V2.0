@@ -25,3 +25,17 @@ export const copyData = (state) => {
 export const testType = (state) => {
   return state.testType
 };
+
+export const userType = (state) => {
+  return state.userType
+};
+export const userTypeList = (state) => {
+  return state.userTypeList
+};
+export const delPermission = (state) => {
+  return state.delPermission
+};
+
+export const tableDeleteGroup = (state) => {
+  return state.tableDeleteGroup
+};

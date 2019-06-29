@@ -1,12 +1,12 @@
 <!--配置功能统一导航-->
 <template>
-  <div class="mt-3 mb-3">
+  <div id="test-sidebar">
     <nav>
       <div class="sidebar-items">
         <!--订单配置-->
         <div class="sidebar-title">
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTest0" aria-expanded="false"
-             aria-controls="collapseTest0">SMT测试数据库</a>
+             aria-controls="collapseTest0">SMT测试</a>
         </div>
         <div class="collapse show" id="collapseTest0">
           <div @click="toggleState(item.type)" v-for="item in linkList0">
@@ -17,7 +17,7 @@
         </div>
         <div class="sidebar-title">
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTest1" aria-expanded="false"
-             aria-controls="collapseTest1">组装测试数据库</a>
+             aria-controls="collapseTest1">组装测试</a>
         </div>
         <div class="collapse show" id="collapseTest1">
           <div @click="toggleState(item.type)" v-for="item in linkList1">
@@ -28,10 +28,21 @@
         </div>
         <div class="sidebar-title">
           <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTest2" aria-expanded="false"
-             aria-controls="collapseTest2">研发测试数据库</a>
+             aria-controls="collapseTest2">研发测试</a>
         </div>
         <div class="collapse show" id="collapseTest2">
           <div @click="toggleState(item.type)" v-for="item in linkList2">
+            <div class="sidebar-link" @click="linkTo(item.type)" :class="activeItem === item.type ? 'active' : ''">
+              {{item.name}}
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-title">
+          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTest3" aria-expanded="false"
+             aria-controls="collapseTest3">OQC</a>
+        </div>
+        <div class="collapse show" id="collapseTest3">
+          <div @click="toggleState(item.type)" v-for="item in linkList3">
             <div class="sidebar-link" @click="linkTo(item.type)" :class="activeItem === item.type ? 'active' : ''">
               {{item.name}}
             </div>
@@ -54,27 +65,33 @@
         linkList0: [
           {
             type: '0',
-            name: '功能测试配置'
+            name: '功能测试'
           },
         ],
         linkList1: [
           {
             type: '1',
-            name: 'SMT功能测试配置'
+            name: '功能测试'
           },
           {
             type: '2',
-            name: '耦合写号测试配置'
+            name: '耦合测试'
           }
         ],
         linkList2: [
           {
             type: '3',
-            name: '功能测试配置'
+            name: '功能测试'
           },
           {
             type: '4',
-            name: '耦合写号测试配置'
+            name: '耦合测试'
+          }
+        ],
+        linkList3: [
+          {
+            type: '5',
+            name: 'OQC'
           }
         ],
 
@@ -101,7 +118,7 @@
       },
       linkTo: function (val) {
         if (val !== this.$route.query.type){
-          this.setLoading(true);
+          this.$openLoading();
           this.setTestType(val);
           this.$router.push({
             path: '/test/test_manage',
@@ -124,7 +141,9 @@
     color: #000;
   }
 
-  .sidebar {
+  #test-sidebar {
+    margin: 20px 0;
+    width: 160px;
   }
 
   .sidebar-items {

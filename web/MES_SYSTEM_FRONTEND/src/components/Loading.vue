@@ -18,7 +18,7 @@
     z-index: 20000;
     position: absolute;
     display: flex;
-    width: 100%;
+    width: 95%;
     height: 80%;
     justify-content: center;
     align-items: center;

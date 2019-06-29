@@ -33,11 +33,10 @@ axios.interceptors.response.use(
     if (res.data.result === 401){
       store.commit('setLoginToken', '');
       localStorage.removeItem('token');
-      alertWarning('权限不足');
       router.replace({
         path: '/login',
         query: {redirect: router.currentRoute.fullPath}
-      })
+      });
     }
     return res
   },

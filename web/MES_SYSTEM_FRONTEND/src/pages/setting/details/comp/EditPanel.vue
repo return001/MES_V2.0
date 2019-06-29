@@ -1,422 +1,165 @@
 <!--订单配置页面的统一编辑页面-->
 <template>
-  <div class="edit-panel-container ">
-    <div class="edit-panel">
-      <div class="form-row">
-        <div class="form-group col-2 mb-0">
-          <h2>{{isUpdate === true ? '更新表单:' : ''}} {{isCreate === true ? '创建表单:' : ''}}</h2>
-        </div>
-      </div>
+  <el-dialog id="edit-panel" v-if="isEditing" :visible.sync="isEditing" :title="isCreate ? '创建表单:' : '更新表单'" width="90%" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false">
+    <div class="edit-panel-container">
       <div class="form-row mb-3">
         <div class="form-group col-3">
-          <label for="edit-ZhiDan" class="col-form-label">制单号:{{formData[4].notNull === true ? '*' : ''}}</label>
-          <input type="text" id="edit-ZhiDan"
-                 class="form-control"
-                 v-model="formData[4].value"
-                 :disabled="!isCreate">
+          <label for="edit-ZhiDan" class="col-form-label">制单号:{{!!formData[0].notNull ? '*' : ''}}</label>
+          <el-input type="text" id="edit-ZhiDan"
+                    class="form-control"
+                    v-model="formData[0].value"
+                    :disabled="!isCreate" clearable></el-input>
         </div>
         <div class="form-group col-3" v-if="isUpdate">
-          <label for="edit-Status" class="col-form-label">状态:{{formData[3].notNull === true ? '*' : ''}}</label>
-          <select id="edit-Status" class="custom-select"
-                  v-model="formData[3].value" :disabled="!isCreate">
-            <option value="" disabled>请选择</option>
-            <option value="0">未开始</option>
-            <option value="1">进行中</option>
-            <option value="2">已完成</option>
-            <option value="3">已作废</option>
-          </select>
+          <label for="edit-Status" class="col-form-label">状态:{{!!formData[1].notNull ? '*' : ''}}</label>
+          <el-select id="edit-Status" class="custom-select"
+                     v-model="formData[1].value" :disabled="!isCreate">
+            <el-option v-for="item in formData[1].valueList" :value="item.key" :label="item.label" :key="item.key"></el-option>
+          </el-select>
         </div>
 
       </div>
-      <div class="dropdown-divider"></div>
+      <div class="divider"></div>
       <div class="form-row">
-        <div class="form-group col-2 mb-0" v-for="(item, index) in formData" v-if="index >= 5">
-          <div v-if="index !== 25">
-            <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{item.notNull === true ? '*' :
+        <div class="form-group" v-for="(item, index) in formData" v-if="index >= 2">
+          <div v-if="item.type === 'text'">
+            <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{!!item.notNull ? '*' :
               ''}}</label>
-            <input type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
-                   :disabled="(!isCreate) && (formData[3].value !== 0)">
+            <el-input type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
+                      :disabled="(!isCreate) && (formData[1].value !== 0)" clearable></el-input>
           </div>
-          <div v-if="index === 25">
-            <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{item.notNull === true ? '*' :
+          <div v-if="item.type === 'select'">
+            <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{!!item.notNull ? '*' :
               ''}}</label>
-            <select type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
-                    :disabled="(!isCreate) && (formData[3].value !== 0)">
-              <option value="" disabled>请选择</option>
-              <option value="无绑定">无绑定</option>
-              <option value="与SMI卡绑定">与SMI卡绑定</option>
-              <option value="与SIM&BAT绑定">与SIM&BAT绑定</option>
-              <option value="与SIM&VIP绑定">与SIM&VIP绑定</option>
-              <option value="与BAT绑定">与BAT绑定</option>
-            </select>
+            <el-select type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
+                       :disabled="(!isCreate) && (formData[1].value !== 0)">
+              <el-option value="" disabled>请选择</el-option>
+              <el-option v-for="i in item.valueList" :key="i.key" :value="i.key" :label="i.label"></el-option>
+            </el-select>
           </div>
         </div>
         <p class="form-control-sm">* 为非空项目</p>
 
       </div>
-      <div class="dropdown-divider"></div>
-      <div class="form-row justify-content-around">
-        <button type="button" class="btn btn-secondary col-2 text-white" @click="closePanel">取消</button>
-        <button type="button" class="btn btn-primary col-2 text-white" @click="btnHandler"
-                :disabled="(!isCreate) && (formData[3].value !== 0)">提交
-        </button>
+      <div class="divider"></div>
+      <div class="edit-panel-btn-group">
+        <el-button type="info" @click="initData">取消</el-button>
+        <el-button type="primary" @click="editData"
+                   :disabled="(!isCreate) && (formData[1].value !== 0)">提交
+        </el-button>
       </div>
     </div>
-  </div>
+  </el-dialog>
 </template>
 
 <script>
   import {mapGetters, mapActions} from 'vuex'
-  import {orderOperUrl} from "../../../../config/orderApiConfig";
+  import {orderOperUrl, getOrderEditOptions} from "../../../../config/orderApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
   import {errHandler} from "../../../../utils/errorHandler";
   import _ from 'lodash'
+  import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "EditPanel",
     //props: ['editData'],
     data() {
       return {
+        isEditing: false,
         isCreate: false,
         isUpdate: false,
+        editType: '',
+        sourceData: [],
         formData: [],
         isPending: false
       }
     },
-    computed: {
-      ...mapGetters(['editData', 'copyData'])
-    },
     created: function () {
-      if (this.editData.length !== 0) {
-        this.isCreate = false;
-        this.isUpdate = true;
-        this.formData = JSON.parse(JSON.stringify(this.editData))
-      } else if (this.copyData.length !== 0) {
-        this.isCreate = true;
-        this.isUpdate = false;
-        this.formData = JSON.parse(JSON.stringify(this.copyData));
-      } else {
-        this.isCreate = true;
-        this.isUpdate = false;
-        this.formData = [
-          {
-            "title": "序号",
-            "field": "Id",
-            "value": ''
-          }, {
-            "title": "序号",
-            "field": "showId",
-            "value": ''
-          }, {
-            "title": "状态",
-            "field": "ShowStatus",
-            "value": ''
-          }, {
-            "title": "状态",
-            "field": "Status",
-            "value": ''
-          }, {
-            "title": "制单号",
-            "field": "ZhiDan",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "型号",
-            "field": "SoftModel",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "SN1",
-            "field": "SN1",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "SN2",
-            "field": "SN2",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "SN3",
-            "field": "SN3",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "箱号1",
-            "field": "BoxNo1",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "箱号2",
-            "field": "BoxNo2",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "生产日期",
-            "field": "ProductDate",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "颜色",
-            "field": "Color",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "重量",
-            "field": "Weight",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "数量",
-            "field": "Qty",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "产品编号",
-            "field": "ProductNo",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "版本",
-            "field": "Version",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "起始IMEI号",
-            "field": "IMEIStart",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "终止IMEI号",
-            "field": "IMEIEnd",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "起始SIM卡号",
-            "field": "SIMStart",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "终止SIM卡号",
-            "field": "SIMEnd",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "起始BAT号",
-            "field": "BATStart",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "终止BAT号",
-            "field": "BATEnd",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "起始VIP号",
-            "field": "VIPStart",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "终止VIP号",
-            "field": "VIPEnd",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "IMEI关联",
-            "field": "IMEIRel",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "TAC信息",
-            "field": "TACInfo",
-            "value": '',
-            "notNull": true
-          }, {
-            "title": "公司名",
-            "field": "CompanyName",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "备注1",
-            "field": "Remark1",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "备注2",
-            "field": "Remark2",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "备注3",
-            "field": "Remark3",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "备注4",
-            "field": "Remark4",
-            "value": '',
-            "notNull": false
-          }, {
-            "title": "备注5",
-            "field": "Remark5",
-            "value": '',
-            "notNull": false
-          }, {"field": 'JST_template', "title": 'JST模板', "value": '', "notNull": false},
-          {"field": 'CHT_template1', "title": 'CHT模板1', "value": '', "notNull": false},
-          {"field": 'CHT_template2', "title": 'CHT模板2', "value": '', "notNull": false},
-          {"field": 'BAT_prefix', "title": 'BAT前缀', "value": '', "notNull": false},
-          {"field": 'BAT_digits', "title": 'BAT位数', "value": '', "notNull": false},
-          {"field": 'SIM_prefix', "title": 'SIM前缀', "value": '', "notNull": false},
-          {"field": 'SIM_digits', "title": 'SIM位数', "value": '', "notNull": false},
-          {"field": 'VIP_prefix', "title": 'VIP前缀', "value": '', "notNull": false},
-          {"field": 'VIP_digits', "title": 'VIP位数', "value": '', "notNull": false},
-          {"field": 'ICCID_prefix', "title": 'ICCID前缀', "value": '', "notNull": false},
-          {"field": 'ICCID_digits', "title": 'ICCID位数', "value": '', "notNull": false},
-          {"field": 'IMEIPrints', "title": 'IMEI打印', "value": '', "notNull": false},
-          {"field": 'MAC_prefix', "title": 'MAC前缀', "value": '', "notNull": false},
-          {"field": 'MAC_digits', "title": 'MAC位数', "value": '', "notNull": false},
-          {"field": 'Equipment_prefix', "title": 'Equipment前缀', "value": '', "notNull": false},
-          {"field": 'Equipment_digits', "title": 'Equipment位数', "value": '', "notNull": false},]
-      }
     },
     mounted: function () {
 
+      /*edit data $emit at src/pages/setting/details/comp/TableDetails*/
+      eventBus.$off('editOrder');
+      eventBus.$on('editOrder', data => {
+        //data: [editType, originData]
+        this.editType = data[0];
+        this.sourceData = data[1];
+        if (data[0] === 'edit') {
+          this.isCreate = false;
+          this.isUpdate = true;
+          this.formData = JSON.parse(JSON.stringify(getOrderEditOptions()));
+          for (let i = 0; i < this.formData.length; i++) {
+            this.formData[i].value = data[1][this.formData[i].field]
+          }
+        } else if (data[0] === 'copy') {
+          this.isCreate = true;
+          this.isUpdate = false;
+          this.formData = JSON.parse(JSON.stringify(getOrderEditOptions()));
+          for (let i = 0; i < this.formData.length; i++) {
+            this.formData[i].value = data[1][this.formData[i].field]
+          }
+        } else if (data[0] === 'add') {
+          this.isCreate = true;
+          this.isUpdate = false;
+          this.formData = JSON.parse(JSON.stringify(getOrderEditOptions()));
+        }
+        this.isEditing = true;
+      })
 
     },
     methods: {
-      ...mapActions(['setEditing', 'setEditData', 'setCopyData']),
-      closePanel: function () {
-        this.setEditData([]);
-        this.setCopyData([]);
-        this.setEditing(false)
+      ...mapActions(['setLoading']),
+      initData: function () {
+        Object.assign(this.$data, this.$options.data())
       },
-      updateData: function () {
+      editData: function () {
         this.isPending = true;
-        let tempData = {
-          id: this.formData[0].value
-
-        };
-        for (let i = 4; i < this.formData.length; i++) {
-          if (this.formData[i].notNull === true) {
-            if (_.trim(this.formData[i].value) !== "") {
-              tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
-            } else {
-              this.$alertWarning("存在不能为空数据");
-              return
-            }
-          }
-          else {
-            tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
-          }
-        }
-        switch (tempData['iMEIRel']) {
-          case '无绑定':
-            tempData['iMEIRel'] = 0;
-            break;
-          case '与SIM卡绑定':
-            tempData['iMEIRel'] = 1;
-            break;
-          case '与SIM&BAT绑定':
-            tempData['iMEIRel'] = 2;
-            break;
-          case '与SIM&VIP绑定':
-            tempData['iMEIRel'] = 3;
-            break;
-          case '与BAT绑定':
-            tempData['iMEIRel'] = 4;
-            break;
-        }
-
-        let options = {
-          url: orderOperUrl + '/update',
-          data: tempData
-        };
-        axiosFetch(options).then(res => {
-          if (res.data.result === 200) {
-            this.$alertSuccess('更新成功');
-            this.setEditing(false);
-            this.setEditData([]);
-            let tempUrl = this.$route.path;
-            //console.log(this.$route.url)
-            this.$router.replace('/_empty')
-            this.$router.replace(tempUrl)
-          } else if (res.data.result === 400) {
-            this.$alertInfo('请检查格式并重试')
-          } else {
-            errHandler(res.data.result)
-          }
-        }).catch(err => {
-          this.$alertDanger('请求超时，请刷新重试')
-        })
-      },
-      createData: function () {
-        this.isPending = true;
+        this.$openLoading();
         let tempData = {};
-        for (let i = 4; i < this.formData.length; i++) {
-          if (this.formData[i].notNull === true) {
+        if (this.editType === 'edit') {
+          tempData.id = this.sourceData.Id
+        } else {
+          tempData.zhiDan = this.formData[0].value
+        }
+        for (let i = 2; i < this.formData.length; i++) {
+          if (!!this.formData[i].notNull) {
             if (_.trim(this.formData[i].value) !== "") {
               tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
             } else {
               this.$alertWarning("存在不能为空数据");
+              this.isPending = false;
+              this.$closeLoading();
               return
             }
-          }
-          else if (_.trim(this.formData[i].value) !== "") {
+          } else {
             tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
           }
         }
-        switch (tempData['iMEIRel']) {
-          case '无绑定':
-            tempData['iMEIRel'] = 0;
-            break;
-          case '与SMI卡绑定':
-            tempData['iMEIRel'] = 1;
-            break;
-          case '与SIM&BAT绑定':
-            tempData['iMEIRel'] = 2;
-            break;
-          case '与SIM&VIP绑定':
-            tempData['iMEIRel'] = 3;
-            break;
-          case '与BAT绑定':
-            tempData['iMEIRel'] = 4;
-            break;
-        }
         let options = {
-          url: orderOperUrl + '/create',
           data: tempData
         };
+        if (this.editType === 'edit') {
+          options.url = orderOperUrl + '/update'
+        } else {
+          options.url = orderOperUrl + '/create'
+        }
         axiosFetch(options).then(res => {
           if (res.data.result === 200) {
-            this.$alertSuccess('添加成功');
-            this.setEditing(false);
-            this.setCopyData([]);
+            this.$alertSuccess(res.data.data);
             let tempUrl = this.$route.path;
             this.$router.replace('/_empty');
-            this.$router.replace(tempUrl)
-          } else if (res.data.result === 412) {
-            this.$alertWarning('请检查格式并重试');
-            this.setEditing(false);
-          } else if (res.data.result === 400) {
-            this.$alertWarning('该制单号已存在');
-            this.setEditing(false);
+            this.$router.replace(tempUrl);
+            this.initData();
           } else {
-            errHandler(res.data.result)
+            this.$alertWarning(res.data.data)
           }
         }).catch(err => {
-          console.log(JSON.stringify(err))
+          console.log(JSON.stringify(err));
           this.$alertDanger('请求超时，请刷新重试');
+        }).finally(() => {
+          this.isPending = false;
+          this.$closeLoading();
         })
-      },
-      btnHandler: function () {
-        if (!this.isPending) {
-          if (this.isCreate) {
-            this.createData();
-            this.isPending = false;
-          } else if (this.isUpdate) {
-            this.updateData();
-            this.isPending = false;
-          }
-        }
       },
       formatCase: function (str) {
         if (str.indexOf('_') > -1) {
@@ -435,46 +178,33 @@
 </script>
 
 <style scoped>
-  .edit-panel-container {
-    position: fixed;
-    /*display: flex;*/
-    /*align-items: center;*/
-    /*justify-content: center;*/
-    /*height: 100%;*/
-    padding: 20px;
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .form-group {
+    width: 200px;
+    margin-right: 20px;
+  }
+
+  .form-group /deep/ label {
+    line-height: 30px;
+  }
+  .edit-panel-btn-group {
     width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    background: rgba(0, 0, 0, 0.1);
-    z-index: 101;
+    display: flex;
+    justify-content: center;
+  }
+  .edit-panel-btn-group .el-button {
+    width: 100px;
   }
 
-  .edit-panel {
-    background: #ffffff;
-    height: 100%;
+  .divider {
+    border-top: 1px solid #eee;
     width: 100%;
-    z-index: 102;
-    border-radius: 10px;
-    box-shadow: 3px 3px 20px 1px #bbb;
-    padding: 30px 60px 10px 60px;
-    overflow: scroll;
-    scroll-snap-type: inline;
-  }
-  .edit-panel::-webkit-scrollbar {
-    width: 10px;
-    height: 1px;
-  }
-
-  .edit-panel::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
-    background: rgba(54, 54, 54, 0.14);
-  }
-
-  .edit-panel::-webkit-scrollbar-track {
-    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
-    border-radius: 10px;
-    background: #EDEDED;
+    margin: 20px 0;
   }
 </style>

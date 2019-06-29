@@ -1,76 +1,44 @@
 <!--表单查看页面的统一侧边栏导航-->
 
 <template>
-  <div class="mt-3 mb-3">
+  <div class="sidebar">
     <nav>
       <div class="sidebar-items">
-        <!--透传数据-->
         <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapsePenetrate" aria-expanded="false"
-             aria-controls="collapsePenetrate">透传数据</a>
+          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseDatatable" aria-expanded="false"
+             aria-controls="collapseDatatable">数据表</a>
         </div>
-        <div class="collapse show" id="collapsePenetrate">
-          <div v-for="data in penetrateLib" @click="toggleState(data.name)">
-            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-          </div>
-        </div>
-        <!--各工位测试结果-->
-        <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseTestResult" aria-expanded="false"
-             aria-controls="collapseTestResult">各工位测试结果</a>
-        </div>
-        <div class="collapse show" id="collapseTestResult">
-          <div v-for="data in testResultLib" @click="toggleState(data.name)">
-            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-
-          </div>
-        </div>
-        <!--绑定结果-->
-        <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseBindResult" aria-expanded="false"
-             aria-controls="collapseBindResult">绑定结果</a>
-        </div>
-        <div class="collapse show" id="collapseBindResult">
-          <div v-for="data in bindResultLib" @click="toggleState(data.name)">
-            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-
-          </div>
-        </div>
-        <!--卡通结果-->
-       <!-- <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseCartonResult"
-             aria-expanded="false" aria-controls="collapseCartonResult">卡通结果</a>
-        </div>
-        <div class="collapse" id="collapseCartonResult">
-          <div v-for="data in cartonResultLib" @click="toggleState(data.name)">
-            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-
-          </div>
-        </div>-->
-        <!--操作记录-->
-        <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#operationRecord" aria-expanded="false"
-             aria-controls="operationRecord">操作记录</a>
-        </div>
-        <div class="collapse show" id="operationRecord">
-          <div v-for="data in operationRecord" @click="toggleState(data.name)">
-            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-
+        <div class="collapse show" id="collapseDatatable">
+          <div v-for="data in database" @click="toggleState(data.type)">
+            <div class="sidebar-link" @click="linkTo(data)" :class="activeItem === data.type ? 'active' : ''">
+              {{data.name}}
+            </div>
           </div>
         </div>
         <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#totalRecord" aria-expanded="false"
-             aria-controls="operationRecord">总结果</a>
+          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseMulti" aria-expanded="false"
+             aria-controls="collapseMulti">多表查询</a>
         </div>
-        <div class="collapse show" id="totalRecord">
-          <div v-for="data in totalRecord" @click="toggleState(data.name)">
-            <div class="sidebar-link"  @click="linkTo(data)" :class="activeItem === data.name ? 'active' : ''">{{data.name}}</div>
-
+        <div class="collapse show" id="collapseMulti">
+          <div @click="toggleState('multi')">
+            <div class="sidebar-link" @click="routerPush('/multi')" :class="activeItem === 'multi' ? 'active' : ''">
+              多表查询
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-title">
+          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapseBackup" aria-expanded="false"
+             aria-controls="collapseBackup">备份</a>
+        </div>
+        <div class="collapse show" id="collapseBackup">
+          <div @click="toggleState('backups')">
+            <div class="sidebar-link" @click="routerPush('/backups')" :class="activeItem === 'backups' ? 'active' : ''">
+              备份查询
+            </div>
           </div>
         </div>
       </div>
     </nav>
-
   </div>
 </template>
 
@@ -80,113 +48,53 @@
   export default {
     data() {
       return {
-
-
-        //透传数据的子类
-        penetrateLib: [
+        database: [
           {
-            type: "GpsSMT_TcData",
-            link: "/table/details",
-            name: "SMT状态"
+            type: "DataRelativeSheet",
+            name: "关联表"
           },
           {
-            type: "GpsTcData",
-            link: "/table/details",
-            name: "组装情况"
+            type: "DataRelativeUnique",
+            name: "绑定数据表"
           },
-          // {
-          //   type: "",
-          //   link: "/",
-          //   name: "透传数据总报表"
-          // }
-        ],
-        //测试结果的子类
-        testResultLib: [
           {
             type: "Gps_AutoTest_Result",
-            link: "/table/details",
-            name: "SMT功能测试"
-          },
-          {
-            type: "Gps_AutoTest_Result2",
-            link: "/table/details",
-            name: "组装功能测试1"
+            name: "前段功能表"
           },
           {
             type: "Gps_AutoTest_Result3",
-            link: "/table/details",
-            name: "组装功能测试2"
-          },
-          {
-            type: "Gps_CoupleTest_Result",
-            link: "/table/details",
-            name: "耦合测试"
-          },
-          {
-            type: "Gps_ParamDownload_Result",
-            link: "/table/details",
-            name: "软件参数下载"
+            name: "老化后功能表"
           },
           {
             type: "Gps_CartonBoxTwenty_Result",
-            link: "/table/details",
-            name: "卡通结果"
+            name: "卡通箱表"
           },
           {
-            type: "Gps_ManuLdParam",
-            link: "/table/details",
-            name: "镭雕数据记录"
+            type: "Gps_CoupleTest_Result",
+            name: "耦合表"
           },
           {
-            type: "JS_PrintTime",
-            link: "/table/details",
-            name: "机身打印结果"
+            type: "Gps_ManuCpParam",
+            name: "比对表"
           },
           {
-            type: "CH_PrintTime",
-            link: "/table/details",
-            name: "彩盒帖打印结果"
-          }
-
-          // {
-          //   type: "",
-          //   link: "/",
-          //   name: "绑定结果总报表"
-          // }
-        ],
-        // cartonResultLib: [
-        //   {
-        //     type: "Gps_CartonBoxTwenty_Result",
-        //     link: "/table/details",
-        //     name: "卡通结果"
-        //   }
-        // ],
-        operationRecord: [
+            type: "Gps_ManuPrintParam",
+            name: "机身彩盒打印记录表",
+            path: '/details_sp'
+          },
           {
-            type: "Gps_OperRecord",
-            link: "/table/details",
-            name: "操作记录"
-          }
-        ],
-        totalRecord: [
+            type: "NetMarkIMEI",
+            name: "网标与IMEI绑定表"
+          },
+          {
+            type: "Gps_ManuSimDataParam",
+            name: "种子物联网卡表",
+            path: '/details_sp'
+          },
           {
             type: "Gps_TestResult",
-            link: "/table/details",
-            name: "总结果"
+            name: "总表"
           }
-        ],
-        //绑定结果的子类
-        bindResultLib: [
-          {
-            type: "DataRelativeSheet",
-            link: "/table/details",
-            name: "绑定关系查询"
-          },
-          // {
-          //   type: "",
-          //   link: "/",
-          //   name: "总关系"
-          // }
         ],
         //控制列表active状态，当前已激活的项目
         activeItem: ""
@@ -194,7 +102,18 @@
       }
     },
     mounted: function () {
-
+      this.toggleState(this.$route.query.type);
+      if (this.$route.path === '/table/backups') {
+        this.toggleState('backups');
+      }
+    },
+    watch: {
+      $route: function (val) {
+        this.toggleState(this.$route.query.type);
+        if (this.$route.path === '/table/backups') {
+          this.toggleState('backups');
+        }
+      }
     },
     computed: {
       ...mapGetters([
@@ -206,19 +125,21 @@
       ...mapActions(['setTableRouter', 'setLoading']),
       toggleState: function (item) {
         this.activeItem = item;
-
       },
       linkTo: function (obj) {
-        if (this.$store.state.tableRouterApi !== obj.type) {
+        let path = obj.path ? obj.path : '/details';
+        if (this.$route.query.type !== obj.type) {
           this.setTableRouter(obj.type);
-          this.setLoading(true);
           this.$router.push({
-            path: obj.link,
+            path: '/table' + path,
             query: {
               type: obj.type
             }
           })
         }
+      },
+      routerPush: function (val) {
+        this.$router.push('/table' + val)
       }
     }
 
@@ -231,7 +152,12 @@
     text-decoration: none;
     color: #000;
   }
+
   .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 90%;
+    margin: 20px 0;
   }
 
   .sidebar-items {
@@ -271,11 +197,13 @@
     background: #fff;
     cursor: pointer;
   }
+
   .sidebar-link:hover {
     background-color: #8bdaff;
     color: #fff;
     border-radius: 5px;
   }
+
   .sidebar-items .active {
     background-color: #7bbfff;
     box-shadow: 2px 4px 10px 1px #e5e7eb;
@@ -288,5 +216,26 @@
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  .trash-bin-btn {
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid #7bbfff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #7bbfff;
+  }
+
+  #trash-bin {
+    align-self: flex-end;
+    position: relative;
+    width: 100%;
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
   }
 </style>

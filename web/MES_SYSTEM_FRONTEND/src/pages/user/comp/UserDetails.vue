@@ -1,8 +1,42 @@
 <template>
   <div class="main-details mt-1 mb-3">
-    <datatable
+    <!--<datatable
       v-bind="$data"
-    ></datatable>
+    ></datatable>-->
+    <el-table
+      :data="tableData"
+      max-height="560"
+      ref="tablecomponent"
+      stripe>
+      <el-table-column v-for="(item, index) in tableColumns"
+                       :key="index"
+                       :prop=item.field
+                       :label="item.title"
+                       :min-width=item.colStyle.width
+                       :formatter=item.formatter>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="100"
+      >
+        <template slot-scope="scope">
+          <el-button type="text" size="small" @click="editUser(scope.row)">编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <!--分页控制-->
+    <el-pagination
+      background
+      :current-page.sync="paginationOptions.currentPage"
+      :page-sizes="[20, 40, 80]"
+      :page-size.sync="paginationOptions.pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="paginationOptions.total"
+      @current-change="thisFetch()"
+      @size-change="thisFetch('sizeChange')"
+      class="page-pagination">
+    </el-pagination>
+    <user-operation/>
   </div>
 </template>
 
@@ -12,6 +46,9 @@
   import {axiosFetch} from "../../../utils/fetchData";
   import {errHandler} from "../../../utils/errorHandler";
   import UserOperation from "./UserOperation"
+  import eventBus from "../../../utils/eventBus";
+  import store from "../../../store"
+
   export default {
     name: "UserDetails",
     components: {
@@ -19,125 +56,142 @@
     },
     data() {
       return {
-        fixHeaderAndSetBodyMaxHeight: 650,
-        tblStyle: {
-          'word-break': 'break-all',
-          'table-layout': 'fixed',
-          'white-space': 'pre-wrap'
-        },
-        HeaderSettings: false,
-        pageSizeOptions: [20, 40],
-        data: [],
-        columns: [
-          {field: 'UserId', title: 'UUID', colStyle: {'width': '100px'}},
-          {field: 'UserName', title: '用户名', colStyle: {'width': '100px'}},
-          {field: 'UserType', title: '用户类型', colStyle: {'width': '100px'}},
+        tableData: [],
+        tableColumns: [
+          {field: 'Id', title: 'ID', colStyle: {'width': '100px'}},
+          {field: 'Name', title: '工号', colStyle: {'width': '100px'}},
+          {field: 'UserDes', title: '描述', colStyle: {'width': '100px'}},
+          {
+            field: 'WebUserType',
+            title: '用户类型',
+            colStyle: {'width': '100px'},
+            formatter(row, column, cellValue, index) {
+              switch (cellValue) {
+                case true:
+                  return '是';
+                case false:
+                  return '否';
+              }
+              let mark = false;
+              if (!!store.state.userTypeList.webTypeList) {
+                let list = store.state.userTypeList.webTypeList;
+                for (let i = 0; i < list.length; i++) {
+                  if (list[i].TypeId === cellValue) {
+                    mark = true;
+                    return list[i].TypeDes
+                  }
+                }
+                if (!mark) {
+                  return '未定义'
+                }
+              }
+            }
+          },
           {field: 'LoginTime', title: '最后一次登录时间', colStyle: {'width': '100px'}},
-          {field: 'InService', title: '是否启用', colStyle:{'width': '100px'}},
-          {title: '操作', tdComp: 'UserOperation', colStyle: {'width': '100px'}}
+          {
+            field: 'InService', title: '是否启用', colStyle: {'width': '100px'}, formatter(row, column, cellValue, index) {
+              switch (cellValue) {
+                case true:
+                  return '是';
+                case false:
+                  return '否';
+              }
+            }
+          },
+          // {title: '操作', tdComp: 'UserOperation', colStyle: {'width': '100px'}}
 
         ],
-        total: 0,
-        query: {"limit": 20, "offset": 0},
         isPending: false,
-        filter: ''
+        queryString: '',
+        paginationOptions: {
+          currentPage: 1,
+          pageSize: 20,
+          total: 0
+        },
       }
     },
-    created() {
+    mounted() {
       this.init();
-    },
-    mounted () {
-      this.thisFetch(this.$route.query)
+      this.thisFetch();
 
+      /*event register*/
+      eventBus.$off('userQueryData');
+      eventBus.$on('userQueryData', (data) => {
+        Object.assign(this.paginationOptions, this.$options.data().paginationOptions);
+        this.queryString = data;
+        this.thisFetch()
+      })
     },
     watch: {
       $route: function (route) {
+        this.init();
         //this.thisFetch(val.query)
-        this.setLoading(true);
-        if (route.query.filter) {
-          let options = {
-            url: userQueryUrl,
-            data: {
-              table: 'Gps_User',
-              pageNo: 1,
-              pageSize: 20,
-              filter: route.query.filter
-            }
-          };
-          this.fetchData(options)
-        } else {
-          let options = {
-            url: userQueryUrl,
-            data: {
-              table: 'Gps_User',
-              pageNo: 1,
-              pageSize: 20
-            }
-          };
-          this.fetchData(options)
-        }
-      },
-      query: {
-        handler(query) {
-          this.setLoading(true);
-          this.dataFilter(query);
-        },
-        deep: true
+        this.$openLoading();
+        let options = {
+          url: userQueryUrl,
+          data: {
+            table: 'LUserAccount',
+            pageNo: 1,
+            pageSize: 20
+          }
+        };
+        this.fetchData(options)
       }
     },
     methods: {
       ...mapActions(['setLoading']),
       init: function () {
-        this.data = [];
-        this.total = 0;
-        this.query = {"limit": 20, "offset": 0}
+        Object.assign(this.$data, this.$options.data())
       },
       thisFetch: function (opt) {
+        if (opt === 'sizeChange') {
+          this.paginationOptions.currentPage = 1;
+        }
+        this.$openLoading();
         let options = {
           url: userQueryUrl,
           data: {
-            table: 'Gps_User',
-            pageNo: 1,
-            pageSize: 20
+            table: 'LUserAccount',
+            pageNo: this.paginationOptions.currentPage,
+            pageSize: this.paginationOptions.pageSize
           }
         };
         this.fetchData(options);
       },
-      fetchData: function (opt) {
+      fetchData: function (options) {
+        //加载查询过滤参数
+        if (this.queryString !== '') {
+          options.data.filter = this.queryString
+        }
         if (!this.isPending) {
           this.isPending = true;
-          axiosFetch(opt).then(response => {
+          axiosFetch(options).then(response => {
+            this.$closeLoading();
             this.isPending = false;
-            this.setLoading(false);
             if (response.data.result === 200) {
-              this.data = response.data.data.list;
-              this.total = response.data.data.totalRow;
-            } else if (response.data.result === 412) {
-              this.$alertWarning(response.data.data);
+              this.tableData = response.data.data.list;
+              this.paginationOptions = {
+                currentPage: response.data.data.pageNumber,
+                pageSize: response.data.data.pageSize,
+                total: response.data.data.totalRow
+              }
             } else {
               this.isPending = false;
-              errHandler(response.data.result)
+              this.$alertWarning(response.data.data)
             }
           })
             .catch(err => {
+              this.$closeLoading();
               this.isPending = false;
               console.log(JSON.stringify(err));
-              alert('请求超时，清刷新重试')
+              this.$alertDanger('请求超时，清刷新重试')
             })
         } else {
-          this.setLoading(false)
+          this.$closeLoading()
         }
       },
-      dataFilter: function () {
-        let options = {
-          url: userQueryUrl,
-          data: {
-            table: 'Gps_User'
-          }
-        };
-        options.data.pageNo = this.query.offset / this.query.limit + 1;
-        options.data.pageSize = this.query.limit;
-        this.fetchData(options);
+      editUser: function (val) {
+        eventBus.$emit('editUser', val)
       }
     }
   }
@@ -150,5 +204,12 @@
     border-radius: 8px;
     padding: 10px;
     min-height: 500px;
+  }
+
+  .page-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    padding: 0 20px;
   }
 </style>

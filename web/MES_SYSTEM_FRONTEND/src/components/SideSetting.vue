@@ -2,44 +2,71 @@
 <template>
   <div class="side-setting">
     <div class="setting-container">
-      <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')">
-        <div class="setting-icon">
-          <icon name="table" scale="2.2" style="color: #fff;"></icon>
+      <!--<div class="w-100">-->
+        <!--<div class="icon-container" :class="activeItem === 'table_old' ? 'icon-active' : '' "-->
+             <!--@click="initData('table_old')">-->
+          <!--<div class="setting-icon" style="background-color: #ccc;">-->
+            <!--<i class="el-icon-t-table" style="color: #fff;"></i>-->
+          <!--</div>-->
+          <!--<span>报表(旧)</span>-->
+        <!--</div>-->
+      <!--</div>-->
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')">
+          <div class="setting-icon">
+            <i class="el-icon-t-table" style="color: #fff;"></i>
+          </div>
+          <span>报表</span>
         </div>
-        <span>报表</span>
       </div>
-      <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')">
-        <div class="setting-icon">
-          <icon name="toggles" scale="2.2" style="color: #fff;"></icon>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'order' ? 'icon-active' : ''" @click="initData('order')">
+          <div class="setting-icon">
+            <i class="el-icon-t-toggles" style="color: #fff;"></i>
+          </div>
+          <span>订单</span>
         </div>
-        <span>订单</span>
       </div>
-      <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')">
-        <div class="setting-icon">
-          <icon name="test" scale="2.2" style="color: #fff;"></icon>
+
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')">
+          <div class="setting-icon">
+            <i class="el-icon-t-test" style="color: #fff;"></i>
+          </div>
+          <span>测试</span>
         </div>
-        <span>测试</span>
       </div>
-      <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')">
-        <div class="setting-icon">
-          <icon name="tea" scale="2.2" style="color: #fff;"></icon>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'func' ? 'icon-active' : ''" @click="initData('func')">
+          <div class="setting-icon">
+            <i class="el-icon-t-func" style="color: #fff;"></i>
+          </div>
+          <span>功能</span>
         </div>
-        <span>红茶</span>
       </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')">
+          <div class="setting-icon">
+            <i class="el-icon-t-tea" style="color: #fff;"></i>
+          </div>
+          <span>红茶</span>
+        </div>
+      </div>
+
       <!--<div class="icon-container">-->
       <!--<div class="setting-icon"></div>-->
       <!--</div>-->
-      <div class="mt-auto w-100">
+      <div class="system-comp">
         <div class="icon-container " :class="activeItem === 'users' ? 'icon-active' : ''"
-             @click="initData('users')">
+             @click="initData('users')"  v-if="userType === '2'">
           <div class="setting-icon">
-            <icon name="users" scale="2.2" style="color: #fff;"></icon>
+            <i class="el-icon-t-user" style="color: #fff;"></i>
           </div>
           <span>用户</span>
         </div>
         <div class="icon-container" @click="logout">
           <div class="setting-icon">
-            <icon name="power" scale="2.2" style="color: #fff;"></icon>
+            <i class="el-icon-t-power" style="color: #fff;"></i>
           </div>
           <span>登出</span>
         </div>
@@ -86,7 +113,7 @@
       }
     },
     computed: {
-      ...mapGetters(['routerIn', 'token'])
+      ...mapGetters(['routerIn', 'token', 'userType'])
     },
     methods: {
       ...mapActions(['setTableRouter', 'setLoading', 'setLoginToken']),
@@ -131,11 +158,12 @@
 
 <style scoped>
   .side-setting {
-    width: 60px;
+    min-width: 52px;
     background: #458aff;
     position: fixed;
     height: 100%;
     z-index: 10;
+    overflow-y: auto;
 
   }
 
@@ -147,9 +175,9 @@
   }
 
   .setting-icon {
-    border-radius: 7px;
-    width: 36px;
-    height: 36px;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
     background: #FFBA45;
     display: flex;
     align-items: center;
@@ -173,11 +201,21 @@
     padding: 5px 0;
     cursor: pointer;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .setting-container .icon-active {
     border-left: #FFBA45 4px solid;
     /*background: rgba(78, 152, 255, 0.63);*/
     background-color: #4f97ff;
+  }
+
+  .side-setting .w-100 {
+    width: 100%;
+  }
+
+  .system-comp {
+    margin-top: auto;
+    width: 100%;
   }
 </style>

@@ -3,24 +3,21 @@
   <div>
     <page-header/>
 
-    <div class="login-container container justify-content-center" :style="{height: pageHeight + 'px'}">
-      <div class="login-panel align-self-center col col-sm-10 col-md-5">
+    <div class="login-container" :style="{height: pageHeight + 'px'}">
+      <div class="login-panel">
         <form @submit.prevent="loginSubmit">
-          <div class="form-group mb-4 mt-4">
+          <div class="form-item">
             <label for="login-username">用户名</label>
-            <input type="text" id="login-username" class="form-control" placeholder="用户名" v-model="loginInfos.userName">
+            <el-input type="text" id="login-username" class="form-control" placeholder="用户名" v-model="loginInfos.name"
+                      @keyup.enter="loginSubmit"/>
           </div>
-          <div class="form-group mb-2">
+          <div class="form-item">
             <label for="login-password">密 码</label>
-            <input type="password" id="login-password" class="form-control" placeholder="密码"
-                   v-model="loginInfos.password">
+            <el-input type="password" id="login-password" class="form-control" placeholder="密码"
+                      v-model="loginInfos.password" @keyup.enter="loginSubmit"/>
           </div>
-          <!--<div class="form-check mb-2">-->
-          <!--<input type="checkbox" class="form-check-input" id="login-check" v-model="loginInfos.checked">-->
-          <!--<label class="form-check-label" for="login-check">干点啥</label>-->
-          <!--</div>-->
-          <div class="form-group mb-4 justify-content-center">
-            <input type="submit" class="btn btn-primary" value="登录" style="width: 100%">
+          <div class="form-item">
+            <el-button type="primary" style="width: 100%"  native-type="submit">登录</el-button>
           </div>
         </form>
       </div>
@@ -45,7 +42,7 @@
         pageHeight: 0,
         isPending: false,
         loginInfos: {
-          "userName": "",
+          "name": "",
           "password": "",
           //"#TOKEN#": ""
           //checked: false
@@ -64,7 +61,7 @@
         : '';
     },
     methods: {
-      ...mapActions(['setLoginToken']),
+      ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission']),
       pageHeightCalc: function () {
         this.pageHeight = document.body.clientHeight - 200;
       },
@@ -82,12 +79,16 @@
             if (res.data.result === 200) {
               localStorage.setItem('token', res.data.data["#TOKEN#"]);
               this.setLoginToken(localStorage.getItem('token'));
+              localStorage.setItem('UserType', res.data.data["WebUserType"]);
+              this.setUserType(localStorage.getItem('UserType'));
+              localStorage.setItem('delPermission', res.data.data['DeletePermission']);
+              this.setDelPermission(localStorage.getItem('delPermission').split(','));
               this.$router.replace('/');
             } else if (res.data.result === 412) {
               this.$alertWarning("请检查用户名或密码")
             } else if (res.data.result === 400) {
               this.$alertWarning("请勿重复登录");
-              this.$router.replace('/table')
+              this.$router.replace('/order')
             } else {
               errHandler(res.data.result)
             }
@@ -106,11 +107,24 @@
   .login-container {
     width: 100%;
     display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .login-panel {
     background: #fff;
     border: 1px solid #999;
     border-radius: 5px;
+    height: 200px;
+    width: 320px;
+    padding: 10px 20px;
+  }
+
+  .form-item {
+    margin: 5px 0;
+  }
+
+  .form-item label {
+    line-height: 30px;
   }
 </style>
