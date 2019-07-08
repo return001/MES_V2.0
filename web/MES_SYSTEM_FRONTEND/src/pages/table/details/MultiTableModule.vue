@@ -31,6 +31,9 @@
             <el-input id="continuous-items-2" v-model="continuousValue[1]" clearable :disabled="isLocked"></el-input>
           </div>
         </div>
+        <div style="width: 160px; margin-right: 10px" v-if="queryMode === 2">
+          <el-checkbox v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
+        </div>
         <div class="form-group-btn" v-if="queryMode !== 1">
           <el-button type="primary" @click="queryData" :disabled="isLocked">查 询</el-button>
         </div>
@@ -146,6 +149,7 @@
         hashImportShowing: false,
         //连续查询绑定值
         continuousValue: ['', ''],
+        imeiIsHex: false,
 
         tableData: {
           "Gps_AutoTest_Result": [],
@@ -285,6 +289,7 @@
                 break;
               case 2:
                 options.data[this.queryWord] = this.continuousValue.toString();
+                options.data.isIMEIHex = this.imeiIsHex;
                 break;
             }
             axiosFetch(options).then(response => {
@@ -336,6 +341,7 @@
               break;
             case 2:
               data[this.queryWord] = this.continuousValue.toString();
+              options.data.isIMEIHex = this.imeiIsHex;
               break;
           }
 
@@ -400,6 +406,7 @@
               break;
             case 2:
               options.data[this.queryWord] = this.continuousValue.toString();
+              options.data.isIMEIHex = this.imeiIsHex;
               break;
           }
 

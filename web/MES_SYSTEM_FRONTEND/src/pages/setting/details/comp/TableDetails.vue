@@ -123,6 +123,7 @@
 
       eventBus.$off('orderQueryData');
       eventBus.$on('orderQueryData', data => {
+        this.paginationOptions.currentPage = 1;
         this.queryString = data;
         this.thisFetch();
       })

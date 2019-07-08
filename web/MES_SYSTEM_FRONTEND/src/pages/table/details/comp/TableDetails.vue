@@ -194,6 +194,7 @@
       /*event register*/
       eventBus.$off('tableQueryData');
       eventBus.$on('tableQueryData', (data) => {
+        this.paginationOptions.currentPage = 1;
         this.isReferred = data[1].isReferred;
         this.queryString = data[0];
         this.thisFetch(data[1])

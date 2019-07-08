@@ -21,6 +21,9 @@
           <el-input type="text" class="form-control" id="endIMEI" v-model="queryOptions.endIMEI"
                     autocomplete="off"></el-input>
         </div>
+        <div style="width: 160px; margin-right: 10px">
+          <el-checkbox v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
+        </div>
         <div class="row no-gutters">
           <div class="row">
             <!--<div class="form-group col pr-1">-->
@@ -47,7 +50,8 @@
             </div>
           </div>
         </div>
-        <div class="radio-box pl-3 pr-3"
+        <div class="radio-box"
+             style="margin-right: 14px"
              v-if="$route.query.type === 'Gps_ManuPrintParam' && (!!timeRange)">
           <label>打印类型</label>
           <div class="radio-content">
@@ -63,7 +67,7 @@
           <el-button type="info" @click="initOptions()">清空条件</el-button>
         </div>
         <div class="form-group-btn">
-          <el-button type="primary" @click="thisFetch">查询</el-button>
+          <el-button type="primary" @click="thisFetch('query')">查询</el-button>
         </div>
         <div class="form-group-btn">
           <el-button type="primary" @click="downloadData">下载报表</el-button>
@@ -211,7 +215,8 @@
           user: '',
           password: ''
         },
-        deleteType: ''//all selected
+        deleteType: '',//all selected
+        imeiIsHex: false
       }
     },
     mounted() {
@@ -271,7 +276,7 @@
         })
       },
       thisFetch: function (opt) {
-        if (opt === 'sizeChange') {
+        if (opt === 'sizeChange' || opt === 'query') {
           this.paginationOptions.currentPage = 1;
         }
 
@@ -293,6 +298,7 @@
           };
           options.data.pageNo = this.paginationOptions.currentPage;
           options.data.pageSize = this.paginationOptions.pageSize;
+          options.data.isIMEIHex = this.imeiIsHex;
 
           if (!!this.timeRange) {
             options.data.startTime = this.timeRange[0];
@@ -337,7 +343,7 @@
           let data = JSON.parse(JSON.stringify(this.queryOptions));
           data.table = thisTable;
           data['#TOKEN#'] = this.$store.state.token;
-
+          data.isIMEIHex = this.imeiIsHex;
           if (!!this.timeRange) {
             data.startTime = this.timeRange[0];
             data.endTime = this.timeRange[1];
@@ -346,7 +352,8 @@
           if (thisTable === 'Gps_ManuSimDataParam') {
             url = tableSimDownloadUrl
           } else if (thisTable === 'Gps_ManuPrintParam') {
-            url = tablePrintDownloadUrl
+            url = tablePrintDownloadUrl;
+            data.printType = this.radioChecked;
           }
           downloadFile(url, data);
           let count = 0;
@@ -383,6 +390,7 @@
               this.$openLoading();
               let options = {url: '', data: {}};
               options.url = tableDeleteByIdsUrl;
+              options.data.isIMEIHex = this.imeiIsHex;
               options.data.table = this.$route.query.type;
               options.data.filter = '';
               let tempArray = [];
@@ -430,6 +438,7 @@
             } else if (thisTable === 'Gps_ManuPrintParam') {
               options.url = tablePrintDeleteUrl
             }
+            options.data.isIMEIHex = this.imeiIsHex;
             options.data = JSON.parse(JSON.stringify(this.queryOptions));
             if (!!this.timeRange) {
               options.data.startTime = this.timeRange[0];

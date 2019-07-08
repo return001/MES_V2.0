@@ -7,7 +7,7 @@
         <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"
                    :pickerOptions="pickerOptions"></component>
       </div>
-      <div class="form-group" v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
+      <div style="width: 140px; margin-right: 10px" v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
         <el-checkbox id="rel-checkbox" v-model="isReferred">{{relTable}}</el-checkbox>
       </div>
       <div class="form-group-btn">

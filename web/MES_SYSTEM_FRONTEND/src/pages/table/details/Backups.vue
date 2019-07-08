@@ -6,7 +6,7 @@
           <component :opt="item" :is="item.type + '-comp'"></component>
         </div>
         <div class="form-group-btn">
-          <el-button type="primary" @click="thisFetch">查询</el-button>
+          <el-button type="primary" @click="thisFetch('query')">查询</el-button>
         </div>
       </div>
     </div>
@@ -180,7 +180,7 @@
 
       },
       thisFetch: function (opt) {
-        if (opt === 'sizeChange') {
+        if (opt === 'sizeChange' || opt === 'query') {
           this.paginationOptions.currentPage = 1;
         }
         this.$openLoading();

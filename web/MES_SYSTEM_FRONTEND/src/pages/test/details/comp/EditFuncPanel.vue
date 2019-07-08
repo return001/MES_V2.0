@@ -252,19 +252,19 @@
 
       checkFormat: function () {
         /*空值*/
+        let emptyMark = true;
         let mark = true;
         if (this.formData.SoftWare.value === '' || this.formData.MachineName.value === '') {
-          mark = false;
+          emptyMark = false;
         }
 
-        let emptyMark = true;
         this.formData.SettingList.forEach((item, index) => {
           if (item['2'] === '') {
             emptyMark = false;
           }
           if (item[2].indexOf('@@') >= 0 || item[3].indexOf('@@') >= 0 || item[4].indexOf('@@') >= 0 || item[5].indexOf('@@') >= 0) {
             this.$alertInfo('第' + index + '项存在非法字符"@@"');
-            emptyMark = false;
+            mark = false;
           }
         });
         if (!emptyMark) {
