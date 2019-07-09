@@ -79,6 +79,7 @@ public class SqlServerTableFilter extends MetaBuilder {
 		rs.close();
 	}
 
+	@Override
 	protected void buildPrimaryKey(TableMeta tableMeta) throws SQLException {
 		ResultSet rs = dbMeta.getPrimaryKeys(conn.getCatalog(), null, tableMeta.name);
 

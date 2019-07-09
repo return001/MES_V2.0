@@ -441,4 +441,76 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getStr("Equipment_digits");
 	}
 
+	public M setPlanProduct(java.lang.Integer PlanProduct) {
+		set("PlanProduct", PlanProduct);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getPlanProduct() {
+		return getInt("PlanProduct");
+	}
+
+	public M setRfidStart(java.lang.String rfidStart) {
+		set("RFID_Start", rfidStart);
+		return (M)this;
+	}
+	
+	public java.lang.String getRfidStart() {
+		return getStr("RFID_Start");
+	}
+
+	public M setRfidEnd(java.lang.String rfidEnd) {
+		set("RFID_End", rfidEnd);
+		return (M)this;
+	}
+	
+	public java.lang.String getRfidEnd() {
+		return getStr("RFID_End");
+	}
+
+	public M setRfidPrefix(java.lang.String rfidPrefix) {
+		set("RFID_prefix", rfidPrefix);
+		return (M)this;
+	}
+	
+	public java.lang.String getRfidPrefix() {
+		return getStr("RFID_prefix");
+	}
+
+	public M setRfidDigits(java.lang.String rfidDigits) {
+		set("RFID_digits", rfidDigits);
+		return (M)this;
+	}
+	
+	public java.lang.String getRfidDigits() {
+		return getStr("RFID_digits");
+	}
+
+	public M setIMEI2Start(java.lang.String IMEI2Start) {
+		set("IMEI2Start", IMEI2Start);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEI2Start() {
+		return getStr("IMEI2Start");
+	}
+
+	public M setIMEI2End(java.lang.String IMEI2End) {
+		set("IMEI2End", IMEI2End);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEI2End() {
+		return getStr("IMEI2End");
+	}
+
+	public M setIMEI2Prints(java.lang.String IMEI2Prints) {
+		set("IMEI2Prints", IMEI2Prints);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEI2Prints() {
+		return getStr("IMEI2Prints");
+	}
+
 }

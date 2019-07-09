@@ -16,13 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jfinal.aop.Enhancer;
-import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.MultiTableQueryInfo;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
@@ -146,11 +146,11 @@ public class ReportService extends SelectService{
 		String fileName = table + "_" + simpleDateFormat.format(time) + "_" + size + ".xls";
 		System.err.println(fileName);
 		ExcelHelper helper = ExcelHelper.create(false);
-		File dir = new File(getFilePath());
+		File dir = new File(Constant.FILE_BACKUP_PATH);
 		if (!dir.exists() || !dir.isDirectory()) {
 			dir.mkdirs();
 		}
-		File file = new File(getFilePath() + fileName);
+		File file = new File(Constant.FILE_BACKUP_PATH + fileName);
 		if (file.exists()) {
 			file.delete();
 		}
@@ -662,15 +662,6 @@ public class ReportService extends SelectService{
 
 
 	/**
-	 * 获取备份文件存储路径
-	 * @return
-	 */
-	private String getFilePath() {
-		return PathKit.getWebRootPath() + File.separator + "backup" + File.separator;
-	}
-
-
-	/**
 	 * 根据IMEI校验算法将14位IMEI生成15位IMEI 
 	 * (1).将偶数位数字分别乘以2，分别计算个位数和十位数之和
 	 * (2).将奇数位数字相加，再加上上一步算得的值 
@@ -814,11 +805,11 @@ public class ReportService extends SelectService{
 		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
 		String fileName = genFileName(imei, sn, zhiDan, true);
 		System.err.println(fileName);
-		File dir = new File(getFilePath());
+		File dir = new File(Constant.FILE_BACKUP_PATH);
 		if (!dir.exists() || !dir.isDirectory()) {
 			dir.mkdirs();
 		}
-		File file = new File(getFilePath() + fileName);
+		File file = new File(Constant.FILE_BACKUP_PATH + fileName);
 		/* File file = new File("D:\\" + fileName); */
 		if (file.exists()) {
 			file.delete();

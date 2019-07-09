@@ -18,6 +18,7 @@ public class MappingKit {
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
 		arp.addMapping("DataRelativeUnique", "DATA1", DataRelativeUnique.class);
+		arp.addMapping("file_type", "id", FileType.class);
 		arp.addMapping("Gps_AutoTest_AntiDup", "SN", GpsAutotestAntidup.class);
 		arp.addMapping("Gps_AutoTest_Result", "Id", GpsAutotestResult.class);
 		arp.addMapping("Gps_AutoTest_Result2", "Id", GpsAutotestResult2.class);
@@ -28,10 +29,17 @@ public class MappingKit {
 		arp.addMapping("Gps_ManuOrderParam", "Id", GpsManuorderparam.class);
 		arp.addMapping("Gps_ManuPrintParam", "ID", GpsManuprintparam.class);
 		arp.addMapping("Gps_ManuSimDataParam", "ID", GpsManusimdataparam.class);
-		arp.addMapping("Gps_TestPlan", "TestPlanId", GpsTestplan.class);
 		arp.addMapping("Gps_TestResult", "Id", GpsTestresult.class);
-		arp.addMapping("Gps_UserType", "TypeId", GpsUsertype.class);
+		arp.addMapping("line", "id", Line.class);
 		arp.addMapping("LUserAccount", "Id", LUserAccount.class);
+		arp.addMapping("model_capacity", "id", ModelCapacity.class);
+		arp.addMapping("order_file", "id", OrderFile.class);
+		arp.addMapping("order_status", "id", OrderStatus.class);
+		arp.addMapping("orders", "id", Orders.class);
+		arp.addMapping("process", "id", Process.class);
+		arp.addMapping("process_group", "id", ProcessGroup.class);
+		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
+		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 	}
 }

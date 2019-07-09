@@ -40,7 +40,11 @@ public class ReportController extends Controller {
 
 	private static ReportService reportService = Enhancer.enhance(ReportService.class);
 
-	private static final int tableNum = 10;
+	private static final int TABLE_NUM = 10;
+
+	private static final int SHORT_HEX_IMEI_LENGTH = 8;
+
+	private static final int LONG_HEX_IMEI_LENGTH = 14;
 
 
 	/**
@@ -89,12 +93,17 @@ public class ReportController extends Controller {
 	 * @param printType
 	 */
 	@Access({ "SuperAdmin", "admin", "operator" })
-	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
+	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
 			filter = filter + "(ZhiDan = '" + zhiDan + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -132,12 +141,17 @@ public class ReportController extends Controller {
 	 * @param rID
 	 */
 	@Access({ "SuperAdmin", "admin", "operator" })
-	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
+	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
 			filter = filter + "(RID = '" + rID + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -147,12 +161,11 @@ public class ReportController extends Controller {
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
-			String startTimeString = formatDateToString(startTime, "yyyy/MM/dd HH:mm:ss");
-			String endTimeString = formatDateToString(endTime, "yyyy/MM/dd HH:mm:ss");
+			String startTimeString = formatDateToString(startTime, "yyyy/M/d HH:mm:ss");
+			String endTimeString = formatDateToString(endTime, "yyyy/M/d HH:mm:ss");
 			filter = filter + " (((ReSDTime >= '" + startTimeString + "' and ReSDTime <= '" + endTimeString + "'))" + " or ((ReSDTime is null) and (SDTime >= '" + startTimeString + "' and SDTime <= '" + endTimeString + "')))";
 		}
-		ResultUtil result = ResultUtil
-				.succeed(reportService.selectGpsManuSimDataParam(pageNo, pageSize, ascBy, descBy, filter));
+		ResultUtil result = ResultUtil.succeed(reportService.selectGpsManuSimDataParam(pageNo, pageSize, ascBy, descBy, filter));
 		renderJson(result);
 	}
 
@@ -239,7 +252,7 @@ public class ReportController extends Controller {
 	 * @param printType
 	 */
 	@Access({ "SuperAdmin", "admin" })
-	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
+	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		String table = "Gps_ManuPrintParam";
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
@@ -248,6 +261,11 @@ public class ReportController extends Controller {
 			filter = filter + "(ZhiDan = '" + zhiDan + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -295,7 +313,7 @@ public class ReportController extends Controller {
 	 * @param rID
 	 */
 	@Access({ "SuperAdmin", "admin" })
-	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
+	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		String table = "Gps_ManuSimDataParam";
@@ -304,6 +322,11 @@ public class ReportController extends Controller {
 			filter = filter + "(RID = '" + rID + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -345,7 +368,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @date 2018年10月11日 下午5:58:28
 	 */
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void download(String table, String ascBy, String descBy, String filter, Integer type) {
 		OutputStream output = null;
 		try {
@@ -379,13 +402,18 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({ "SuperAdmin" })
-	public void downloadGpsManuPrintParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType) {
+	@Access({ "SuperAdmin", "admin", "operator" })
+	public void downloadGpsManuPrintParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
 			filter = filter + "(ZhiDan = '" + zhiDan + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -398,7 +426,7 @@ public class ReportController extends Controller {
 			String startTimeString = formatDateToString(startTime, "yyyy.MM.dd HH:mm:ss");
 			String endTimeString = formatDateToString(endTime, "yyyy.MM.dd HH:mm:ss");
 			if (printType == 0) {
-				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >=" + startTimeString + " and CH_PrintTime <= " + endTimeString + ")))";
+				filter = filter + "(((CH_ReEndPrintTime >= '" + startTimeString + "' and CH_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReEndPrintTime is null) and (CH_ReFirstPrintTime >= '" + startTimeString + "' and CH_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((CH_ReFirstPrintTime is null) and (CH_PrintTime >= '" + startTimeString + "' and CH_PrintTime <= '" + endTimeString + "')))";
 			} else if (printType == 1) {
 				filter = filter + "(((JS_ReEndPrintTime >= '" + startTimeString + "' and JS_ReEndPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReEndPrintTime is null) and (JS_ReFirstPrintTime >= '" + startTimeString + "' and JS_ReFirstPrintTime <= '" + endTimeString + "'))" + " or ((JS_ReFirstPrintTime is null) and (JS_PrintTime >= '" + startTimeString + "' and JS_PrintTime <= '" + endTimeString + "')))";
 			}
@@ -435,13 +463,18 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({ "SuperAdmin" })
-	public void downloadGpsManuSimDataParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID) {
+	@Access({ "SuperAdmin", "admin", "operator" })
+	public void downloadGpsManuSimDataParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
 			filter = filter + "(RID = '" + rID + "')";
 		}
 		if (startIMEI != null && !startIMEI.equals("") && endIMEI != null && !endIMEI.equals("")) {
+			if (isIMEIHex) {
+				if ((startIMEI.length() != SHORT_HEX_IMEI_LENGTH && startIMEI.length() != LONG_HEX_IMEI_LENGTH) || (endIMEI.length() != SHORT_HEX_IMEI_LENGTH && endIMEI.length() != LONG_HEX_IMEI_LENGTH)) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
 			if (!filter.equals("")) {
 				filter = filter + " and ";
 			}
@@ -565,7 +598,7 @@ public class ReportController extends Controller {
 	 * @param output 输出流
 	 * @date 2019年6月5日 下午3:57:01
 	 */
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void downloadUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		OutputStream output = null;
 		try {
@@ -597,7 +630,7 @@ public class ReportController extends Controller {
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	@Access({ "SuperAdmin", "admin", "operator" })
-	public void multiTableQuery(String imei, String sn, String zhiDan, Integer type) {
+	public void multiTableQuery(String imei, String sn, String zhiDan, Integer type, Boolean isIMEIHex) {
 		if (type == null) {
 			throw new ParameterException("类型不能为空");
 		}
@@ -612,8 +645,16 @@ public class ReportController extends Controller {
 			if (StringUtils.isBlank(imei)) {
 				throw new ParameterException("当前类型下IMEI号不能为空");
 			}
-			if (!imei.contains(",") || imei.split(",").length != 2 || StringUtils.isAnyBlank(imei.split(","))) {
+			String[] imeis = imei.split(",");
+			if (!imei.contains(",") || imeis.length != 2 || StringUtils.isAnyBlank(imeis)) {
 				throw new ParameterException("当前类型下IMEI格式错误");
+			}
+			if (isIMEIHex) {
+				for (String eachIMEI : imeis) {
+					if (eachIMEI.length() != SHORT_HEX_IMEI_LENGTH && eachIMEI.length() != LONG_HEX_IMEI_LENGTH) {
+						throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+					}
+				}
 			}
 			break;
 		default:
@@ -633,8 +674,15 @@ public class ReportController extends Controller {
 	 * @date 2019年6月10日 下午3:34:01
 	 */
 	@Access({ "SuperAdmin", "admin" })
-	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable) {
-		if (StrKit.notBlank(deleteTable) && (!deleteTable.contains(",") || deleteTable.split(",").length != tableNum)) {
+	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable, Boolean isIMEIHex) {
+		if (isIMEIHex != null && isIMEIHex) {
+			for (String eachIMEI : imei.split(",")) {
+				if (eachIMEI.length() != SHORT_HEX_IMEI_LENGTH && eachIMEI.length() != LONG_HEX_IMEI_LENGTH) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
+		}
+		if (StrKit.notBlank(deleteTable) && (!deleteTable.contains(",") || deleteTable.split(",").length != TABLE_NUM)) {
 			throw new ParameterException("deleteTable参数格式错误");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -696,7 +744,7 @@ public class ReportController extends Controller {
 	 * @param isReferred 是否与关联表相关联
 	 * @date 2019年6月14日 上午8:52:47
 	 */
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "admin", "operator" })
 	public void downloadGpsCartonBox(String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null || !isReferred) {
 			throw new ParameterException("isReferred必须为true");
@@ -730,8 +778,15 @@ public class ReportController extends Controller {
 	 * @param type 参数类型
 	 * @date 2019年6月25日 下午3:25:43
 	 */
-	@Access({ "SuperAdmin" })
-	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type) {
+	@Access({ "SuperAdmin", "admin", "operator" })
+	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type, Boolean isIMEIHex) {
+		if (isIMEIHex) {
+			for (String eachIMEI : imei.split(",")) {
+				if (eachIMEI.length() != SHORT_HEX_IMEI_LENGTH && eachIMEI.length() != LONG_HEX_IMEI_LENGTH) {
+					throw new ParameterException("16进制的IMEI号长度必须为8位或者14位");
+				}
+			}
+		}
 		OutputStream output = null;
 		try {
 			// 设置响应

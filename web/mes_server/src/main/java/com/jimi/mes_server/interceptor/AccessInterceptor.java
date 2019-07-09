@@ -38,8 +38,9 @@ public class AccessInterceptor implements Interceptor {
 			throw new AccessException("此用户未启用");
 		}
 		String[] accessUserTypes = access.value();
+		String typeName = userService.getTypeName(realUser.getWebUserType());
 		for (String userType : accessUserTypes) {
-			if (userType.equals(userService.getTypeName(realUser.getWebUserType()))) {
+			if (userType.equals(typeName)) {
 				invocation.invoke();
 				return;
 			}

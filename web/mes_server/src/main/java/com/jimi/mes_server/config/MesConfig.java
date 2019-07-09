@@ -16,6 +16,7 @@ import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
 import com.jimi.mes_server.controller.DeleteHistoryController;
 import com.jimi.mes_server.controller.OrderController;
+import com.jimi.mes_server.controller.ProductionController;
 import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
 import com.jimi.mes_server.controller.ReworkController;
@@ -119,7 +120,7 @@ public class MesConfig extends JFinalConfig {
 	    me.add(arp3);
 	}
 
-	
+
 	@Override
 	public void configRoute(Routes me) {
 		me.add("/report", ReportController.class);
@@ -129,6 +130,7 @@ public class MesConfig extends JFinalConfig {
 		me.add("/test", TestController.class);
 		me.add("/history", DeleteHistoryController.class);
 		me.add("/rework", ReworkController.class);
+		me.add("/production", ProductionController.class);
 	}
 	
 	

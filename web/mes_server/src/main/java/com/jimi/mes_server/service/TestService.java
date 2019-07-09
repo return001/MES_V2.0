@@ -56,8 +56,7 @@ public class TestService extends SelectService {
 	}
 
 
-	public boolean create(TestSystemSetting coupleSetTing, TestSystemSettingFunc functionSetTing,
-			TestSystemSettingOqc oqcSetTing, Integer type) {
+	public boolean create(TestSystemSetting coupleSetTing, TestSystemSettingFunc functionSetTing, TestSystemSettingOqc oqcSetTing, Integer type) {
 		TestSystemSettingFunc functionTestSetTing = null;
 		TestSystemSetting coupleTestSetTing = null;
 		TestSystemSettingOqc oqcTestSetTing = null;
