@@ -94,5 +94,17 @@ public class SQL {
 
 	public final static String SELECT_PROCESS_BY_PROCESSNO = "SELECT * from process WHERE process_no = ?";
 
-	public final static String SELECT_ORDER_BY_ZHIDAN = "SELECT * from orders WHERE zhidan = ? and (orders_status = 0 or orders_status = 1)";
+	public final static String SELECT_ORDER_BY_ZHIDAN = "SELECT * from orders WHERE zhidan = ?";
+
+	public final static String SELECT_ORDERFILE_BY_ORDER = "SELECT id,orders,file_name,file_type from order_file WHERE orders = ?";
+
+	public final static String SELECT_ORDERFILE_BY_ORDER_FILETYPE = "SELECT id,orders,file_name,file_type from order_file WHERE orders = ? and file_type = ?";
+
+	public final static String SELECT_MODELCAPACITY_BY_MODEL_PROCESS = "SELECT * from model_capacity WHERE soft_model = ? and process = ? and process_group = ?";
+
+	public final static String SELECT_CARTONNUM_BY_TESTTIME = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? AND TestTime < ?";
+
+	public final static String SELECT_ZHIDAN_VERSION_SOFTMODEL_BY_TESTTIME = "SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result2 where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result3 where TestTime > ? and TestTime < ?  GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_CoupleTest_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_CartonBoxTwenty_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,Version,SoftModel UNION SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam WHERE CH_PrintTime > ? and CH_PrintTime < ? GROUP BY ZhiDan,Version,SoftModel UNION SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam WHERE JS_PrintTime > ? and JS_PrintTime < ? GROUP BY ZhiDan,Version,SoftModel";
+
+	public final static String SELECT_PRODUCTION_BY_ZHIDAN_VERSION_SOFTMODEL_TESTTIME = "SELECT (SELECT count(*) from Gps_AutoTest_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as FunctionProduct, (SELECT count(*) from Gps_AutoTest_Result2 WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as SMTProduct, (SELECT count(*) from Gps_AutoTest_Result3 WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as AgedProduct, (SELECT count(*) from Gps_CoupleTest_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as CouplingProduct, (SELECT count(*) from Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as CartonProduct, (SELECT count(*) from Gps_ManuPrintParam WHERE ZhiDan = ? and Version = ? and SoftModel = ? and CH_PrintTime > ? and CH_PrintTime < ?) as CHPrintProduct, (SELECT count(*) from Gps_ManuPrintParam WHERE ZhiDan = ? and Version = ? and SoftModel = ? and  JS_PrintTime > ? and JS_PrintTime  < ?) as JSPrintProduct";
 }
