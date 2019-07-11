@@ -3,6 +3,7 @@ package com.jimi.mes_server.controller;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,9 +16,12 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.DailyOrderProduction;
+import com.jimi.mes_server.entity.DailyReport;
+import com.jimi.mes_server.entity.Production;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
+import com.jimi.mes_server.model.DailyCompletion;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.service.ProductionService;
 import com.jimi.mes_server.util.ResultUtil;
@@ -248,10 +252,15 @@ public void dailyReport() {
 	SimpleDateFormat testDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	SimpleDateFormat printDateFormat = new SimpleDateFormat("yyyy.MM.dd");
 	// 设置起始和结束时间
-	String startTestTime = testDateFormat.format(calendar.getTime()) + " 00:00:00";
+	/*String startTestTime = testDateFormat.format(calendar.getTime()) + " 00:00:00";
 	String endTestTime = testDateFormat.format(calendar.getTime()) + " 23:59:59";
 	String startPrintTime = printDateFormat.format(calendar.getTime()) + " 00:00:00:000";
-	String endPrintTime = printDateFormat.format(calendar.getTime()) + " 23:59:59:999";
+	String endPrintTime = printDateFormat.format(calendar.getTime()) + " 23:59:59:999";*/
+	
+	String startTestTime ="2019-04-01 00:00:00";
+	String endTestTime = "2019-04-01 23:59:59";
+	String startPrintTime = "2019.04.01 00:00:00:000";
+	String endPrintTime = "2019.04.01 23:59:59:999";
 	Object[] timeParas = {startTestTime,endTestTime,
 			startTestTime,endTestTime,
 			startTestTime,endTestTime,
@@ -259,9 +268,13 @@ public void dailyReport() {
 			startTestTime,endTestTime,
 			startPrintTime,endPrintTime,
 			startPrintTime,endPrintTime};
+	long t1 = System.currentTimeMillis();
 	List<Record> records = Db.find(SQL.SELECT_ZHIDAN_VERSION_SOFTMODEL_BY_TESTTIME, timeParas);
-	List<DailyOrderProduction> productions = new ArrayList<>();
+	System.err.println("t1"+(System.currentTimeMillis()-t1));
+	long t2 = System.currentTimeMillis();
+	List<DailyOrderProduction> orderProductions = new ArrayList<>();
 	if (records!=null&&!records.isEmpty()) {
+		int dailyFunctionProduct = 0,dailySmtProduct = 0,dailyAgedProduct=0,dailyCouplingProduct=0,dailyCartonProduct =0,dailyChPrintProduct=0,dailyJsPrintProduct=0;
 		for (Record record : records) {
 			String zhidan = record.get("ZhiDan");
 			String version = record.get("Version");
@@ -283,10 +296,45 @@ public void dailyReport() {
 					zhidan,version,softModel,startPrintTime,endPrintTime,
 					zhidan,version,softModel,startPrintTime,endPrintTime};
 			Record productionRecord =  Db.findFirst(SQL.SELECT_PRODUCTION_BY_ZHIDAN_VERSION_SOFTMODEL_TESTTIME, paras);
-			DailyOrderProduction production = new DailyOrderProduction(zhidan, version, softModel, productionRecord.getInt("FunctionProduct"), productionRecord.getInt("SMTProduct"), productionRecord.getInt("AgedProduct"), productionRecord.getInt("CouplingProduct"), productionRecord.getInt("CartonProduct"), productionRecord.getInt("CHPrintProduct"), productionRecord.getInt("JSPrintProduct"));
-			productions.add(production);
-		
+			DailyOrderProduction orderproduction = new DailyOrderProduction(zhidan, version, softModel);
+			orderproduction.setFunctionProduct(productionRecord.getInt("FunctionProduct"));
+			orderproduction.setSmtProduct(productionRecord.getInt("SMTProduct"));
+			orderproduction.setAgedProduct(productionRecord.getInt("AgedProduct"));
+			orderproduction.setCouplingProduct(productionRecord.getInt("CouplingProduct"));
+			orderproduction.setCartonProduct(productionRecord.getInt("CartonProduct"));
+			orderproduction.setChPrintProduct(productionRecord.getInt("CHPrintProduct"));
+			orderproduction.setJsPrintProduct(productionRecord.getInt("JSPrintProduct"));
+			orderProductions.add(orderproduction);
+			
+			dailyFunctionProduct +=orderproduction.getFunctionProduct();
+			dailySmtProduct +=orderproduction.getSmtProduct();
+			dailyAgedProduct +=orderproduction.getAgedProduct();
+			dailyCouplingProduct +=orderproduction.getCouplingProduct();
+			dailyCartonProduct +=orderproduction.getCartonProduct();
+			dailyChPrintProduct +=orderproduction.getChPrintProduct();
+			dailyJsPrintProduct +=orderproduction.getJsPrintProduct();
+
 		}
+		Production production = new Production();
+		production.setFunctionProduct(dailyFunctionProduct);
+		production.setSmtProduct(dailySmtProduct);
+		production.setAgedProduct(dailyAgedProduct);
+		production.setCouplingProduct(dailyCouplingProduct);
+		production.setCartonProduct(dailyCartonProduct);
+		production.setChPrintProduct(dailyChPrintProduct);
+		production.setJsPrintProduct(dailyJsPrintProduct);
+		
+		List<DailyCompletion> dailyCompletions = DailyCompletion.dao.find(SQL.SELECT_RENCENT_SIXDAYS_PRODUCTION);
+		DailyCompletion dailyCompletion = new DailyCompletion();
+		
+		Integer quantity = production.getFunctionProduct()+production.getSmtProduct()+production.getAgedProduct()+production.getCouplingProduct()+production.getCartonProduct()+production.getChPrintProduct()+production.getJsPrintProduct();
+		dailyCompletion.setTime(new Date());
+		dailyCompletion.setQuantity(quantity);
+		dailyCompletions.add(dailyCompletion);
+		System.err.println();
+		DailyReport dailyReport = new DailyReport(orderProductions, production, dailyCompletions);
+		System.err.println("t2"+(System.currentTimeMillis()-t2));
+		
 	}
 	
 	
