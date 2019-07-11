@@ -5,13 +5,23 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
+import com.jfinal.aop.Enhancer;
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderItem;
@@ -24,9 +34,14 @@ import com.jimi.mes_server.model.OrderFile;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
+import com.jimi.mes_server.model.SchedulingPlan;
+import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.ExcelHelper;
+import com.jimi.mes_server.util.ResultUtil;
 
 public class ProductionService {
+
+	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 
 	public boolean addProcessGroup(String groupNo, String groupName, String groupRemark) {
 		if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNO, groupNo) != null) {
@@ -367,6 +382,34 @@ public class ProductionService {
 		return modelCapacity.setPosition(modelCapacity.getId()).update();
 	}
 
+	public boolean deleteCapacity(Integer id) {
+		ModelCapacity modelCapacity = ModelCapacity.dao.findById(id);
+		if (modelCapacity == null) {
+			throw new OperationException("删除失败，机型产能不存在");
+		}
+		return modelCapacity.delete();
+	}
+
+	public Page<Record> select(String tableName, Integer pageNo, Integer pageSize, String ascBy, String descBy,
+			String filter) {
+		return daoService.select(tableName, pageNo, pageSize, ascBy, descBy, filter, null);
+	}
+
+	public Page<Record> select(String tableName, String filter) {
+		return daoService.select(tableName, 1, PropKit.use("properties.ini").getInt("defaultPageSize"), null, null,
+				filter, null);
+	}
+
+	public Record getPlanGannt(Integer id) {
+		Record record = Db.findFirst(SQL.SELECT_PLAN_GANT_INFORMATION, id);
+		if (record == null) {
+			throw new OperationException("查询失败，计划不存在");
+		}
+		record.set("interval", getDateIntervalDays(record.getStr("startTime"), record.getStr("endTime")));
+
+		return record;
+	}
+
 	private void checkUserById(Integer id) {
 		LUserAccount user = LUserAccount.dao.findById(id);
 		if (user == null) {
@@ -375,6 +418,24 @@ public class ProductionService {
 		if (!user.getInService()) {
 			throw new OperationException("产线负责人未启用");
 		}
+	}
+
+	private long getDateIntervalDays(String startDate, String endDate) {
+		long daysBetween = 0;
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+		// 解析String为Date
+
+		try {
+			Date start = format.parse(startDate);
+			Date end = format.parse(endDate);
+			daysBetween = (end.getTime() - start.getTime()) / (3600 * 24 * 1000);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return daysBetween;
 	}
 
 }

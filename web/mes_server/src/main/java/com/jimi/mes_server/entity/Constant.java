@@ -39,4 +39,16 @@ public class Constant {
 	public static final Integer COMPLETED_PLANSTATUS = 2;
 
 	public static final Integer WAIT_NOTIFICATION_PLANSTATUS = 3;
+
+	public static final String TABLE_PROCESS = "process";
+
+	public static final String TABLE_PROCESS_GROUP = "process_group";
+
+	public static final String TABLE_LINE = "line";
+
+	public static final String TABLE_ORDERS = "orders";
+
+	public static final String TABLE_SCHEDULING_PLAN = "scheduling_plan";
+
+	public static final String TABLE_MODEL_CAPACITY = "model_capacity";
 }
