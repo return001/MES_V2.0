@@ -288,16 +288,13 @@ public class ProductionController extends Controller {
 		renderJson(result);
 	}
 
-	public void editCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
+	public void editCapacity(Integer id,String softModel, String customerModel, Integer process, Integer processGroup,
 			Integer processPeopleQuantity, Integer capacity) {
-		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null
-				|| capacity == null) {
+		if (id == null
+				) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (processPeopleQuantity < 0 || capacity < 0) {
-			throw new ParameterException("产能和人数不合理");
-		}
-		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity,
+		if (productionService.editCapacity(id,softModel, customerModel, process, processGroup, processPeopleQuantity,
 				capacity)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -318,6 +315,74 @@ public class ProductionController extends Controller {
 		renderJson(ResultUtil.succeed(productionService.getPlanGannt(id)));
 
 	}
+	// 查询未排产
+	public void selectUnscheduledOrder() {
+		renderJson(ResultUtil.succeed(productionService.selectUnscheduledOrder()));
+
+	}
+	// 添加排产计划
+	public void addPlan(Integer order,String remark,Integer schedulingQuantity,Integer line,Integer processGroup ) {
+		if (order == null || schedulingQuantity == null || line == null
+				) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (schedulingQuantity < 0) {
+			throw new ParameterException("排产数量不合理");
+		}
+		if (productionService.addPlan(order, remark, schedulingQuantity, line,processGroup)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
+	public void editPlanStatus(Integer id) {
+		if (id == null
+				) {
+			throw new ParameterException("参数不能为空");
+		}
+		
+		if (productionService.editPlanStatus(id)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
+	public void deletePlan(Integer id) {
+		if (id == null
+				) {
+			throw new ParameterException("参数不能为空");
+		}
+		
+		if (productionService.deletePlan(id)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
+	public void editPlan(Integer id,Boolean isUrgent ,String remark,Integer schedulingQuantity,Integer line,Date planStartTime,Date planCompleteTime ,String lineChangeTime ,Integer capacity ,Integer schedulingPlanStatus,Integer producedQuantity ) {
+		if (id == null
+				) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (schedulingQuantity!=null&&schedulingQuantity < 0) {
+			throw new ParameterException("排产数量不合理");
+		}
+		if (capacity!=null&&capacity < 0) {
+			throw new ParameterException("产能不合理");
+		}
+		if (producedQuantity!=null&&producedQuantity < 0) {
+			throw new ParameterException("已生产数量不合理");
+		}
+		if (productionService.editPlan( id, isUrgent , remark, schedulingQuantity, line, planStartTime, planCompleteTime , lineChangeTime , capacity , schedulingPlanStatus, producedQuantity)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
 
 	public void dailyReport() {
 		Calendar calendar = Calendar.getInstance();

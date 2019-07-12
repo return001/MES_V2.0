@@ -27,6 +27,7 @@ import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderItem;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
+import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.ModelCapacity;
@@ -84,7 +85,7 @@ public class ProductionService {
 			}
 			processGroup.setGroupName(groupName);
 		}
-		if (!StrKit.isBlank(groupRemark)) {
+		if (groupRemark!=null) {
 			processGroup.setGroupRemark(groupRemark);
 		}
 		return processGroup.update();
@@ -437,5 +438,123 @@ public class ProductionService {
 
 		return daysBetween;
 	}
+
+	public List<Orders> selectUnscheduledOrder() {
+		return Orders.dao.find(SQL.SELECT_UNSCHEDULED_ORDER, Constant.UNSCHEDULED_ORDERSTATUS);
+	}
+
+	public boolean addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line,Integer processGroup) {
+		if (Line.dao.findById(line) == null) {
+			throw new OperationException("添加排产计划失败，产线不存在");
+		}
+		Orders orderRecord = Orders.dao.findById(order);
+		if (orderRecord==null) {
+			throw new OperationException("订单不存在");
+		}
+		SchedulingPlan schedulingPlan = new SchedulingPlan();
+		if (remark!=null) {
+			schedulingPlan.setRemark(remark);
+		}
+		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity).setOrders(order);
+		
+		
+		return schedulingPlan.save();
+	}
+
+	public boolean editPlanStatus(Integer id) {
+		SchedulingPlan schedulingPlan  = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan==null) {
+			throw new OperationException("排产计划不存在");
+		}
+		schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+		return schedulingPlan.update();
+	}
+
+	public boolean deletePlan(Integer id) {
+		SchedulingPlan schedulingPlan  = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan==null) {
+			throw new OperationException("排产计划不存在");
+		}
+		
+		return schedulingPlan.delete();
+	}
+
+	public boolean editCapacity(Integer id,String softModel, String customerModel, Integer process, Integer processGroup,
+			Integer processPeopleQuantity, Integer capacity) {
+		if (ModelCapacity.dao.findById(id)==null) {
+			throw new OperationException("机型产能不存在");
+		}
+		ModelCapacity modelCapacity = new ModelCapacity();
+		if (!StrKit.isBlank(softModel)) {
+			modelCapacity.setSoftModel(softModel);
+		}
+		if (process!=null) {
+			if (Process.dao.findById(process) == null) {
+				throw new OperationException("工序不存在");
+			}else {
+				modelCapacity.setProcess(process);
+			}
+		}
+		if (processGroup!=null) {
+			if (ProcessGroup.dao.findById(processGroup) == null) {
+				throw new OperationException("工序组不存在");
+			}else {
+				modelCapacity.setProcessGroup(processGroup);
+			}
+		}
+		if (customerModel!=null) {
+			modelCapacity.setCustomerModel(customerModel);
+		}
+		
+		if (processPeopleQuantity!=null) {
+			modelCapacity.setProcessPeopleQuantity(processPeopleQuantity);
+		}
+		if (capacity!=null) {
+			modelCapacity.setCapacity(capacity);
+			
+		}
+		return modelCapacity.update();
+	}
+
+	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
+			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity,
+			Integer schedulingPlanStatus, Integer producedQuantity) {
+		SchedulingPlan schedulingPlan =SchedulingPlan.dao.findById(id);
+		if (schedulingPlan==null) {
+			throw new OperationException("排产计划不存在");
+		}
+		if (isUrgent!=null) {
+			schedulingPlan.setIsUrgent(isUrgent);
+		}
+		if (remark!=null) {
+			schedulingPlan.setRemark(remark);
+		}
+		if (schedulingQuantity!=null) {
+			schedulingPlan.setSchedulingQuantity(schedulingQuantity);
+		}
+		if (line!=null) {
+			schedulingPlan.setLine(line);
+		}
+		if (planStartTime!=null&&planCompleteTime!=null) {
+			schedulingPlan.setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime);
+		}
+		if (!StrKit.isBlank(lineChangeTime)&&lineChangeTime.length()<8) {
+			schedulingPlan.setLineChangeTime(lineChangeTime);
+		}else {
+			throw new ParameterException("转线时间的长度过长");
+		}
+		if (capacity!=null) {
+			schedulingPlan.setCapacity(capacity);
+		}
+		if (schedulingPlanStatus!=null) {
+			schedulingPlan.setSchedulingPlanStatus(schedulingPlanStatus);
+		}
+		if (producedQuantity!=null) {
+			schedulingPlan.setProducedQuantity(producedQuantity);
+		}
+		return schedulingPlan.update();
+	}
+
+	
 
 }
