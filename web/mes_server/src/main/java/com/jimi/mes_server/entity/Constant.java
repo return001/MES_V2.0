@@ -51,4 +51,12 @@ public class Constant {
 	public static final String TABLE_SCHEDULING_PLAN = "scheduling_plan";
 
 	public static final String TABLE_MODEL_CAPACITY = "model_capacity";
+
+	public static final Integer DEFAULT_PAGE_NUM = 1;
+
+	public static final Integer DEFAULT_PAGE_SIZE = 2147483647;
+
+	public static final Integer ASSEMBLING_PROCESS_GROUP = 1;
+
+	public static final Integer TESTING_PROCESS_GROUP = 2;
 }

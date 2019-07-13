@@ -270,49 +270,4 @@ public abstract class BaseGpsManuprintparam<M extends BaseGpsManuprintparam<M>> 
 		return getStr("RFID");
 	}
 
-	public M setJSUserName(java.lang.String JSUserName) {
-		set("JSUserName", JSUserName);
-		return (M)this;
-	}
-	
-	public java.lang.String getJSUserName() {
-		return getStr("JSUserName");
-	}
-
-	public M setCHUserName(java.lang.String CHUserName) {
-		set("CHUserName", CHUserName);
-		return (M)this;
-	}
-	
-	public java.lang.String getCHUserName() {
-		return getStr("CHUserName");
-	}
-
-	public M setIMEI2(java.lang.String IMEI2) {
-		set("IMEI2", IMEI2);
-		return (M)this;
-	}
-	
-	public java.lang.String getIMEI2() {
-		return getStr("IMEI2");
-	}
-
-	public M setIMEI2Start(java.lang.String IMEI2Start) {
-		set("IMEI2Start", IMEI2Start);
-		return (M)this;
-	}
-	
-	public java.lang.String getIMEI2Start() {
-		return getStr("IMEI2Start");
-	}
-
-	public M setIMEI2End(java.lang.String IMEI2End) {
-		set("IMEI2End", IMEI2End);
-		return (M)this;
-	}
-	
-	public java.lang.String getIMEI2End() {
-		return getStr("IMEI2End");
-	}
-
 }

@@ -22,6 +22,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderItem;
@@ -85,7 +86,7 @@ public class ProductionService {
 			}
 			processGroup.setGroupName(groupName);
 		}
-		if (groupRemark!=null) {
+		if (groupRemark != null) {
 			processGroup.setGroupRemark(groupRemark);
 		}
 		return processGroup.update();
@@ -93,10 +94,10 @@ public class ProductionService {
 
 	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector,
 			Integer processGroup) {
-		if (ProcessGroup.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
+		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
 			throw new OperationException("产线线别已存在");
 		}
-		if (ProcessGroup.dao.findFirst(SQL.SELECT_LINE_BY_LINENAME, lineName) != null) {
+		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENAME, lineName) != null) {
 			throw new OperationException("产线名称已存在");
 		}
 		Line line = new Line();
@@ -125,6 +126,34 @@ public class ProductionService {
 		return line.delete();
 	}
 
+	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(lineNo)) {
+			filter.append("line_no like '%"+lineNo+" %' and");
+		}
+		if (!StrKit.isBlank(lineName)) {
+			filter.append(" line_name like '%"+lineName+" %' and");
+		}
+		if (processGroup!=null) {
+			
+			if (ProcessGroup.dao.findById(processGroup)==null) {
+				throw new OperationException("工序组不存在");
+			}
+			filter.append(" process_group = "+processGroup);
+		}
+		if (StringUtils.endsWith(filter, "and")) {
+			filter.delete(filter.lastIndexOf("and"), filter.length());
+		}
+		SqlPara sqlPara = new SqlPara();
+		if (filter.length()==0) {
+			sqlPara.setSql(SQL.SELECT_LINE_JOIN_PROCESSGROUP);
+		}else {
+			sqlPara.setSql(SQL.SELECT_LINE_JOIN_PROCESSGROUP+" where "+filter);
+		}
+		
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
 	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector,
 			Integer processGroup) {
 		Line line = Line.dao.findById(id);
@@ -144,7 +173,7 @@ public class ProductionService {
 			}
 			line.setLineName(lineName);
 		}
-		if (!StrKit.isBlank(lineRemark)) {
+		if (lineRemark!=null) {
 			line.setLineRemark(lineRemark);
 		}
 		if (lineDirector != null) {
@@ -155,17 +184,17 @@ public class ProductionService {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
-			line.setLineDirector(processGroup);
+			line.setProcessGroup(processGroup);
 		}
 
 		return line.update();
 	}
 
 	public boolean addProcess(String processNo, String processName, String processRemark, Integer processGroup) {
-		if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
+		if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
 			throw new OperationException("工序编号已存在");
 		}
-		if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName) != null) {
+		if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName) != null) {
 			throw new OperationException("工序名称已存在");
 		}
 		Process process = new Process();
@@ -190,6 +219,34 @@ public class ProductionService {
 		return process.delete();
 	}
 
+	public Page<Record> selectProcess(String processNo, String processName, Integer processGroup) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(processNo)) {
+			filter.append("process_no like '%"+processNo+" %' and");
+		}
+		if (!StrKit.isBlank(processName)) {
+			filter.append(" process_name like '%"+processName+" %' and");
+		}
+		if (processGroup!=null) {
+			
+			if (ProcessGroup.dao.findById(processGroup)==null) {
+				throw new OperationException("工序组不存在");
+			}
+			filter.append(" process_group = "+processGroup);
+		}
+		if (StringUtils.endsWith(filter, "and")) {
+			filter.delete(filter.lastIndexOf("and"), filter.length());
+		}
+		SqlPara sqlPara = new SqlPara();
+		if (filter.length()==0) {
+			sqlPara.setSql(SQL.SELECT_PROCESS_JOIN_PROCESSGROUP);
+		}else {
+			sqlPara.setSql(SQL.SELECT_PROCESS_JOIN_PROCESSGROUP+" where "+filter);
+		}
+		
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
 	public boolean editProcess(Integer id, String processNo, String processName, String processRemark,
 			Integer processGroup) {
 		Process process = Process.dao.findById(id);
@@ -198,18 +255,18 @@ public class ProductionService {
 		}
 
 		if (!StrKit.isBlank(processNo)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
+			if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
 				throw new OperationException("工序编号已存在");
 			}
 			process.setProcessNo(processNo);
 		}
 		if (!StrKit.isBlank(processName)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName) != null) {
+			if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName) != null) {
 				throw new OperationException("工序名称已存在");
 			}
 			process.setProcessName(processName);
 		}
-		if (!StrKit.isBlank(processRemark)) {
+		if (processRemark!=null) {
 			process.setProcessRemark(processRemark);
 		}
 		if (processGroup != null) {
@@ -370,13 +427,16 @@ public class ProductionService {
 	}
 
 	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity) {
+			Integer processPeopleQuantity, Integer capacity,String remark) {
 		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel,
 				process, processGroup);
 		if (modelCapacity != null) {
 			throw new OperationException("机型产能已存在");
 		}
 		modelCapacity = new ModelCapacity();
+		if (remark!=null) {
+			modelCapacity.setRemark(remark);
+		}
 		modelCapacity.setSoftModel(softModel).setCustomerModel(customerModel).setProcess(process)
 				.setProcessGroup(processGroup);
 		modelCapacity.setProcessPeopleQuantity(processPeopleQuantity).setCapacity(capacity).save();
@@ -439,31 +499,45 @@ public class ProductionService {
 		return daysBetween;
 	}
 
-	public List<Orders> selectUnscheduledOrder() {
-		return Orders.dao.find(SQL.SELECT_UNSCHEDULED_ORDER, Constant.UNSCHEDULED_ORDERSTATUS);
+	public List<Orders> selectUnscheduledPlan(Integer type) {
+		switch (type) {
+		case 0:
+			return Orders.dao.find(SQL.SELECT_UNSCHEDULED_ORDER, Constant.UNSCHEDULED_ORDERSTATUS);
+			
+		case 1:
+			return Orders.dao.find(SQL.SELECT_SCHEDULED_ORDER, Constant.ASSEMBLING_PROCESS_GROUP);
+			
+		case 2:
+			return Orders.dao.find(SQL.SELECT_SCHEDULED_ORDER, Constant.TESTING_PROCESS_GROUP);
+		default:
+			break;
+			}
+		return null;
+		
 	}
 
-	public boolean addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line,Integer processGroup) {
+	public boolean addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line,
+			Integer processGroup) {
 		if (Line.dao.findById(line) == null) {
 			throw new OperationException("添加排产计划失败，产线不存在");
 		}
 		Orders orderRecord = Orders.dao.findById(order);
-		if (orderRecord==null) {
+		if (orderRecord == null) {
 			throw new OperationException("订单不存在");
 		}
 		SchedulingPlan schedulingPlan = new SchedulingPlan();
-		if (remark!=null) {
+		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
-		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity).setOrders(order);
-		
+		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity)
+				.setOrders(order);
 		
 		return schedulingPlan.save();
 	}
 
 	public boolean editPlanStatus(Integer id) {
-		SchedulingPlan schedulingPlan  = SchedulingPlan.dao.findById(id);
-		if (schedulingPlan==null) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
 		}
 		schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
@@ -471,90 +545,137 @@ public class ProductionService {
 	}
 
 	public boolean deletePlan(Integer id) {
-		SchedulingPlan schedulingPlan  = SchedulingPlan.dao.findById(id);
-		if (schedulingPlan==null) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
 		}
-		
+
 		return schedulingPlan.delete();
 	}
 
-	public boolean editCapacity(Integer id,String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity) {
-		if (ModelCapacity.dao.findById(id)==null) {
+	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process,
+			Integer processGroup, Integer processPeopleQuantity, Integer capacity,String remark,Integer position) {
+		ModelCapacity firstModelCapacity = ModelCapacity.dao.findById(id);
+		if (firstModelCapacity == null) {
 			throw new OperationException("机型产能不存在");
 		}
+		if (position!=null) {
+			ModelCapacity secondModelCapacity = ModelCapacity.dao.findById(position);
+			if (secondModelCapacity == null) {
+				throw new OperationException("机型产能不存在");
+			}
+			if (!secondModelCapacity.getSoftModel().equals(firstModelCapacity.getSoftModel())) {
+				throw new OperationException("同一个机型才可移动位置");
+			}
+			if (!secondModelCapacity.getProcessGroup().equals(firstModelCapacity.getProcessGroup())) {
+				throw new OperationException("同一个工序组才可移动位置");
+			}
+			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, firstModelCapacity.getPosition(),secondModelCapacity.getId());
+			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, secondModelCapacity.getPosition(),firstModelCapacity.getId());
+			return true;
+		}
+		if (!StrKit.isBlank(softModel)&&process != null&&processGroup != null) {
+			ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel,
+					process, processGroup);
+			if (modelCapacity != null) {
+				throw new OperationException("机型产能已存在");
+			}
+		}
+		
 		ModelCapacity modelCapacity = new ModelCapacity();
 		if (!StrKit.isBlank(softModel)) {
 			modelCapacity.setSoftModel(softModel);
 		}
-		if (process!=null) {
+		if (process != null) {
 			if (Process.dao.findById(process) == null) {
 				throw new OperationException("工序不存在");
-			}else {
+			} else {
 				modelCapacity.setProcess(process);
 			}
 		}
-		if (processGroup!=null) {
+		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
-			}else {
+			} else {
 				modelCapacity.setProcessGroup(processGroup);
 			}
 		}
-		if (customerModel!=null) {
+		if (customerModel != null) {
 			modelCapacity.setCustomerModel(customerModel);
 		}
-		
-		if (processPeopleQuantity!=null) {
+
+		if (processPeopleQuantity != null) {
 			modelCapacity.setProcessPeopleQuantity(processPeopleQuantity);
 		}
-		if (capacity!=null) {
+		if (capacity != null) {
 			modelCapacity.setCapacity(capacity);
-			
+
 		}
+		if (remark!=null) {
+			modelCapacity.setRemark(remark);
+		}
+		
 		return modelCapacity.update();
 	}
 
 	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity,
 			Integer schedulingPlanStatus, Integer producedQuantity) {
-		SchedulingPlan schedulingPlan =SchedulingPlan.dao.findById(id);
-		if (schedulingPlan==null) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
 		}
-		if (isUrgent!=null) {
+		if (isUrgent != null) {
 			schedulingPlan.setIsUrgent(isUrgent);
 		}
-		if (remark!=null) {
+		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
-		if (schedulingQuantity!=null) {
+		if (schedulingQuantity != null) {
 			schedulingPlan.setSchedulingQuantity(schedulingQuantity);
 		}
-		if (line!=null) {
+		if (line != null) {
 			schedulingPlan.setLine(line);
 		}
-		if (planStartTime!=null&&planCompleteTime!=null) {
+		if (planStartTime != null && planCompleteTime != null) {
 			schedulingPlan.setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime);
 		}
-		if (!StrKit.isBlank(lineChangeTime)&&lineChangeTime.length()<8) {
+		if (!StrKit.isBlank(lineChangeTime) && lineChangeTime.length() < 8) {
 			schedulingPlan.setLineChangeTime(lineChangeTime);
-		}else {
+		} else {
 			throw new ParameterException("转线时间的长度过长");
 		}
-		if (capacity!=null) {
+		if (capacity != null) {
 			schedulingPlan.setCapacity(capacity);
 		}
-		if (schedulingPlanStatus!=null) {
+		if (schedulingPlanStatus != null) {
 			schedulingPlan.setSchedulingPlanStatus(schedulingPlanStatus);
 		}
-		if (producedQuantity!=null) {
+		if (producedQuantity != null) {
 			schedulingPlan.setProducedQuantity(producedQuantity);
 		}
 		return schedulingPlan.update();
 	}
 
-	
+	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel,
+			String customerModel, Integer process) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(softModel)) {
+			filter.append(" and soft_model like '%"+softModel+" %' ");
+		}
+		if (!StrKit.isBlank(customerModel)) {
+			filter.append(" and customer_model like '%"+customerModel+" %' ");
+		}
+		if (process!=null) {
+			
+			if (Process.dao.findById(process)==null) {
+				throw new OperationException("工序不存在");
+			}
+			filter.append(" and process = "+process);
+		}
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_MODELCAPACITY+filter);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
 
 }
