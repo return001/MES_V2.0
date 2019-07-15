@@ -72,7 +72,7 @@
         <div class="form-group-btn">
           <el-button type="primary" @click="downloadData">下载报表</el-button>
         </div>
-        <div class="form-group-btn" v-if="checkPermission">
+        <div class="form-group-btn" v-if="checkDelPermission">
           <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
           <el-button type="warning" @click="callValidate('all')">删除所有</el-button>
         </div>
@@ -88,7 +88,7 @@
         <el-table-column
           type="selection"
           width="30"
-          v-if="checkPermission">
+          v-if="checkDelPermission">
         </el-table-column>
         <el-table-column v-for="(item, index) in tableColumns"
                          :key="index"
@@ -161,7 +161,7 @@
   } from "../../../config/globalUrl";
   import {getRequestUrl, setRouterConfigSP} from "../../../config/tableApiConfig";
   import {axiosFetch, downloadFile} from "../../../utils/fetchData";
-  import {checkPermission} from "../../../utils/utils";
+  import {checkDelPermission} from "../../../utils/utils";
   import {mapActions} from 'vuex'
 
   export default {
@@ -233,8 +233,8 @@
       tableColumns: function () {
         return setRouterConfigSP(this.$route.query.type).data.dataColumns;
       },
-      checkPermission: function () {
-        return checkPermission(this.$route.query.type)
+      checkDelPermission: function () {
+        return checkDelPermission(this.$route.query.type)
       }
     },
     methods: {

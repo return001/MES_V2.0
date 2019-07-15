@@ -20,7 +20,7 @@
         <el-button type="primary" @click="downloadData" v-if="!isReferred">下载报表</el-button>
         <el-button type="primary" @click="downloadData" v-if="isReferred && $route.query.type === 'Gps_CartonBoxTwenty_Result'">下载报表</el-button>
       </div>
-      <div class="form-group-btn" v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkPermission">
+      <div class="form-group-btn" v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission">
         <el-button type="warning" @click="validateVisible = true">删除所有</el-button>
         <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
       </div>
@@ -59,7 +59,7 @@
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {tableDownloadUrl, tableDeleteUrl, validateUrl, tableCartonDownloadUrl} from "../../../../config/globalUrl";
   import {axiosFetch, downloadFile} from "../../../../utils/fetchData";
-  import {checkPermission} from "../../../../utils/utils";
+  import {checkDelPermission} from "../../../../utils/utils";
   import {Settings} from 'luxon'
   import {Datetime} from 'vue-datetime'
   import 'vue-datetime/dist/vue-datetime.css'
@@ -191,8 +191,8 @@
           return '是否关联关联表'
         }
       },
-      checkPermission: function () {
-        return checkPermission(this.$route.query.type)
+      checkDelPermission: function () {
+        return checkDelPermission(this.$route.query.type)
       }
     },
     watch: {

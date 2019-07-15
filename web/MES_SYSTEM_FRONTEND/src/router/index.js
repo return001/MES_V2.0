@@ -153,7 +153,17 @@ router.beforeEach((to, from, next) => {
   }
   if (to.matched.some(r => r.meta.requireAuth)) {
     if (store.state.token) {
-      next();
+      if (store.state.userType === 'administration' && to.path !== '/users') {
+        next({
+          path: '/users'
+        })
+      } else if (store.state.userType !== 'administration' && store.state.userType !== 'SuperAdmin' && to.path === '/users') {
+        next({
+          path: '/table'
+        })
+      } else {
+        next();
+      }
     } else {
       next({
         path: '/login',

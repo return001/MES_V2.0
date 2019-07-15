@@ -79,7 +79,7 @@
             if (res.data.result === 200) {
               localStorage.setItem('token', res.data.data["#TOKEN#"]);
               this.setLoginToken(localStorage.getItem('token'));
-              localStorage.setItem('UserType', res.data.data["WebUserType"]);
+              localStorage.setItem('UserType', res.data.data["typeName"]);
               this.setUserType(localStorage.getItem('UserType'));
               localStorage.setItem('delPermission', res.data.data['DeletePermission']);
               this.setDelPermission(localStorage.getItem('delPermission').split(','));

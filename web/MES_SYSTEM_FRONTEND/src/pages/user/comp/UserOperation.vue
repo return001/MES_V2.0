@@ -40,7 +40,7 @@
           <!--<option value="3">3</option>-->
           <!--</select>-->
           <!--</div>-->
-          <div class="form-group" v-if="userData.webUserType === 1">
+          <div class="form-group" v-if="userData.webUserType === 'engineer'">
             <label class="col-form-label">权限设置:</label>
             <el-button @click="isEditingPermission = true" style="width: 200px;">查看详细权限</el-button>
           </div>
@@ -198,7 +198,7 @@
             url: userUpdateUrl,
             data: this.userData
           };
-          if (this.userData.webUserType === 1) {
+          if (this.userData.webUserType === 'engineer') {
             options.data.deletePermission = this.tempPermission.toString();
           }
           if (!!!options.data.password) {

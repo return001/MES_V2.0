@@ -11,9 +11,26 @@ export const getTime = function () {
 
 import store from '../store'
 
-export const checkPermission = function (queryType) {
+export const checkDelPermission = function (queryType) {
   let tableList = ['DataRelativeSheet','DataRelativeUnique','Gps_AutoTest_Result','Gps_AutoTest_Result3','Gps_CartonBoxTwenty_Result','Gps_CoupleTest_Result','Gps_ManuPrintParam','Gps_TestResult','NetMarkIMEI','Gps_ManuSimDataParam'];
 
   let index = tableList.indexOf(queryType);
   return store.state.delPermission[index] !== "0"
+};
+
+export const checkAccessPermission = function (path) {
+  /*table, order, test, func, users, redtea*/
+  let permissionList;
+
+  /*行政管理仅有人员管理权限
+  * 超管拥有所有权限
+  * 工程管理员无人员管理权限*/
+  if (store.state.userType === 'administration') {
+    permissionList =  ['users'];
+  } else if (store.state.userType === 'SuperAdmin') {
+    permissionList = ['table', 'order', 'test', 'func', 'users', 'redtea']
+  } else {
+    permissionList = ['table', 'order', 'test', 'func', 'redtea']
+  }
+  return permissionList.indexOf(path) >= 0
 };

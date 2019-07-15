@@ -12,7 +12,7 @@
         <!--</div>-->
       <!--</div>-->
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')">
+        <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')"  v-if="accessPermission('table')">
           <div class="setting-icon">
             <i class="el-icon-t-table" style="color: #fff;"></i>
           </div>
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'order' ? 'icon-active' : ''" @click="initData('order')">
+        <div class="icon-container" :class="activeItem === 'order' ? 'icon-active' : ''" @click="initData('order')"  v-if="accessPermission('order')">
           <div class="setting-icon">
             <i class="el-icon-t-toggles" style="color: #fff;"></i>
           </div>
@@ -29,7 +29,7 @@
       </div>
 
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')">
+        <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')"  v-if="accessPermission('test')">
           <div class="setting-icon">
             <i class="el-icon-t-test" style="color: #fff;"></i>
           </div>
@@ -37,7 +37,7 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'func' ? 'icon-active' : ''" @click="initData('func')">
+        <div class="icon-container" :class="activeItem === 'func' ? 'icon-active' : ''" @click="initData('func')"  v-if="accessPermission('func')">
           <div class="setting-icon">
             <i class="el-icon-t-func" style="color: #fff;"></i>
           </div>
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')">
+        <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')"  v-if="accessPermission('redtea')">
           <div class="setting-icon">
             <i class="el-icon-t-tea" style="color: #fff;"></i>
           </div>
@@ -58,7 +58,7 @@
       <!--</div>-->
       <div class="system-comp">
         <div class="icon-container " :class="activeItem === 'users' ? 'icon-active' : ''"
-             @click="initData('users')"  v-if="userType === '2'">
+             @click="initData('users')"  v-if="accessPermission('users')">
           <div class="setting-icon">
             <i class="el-icon-t-user" style="color: #fff;"></i>
           </div>
@@ -80,6 +80,7 @@
   import {axiosFetch} from "../utils/fetchData";
   import {logoutUrl} from "../config/globalUrl";
   import {errHandler} from "../utils/errorHandler";
+  import {checkAccessPermission} from "../utils/utils";
 
   export default {
     name: "SideSetting",
@@ -113,7 +114,7 @@
       }
     },
     computed: {
-      ...mapGetters(['routerIn', 'token', 'userType'])
+      ...mapGetters(['routerIn', 'token', 'userType']),
     },
     methods: {
       ...mapActions(['setTableRouter', 'setLoading', 'setLoginToken']),
@@ -151,6 +152,9 @@
           console.log(JSON.stringify(err));
         })
 
+      },
+      accessPermission: function (path) {
+        return checkAccessPermission(path)
       }
     }
   }

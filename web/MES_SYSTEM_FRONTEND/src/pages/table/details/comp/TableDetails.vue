@@ -10,7 +10,7 @@
       <el-table-column
         type="selection"
         width="30"
-        v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkPermission"
+        v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission"
       >
       </el-table-column>
       <!--<el-table-column-->
@@ -112,7 +112,7 @@
   import {mapGetters, mapActions} from 'vuex'
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {errHandler} from "../../../../utils/errorHandler";
-  import {checkPermission} from "../../../../utils/utils";
+  import {checkDelPermission} from "../../../../utils/utils";
   import {alertDanger} from "../../../../utils/modal";
 
   export default {
@@ -151,8 +151,8 @@
       getTableConfig: function () {
         return setRouterConfig(this.$route.query.type, {isReferred: this.isReferred}).data
       },
-      checkPermission: function () {
-        return checkPermission(this.$route.query.type)
+      checkDelPermission: function () {
+        return checkDelPermission(this.$route.query.type)
       }
     },
     watch: {

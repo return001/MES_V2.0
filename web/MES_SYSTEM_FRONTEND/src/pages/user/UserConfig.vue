@@ -40,7 +40,7 @@
                          :label="item.TypeDes"></el-option>
             </el-select>
           </div>
-          <div class="form-group" v-if="userData.webUserType === 1">
+          <div class="form-group" v-if="userData.webUserType === 'engineer'">
             <label class="col-form-label">权限设置:</label>
             <el-button @click="isAddingPermission = true" style="width: 200px;">查看详细权限</el-button>
           </div>
@@ -246,7 +246,7 @@
               url: userAddUrl,
               data: optData
             };
-            if (user.webUserType === 1) {
+            if (user.webUserType === 'engineer') {
               options.data.deletePermission = this.tempPermission.toString();
             }
 
