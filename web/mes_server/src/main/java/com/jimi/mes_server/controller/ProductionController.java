@@ -391,6 +391,22 @@ public class ProductionController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
+	
+	public void checkCompleteTime(Integer id,Integer processGroup,Integer schedulingQuantity, Integer line,
+			Date planStartTime, Date planCompleteTime, String lineChangeTime) {
+		if (id==null||schedulingQuantity==null||processGroup==null||line==null||planStartTime==null||planCompleteTime==null) {
+			throw new OperationException("参数不能为空");
+		}
+		if (schedulingQuantity != null && schedulingQuantity < 0) {
+			throw new ParameterException("排产数量不合理");
+		}
+		if (productionService.checkCompleteTime( id, processGroup, schedulingQuantity,  line,
+				 planStartTime,  planCompleteTime,  lineChangeTime)) {
+			renderJson(ResultUtil.succeed());
+		}else {
+			renderJson(ResultUtil.failed());
+		}
+	}
 
 	public void dailyReport() {
 		Calendar calendar = Calendar.getInstance();

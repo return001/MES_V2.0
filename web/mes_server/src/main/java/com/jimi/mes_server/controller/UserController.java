@@ -4,6 +4,7 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jimi.mes_server.annotation.Access;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.LUserAccount;
@@ -25,7 +26,7 @@ public class UserController extends Controller {
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
 
-	@Access({ "SuperAdmin","admin","operator" })
+	@Access({ "SuperAdmin", "operator", "administration" })
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}
@@ -33,27 +34,27 @@ public class UserController extends Controller {
 
 	public void login(String name, String password) {
 		System.out.println("a" + name + password);
-		LUserAccount user = userService.login(name, password, true);
+		LUserAccountVO userVO = userService.login(name, password, true);
 		// 判断重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if (tokenId != null) {
-			LUserAccount user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-			if (user2 != null && user.getId() == user2.getId()) {
+			LUserAccountVO temp = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+			if (temp != null && userVO.getId() == temp.getId()) {
 				throw new ParameterException("请不要重复登录");
 			}
 		}
 		tokenId = TokenBox.createTokenId();
-		user.put(TokenBox.TOKEN_ID_KEY_NAME, tokenId);
-		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, user);
-		renderJson(ResultUtil.succeed(user));
+		userVO.put(TokenBox.TOKEN_ID_KEY_NAME, tokenId);
+		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, userVO);
+		renderJson(ResultUtil.succeed(userVO));
 	}
 
 
 	public void logout() {
 		// 判断是否未登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccount user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (user == null) {
+		LUserAccountVO userVO = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userVO == null) {
 			throw new ParameterException("未登录时无需退出");
 		}
 		TokenBox.remove(tokenId);
@@ -62,18 +63,20 @@ public class UserController extends Controller {
 
 
 	public void checkLogined() {
-		LUserAccount user = TokenBox.get(getPara(TokenBox.TOKEN_ID_KEY_NAME), SESSION_KEY_LOGIN_USER);
-		if (user != null) {
-			renderJson(ResultUtil.succeed(user));
+		LUserAccountVO userVO = TokenBox.get(getPara(TokenBox.TOKEN_ID_KEY_NAME), SESSION_KEY_LOGIN_USER);
+		if (userVO != null) {
+			renderJson(ResultUtil.succeed(userVO));
 		} else {
 			renderJson(ResultUtil.succeed("不存在登录的用户"));
 		}
 	}
 
 
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "administration" })
 	public void add(@Para("") LUserAccount user) {
-		if (userService.add(user)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO tokenUser = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userService.add(user, tokenUser)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -81,7 +84,7 @@ public class UserController extends Controller {
 	}
 
 
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "administration" })
 	public void update(@Para("") LUserAccount user) {
 		if (userService.update(user)) {
 			renderJson(ResultUtil.succeed());
@@ -95,7 +98,7 @@ public class UserController extends Controller {
 	 * 获取用户角色
 	 * @date 2019年5月15日 下午2:48:40
 	 */
-	@Access({ "SuperAdmin" })
+	@Access({ "SuperAdmin", "administration", "engineer" })
 	public void getUserType() {
 		renderJson(userService.getUserType());
 	}
@@ -105,12 +108,12 @@ public class UserController extends Controller {
 	 * 校验传入的参数与内存中记录的TOKEN是否一致
 	 * @date 2019年5月14日 下午5:19:31
 	 */
-	@Access({ "SuperAdmin", "admin" })
+	@Access({ "SuperAdmin", "administration", "engineer" })
 	public void validate(String name, String password) {
 		userService.validate(name, password);
 		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccount user = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
-		if (user == null || !user.getName().equalsIgnoreCase(name) || !user.getPassword().equalsIgnoreCase(password)) {
+		LUserAccountVO userVO = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
+		if (userVO == null || !userVO.getName().equalsIgnoreCase(name) || !userVO.getPassword().equalsIgnoreCase(password)) {
 			throw new OperationException("用户校验失败");
 		}
 		renderJson(ResultUtil.succeed());

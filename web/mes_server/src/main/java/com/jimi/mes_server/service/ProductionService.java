@@ -27,6 +27,7 @@ import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderItem;
 import com.jimi.mes_server.entity.SQL;
+import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.LUserAccount;
@@ -499,20 +500,36 @@ public class ProductionService {
 		return daysBetween;
 	}
 
-	public List<Orders> selectUnscheduledPlan(Integer type) {
+	public List<OrderVO> selectUnscheduledPlan(Integer type) {
+		List<OrderVO> orderVOs = new ArrayList<>();
+		List<Record> records = new ArrayList<>();
 		switch (type) {
 		case 0:
-			return Orders.dao.find(SQL.SELECT_UNSCHEDULED_ORDER, Constant.UNSCHEDULED_ORDERSTATUS);
-			
+			List<Orders> orders= Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
+			for (Orders order : orders) {
+				OrderVO orderVO = new OrderVO(order, order.getQuantity());
+				orderVOs.add(orderVO);
+			}
+			return orderVOs;
 		case 1:
-			return Orders.dao.find(SQL.SELECT_SCHEDULED_ORDER, Constant.ASSEMBLING_PROCESS_GROUP);
+			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP);
 			
+			
+			break;
 		case 2:
-			return Orders.dao.find(SQL.SELECT_SCHEDULED_ORDER, Constant.TESTING_PROCESS_GROUP);
+			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP);
+			break;
 		default:
 			break;
 			}
-		return null;
+		for (Record record : records) {
+			Integer orderId = record.getInt("orders");
+			Integer scheduledQuantity = record.getInt("scheduled_quantity");
+			Orders order = Orders.dao.findById(orderId);
+			OrderVO orderVO = new OrderVO(order, order.getQuantity()-scheduledQuantity);
+			orderVOs.add(orderVO);
+		}
+		return orderVOs;
 		
 	}
 
@@ -530,7 +547,7 @@ public class ProductionService {
 			schedulingPlan.setRemark(remark);
 		}
 		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity)
-				.setOrders(order);
+				.setOrders(order).setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME);
 		
 		return schedulingPlan.save();
 	}
@@ -677,5 +694,25 @@ public class ProductionService {
 		sqlPara.setSql(SQL.SELECT_MODELCAPACITY+filter);
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
+
+	public boolean checkCompleteTime(Integer id,Integer processGroup,Integer schedulingQuantity, Integer line,
+			Date planStartTime, Date planCompleteTime, String lineChangeTime) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan==null) {
+			throw new OperationException("排产计划不存在");
+		}
+		Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, zhidan);
+		if (order==null) {
+			throw new OperationException("订单不存在");
+		}
+		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_ORDER_PROCESS, processGroup,process,zhidan);
+		if (modelCapacity==null) {
+			throw new OperationException("机型产能不存在");
+		}
+		
+		return false;
+	}
+	
+	
 
 }

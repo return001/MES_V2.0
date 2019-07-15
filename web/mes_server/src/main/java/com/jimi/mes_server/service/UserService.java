@@ -6,6 +6,7 @@ import java.util.List;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.UserType;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.LUserAccount;
@@ -33,7 +34,7 @@ public class UserService extends SelectService{
 	 * @param isNeedUpdate 是否需要更新登录时间
 	 * @date 2019年6月27日 上午9:56:19
 	 */
-	public LUserAccount login(String name, String password, Boolean isNeedUpdate) {
+	public LUserAccountVO login(String name, String password, Boolean isNeedUpdate) {
 		LUserAccount user = LUserAccount.dao.findFirst(loginSql, name, password);
 		if (user == null) {
 			throw new OperationException("用户名或者密码错误");
@@ -45,11 +46,12 @@ public class UserService extends SelectService{
 			user.setLoginTime(new Date());
 			user.update();
 		}
-		return user;
+		LUserAccountVO userVO = new LUserAccountVO(user, getTypeName(user.getWebUserType()));
+		return userVO;
 	}
 
 
-	public boolean add(LUserAccount user) {
+	public boolean add(LUserAccount user, LUserAccountVO tokenUser) {
 		checkUser(user);
 		if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
 			throw new OperationException("密码不能为空");
@@ -58,6 +60,9 @@ public class UserService extends SelectService{
 			throw new OperationException("用户名已存在");
 		}
 		user.setLoginTime(new Date());
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType()) && !Constant.SUPER_ADMIN_USERTYPE.equals(tokenUser.getWebUserType())) {
+			throw new OperationException("权限不足以修改为超级管理员");
+		}
 		return setDeletePermission(user).save();
 	}
 
@@ -75,6 +80,10 @@ public class UserService extends SelectService{
 		}
 		if (user.getLoginTime() == null) {
 			user.remove("LoginTime");
+		}
+		LUserAccount originalUser = LUserAccount.dao.findById(user.getId());
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType()) && !Constant.SUPER_ADMIN_USERTYPE.equals(originalUser.getWebUserType())) {
+			throw new OperationException("权限不足以修改为超级管理员");
 		}
 		return setDeletePermission(user).update();
 	}
@@ -135,7 +144,7 @@ public class UserService extends SelectService{
 	private LUserAccount setDeletePermission(LUserAccount user) {
 		if (user.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE)) {
 			user.setDeletePermission(Constant.SUPER_ADMIN_DELETEPERMISSION);
-		} else if (user.getWebUserType().equals(Constant.ADMIN_USERTYPE)) {
+		} else if (user.getWebUserType().equals(Constant.ENGINEER_USERTYPE)) {
 			return user;
 		} else {
 			user.setDeletePermission(Constant.ORDINARY_DELETEPERMISSION);

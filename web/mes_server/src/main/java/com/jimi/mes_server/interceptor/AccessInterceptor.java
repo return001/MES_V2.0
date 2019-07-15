@@ -5,8 +5,8 @@ import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.controller.UserController;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.AccessException;
-import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.service.UserService;
 import com.jimi.mes_server.util.TokenBox;
 
@@ -28,17 +28,17 @@ public class AccessInterceptor implements Interceptor {
 		}
 		UserService userService = Aop.get(UserService.class);
 		String token = invocation.getController().getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccount user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
+		LUserAccountVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
 		if (user == null) {
 			throw new AccessException("未登录");
 		}
-		LUserAccount realUser = userService.login(user.getName(), user.getPassword(), false);
-		TokenBox.put(token, UserController.SESSION_KEY_LOGIN_USER, realUser);
-		if (!realUser.getInService()) {
+		LUserAccountVO userVO = userService.login(user.getName(), user.getPassword(), false);
+		TokenBox.put(token, UserController.SESSION_KEY_LOGIN_USER, userVO);
+		if (!userVO.getInService()) {
 			throw new AccessException("此用户未启用");
 		}
 		String[] accessUserTypes = access.value();
-		String typeName = userService.getTypeName(realUser.getWebUserType());
+		String typeName = userVO.getTypeName();
 		for (String userType : accessUserTypes) {
 			if (userType.equals(typeName)) {
 				invocation.invoke();

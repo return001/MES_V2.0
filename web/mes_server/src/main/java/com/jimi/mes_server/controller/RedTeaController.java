@@ -15,7 +15,7 @@ public class RedTeaController extends Controller {
 	private static RedTeaService redTeaService = Enhancer.enhance(RedTeaService.class);
 
 
-	@Access({ "SuperAdmin", "admin", "operator" })
+	@Access({ "SuperAdmin", "operator", "engineer" })
 	public void findCId(String sn, String imei, String deviceModel) {
 		System.out.println(sn + imei + deviceModel);
 		String resonp = "";

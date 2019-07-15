@@ -27,7 +27,7 @@ public class DeleteHistoryController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
-	@Access({ "SuperAdmin", "admin", "operator" })
+	@Access({ "SuperAdmin", "operator", "engineer" })
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		renderJson(ResultUtil.succeed(deleteHistoryService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
@@ -37,7 +37,7 @@ public class DeleteHistoryController extends Controller {
 	 * 下载删除记录备份
 	 * @param id
 	 */
-	@Access({ "SuperAdmin", "admin", "operator" })
+	@Access({ "SuperAdmin", "operator", "engineer" })
 	public void download(String id) {
 		File file = deleteHistoryService.download(id);
 		if (file != null) {

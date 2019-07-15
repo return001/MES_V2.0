@@ -112,7 +112,7 @@ public class SQL {
 
 	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as startTime, scheduling_plan.plan_complete_time as endTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
 
-	public final static String SELECT_UNSCHEDULED_ORDER = "SELECT * from orders WHERE orders_status = ?";
+	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ?";
 
 	public final static String SELECT_PROCESS_JOIN_PROCESSGROUP = "SELECT * from process INNER JOIN process_group on process.process_group = process_group.id ";
 
@@ -122,5 +122,7 @@ public class SQL {
 
 	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.*,process_group.group_name,process.process_name FROM model_capacity,process,process_group where model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
 
-	public final static String SELECT_SCHEDULED_ORDER = "SELECT * from orders WHERE id in ( SELECT orders from scheduling_plan where process_group = ? GROUP BY orders)";
+	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status <> 3 and orders.orders_status <> 4 GROUP BY orders ";
+
+	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? and soft_model LIKE '%?%'";
 }

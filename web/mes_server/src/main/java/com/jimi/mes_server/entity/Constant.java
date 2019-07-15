@@ -6,7 +6,7 @@ public class Constant {
 
 	public static final Integer SUPER_ADMIN_USERTYPE = 2;
 
-	public static final Integer ADMIN_USERTYPE = 1;
+	public static final Integer ENGINEER_USERTYPE = 1;
 
 	public static final String SUPER_ADMIN_DELETEPERMISSION = "1,1,1,1,1,1,1,1,1,1";
 
@@ -59,4 +59,6 @@ public class Constant {
 	public static final Integer ASSEMBLING_PROCESS_GROUP = 1;
 
 	public static final Integer TESTING_PROCESS_GROUP = 2;
+
+	public static final String DEFAULT_LINE_CHANGE_TIME = "0.5";
 }
