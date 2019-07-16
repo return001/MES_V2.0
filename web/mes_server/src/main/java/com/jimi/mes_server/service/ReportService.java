@@ -16,13 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jfinal.aop.Enhancer;
-import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.MultiTableQueryInfo;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
@@ -73,9 +73,10 @@ public class ReportService extends SelectService{
 		}
 		int size = records.getTotalRow();
 		String fileName = table + "_" + simpleDateFormat.format(new Date()) + "_" + size + ".xls";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		String[] field = null;
 		String[] head = null;
@@ -146,11 +147,11 @@ public class ReportService extends SelectService{
 		String fileName = table + "_" + simpleDateFormat.format(time) + "_" + size + ".xls";
 		System.err.println(fileName);
 		ExcelHelper helper = ExcelHelper.create(false);
-		File dir = new File(getFilePath());
+		File dir = new File(Constant.FILE_BACKUP_PATH);
 		if (!dir.exists() || !dir.isDirectory()) {
 			dir.mkdirs();
 		}
-		File file = new File(getFilePath() + fileName);
+		File file = new File(Constant.FILE_BACKUP_PATH + fileName);
 		if (file.exists()) {
 			file.delete();
 		}
@@ -483,9 +484,10 @@ public class ReportService extends SelectService{
 		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		String fileName = "Gps_ManuPrintParam" + "_" + simpleDateFormat.format(new Date()) + "_" + zhiDan + "_" + "未使用的IMEI" + ".xls";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		String head = "未使用的IMEI";
 		String title = "";
@@ -611,9 +613,10 @@ public class ReportService extends SelectService{
 		field = new String[] { "GpsCartonBoxTwentyResult_Id", "GpsCartonBoxTwentyResult_BoxNo", "GpsCartonBoxTwentyResult_IMEI", "GpsCartonBoxTwentyResult_ZhiDan", "GpsCartonBoxTwentyResult_SoftModel", "GpsCartonBoxTwentyResult_Version", "GpsCartonBoxTwentyResult_ProductCode", "GpsCartonBoxTwentyResult_Color", "GpsCartonBoxTwentyResult_Qty", "GpsCartonBoxTwentyResult_Weight", "GpsCartonBoxTwentyResult_Date", "GpsCartonBoxTwentyResult_TACInfo", "GpsCartonBoxTwentyResult_CompanyName", "GpsCartonBoxTwentyResult_TesterId", "GpsCartonBoxTwentyResult_TestTime", "GpsCartonBoxTwentyResult_Remark1", "GpsCartonBoxTwentyResult_Remark2", "GpsCartonBoxTwentyResult_Remark3", "GpsCartonBoxTwentyResult_Remark4", "GpsCartonBoxTwentyResult_Remark5", "GpsCartonBoxTwentyResult_Computer", "DataRelativeSheet_SN", "DataRelativeSheet_IMEI1", "DataRelativeSheet_IMEI2", "DataRelativeSheet_IMEI3", "DataRelativeSheet_IMEI4", "DataRelativeSheet_IMEI5", "DataRelativeSheet_IMEI6", "DataRelativeSheet_IMEI7", "DataRelativeSheet_IMEI8", "DataRelativeSheet_IMEI9", "DataRelativeSheet_IMEI10", "DataRelativeSheet_IMEI11", "DataRelativeSheet_IMEI12", "DataRelativeSheet_IMEI13", "DataRelativeSheet_ZhiDan", "DataRelativeSheet_TestTime", "DataRelativeSheet_SimEffectiveDate" };
 		head = field;
 		title = "Gps_CartonBoxTwenty_Result————DataRelativeSheet";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		helper.fill(records, title, field, head);
 		helper.write(output, true);
@@ -632,9 +635,10 @@ public class ReportService extends SelectService{
 	 */
 	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type, HttpServletResponse response, OutputStream output) throws Exception {
 		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(genFileName(imei, sn, zhiDan, false), "UTF-8"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = getExcelHelper(multiTableQueryInfo, null);
 		if (helper.getBook().getNumberOfSheets() == 0) {
 			helper.getBook().createSheet("当前选择的条件没有可以导出的数据");
@@ -658,15 +662,6 @@ public class ReportService extends SelectService{
 		} else if (descBy != null) {
 			sql.append(" ORDER BY " + descBy + " DESC ");
 		}
-	}
-
-
-	/**
-	 * 获取备份文件存储路径
-	 * @return
-	 */
-	private String getFilePath() {
-		return PathKit.getWebRootPath() + File.separator + "backup" + File.separator;
 	}
 
 
@@ -814,11 +809,11 @@ public class ReportService extends SelectService{
 		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
 		String fileName = genFileName(imei, sn, zhiDan, true);
 		System.err.println(fileName);
-		File dir = new File(getFilePath());
+		File dir = new File(Constant.FILE_BACKUP_PATH);
 		if (!dir.exists() || !dir.isDirectory()) {
 			dir.mkdirs();
 		}
-		File file = new File(getFilePath() + fileName);
+		File file = new File(Constant.FILE_BACKUP_PATH + fileName);
 		/* File file = new File("D:\\" + fileName); */
 		if (file.exists()) {
 			file.delete();

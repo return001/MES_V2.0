@@ -28,10 +28,9 @@ public class MappingKit {
 		arp.addMapping("Gps_ManuOrderParam", "Id", GpsManuorderparam.class);
 		arp.addMapping("Gps_ManuPrintParam", "ID", GpsManuprintparam.class);
 		arp.addMapping("Gps_ManuSimDataParam", "ID", GpsManusimdataparam.class);
-		arp.addMapping("Gps_TestPlan", "TestPlanId", GpsTestplan.class);
 		arp.addMapping("Gps_TestResult", "Id", GpsTestresult.class);
-		arp.addMapping("Gps_UserType", "TypeId", GpsUsertype.class);
 		arp.addMapping("LUserAccount", "Id", LUserAccount.class);
+		arp.addMapping("model_capacity", "id", ModelCapacity.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 	}
 }

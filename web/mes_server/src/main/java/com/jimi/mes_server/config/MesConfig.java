@@ -119,7 +119,7 @@ public class MesConfig extends JFinalConfig {
 	    me.add(arp3);
 	}
 
-	
+
 	@Override
 	public void configRoute(Routes me) {
 		me.add("/report", ReportController.class);

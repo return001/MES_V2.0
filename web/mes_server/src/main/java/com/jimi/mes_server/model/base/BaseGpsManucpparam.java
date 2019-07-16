@@ -135,4 +135,67 @@ public abstract class BaseGpsManucpparam<M extends BaseGpsManucpparam<M>> extend
 		return getStr("CPERROR");
 	}
 
+	public M setCPResult1(java.lang.String CPResult1) {
+		set("CPResult1", CPResult1);
+		return (M)this;
+	}
+	
+	public java.lang.String getCPResult1() {
+		return getStr("CPResult1");
+	}
+
+	public M setCPResult2(java.lang.String CPResult2) {
+		set("CPResult2", CPResult2);
+		return (M)this;
+	}
+	
+	public java.lang.String getCPResult2() {
+		return getStr("CPResult2");
+	}
+
+	public M setTesterID1(java.lang.String TesterID1) {
+		set("TesterID1", TesterID1);
+		return (M)this;
+	}
+	
+	public java.lang.String getTesterID1() {
+		return getStr("TesterID1");
+	}
+
+	public M setTesterID2(java.lang.String TesterID2) {
+		set("TesterID2", TesterID2);
+		return (M)this;
+	}
+	
+	public java.lang.String getTesterID2() {
+		return getStr("TesterID2");
+	}
+
+	public M setCHResult(java.lang.String CHResult) {
+		set("CHResult", CHResult);
+		return (M)this;
+	}
+	
+	public java.lang.String getCHResult() {
+		return getStr("CHResult");
+	}
+
+	public M setTesterName1(java.lang.String TesterName1) {
+		set("TesterName1", TesterName1);
+		return (M)this;
+	}
+	
+	public java.lang.String getTesterName1() {
+		return getStr("TesterName1");
+	}
+
+	public M setTesterName2(java.lang.String TesterName2) {
+		set("TesterName2", TesterName2);
+		return (M)this;
+	}
+	
+	public java.lang.String getTesterName2() {
+		return getStr("TesterName2");
+	}
+
 }

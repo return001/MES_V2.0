@@ -171,4 +171,22 @@ public abstract class BaseDataRelativeSheet<M extends BaseDataRelativeSheet<M>> 
 		return getStr("SimEffectiveDate");
 	}
 
+	public M setNetMark(java.lang.String NetMark) {
+		set("NetMark", NetMark);
+		return (M)this;
+	}
+	
+	public java.lang.String getNetMark() {
+		return getStr("NetMark");
+	}
+
+	public M setIMEI14(java.lang.String IMEI14) {
+		set("IMEI14", IMEI14);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEI14() {
+		return getStr("IMEI14");
+	}
+
 }

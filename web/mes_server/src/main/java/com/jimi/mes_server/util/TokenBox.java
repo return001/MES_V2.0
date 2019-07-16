@@ -1,6 +1,5 @@
 package com.jimi.mes_server.util;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,7 +39,7 @@ public class TokenBox {
 					while(true) {
 						Thread.sleep(CHECK_CYCLE);
 						synchronized (lock) {
-							long now = new Date().getTime();
+							long now = System.currentTimeMillis();
 							//创建遍历副本
 							Map<String, Map<String, Object>> sessionsCopy = new HashMap<>();
 							for (Entry<String, Map<String, Object>> session : sessions.entrySet()) {
@@ -118,7 +117,7 @@ public class TokenBox {
 	 * 创建一个随机的32位TokenId
 	 */
 	public static String createTokenId() {
-		return MD5Util.MD5(new Date().getTime() + "Darhao");
+		return MD5Util.MD5(System.currentTimeMillis() + "Darhao");
 	}
 	
 	
@@ -126,7 +125,7 @@ public class TokenBox {
 	 * 刷新最后一次访问时间
 	 */
 	private static void refreshLastAccessTime(Map<String, Object> session) {
-		session.put(LAST_ACCESS_TIME_KEY_NAME, new Date().getTime());
+		session.put(LAST_ACCESS_TIME_KEY_NAME, System.currentTimeMillis());
 	}
 	
 	

@@ -180,4 +180,31 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 		return getInt("CPResult");
 	}
 
+	public M setWeightResult(java.lang.Integer WeightResult) {
+		set("WeightResult", WeightResult);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getWeightResult() {
+		return getInt("WeightResult");
+	}
+
+	public M setOQCResult01(java.lang.Integer OQCResult01) {
+		set("OQCResult01", OQCResult01);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getOQCResult01() {
+		return getInt("OQCResult01");
+	}
+
+	public M setOQCResult02(java.lang.Integer OQCResult02) {
+		set("OQCResult02", OQCResult02);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getOQCResult02() {
+		return getInt("OQCResult02");
+	}
+
 }
