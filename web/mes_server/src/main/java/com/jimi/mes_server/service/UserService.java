@@ -144,11 +144,13 @@ public class UserService extends SelectService{
 	private LUserAccount setDeletePermission(LUserAccount user) {
 		if (user.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE)) {
 			user.setDeletePermission(Constant.SUPER_ADMIN_DELETEPERMISSION);
-		} else if (user.getWebUserType().equals(Constant.ENGINEER_USERTYPE)) {
+			return user;
+		}
+		if (user.getDeletePermission() == null) {
+			user.setDeletePermission(Constant.ORDINARY_DELETEPERMISSION);
 			return user;
 		} else {
-			user.setDeletePermission(Constant.ORDINARY_DELETEPERMISSION);
+			return user;
 		}
-		return user;
 	}
 }

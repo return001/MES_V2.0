@@ -124,5 +124,7 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status <> 3 and orders.orders_status <> 4 GROUP BY orders ";
 
-	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? and soft_model LIKE '%?%'";
+	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? AND soft_model LIKE ? ";
+
+	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model LIKE ? ";
 }

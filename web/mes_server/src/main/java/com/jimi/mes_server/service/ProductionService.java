@@ -507,14 +507,13 @@ public class ProductionService {
 		case 0:
 			List<Orders> orders= Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
 			for (Orders order : orders) {
-				OrderVO orderVO = new OrderVO(order, order.getQuantity());
+				Record record =Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP,"%"+order.getSoftModel()+"%" );
+				OrderVO orderVO = new OrderVO(order, order.getQuantity(),record.getInt("capacity")/record.getInt("people"));
 				orderVOs.add(orderVO);
 			}
 			return orderVOs;
 		case 1:
 			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP);
-			
-			
 			break;
 		case 2:
 			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP);
@@ -526,15 +525,21 @@ public class ProductionService {
 			Integer orderId = record.getInt("orders");
 			Integer scheduledQuantity = record.getInt("scheduled_quantity");
 			Orders order = Orders.dao.findById(orderId);
-			OrderVO orderVO = new OrderVO(order, order.getQuantity()-scheduledQuantity);
+			Record peopleCapacityRecord = new Record();
+			if (type==1) {
+				peopleCapacityRecord =Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP,"%"+order.getSoftModel()+"%" );
+				
+			}else if (type==2) {
+				peopleCapacityRecord=Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP,"%"+order.getSoftModel()+"%" );
+			}
+			OrderVO orderVO = new OrderVO(order, order.getQuantity()-scheduledQuantity,peopleCapacityRecord.getInt("capacity")/peopleCapacityRecord.getInt("people"));
 			orderVOs.add(orderVO);
 		}
 		return orderVOs;
-		
 	}
 
 	public boolean addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line,
-			Integer processGroup) {
+			Integer processGroup,Integer capacity) {
 		if (Line.dao.findById(line) == null) {
 			throw new OperationException("添加排产计划失败，产线不存在");
 		}
@@ -547,7 +552,7 @@ public class ProductionService {
 			schedulingPlan.setRemark(remark);
 		}
 		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity)
-				.setOrders(order).setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME);
+				.setOrders(order).setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(capacity);
 		
 		return schedulingPlan.save();
 	}
@@ -637,7 +642,7 @@ public class ProductionService {
 
 	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity,
-			Integer schedulingPlanStatus, Integer producedQuantity) {
+			Boolean isCompleted, Integer producedQuantity) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
@@ -665,13 +670,24 @@ public class ProductionService {
 		if (capacity != null) {
 			schedulingPlan.setCapacity(capacity);
 		}
-		if (schedulingPlanStatus != null) {
-			schedulingPlan.setSchedulingPlanStatus(schedulingPlanStatus);
+		if (isCompleted) {
+			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 		}
 		if (producedQuantity != null) {
 			schedulingPlan.setProducedQuantity(producedQuantity);
 		}
 		return schedulingPlan.update();
+	}
+
+	public boolean checkCompleteTime(Integer schedulingQuantity, 
+			Date planStartTime, Date planCompleteTime, String lineChangeTime,Integer capacity) {
+		Integer actualCostHours =  schedulingQuantity/capacity;
+		long actualCostMilliseconds = actualCostHours*60*60*1000;
+		long planCostMilliseconds = planCompleteTime.getTime()-planStartTime.getTime();
+		if (actualCostMilliseconds>planCostMilliseconds) {
+			return false;
+		}
+		return true;
 	}
 
 	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel,
@@ -693,24 +709,6 @@ public class ProductionService {
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_MODELCAPACITY+filter);
 		return Db.paginate(pageNo, pageSize, sqlPara);
-	}
-
-	public boolean checkCompleteTime(Integer id,Integer processGroup,Integer schedulingQuantity, Integer line,
-			Date planStartTime, Date planCompleteTime, String lineChangeTime) {
-		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
-		if (schedulingPlan==null) {
-			throw new OperationException("排产计划不存在");
-		}
-		Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, zhidan);
-		if (order==null) {
-			throw new OperationException("订单不存在");
-		}
-		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_ORDER_PROCESS, processGroup,process,zhidan);
-		if (modelCapacity==null) {
-			throw new OperationException("机型产能不存在");
-		}
-		
-		return false;
 	}
 	
 	

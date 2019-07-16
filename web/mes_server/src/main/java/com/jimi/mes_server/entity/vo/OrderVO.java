@@ -8,6 +8,16 @@ public class OrderVO extends Orders {
 
 	private Integer unscheduledQuantity;
 
+	private Integer capacity;
+
+	public Integer getCapacity() {
+		return capacity;
+	}
+
+	public void setCapacity(Integer capacity) {
+		this.capacity = capacity;
+	}
+
 	public Integer getUnscheduledQuantity() {
 		return unscheduledQuantity;
 	}
@@ -16,9 +26,11 @@ public class OrderVO extends Orders {
 		this.unscheduledQuantity = unscheduledQuantity;
 	}
 
-	public OrderVO(Orders order, Integer unscheduledQuantity) {
+	public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
 		this.setUnscheduledQuantity(unscheduledQuantity);
 		this.set("unscheduledQuantity", getUnscheduledQuantity());
+		this.setCapacity(capacity);
+		this.set("capacity", getCapacity());
 		this.setAlias(order.getAlias());
 		this.setCreateTime(order.getCreateTime());
 		this.setCustomerName(order.getCustomerName());

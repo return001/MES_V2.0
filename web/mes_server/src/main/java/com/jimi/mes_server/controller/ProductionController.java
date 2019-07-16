@@ -1,5 +1,6 @@
 package com.jimi.mes_server.controller;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -331,14 +332,14 @@ public class ProductionController extends Controller {
 	}
 
 	// 添加排产计划
-	public void addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup) {
-		if (order == null || schedulingQuantity == null || line == null) {
+	public void addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup,Integer capacity) {
+		if (order == null || schedulingQuantity == null || line == null||capacity == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (schedulingQuantity < 0) {
 			throw new ParameterException("排产数量不合理");
 		}
-		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup)) {
+		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup,capacity)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -370,8 +371,8 @@ public class ProductionController extends Controller {
 	}
 
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
-			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity,
-			Integer schedulingPlanStatus, Integer producedQuantity) {
+			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity,
+			Boolean isCompleted, Integer producedQuantity) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
@@ -384,27 +385,45 @@ public class ProductionController extends Controller {
 		if (producedQuantity != null && producedQuantity < 0) {
 			throw new ParameterException("已生产数量不合理");
 		}
-		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, planStartTime, planCompleteTime,
-				lineChangeTime, capacity, schedulingPlanStatus, producedQuantity)) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date start;
+		Date end;
+		try {
+			start = dateFormat.parse(planStartTime);
+			end = dateFormat.parse(planCompleteTime);
+		} catch (ParseException e) {
+			throw new ParameterException("时间格式出错");
+		}
+		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end,
+				lineChangeTime, capacity, isCompleted, producedQuantity)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 	
-	public void checkCompleteTime(Integer id,Integer processGroup,Integer schedulingQuantity, Integer line,
-			Date planStartTime, Date planCompleteTime, String lineChangeTime) {
-		if (id==null||schedulingQuantity==null||processGroup==null||line==null||planStartTime==null||planCompleteTime==null) {
+	public void checkCompleteTime(Integer schedulingQuantity, 
+			String planStartTime, String planCompleteTime, String lineChangeTime,Integer capacity) {
+		if (schedulingQuantity==null||planStartTime==null||planCompleteTime==null||capacity==null) {
 			throw new OperationException("参数不能为空");
 		}
-		if (schedulingQuantity != null && schedulingQuantity < 0) {
-			throw new ParameterException("排产数量不合理");
+		if (schedulingQuantity < 0||capacity<0) {
+			throw new ParameterException("排产数量或产能不合理");
 		}
-		if (productionService.checkCompleteTime( id, processGroup, schedulingQuantity,  line,
-				 planStartTime,  planCompleteTime,  lineChangeTime)) {
-			renderJson(ResultUtil.succeed());
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date start;
+		Date end;
+		try {
+			start = dateFormat.parse(planStartTime);
+			end = dateFormat.parse(planCompleteTime);
+		} catch (ParseException e) {
+			throw new ParameterException("时间格式出错");
+		}
+		if (productionService.checkCompleteTime(  schedulingQuantity,
+				start,  end,  lineChangeTime,capacity)) {
+			renderJson(ResultUtil.succeed("计划时间内能够完成任务"));
 		}else {
-			renderJson(ResultUtil.failed());
+			renderJson(ResultUtil.failed("计划时间内无法完成任务"));
 		}
 	}
 

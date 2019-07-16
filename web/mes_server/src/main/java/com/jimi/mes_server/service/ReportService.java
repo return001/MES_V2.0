@@ -73,9 +73,10 @@ public class ReportService extends SelectService{
 		}
 		int size = records.getTotalRow();
 		String fileName = table + "_" + simpleDateFormat.format(new Date()) + "_" + size + ".xls";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		String[] field = null;
 		String[] head = null;
@@ -483,9 +484,10 @@ public class ReportService extends SelectService{
 		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		String fileName = "Gps_ManuPrintParam" + "_" + simpleDateFormat.format(new Date()) + "_" + zhiDan + "_" + "未使用的IMEI" + ".xls";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		String head = "未使用的IMEI";
 		String title = "";
@@ -611,9 +613,10 @@ public class ReportService extends SelectService{
 		field = new String[] { "GpsCartonBoxTwentyResult_Id", "GpsCartonBoxTwentyResult_BoxNo", "GpsCartonBoxTwentyResult_IMEI", "GpsCartonBoxTwentyResult_ZhiDan", "GpsCartonBoxTwentyResult_SoftModel", "GpsCartonBoxTwentyResult_Version", "GpsCartonBoxTwentyResult_ProductCode", "GpsCartonBoxTwentyResult_Color", "GpsCartonBoxTwentyResult_Qty", "GpsCartonBoxTwentyResult_Weight", "GpsCartonBoxTwentyResult_Date", "GpsCartonBoxTwentyResult_TACInfo", "GpsCartonBoxTwentyResult_CompanyName", "GpsCartonBoxTwentyResult_TesterId", "GpsCartonBoxTwentyResult_TestTime", "GpsCartonBoxTwentyResult_Remark1", "GpsCartonBoxTwentyResult_Remark2", "GpsCartonBoxTwentyResult_Remark3", "GpsCartonBoxTwentyResult_Remark4", "GpsCartonBoxTwentyResult_Remark5", "GpsCartonBoxTwentyResult_Computer", "DataRelativeSheet_SN", "DataRelativeSheet_IMEI1", "DataRelativeSheet_IMEI2", "DataRelativeSheet_IMEI3", "DataRelativeSheet_IMEI4", "DataRelativeSheet_IMEI5", "DataRelativeSheet_IMEI6", "DataRelativeSheet_IMEI7", "DataRelativeSheet_IMEI8", "DataRelativeSheet_IMEI9", "DataRelativeSheet_IMEI10", "DataRelativeSheet_IMEI11", "DataRelativeSheet_IMEI12", "DataRelativeSheet_IMEI13", "DataRelativeSheet_ZhiDan", "DataRelativeSheet_TestTime", "DataRelativeSheet_SimEffectiveDate" };
 		head = field;
 		title = "Gps_CartonBoxTwenty_Result————DataRelativeSheet";
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(false);
 		helper.fill(records, title, field, head);
 		helper.write(output, true);
@@ -632,9 +635,10 @@ public class ReportService extends SelectService{
 	 */
 	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type, HttpServletResponse response, OutputStream output) throws Exception {
 		MultiTableQueryInfo multiTableQueryInfo = multiTableQuery(imei, sn, zhiDan, type);
-		response.reset();
+		/*response.reset();*/
 		response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(genFileName(imei, sn, zhiDan, false), "UTF-8"));
 		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = getExcelHelper(multiTableQueryInfo, null);
 		if (helper.getBook().getNumberOfSheets() == 0) {
 			helper.getBook().createSheet("当前选择的条件没有可以导出的数据");

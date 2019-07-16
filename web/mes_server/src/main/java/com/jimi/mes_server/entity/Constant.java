@@ -60,5 +60,9 @@ public class Constant {
 
 	public static final Integer TESTING_PROCESS_GROUP = 2;
 
+	public static final Integer PACKING_PROCESS_GROUP = 3;
+
 	public static final String DEFAULT_LINE_CHANGE_TIME = "0.5";
+
+	public static final int MAX_RECORD_ROWS = 2000;
 }
