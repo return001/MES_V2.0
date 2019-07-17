@@ -33,6 +33,18 @@ import com.jimi.mes_server.util.TokenBox;
 public class ProductionController extends Controller {
 
 	private static ProductionService productionService = Enhancer.enhance(ProductionService.class);
+	
+	public void getProcessGroup() {
+		renderJson(ResultUtil.succeed(productionService.getProcessGroup()));
+	}
+	
+	public void getProcess() {
+		renderJson(ResultUtil.succeed(productionService.getProcess()));
+	}
+	
+	public void getLine() {
+		renderJson(ResultUtil.succeed(productionService.getLine()));
+	}
 
 	public void addProcessGroup(String groupNo, String groupName, String groupRemark) {
 		if (StringUtils.isAnyBlank(groupNo, groupName)) {
@@ -304,11 +316,6 @@ public class ProductionController extends Controller {
 		}
 	}
 
-	public void selectPlan(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		ResultUtil result = ResultUtil.succeed(
-				productionService.select(Constant.TABLE_SCHEDULING_PLAN, pageNo, pageSize, ascBy, descBy, filter));
-		renderJson(result);
-	}
 
 	public void getPlanGannt(Integer id) {
 		if (id == null) {
@@ -385,64 +392,63 @@ public class ProductionController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	public void selectPlan(Integer pageNo, Integer pageSize,Integer schedulingPlanStatus ,String zhidan,String customerName,String orderDateFrom,String orderDateTo,
-			String planStartTimeFrom,String planStartTimeTo,String planCompleteTimeFrom,String planCompleteTimeTo,
-			String startTimeFrom,String startTimeTo,String completeTimeFrom,String completeTimeTo,
-			Integer processGroup,Integer line,String productionPlanningNumber,String softModel,String productNo
-			) {
+
+	public void selectPlan(Integer pageNo, Integer pageSize, Integer schedulingPlanStatus, String zhidan,
+			String customerName, String orderDateFrom, String orderDateTo, String planStartTimeFrom,
+			String planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo, String startTimeFrom,
+			String startTimeTo, String completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
+			String productionPlanningNumber, String softModel, String productNo) {
 		StringBuilder filter = new StringBuilder();
 		filter.append(concatEqualSqlFilter("scheduling_plan_status", schedulingPlanStatus));
 		filter.append(concatEqualSqlFilter("scheduling_plan.process_group", processGroup));
 		filter.append(concatEqualSqlFilter("line", line));
-		filter.append(concatSqlFilter("zhidan",zhidan, true,false));
-		filter.append(concatSqlFilter("customer_name",customerName, true,false));
-		filter.append(concatSqlFilter("production_planning_number",productionPlanningNumber, true,false));
-		filter.append(concatSqlFilter("soft_model",softModel, true,false));
-		filter.append(concatSqlFilter("product_no",productNo, true,false));
-		filter.append(concatSqlFilter("create_time",orderDateFrom, false,true));
-		filter.append(concatSqlFilter("create_time",orderDateTo, false,false));
-		filter.append(concatSqlFilter("plan_start_time",planStartTimeFrom, false,true));
-		filter.append(concatSqlFilter("plan_start_time",planStartTimeTo, false,false));
-		filter.append(concatSqlFilter("plan_complete_time",planCompleteTimeFrom, false,true));
-		filter.append(concatSqlFilter("plan_complete_time",planCompleteTimeTo, false,false));
-		filter.append(concatSqlFilter("start_time",startTimeFrom, false,true));
-		filter.append(concatSqlFilter("start_time",startTimeTo, false,false));
-		filter.append(concatSqlFilter("complete_time",completeTimeFrom, false,true));
-		filter.append(concatSqlFilter("complete_time",completeTimeTo, false,false));
-		
-		
-		
-		
-			renderJson(ResultUtil.succeed(productionService.selectPlan(filter.toString(),pageNo,pageSize)));
-		
+		filter.append(concatSqlFilter("zhidan", zhidan, true, false));
+		filter.append(concatSqlFilter("customer_name", customerName, true, false));
+		filter.append(concatSqlFilter("production_planning_number", productionPlanningNumber, true, false));
+		filter.append(concatSqlFilter("soft_model", softModel, true, false));
+		filter.append(concatSqlFilter("product_no", productNo, true, false));
+		filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
+		filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
+		filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false, true));
+		filter.append(concatSqlFilter("plan_start_time", planStartTimeTo, false, false));
+		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeFrom, false, true));
+		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo, false, false));
+		filter.append(concatSqlFilter("start_time", startTimeFrom, false, true));
+		filter.append(concatSqlFilter("start_time", startTimeTo, false, false));
+		filter.append(concatSqlFilter("complete_time", completeTimeFrom, false, true));
+		filter.append(concatSqlFilter("complete_time", completeTimeTo, false, false));
+
+		renderJson(ResultUtil.succeed(productionService.selectPlan(filter.toString(), pageNo, pageSize)));
+
 	}
-	private StringBuilder concatSqlFilter(String key ,String value,Boolean isLike,Boolean isGreater) {
+
+	private StringBuilder concatSqlFilter(String key, String value, Boolean isLike, Boolean isGreater) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(value)) {
 			if (isLike) {
-				filter.append(" AND "+key+" like '%"+value+"%'");
-			}else {
+				filter.append(" AND " + key + " like '%" + value + "%'");
+			} else {
 				if (isGreater) {
-					filter.append(" AND "+key+ " > '"+value+"'");
-				}else {
-					filter.append(" AND "+key+ " < '"+value+"'");
+					filter.append(" AND " + key + " > '" + value + "'");
+				} else {
+					filter.append(" AND " + key + " < '" + value + "'");
 				}
 			}
 		}
 		return filter;
-		
-		
+
 	}
 
-	private StringBuilder concatEqualSqlFilter(String key ,Integer value) {
+	private StringBuilder concatEqualSqlFilter(String key, Integer value) {
 		StringBuilder filter = new StringBuilder();
-		if (value!=null) {
-			filter.append(" AND "+key+" = "+value);
+		if (value != null) {
+			filter.append(" AND " + key + " = " + value);
 		}
-		
+
 		return filter;
-		
+
 	}
+
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
 			Integer producedQuantity, String remainingReason, String productionPlanningNumber) {

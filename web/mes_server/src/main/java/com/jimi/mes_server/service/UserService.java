@@ -3,6 +3,10 @@ package com.jimi.mes_server.service;
 import java.util.Date;
 import java.util.List;
 
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.SqlPara;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.UserType;
@@ -152,5 +156,14 @@ public class UserService extends SelectService{
 		} else {
 			return user;
 		}
+	}
+
+
+	public Page<Record> getUserIdAndName(String name) {
+		// TODO Auto-generated method stub
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_USER_NAME_ID_BY_NAME);
+		sqlPara.addPara("%"+name+"%");
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 }

@@ -47,6 +47,34 @@ public class ProductionService {
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 
+	public Page<Record> select(String tableName, Integer pageNo, Integer pageSize, String ascBy, String descBy,
+			String filter) {
+		return daoService.select(tableName, pageNo, pageSize, ascBy, descBy, filter, null);
+	}
+
+	public Page<Record> select(String tableName, String filter) {
+		return daoService.select(tableName, Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, null, null,
+				filter, null);
+	}
+	
+	public Page<Record> getProcessGroup() {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_PROCESSGROUP_NAME_ID);
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
+	public Page<Record> getProcess() {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_PROCESS_NAME_ID);
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
+	public Page<Record> getLine() {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_LINE_NAME_ID);
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
 	public boolean addProcessGroup(String groupNo, String groupName, String groupRemark) {
 		if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNO, groupNo) != null) {
 			throw new OperationException("工序组编号已存在");
@@ -77,13 +105,15 @@ public class ProductionService {
 		}
 
 		if (!StrKit.isBlank(groupNo)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNO, groupNo) != null) {
+			ProcessGroup group = ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNO, groupNo);
+			if (group != null&&!group.getId().equals(id)) {
 				throw new OperationException("工序组编号已存在");
 			}
 			processGroup.setGroupNo(groupNo);
 		}
 		if (!StrKit.isBlank(groupName)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNAME, groupName) != null) {
+			ProcessGroup group = ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNAME, groupName);
+			if (group != null&&!group.getId().equals(id)) {
 				throw new OperationException("工序组名称已存在");
 			}
 			processGroup.setGroupName(groupName);
@@ -115,7 +145,7 @@ public class ProductionService {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
-			line.setLineDirector(processGroup);
+			line.setProcessGroup(processGroup);
 		}
 		return line.save();
 	}
@@ -131,28 +161,23 @@ public class ProductionService {
 	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(lineNo)) {
-			filter.append("line_no like '%" + lineNo + " %' and");
+			filter.append(" and line_no like '%" + lineNo + " %'");
 		}
 		if (!StrKit.isBlank(lineName)) {
-			filter.append(" line_name like '%" + lineName + " %' and");
+			filter.append(" and line_name like '%" + lineName + " %'");
 		}
 		if (processGroup != null) {
 
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
-			filter.append(" process_group = " + processGroup);
-		}
-		if (StringUtils.endsWith(filter, "and")) {
-			filter.delete(filter.lastIndexOf("and"), filter.length());
+			filter.append(" and process_group = " + processGroup);
 		}
 		SqlPara sqlPara = new SqlPara();
-		if (filter.length() == 0) {
-			sqlPara.setSql(SQL.SELECT_LINE_JOIN_PROCESSGROUP);
-		} else {
-			sqlPara.setSql(SQL.SELECT_LINE_JOIN_PROCESSGROUP + " where " + filter);
-		}
-
+		
+			sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter);
+		
+		
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
@@ -164,13 +189,15 @@ public class ProductionService {
 		}
 
 		if (!StrKit.isBlank(lineNo)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
+			Line temp = Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo);
+			if (temp != null&&!temp.getId().equals(id)) {
 				throw new OperationException("产线线别已存在");
 			}
 			line.setLineNo(lineNo);
 		}
 		if (!StrKit.isBlank(lineName)) {
-			if (ProcessGroup.dao.findFirst(SQL.SELECT_LINE_BY_LINENAME, lineName) != null) {
+			Line temp = Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENAME, lineName);
+			if (temp != null&&!temp.getId().equals(id)) {
 				throw new OperationException("产线名称已存在");
 			}
 			line.setLineName(lineName);
@@ -224,27 +251,23 @@ public class ProductionService {
 	public Page<Record> selectProcess(String processNo, String processName, Integer processGroup) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(processNo)) {
-			filter.append("process_no like '%" + processNo + " %' and");
+			filter.append(" and process_no like '%" + processNo + "%' ");
 		}
 		if (!StrKit.isBlank(processName)) {
-			filter.append(" process_name like '%" + processName + " %' and");
+			filter.append(" and process_name like '%" + processName + "%' ");
 		}
 		if (processGroup != null) {
 
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
-			filter.append(" process_group = " + processGroup);
+			filter.append(" and process_group = " + processGroup);
 		}
-		if (StringUtils.endsWith(filter, "and")) {
-			filter.delete(filter.lastIndexOf("and"), filter.length());
-		}
+		
 		SqlPara sqlPara = new SqlPara();
-		if (filter.length() == 0) {
-			sqlPara.setSql(SQL.SELECT_PROCESS_JOIN_PROCESSGROUP);
-		} else {
-			sqlPara.setSql(SQL.SELECT_PROCESS_JOIN_PROCESSGROUP + " where " + filter);
-		}
+		
+			sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP +  filter);
+		
 
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
@@ -257,13 +280,15 @@ public class ProductionService {
 		}
 
 		if (!StrKit.isBlank(processNo)) {
-			if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
+			Process temp =Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo);
+			if (temp != null&&!temp.getId().equals(id)) {
 				throw new OperationException("工序编号已存在");
 			}
 			process.setProcessNo(processNo);
 		}
 		if (!StrKit.isBlank(processName)) {
-			if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName) != null) {
+			Process temp =Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNAME, processName);
+			if (temp != null&&!temp.getId().equals(id)) {
 				throw new OperationException("工序名称已存在");
 			}
 			process.setProcessName(processName);
@@ -453,16 +478,6 @@ public class ProductionService {
 		return modelCapacity.delete();
 	}
 
-	public Page<Record> select(String tableName, Integer pageNo, Integer pageSize, String ascBy, String descBy,
-			String filter) {
-		return daoService.select(tableName, pageNo, pageSize, ascBy, descBy, filter, null);
-	}
-
-	public Page<Record> select(String tableName, String filter) {
-		return daoService.select(tableName, 1, PropKit.use("properties.ini").getInt("defaultPageSize"), null, null,
-				filter, null);
-	}
-
 	public Record getPlanGannt(Integer id) {
 		Record record = Db.findFirst(SQL.SELECT_PLAN_GANT_INFORMATION, id);
 		if (record == null) {
@@ -627,7 +642,7 @@ public class ProductionService {
 			}
 			schedulingPlan.setProducedQuantity(producedQuantity).setSchedulingQuantity(schedulingQuantity)
 					.setRemainingQuantity(schedulingQuantity - producedQuantity);
-			if (schedulingPlan.getRemainingQuantity()>0) {
+			if (schedulingPlan.getRemainingQuantity() > 0) {
 				schedulingPlan.setIsTimeout(true);
 			}
 		}
@@ -738,9 +753,9 @@ public class ProductionService {
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
-	public Page<Record> selectPlan(String filter,Integer pageNo, Integer pageSize) {
+	public Page<Record> selectPlan(String filter, Integer pageNo, Integer pageSize) {
 		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN_LINE+filter);
+		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN_LINE + filter);
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 

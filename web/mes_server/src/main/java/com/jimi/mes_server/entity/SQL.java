@@ -114,9 +114,9 @@ public class SQL {
 
 	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ?";
 
-	public final static String SELECT_PROCESS_JOIN_PROCESSGROUP = "SELECT * from process INNER JOIN process_group on process.process_group = process_group.id ";
+	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.*,process_group.group_no,process_group.group_name from process, process_group where process.process_group = process_group.id ";
 
-	public final static String SELECT_LINE_JOIN_PROCESSGROUP = "SELECT * from line INNER JOIN process_group on line.process_group = process_group.id ";
+	public final static String SELECT_LINE_PROCESSGROUP = "SELECT line.*,process_group.group_no,process_group.group_name from line ,process_group WHERE line.process_group = process_group.id ";
 
 	public final static String UPDATE_MODELCAPACITY_POSITION = "UPDATE model_capacity SET [position] = ? where id = ?";
 
@@ -129,4 +129,12 @@ public class SQL {
 	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model LIKE ? ";
 
 	public final static String SELECT_SCHEDULINGPLAN_LINE = "SELECT scheduling_plan.*, line.line_no, line.line_name FROM scheduling_plan, orders, line WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id ";
+
+	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id from LUserAccount WHERE InService = 1 and Name LIKE ?";
+
+	public final static String SELECT_PROCESS_NAME_ID = "SELECT id, process_name as processName from process";
+
+	public final static String SELECT_PROCESSGROUP_NAME_ID = "SELECT id, group_name as groupName from process_group";
+
+	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
 }
