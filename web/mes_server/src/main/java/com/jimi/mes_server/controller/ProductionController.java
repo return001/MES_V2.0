@@ -21,12 +21,14 @@ import com.jimi.mes_server.entity.DailyOrderProduction;
 import com.jimi.mes_server.entity.DailyReport;
 import com.jimi.mes_server.entity.Production;
 import com.jimi.mes_server.entity.SQL;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.DailyCompletion;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.service.ProductionService;
 import com.jimi.mes_server.util.ResultUtil;
+import com.jimi.mes_server.util.TokenBox;
 
 public class ProductionController extends Controller {
 
@@ -96,8 +98,8 @@ public class ProductionController extends Controller {
 	}
 
 	public void selectLine(String lineNo, String lineName, Integer processGroup) {
-	
-		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo,  lineName,  processGroup)));
+
+		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup)));
 	}
 
 	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector,
@@ -136,9 +138,9 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void selectProcess(String processNo, String processName,  Integer processGroup) {
-		
-		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo,  processName,   processGroup)));
+	public void selectProcess(String processNo, String processName, Integer processGroup) {
+
+		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo, processName, processGroup)));
 	}
 
 	public void editProcess(Integer id, String processNo, String processName, String processRemark,
@@ -255,7 +257,7 @@ public class ProductionController extends Controller {
 	}
 
 	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity,String remark) {
+			Integer processPeopleQuantity, Integer capacity, String remark) {
 		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null
 				|| capacity == null) {
 			throw new ParameterException("参数不能为空");
@@ -264,7 +266,7 @@ public class ProductionController extends Controller {
 			throw new ParameterException("产能和人数不合理");
 		}
 		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity,
-				capacity,remark)) {
+				capacity, remark)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -283,17 +285,19 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel, String customerModel, Integer process) {
-		renderJson(ResultUtil.succeed(productionService.selectCapacity(pageNo,  pageSize,  ascBy,  descBy,  softModel,  customerModel,  process)));
+	public void selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel,
+			String customerModel, Integer process) {
+		renderJson(ResultUtil.succeed(
+				productionService.selectCapacity(pageNo, pageSize, ascBy, descBy, softModel, customerModel, process)));
 	}
 
 	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity,String remark,Integer position) {
+			Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity,
-				capacity,remark,position)) {
+				capacity, remark, position)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -316,7 +320,7 @@ public class ProductionController extends Controller {
 
 	// 查询未排产
 	public void selectUnscheduledPlan(Integer type) {
-		if (type==null) {
+		if (type == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		switch (type) {
@@ -332,26 +336,38 @@ public class ProductionController extends Controller {
 	}
 
 	// 添加排产计划
-	public void addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup,Integer capacity) {
-		if (order == null || schedulingQuantity == null || line == null||capacity == null) {
+	public void addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup,
+			Integer capacity) {
+		if (order == null || schedulingQuantity == null || line == null || capacity == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (schedulingQuantity < 0) {
 			throw new ParameterException("排产数量不合理");
 		}
-		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup,capacity)) {
+		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 
-	public void editPlanStatus(Integer id) {
-		if (id == null) {
+	public void editPlanStatus(Integer id, Integer type) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (id == null || type == null) {
 			throw new ParameterException("参数不能为空");
 		}
+		switch (type) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			break;
 
-		if (productionService.editPlanStatus(id)) {
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		if (productionService.editPlanStatus(id, type, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -369,18 +385,73 @@ public class ProductionController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
+	public void selectPlan(Integer pageNo, Integer pageSize,Integer schedulingPlanStatus ,String zhidan,String customerName,String orderDateFrom,String orderDateTo,
+			String planStartTimeFrom,String planStartTimeTo,String planCompleteTimeFrom,String planCompleteTimeTo,
+			String startTimeFrom,String startTimeTo,String completeTimeFrom,String completeTimeTo,
+			Integer processGroup,Integer line,String productionPlanningNumber,String softModel,String productNo
+			) {
+		StringBuilder filter = new StringBuilder();
+		filter.append(concatEqualSqlFilter("scheduling_plan_status", schedulingPlanStatus));
+		filter.append(concatEqualSqlFilter("scheduling_plan.process_group", processGroup));
+		filter.append(concatEqualSqlFilter("line", line));
+		filter.append(concatSqlFilter("zhidan",zhidan, true,false));
+		filter.append(concatSqlFilter("customer_name",customerName, true,false));
+		filter.append(concatSqlFilter("production_planning_number",productionPlanningNumber, true,false));
+		filter.append(concatSqlFilter("soft_model",softModel, true,false));
+		filter.append(concatSqlFilter("product_no",productNo, true,false));
+		filter.append(concatSqlFilter("create_time",orderDateFrom, false,true));
+		filter.append(concatSqlFilter("create_time",orderDateTo, false,false));
+		filter.append(concatSqlFilter("plan_start_time",planStartTimeFrom, false,true));
+		filter.append(concatSqlFilter("plan_start_time",planStartTimeTo, false,false));
+		filter.append(concatSqlFilter("plan_complete_time",planCompleteTimeFrom, false,true));
+		filter.append(concatSqlFilter("plan_complete_time",planCompleteTimeTo, false,false));
+		filter.append(concatSqlFilter("start_time",startTimeFrom, false,true));
+		filter.append(concatSqlFilter("start_time",startTimeTo, false,false));
+		filter.append(concatSqlFilter("complete_time",completeTimeFrom, false,true));
+		filter.append(concatSqlFilter("complete_time",completeTimeTo, false,false));
+		
+		
+		
+		
+			renderJson(ResultUtil.succeed(productionService.selectPlan(filter.toString(),pageNo,pageSize)));
+		
+	}
+	private StringBuilder concatSqlFilter(String key ,String value,Boolean isLike,Boolean isGreater) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(value)) {
+			if (isLike) {
+				filter.append(" AND "+key+" like '%"+value+"%'");
+			}else {
+				if (isGreater) {
+					filter.append(" AND "+key+ " > '"+value+"'");
+				}else {
+					filter.append(" AND "+key+ " < '"+value+"'");
+				}
+			}
+		}
+		return filter;
+		
+		
+	}
 
+	private StringBuilder concatEqualSqlFilter(String key ,Integer value) {
+		StringBuilder filter = new StringBuilder();
+		if (value!=null) {
+			filter.append(" AND "+key+" = "+value);
+		}
+		
+		return filter;
+		
+	}
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
-			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity,
-			Boolean isCompleted, Integer producedQuantity) {
-		if (id == null) {
+			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
+			Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
+		if (StringUtils.isAnyBlank(planStartTime, planCompleteTime, lineChangeTime)
+				|| id == null && schedulingQuantity == null || capacity == null || line == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (schedulingQuantity != null && schedulingQuantity < 0) {
-			throw new ParameterException("排产数量不合理");
-		}
-		if (capacity != null && capacity < 0) {
-			throw new ParameterException("产能不合理");
+		if (schedulingQuantity < 0 || capacity < 0) {
+			throw new ParameterException("排产数量或产能不合理");
 		}
 		if (producedQuantity != null && producedQuantity < 0) {
 			throw new ParameterException("已生产数量不合理");
@@ -394,20 +465,20 @@ public class ProductionController extends Controller {
 		} catch (ParseException e) {
 			throw new ParameterException("时间格式出错");
 		}
-		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end,
-				lineChangeTime, capacity, isCompleted, producedQuantity)) {
+		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime,
+				capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-	public void checkCompleteTime(Integer schedulingQuantity, 
-			String planStartTime, String planCompleteTime, String lineChangeTime,Integer capacity) {
-		if (schedulingQuantity==null||planStartTime==null||planCompleteTime==null||capacity==null) {
-			throw new OperationException("参数不能为空");
+
+	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime,
+			String lineChangeTime, Integer capacity) {
+		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null) {
+			throw new ParameterException("参数不能为空");
 		}
-		if (schedulingQuantity < 0||capacity<0) {
+		if (schedulingQuantity < 0 || capacity < 0) {
 			throw new ParameterException("排产数量或产能不合理");
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -416,13 +487,12 @@ public class ProductionController extends Controller {
 		try {
 			start = dateFormat.parse(planStartTime);
 			end = dateFormat.parse(planCompleteTime);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			throw new ParameterException("时间格式出错");
 		}
-		if (productionService.checkCompleteTime(  schedulingQuantity,
-				start,  end,  lineChangeTime,capacity)) {
+		if (productionService.checkCompleteTime(schedulingQuantity, start, end, lineChangeTime, capacity)) {
 			renderJson(ResultUtil.succeed("计划时间内能够完成任务"));
-		}else {
+		} else {
 			renderJson(ResultUtil.failed("计划时间内无法完成任务"));
 		}
 	}

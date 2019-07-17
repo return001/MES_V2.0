@@ -127,4 +127,6 @@ public class SQL {
 	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? AND soft_model LIKE ? ";
 
 	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model LIKE ? ";
+
+	public final static String SELECT_SCHEDULINGPLAN_LINE = "SELECT scheduling_plan.*, line.line_no, line.line_name FROM scheduling_plan, orders, line WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id ";
 }
