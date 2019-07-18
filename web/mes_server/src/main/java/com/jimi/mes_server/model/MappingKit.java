@@ -32,6 +32,7 @@ public class MappingKit {
 		arp.addMapping("Gps_ManuSimDataParam", "ID", GpsManusimdataparam.class);
 		arp.addMapping("Gps_TestResult", "Id", GpsTestresult.class);
 		arp.addMapping("line", "id", Line.class);
+		arp.addMapping("line_computer", "id", LineComputer.class);
 		arp.addMapping("LUserAccount", "Id", LUserAccount.class);
 		arp.addMapping("model_capacity", "id", ModelCapacity.class);
 		arp.addMapping("order_file", "id", OrderFile.class);

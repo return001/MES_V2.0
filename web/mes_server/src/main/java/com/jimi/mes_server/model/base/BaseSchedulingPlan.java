@@ -180,4 +180,49 @@ public abstract class BaseSchedulingPlan<M extends BaseSchedulingPlan<M>> extend
 		return getStr("remaining_reason");
 	}
 
+	public M setScheduler(java.lang.Integer scheduler) {
+		set("scheduler", scheduler);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getScheduler() {
+		return getInt("scheduler");
+	}
+
+	public M setSchedulingTime(java.util.Date schedulingTime) {
+		set("scheduling_time", schedulingTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getSchedulingTime() {
+		return get("scheduling_time");
+	}
+
+	public M setPlanModifier(java.lang.Integer planModifier) {
+		set("plan_modifier", planModifier);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getPlanModifier() {
+		return getInt("plan_modifier");
+	}
+
+	public M setPlanModifyTime(java.util.Date planModifyTime) {
+		set("plan_modify_time", planModifyTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getPlanModifyTime() {
+		return get("plan_modify_time");
+	}
+
+	public M setProductionConfirmer(java.lang.Integer productionConfirmer) {
+		set("production_confirmer", productionConfirmer);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getProductionConfirmer() {
+		return getInt("production_confirmer");
+	}
+
 }

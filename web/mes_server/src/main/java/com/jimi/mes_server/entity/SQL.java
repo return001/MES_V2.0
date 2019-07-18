@@ -114,9 +114,9 @@ public class SQL {
 
 	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ?";
 
-	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.*,process_group.group_no,process_group.group_name from process, process_group where process.process_group = process_group.id ";
+	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.id,process_no as processNo,process_name as processName,process_remark as processRemark,process_group as processGroup,process_group.group_no as groupNo,process_group.group_name as groupName from process, process_group where process.process_group = process_group.id ";
 
-	public final static String SELECT_LINE_PROCESSGROUP = "SELECT line.*,process_group.group_no,process_group.group_name from line ,process_group WHERE line.process_group = process_group.id ";
+	public final static String SELECT_LINE_PROCESSGROUP = "SELECT line.id, line_no AS 'lineNo', line_name AS lineName, line_remark AS lineRemark, line_director AS lineDirector, line_engineer AS lineEngineer, line_qc AS lineQc, process_group AS processGroup, process_group.group_name AS groupName, a.Name AS directorName, b.Name AS engineerName, c.Name AS qcName FROM line, process_group, LUserAccount a, LUserAccount b, LUserAccount c WHERE line.process_group = process_group.id AND a.Id = line.line_director AND b.Id = line.line_engineer AND c.Id = line_qc ";
 
 	public final static String UPDATE_MODELCAPACITY_POSITION = "UPDATE model_capacity SET [position] = ? where id = ?";
 
@@ -137,4 +137,12 @@ public class SQL {
 	public final static String SELECT_PROCESSGROUP_NAME_ID = "SELECT id, group_name as groupName from process_group";
 
 	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
+
+	public final static String SELECT_ORDER = "SELECT id,zhidan,alias,soft_model as softModel,version,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,quantity,delivery_date as deliveryDate,remark,order_status as orderStatus,delete_reason as deleteReason,order_creator as orderCreator,order_create_time as orderCreateTime,order_modifier as orderModifier,order_modify_time as orderModifyTime from orders";
+
+	public final static String SELECT_PROCESSGROUP = "SELECT id,group_no as groupNo,group_name as groupName,group_remark as groupRemark FROM process_group";
+
+	public final static String SELECT_LINECOMPUTER_BY_LINE = "SELECT id,computer_name as computerName,remark,line,ip from line_computer WHERE line = ? ";
+
+	public final static String SELECT_LINECOMPUTER_BY_IP = "SELECT * from line_computer WHERE ip = ? ";
 }

@@ -54,4 +54,22 @@ public abstract class BaseOrderFile<M extends BaseOrderFile<M>> extends Model<M>
 		return getStr("path");
 	}
 
+	public M setUploader(java.lang.Integer uploader) {
+		set("uploader", uploader);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getUploader() {
+		return getInt("uploader");
+	}
+
+	public M setUploadTime(java.util.Date uploadTime) {
+		set("upload_time", uploadTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getUploadTime() {
+		return get("upload_time");
+	}
+
 }

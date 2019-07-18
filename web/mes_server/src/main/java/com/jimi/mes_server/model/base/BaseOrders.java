@@ -81,13 +81,13 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return getStr("customer_name");
 	}
 
-	public M setCreateTime(java.util.Date createTime) {
-		set("create_time", createTime);
+	public M setOrderDate(java.util.Date orderDate) {
+		set("order_date", orderDate);
 		return (M)this;
 	}
 	
-	public java.util.Date getCreateTime() {
-		return get("create_time");
+	public java.util.Date getOrderDate() {
+		return get("order_date");
 	}
 
 	public M setQuantity(java.lang.Integer quantity) {
@@ -117,13 +117,13 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return getStr("remark");
 	}
 
-	public M setOrdersStatus(java.lang.Integer ordersStatus) {
-		set("orders_status", ordersStatus);
+	public M setOrderStatus(java.lang.Integer orderStatus) {
+		set("order_status", orderStatus);
 		return (M)this;
 	}
 	
-	public java.lang.Integer getOrdersStatus() {
-		return getInt("orders_status");
+	public java.lang.Integer getOrderStatus() {
+		return getInt("order_status");
 	}
 
 	public M setDeleteReason(java.lang.String deleteReason) {
@@ -133,6 +133,42 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 	
 	public java.lang.String getDeleteReason() {
 		return getStr("delete_reason");
+	}
+
+	public M setOrderCreator(java.lang.Integer orderCreator) {
+		set("order_creator", orderCreator);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getOrderCreator() {
+		return getInt("order_creator");
+	}
+
+	public M setOrderCreateTime(java.util.Date orderCreateTime) {
+		set("order_create_time", orderCreateTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getOrderCreateTime() {
+		return get("order_create_time");
+	}
+
+	public M setOrderModifier(java.lang.Integer orderModifier) {
+		set("order_modifier", orderModifier);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getOrderModifier() {
+		return getInt("order_modifier");
+	}
+
+	public M setOrderModifyTime(java.util.Date orderModifyTime) {
+		set("order_modify_time", orderModifyTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getOrderModifyTime() {
+		return get("order_modify_time");
 	}
 
 }

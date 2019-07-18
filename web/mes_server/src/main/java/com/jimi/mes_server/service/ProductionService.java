@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +35,7 @@ import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.model.Line;
+import com.jimi.mes_server.model.LineComputer;
 import com.jimi.mes_server.model.ModelCapacity;
 import com.jimi.mes_server.model.OrderFile;
 import com.jimi.mes_server.model.Orders;
@@ -47,16 +50,6 @@ public class ProductionService {
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 
-	public Page<Record> select(String tableName, Integer pageNo, Integer pageSize, String ascBy, String descBy,
-			String filter) {
-		return daoService.select(tableName, pageNo, pageSize, ascBy, descBy, filter, null);
-	}
-
-	public Page<Record> select(String tableName, String filter) {
-		return daoService.select(tableName, Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, null, null,
-				filter, null);
-	}
-	
 	public Page<Record> getProcessGroup() {
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_PROCESSGROUP_NAME_ID);
@@ -98,6 +91,11 @@ public class ProductionService {
 		return processGroup.delete();
 	}
 
+	public Page<Record> selectProcessGroup(String filter) {
+		return daoService.select(SQL.SELECT_PROCESSGROUP,Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, null, null,
+				filter);
+	}
+
 	public boolean editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark) {
 		ProcessGroup processGroup = ProcessGroup.dao.findById(id);
 		if (processGroup == null) {
@@ -124,7 +122,7 @@ public class ProductionService {
 		return processGroup.update();
 	}
 
-	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector,
+	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer ,Integer lineQc ,
 			Integer processGroup) {
 		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
 			throw new OperationException("产线线别已存在");
@@ -140,6 +138,14 @@ public class ProductionService {
 		if (lineDirector != null) {
 			checkUserById(lineDirector);
 			line.setLineDirector(lineDirector);
+		}
+		if (lineEngineer != null) {
+			checkUserById(lineEngineer);
+			line.setLineEngineer(lineEngineer);
+		}
+		if (lineQc != null) {
+			checkUserById(lineQc);
+			line.setLineQc(lineQc);
 		}
 		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
@@ -181,7 +187,7 @@ public class ProductionService {
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
-	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector,
+	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer ,Integer lineQc ,
 			Integer processGroup) {
 		Line line = Line.dao.findById(id);
 		if (line == null) {
@@ -208,6 +214,14 @@ public class ProductionService {
 		if (lineDirector != null) {
 			checkUserById(lineDirector);
 			line.setLineDirector(lineDirector);
+		}
+		if (lineEngineer != null) {
+			checkUserById(lineEngineer);
+			line.setLineEngineer(lineEngineer);
+		}
+		if (lineQc != null) {
+			checkUserById(lineQc);
+			line.setLineQc(lineQc);
 		}
 		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
@@ -306,12 +320,65 @@ public class ProductionService {
 		return process.update();
 	}
 
+	public boolean addComputer(String ip, String computerName, String remark, Integer line) {
+		if (Line.dao.findById(line)==null) {
+			throw new OperationException("产线不存在");
+		}
+		LineComputer lineComputer = new LineComputer();
+		lineComputer.setIp(ip).setLine(line);
+		if (!StrKit.isBlank(computerName)) {
+			lineComputer.setComputerName(computerName);
+		}
+		if (!StrKit.isBlank(remark)) {
+			lineComputer.setRemark(remark);
+		}
+		return lineComputer.save();
+	}
+
+	public boolean deleteComputer(Integer id) {
+		LineComputer lineComputer = LineComputer.dao.findById(id);
+		if (lineComputer==null) {
+			throw new OperationException("删除失败，产线电脑不存在");
+		}
+		return lineComputer.delete();
+	}
+
+	public Page<Record> selectComputer(Integer lineId) {
+		if (Line.dao.findById(lineId)==null) {
+			throw new OperationException("产线不存在");
+		}
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_LINECOMPUTER_BY_LINE);
+		sqlPara.addPara(lineId);
+		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+	}
+
+	public boolean editComputer(Integer id, String ip, String computerName, String remark) {
+		LineComputer lineComputer = LineComputer.dao.findById(id);
+		if (lineComputer==null) {
+			throw new OperationException("产线电脑不存在");
+		}
+		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
+		if (computer!=null&&!computer.getId().equals(id)) {
+			throw new OperationException("IP地址已存在，请直接引用");
+		}
+		lineComputer.setIp(ip);
+		if (!StrKit.isBlank(computerName)) {
+			lineComputer.setComputerName(computerName);
+		}
+		if (remark!=null) {
+			lineComputer.setRemark(remark);
+		}
+		
+		return lineComputer.update();
+	}
+
 	public boolean addOrder(Orders order) {
 		Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, order.getZhidan());
 		if (temp != null) {
 			throw new OperationException("订单号已存在");
 		}
-		order.setOrdersStatus(Constant.UNSCHEDULED_ORDERSTATUS);
+		order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS);
 		return order.save();
 	}
 
@@ -320,11 +387,16 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("删除失败，订单不存在");
 		}
-		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(order.getOrdersStatus())) {
+		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
 			throw new OperationException("删除失败，只能删除未排产订单");
 		}
-		order.setDeleteReason(deleteReason).setOrdersStatus(Constant.DELETED_ORDERSTATUS);
+		order.setDeleteReason(deleteReason).setOrderStatus(Constant.DELETED_ORDERSTATUS);
 		return order.update();
+	}
+
+	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy,
+			String filter) {
+		return daoService.select(SQL.SELECT_ORDER,pageNo, pageSize, ascBy, descBy, filter, null);
 	}
 
 	public boolean editOrder(Orders order) {
@@ -358,8 +430,8 @@ public class ProductionService {
 					Orders order = new Orders();
 					order.setZhidan(zhidan).setSoftModel(softModel);
 					order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
-					order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo())
-							.setCreateTime(orderItem.getCreateTime());
+					/*order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo())
+							.setCreateTime(orderItem.getCreateTime());*/
 					order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate())
 							.setRemark(orderItem.getRemark());
 					orders.add(order);
@@ -367,7 +439,7 @@ public class ProductionService {
 				indexOfOrderItem++;
 			}
 			for (Orders order : orders) {
-				order.setOrdersStatus(Constant.UNSCHEDULED_ORDERSTATUS).save();
+				order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS).save();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -525,9 +597,9 @@ public class ProductionService {
 			for (Orders order : orders) {
 				Record record = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
 						Constant.ASSEMBLING_PROCESS_GROUP, "%" + order.getSoftModel() + "%");
-				OrderVO orderVO = new OrderVO(order, order.getQuantity(),
-						record.getInt("capacity") / record.getInt("people"));
-				orderVOs.add(orderVO);
+				/*OrderVO orderVO = new OrderVO(order, order.getQuantity(),
+						record.getInt("capacity") / record.getInt("people"));*/
+				/*orderVOs.add(orderVO);*/
 			}
 			return orderVOs;
 		case 1:
@@ -552,9 +624,9 @@ public class ProductionService {
 				peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
 						Constant.PACKING_PROCESS_GROUP, "%" + order.getSoftModel() + "%");
 			}
-			OrderVO orderVO = new OrderVO(order, order.getQuantity() - scheduledQuantity,
+			/*OrderVO orderVO = new OrderVO(order, order.getQuantity() - scheduledQuantity,
 					peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
-			orderVOs.add(orderVO);
+			orderVOs.add(orderVO);*/
 		}
 		return orderVOs;
 	}
@@ -758,5 +830,6 @@ public class ProductionService {
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN_LINE + filter);
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
+	
 
 }

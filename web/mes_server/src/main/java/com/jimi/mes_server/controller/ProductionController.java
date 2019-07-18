@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,7 +18,6 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
-import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.DailyOrderProduction;
 import com.jimi.mes_server.entity.DailyReport;
 import com.jimi.mes_server.entity.Production;
@@ -70,7 +71,7 @@ public class ProductionController extends Controller {
 	}
 
 	public void selectProcessGroup(String filter) {
-		ResultUtil result = ResultUtil.succeed(productionService.select(Constant.TABLE_PROCESS_GROUP, filter));
+		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(filter));
 		renderJson(result);
 	}
 
@@ -86,11 +87,11 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer processGroup) {
+	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer ,Integer lineQc ,Integer processGroup) {
 		if (StringUtils.isAnyBlank(lineNo, lineName)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector, processGroup)) {
+		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector,  lineEngineer , lineQc,processGroup)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -114,12 +115,12 @@ public class ProductionController extends Controller {
 		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup)));
 	}
 
-	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector,
+	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer ,Integer lineQc ,
 			Integer processGroup) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector, processGroup)) {
+		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector,  lineEngineer , lineQc , processGroup)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -167,6 +168,54 @@ public class ProductionController extends Controller {
 		}
 
 	}
+	
+	public void addComputer(String ip,String computerName, String remark, Integer line) {
+		if (line==null||StrKit.isBlank(ip)) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (!validateIP(ip)) {
+			throw new ParameterException("无效的IP地址");
+		}
+		if (productionService.addComputer( ip, computerName,  remark,  line)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());   
+		}
+	}
+	
+	public void deleteComputer(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (productionService.deleteComputer(id)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+
+	}
+	
+	public void selectComputer(Integer lineId) {
+		if (lineId==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(productionService.selectComputer(lineId)));
+	}
+	
+	public void editComputer(Integer id, String ip,String computerName, String remark) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (!StrKit.isBlank(ip)&&!validateIP(ip)) {
+			throw new ParameterException("无效的IP地址");
+		}
+		if (productionService.editComputer(id, ip, computerName,  remark)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+
+	}
 
 	public void addOrder(@Para("") Orders order) {
 		if (order == null) {
@@ -198,7 +247,7 @@ public class ProductionController extends Controller {
 
 	public void selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		ResultUtil result = ResultUtil
-				.succeed(productionService.select(Constant.TABLE_ORDERS, pageNo, pageSize, ascBy, descBy, filter));
+				.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter));
 		renderJson(result);
 	}
 
@@ -597,4 +646,10 @@ public class ProductionController extends Controller {
 		}
 
 	}
+	public static boolean validateIP(String ipAddress) {  
+        String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";   
+        Pattern pattern = Pattern.compile(regex);  
+        Matcher matcher = pattern.matcher(ipAddress);  
+        return matcher.matches();  
+    }  
 }

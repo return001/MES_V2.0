@@ -26,7 +26,7 @@ public class OrderVO extends Orders {
 		this.unscheduledQuantity = unscheduledQuantity;
 	}
 
-	public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
+	/*public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
 		this.setUnscheduledQuantity(unscheduledQuantity);
 		this.set("unscheduledQuantity", getUnscheduledQuantity());
 		this.setCapacity(capacity);
@@ -45,5 +45,5 @@ public class OrderVO extends Orders {
 		this.setSoftModel(order.getSoftModel());
 		this.setVersion(order.getVersion());
 		this.setZhidan(order.getZhidan());
-	}
+	}*/
 }

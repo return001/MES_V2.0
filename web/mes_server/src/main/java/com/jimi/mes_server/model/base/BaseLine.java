@@ -63,4 +63,22 @@ public abstract class BaseLine<M extends BaseLine<M>> extends Model<M> implement
 		return getInt("process_group");
 	}
 
+	public M setLineEngineer(java.lang.Integer lineEngineer) {
+		set("line_engineer", lineEngineer);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getLineEngineer() {
+		return getInt("line_engineer");
+	}
+
+	public M setLineQc(java.lang.Integer lineQc) {
+		set("line_qc", lineQc);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getLineQc() {
+		return getInt("line_qc");
+	}
+
 }
