@@ -226,7 +226,12 @@ public class ProductionController extends Controller {
 		if (isOrderInformationExist || order.getQuantity() == null) {
 			throw new ParameterException("订单号、机型、版本和数量不能为空");
 		}
-		if (productionService.addOrder(order)) {
+		if (order.getQuantity()<0) {
+			throw new ParameterException("订单数量格式错误");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.addOrder(order,userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -237,7 +242,9 @@ public class ProductionController extends Controller {
 		if (id == null || StrKit.isBlank(deleteReason)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.deleteOrder(id, deleteReason)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.deleteOrder(id, deleteReason,userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -255,7 +262,17 @@ public class ProductionController extends Controller {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editOrder(order)) {
+		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel(),
+				order.getVersion());
+		if (isOrderInformationExist || order.getQuantity() == null) {
+			throw new ParameterException("订单号、机型、版本和数量不能为空");
+		}
+		if (order.getQuantity()<0) {
+			throw new ParameterException("订单数量格式错误");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.editOrder(order,userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -285,7 +302,9 @@ public class ProductionController extends Controller {
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
 			throw new ParameterException("请添加文件");
 		}
-		if (productionService.importOrderTable(uploadFiles, type, id)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.importOrderTable(uploadFiles, type, id,userVO)) {
 			renderJson(ResultUtil.succeed());
 		}
 

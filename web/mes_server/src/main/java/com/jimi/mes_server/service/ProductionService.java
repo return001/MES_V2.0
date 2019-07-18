@@ -373,16 +373,17 @@ public class ProductionService {
 		return lineComputer.update();
 	}
 
-	public boolean addOrder(Orders order) {
+	public boolean addOrder(Orders order,LUserAccountVO userVO) {
 		Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, order.getZhidan());
 		if (temp != null) {
 			throw new OperationException("订单号已存在");
 		}
 		order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS);
+		order.setOrderCreator(userVO.getId()).setOrderCreateTime(new Date());
 		return order.save();
 	}
 
-	public boolean deleteOrder(Integer id, String deleteReason) {
+	public boolean deleteOrder(Integer id, String deleteReason,LUserAccountVO userVO) {
 		Orders order = Orders.dao.findById(id);
 		if (order == null) {
 			throw new OperationException("删除失败，订单不存在");
@@ -391,19 +392,26 @@ public class ProductionService {
 			throw new OperationException("删除失败，只能删除未排产订单");
 		}
 		order.setDeleteReason(deleteReason).setOrderStatus(Constant.DELETED_ORDERSTATUS);
+		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
 		return order.update();
 	}
 
 	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy,
 			String filter) {
-		return daoService.select(SQL.SELECT_ORDER,pageNo, pageSize, ascBy, descBy, filter, null);
+		if (StrKit.isBlank(filter)) {
+			return daoService.select(SQL.SELECT_ORDER,pageNo, pageSize, ascBy, descBy, filter);
+		}else {
+			return daoService.select(SQL.SELECT_ORDER+" AND ",pageNo, pageSize, ascBy, descBy, filter);
+		}
+		
 	}
 
-	public boolean editOrder(Orders order) {
+	public boolean editOrder(Orders order,LUserAccountVO userVO) {
 		Orders temp = Orders.dao.findById(order.getId());
 		if (temp == null) {
 			throw new OperationException("订单不存在");
 		}
+		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
 		return order.update();
 	}
 
@@ -450,7 +458,7 @@ public class ProductionService {
 		return resultString;
 	}
 
-	public boolean importOrderTable(List<UploadFile> uploadFiles, Integer type, Integer orderId) {
+	public boolean importOrderTable(List<UploadFile> uploadFiles, Integer type, Integer id,LUserAccountVO userVO) {
 		// TODO Auto-generated method stub
 		OrderFile orderFile = new OrderFile();
 		switch (type) {
@@ -467,7 +475,7 @@ public class ProductionService {
 		default:
 			throw new OperationException("无法识别的类型");
 		}
-		Orders order = Orders.dao.findById(orderId);
+		Orders order = Orders.dao.findById(id);
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
@@ -496,7 +504,7 @@ public class ProductionService {
 				throw new OperationException("文件保存失败");
 			}
 
-			orderFile.setFileName(fileName).setPath(file.getAbsolutePath()).setOrders(orderId).save();
+			orderFile.setFileName(fileName).setPath(file.getAbsolutePath()).setOrders(id).setUploader(userVO.getId()).setUploadTime(new Date()).save();
 			orderFile.remove("id");
 
 		}

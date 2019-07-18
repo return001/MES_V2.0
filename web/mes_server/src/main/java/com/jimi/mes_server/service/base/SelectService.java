@@ -72,7 +72,9 @@ public class SelectService {
 	private void createWhere(String filter, List<String> questionValues, StringBuffer sql) {
 		// 判断filter存在与否
 		if (filter != null) {
-			sql.append(" WHERE ");
+			if (!sql.toString().contains(" where ") && !sql.toString().contains(" WHERE ")) {
+				sql.append(" WHERE ");
+			}
 			String[] whereUnits = filter.split("#&#");
 
 			int index = 0;
@@ -184,7 +186,7 @@ public class SelectService {
 			throw new ParameterException("pageNo and pageSize must be provided at the same time");
 		}
 		if (pageNo == null && pageSize == null) {
-			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), resultSet, sql.toString(), questionValues.toArray());
+			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
 		} else {
 			System.out.println(sql.toString());
 			return Db.paginate(pageNo, pageSize, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());

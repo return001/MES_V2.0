@@ -96,9 +96,9 @@ public class SQL {
 
 	public final static String SELECT_ORDER_BY_ZHIDAN = "SELECT * from orders WHERE zhidan = ?";
 
-	public final static String SELECT_ORDERFILE_BY_ORDER = "SELECT id,orders,file_name,file_type from order_file WHERE orders = ?";
+	public final static String SELECT_ORDERFILE_BY_ORDER = "SELECT order_file.id, file_name AS fileName, file_type AS fileType, file_type.type_name AS typeName,LUserAccount.Name as uploaderName,upload_time as uploadTime FROM order_file, file_type ,LUserAccount WHERE file_type.id = order_file.file_type and LUserAccount.Id = order_file.uploader ";
 
-	public final static String SELECT_ORDERFILE_BY_ORDER_FILETYPE = "SELECT id,orders,file_name,file_type from order_file WHERE orders = ? and file_type = ?";
+	public final static String SELECT_ORDERFILE_BY_ORDER_FILETYPE = "SELECT order_file.id, file_name AS fileName, file_type AS fileType, file_type.type_name AS typeName,LUserAccount.Name as uploaderName,upload_time as uploadTime FROM order_file, file_type ,LUserAccount WHERE orders = ? and file_type = ? ";
 
 	public final static String SELECT_MODELCAPACITY_BY_MODEL_PROCESS = "SELECT * from model_capacity WHERE soft_model = ? and process = ? and process_group = ?";
 
@@ -138,7 +138,7 @@ public class SQL {
 
 	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
 
-	public final static String SELECT_ORDER = "SELECT id,zhidan,alias,soft_model as softModel,version,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,quantity,delivery_date as deliveryDate,remark,order_status as orderStatus,delete_reason as deleteReason,order_creator as orderCreator,order_create_time as orderCreateTime,order_modifier as orderModifier,order_modify_time as orderModifyTime from orders";
+	public final static String SELECT_ORDER = "SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, remark, order_status AS orderStatus, delete_reason AS deleteReason, order_creator AS orderCreator, order_create_time AS orderCreateTime, order_modifier AS orderModifier, order_modify_time AS orderModifyTime,a.Name as creatorName,b.Name as modifierName,order_status.status_name as statusName FROM orders , order_status , LUserAccount a , LUserAccount b WHERE orders.order_status = order_status.id AND b.Id = orders.order_modifier AND a.Id = orders.order_creator ";
 
 	public final static String SELECT_PROCESSGROUP = "SELECT id,group_no as groupNo,group_name as groupName,group_remark as groupRemark FROM process_group";
 
