@@ -171,4 +171,31 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return get("order_modify_time");
 	}
 
+	public M setIsRework(java.lang.Boolean isRework) {
+		set("is_rework", isRework);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getIsRework() {
+		return get("is_rework");
+	}
+
+	public M setDeletePerson(java.lang.Integer deletePerson) {
+		set("delete_person", deletePerson);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getDeletePerson() {
+		return getInt("delete_person");
+	}
+
+	public M setDeleteTime(java.util.Date deleteTime) {
+		set("delete_time", deleteTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getDeleteTime() {
+		return get("delete_time");
+	}
+
 }

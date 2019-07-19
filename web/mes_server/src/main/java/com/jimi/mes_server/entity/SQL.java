@@ -110,7 +110,7 @@ public class SQL {
 
 	public final static String SELECT_RENCENT_SIXDAYS_PRODUCTION = "SELECT top 6 quantity,[time] from daily_completion ORDER BY Id DESC";
 
-	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as startTime, scheduling_plan.plan_complete_time as endTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
+	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planEndTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
 
 	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ?";
 

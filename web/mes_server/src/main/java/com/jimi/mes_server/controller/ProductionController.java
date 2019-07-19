@@ -218,8 +218,8 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void addOrder(@Para("") Orders order) {
-		if (order == null) {
+	public void addOrder(@Para("") Orders order,Boolean isRework) {
+		if (order == null||isRework==null) {
 			throw new ParameterException("参数不能为空");
 		}
 		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel(),
@@ -232,7 +232,7 @@ public class ProductionController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (productionService.addOrder(order,userVO)) {
+		if (productionService.addOrder(order,userVO,isRework)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -253,9 +253,12 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+	public void selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter,Boolean isRework) {
+		if (isRework==null) {
+			throw new ParameterException("参数是否为返工订单不能为空");
+		}
 		ResultUtil result = ResultUtil
-				.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter));
+				.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter,isRework));
 		renderJson(result);
 	}
 
