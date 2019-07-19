@@ -18,6 +18,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.DailyOrderProduction;
 import com.jimi.mes_server.entity.DailyReport;
 import com.jimi.mes_server.entity.Production;
@@ -262,8 +263,8 @@ public class ProductionController extends Controller {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel(),
-				order.getVersion());
+		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel()
+				);
 		if (isOrderInformationExist || order.getQuantity() == null) {
 			throw new ParameterException("订单号、机型、版本和数量不能为空");
 		}
@@ -285,7 +286,9 @@ public class ProductionController extends Controller {
 		if (file == null) {
 			throw new ParameterException("请添加文件");
 		}
-		String result = productionService.importOrder(file.getFile());
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		String result = productionService.importOrder(file.getFile(),userVO);
 		if ("导入成功".equals(result)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -298,12 +301,19 @@ public class ProductionController extends Controller {
 			throw new ParameterException("参数不能为空");
 		}
 
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (Constant.SCHEDULING_SZPC_USERTYPE.equals(userVO.getWebUserType())&&type.equals(2)) {
+			throw new OperationException("深圳PC无法上传SOP表");
+		}
+		if (Constant.ENGINEER_USERTYPE.equals(userVO.getWebUserType())&&!type.equals(2)) {
+			throw new OperationException("工程及生产只能上传SOP表");
+		}
 		List<UploadFile> uploadFiles = getFiles();
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
 			throw new ParameterException("请添加文件");
 		}
-		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		
 		if (productionService.importOrderTable(uploadFiles, type, id,userVO)) {
 			renderJson(ResultUtil.succeed());
 		}
@@ -343,7 +353,7 @@ public class ProductionController extends Controller {
 			throw new ParameterException("参数不能为空");
 		}
 		if (processPeopleQuantity < 0 || capacity < 0) {
-			throw new ParameterException("产能和人数不合理");
+			throw new ParameterException("产能或人数不合理");
 		}
 		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity,
 				capacity, remark)) {
@@ -365,10 +375,10 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel,
+	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel,
 			String customerModel, Integer process) {
 		renderJson(ResultUtil.succeed(
-				productionService.selectCapacity(pageNo, pageSize, ascBy, descBy, softModel, customerModel, process)));
+				productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, process)));
 	}
 
 	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup,

@@ -411,11 +411,15 @@ public class ProductionService {
 		if (temp == null) {
 			throw new OperationException("订单不存在");
 		}
+		if (Constant.SCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
+			temp.setQuantity(order.getQuantity());
+			return temp.update();
+		}
 		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
 		return order.update();
 	}
 
-	public String importOrder(File file) {
+	public String importOrder(File file,LUserAccountVO userVO) {
 		String resultString = "导入成功";
 		ExcelHelper helper;
 		int indexOfOrderItem = 2;
@@ -438,8 +442,7 @@ public class ProductionService {
 					Orders order = new Orders();
 					order.setZhidan(zhidan).setSoftModel(softModel);
 					order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
-					/*order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo())
-							.setCreateTime(orderItem.getCreateTime());*/
+					order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
 					order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate())
 							.setRemark(orderItem.getRemark());
 					orders.add(order);
@@ -447,7 +450,7 @@ public class ProductionService {
 				indexOfOrderItem++;
 			}
 			for (Orders order : orders) {
-				order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS).save();
+				order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS).setOrderCreator(userVO.getId()).setOrderCreateTime(new Date()).save();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -527,9 +530,12 @@ public class ProductionService {
 
 		OrderFile orderFile = OrderFile.dao.findById(id);
 		if (orderFile == null) {
-			throw new OperationException("文件不存在");
+			throw new OperationException("文件记录不存在");
 		}
 		File file = new File(orderFile.getPath());
+		if (!file.exists()) {
+			throw new OperationException("文件不存在,请重新上传");
+		}
 		return file;
 	}
 
@@ -541,7 +547,7 @@ public class ProductionService {
 			throw new OperationException("机型产能已存在");
 		}
 		modelCapacity = new ModelCapacity();
-		if (remark != null) {
+		if (!StrKit.isBlank(remark)) {
 			modelCapacity.setRemark(remark);
 		}
 		modelCapacity.setSoftModel(softModel).setCustomerModel(customerModel).setProcess(process)
@@ -556,6 +562,99 @@ public class ProductionService {
 			throw new OperationException("删除失败，机型产能不存在");
 		}
 		return modelCapacity.delete();
+	}
+
+	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String softModel,
+			String customerModel, Integer process) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(softModel)) {
+			filter.append(" and soft_model like '%" + softModel + " %' ");
+		}
+		if (!StrKit.isBlank(customerModel)) {
+			filter.append(" and customer_model like '%" + customerModel + " %' ");
+		}
+		if (process != null) {
+	
+			if (Process.dao.findById(process) == null) {
+				throw new OperationException("工序不存在");
+			}
+			filter.append(" and process = " + process);
+		}
+		String orderBy = "ORDER BY soft_model,[position]";
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_MODELCAPACITY + filter+orderBy);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process,
+			Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
+		ModelCapacity firstModelCapacity = ModelCapacity.dao.findById(id);
+		if (firstModelCapacity == null) {
+			throw new OperationException("机型产能不存在");
+		}
+		if (position != null) {
+			ModelCapacity secondModelCapacity = ModelCapacity.dao.findById(position);
+			if (secondModelCapacity == null) {
+				throw new OperationException("机型产能不存在");
+			}
+			if (!secondModelCapacity.getSoftModel().equals(firstModelCapacity.getSoftModel())) {
+				throw new OperationException("同一个机型才可移动位置");
+			}
+			if (!secondModelCapacity.getProcessGroup().equals(firstModelCapacity.getProcessGroup())) {
+				throw new OperationException("同一个工序组才可移动位置");
+			}
+			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, firstModelCapacity.getPosition(), secondModelCapacity.getId());
+			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, secondModelCapacity.getPosition(), firstModelCapacity.getId());
+			return true;
+		}
+		if (!StrKit.isBlank(softModel) && process != null && processGroup != null) {
+			ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS,
+					softModel, process, processGroup);
+			if (modelCapacity != null) {
+				throw new OperationException("机型产能已存在");
+			}
+		}
+	
+		ModelCapacity modelCapacity = new ModelCapacity();
+		if (!StrKit.isBlank(softModel)) {
+			modelCapacity.setSoftModel(softModel);
+		}
+		if (process != null) {
+			if (Process.dao.findById(process) == null) {
+				throw new OperationException("工序不存在");
+			} 
+				modelCapacity.setProcess(process);
+			
+		}
+		if (processGroup != null) {
+			if (ProcessGroup.dao.findById(processGroup) == null) {
+				throw new OperationException("工序组不存在");
+			} 
+				modelCapacity.setProcessGroup(processGroup);
+			
+		}
+		if (customerModel != null) {
+			modelCapacity.setCustomerModel(customerModel);
+		}
+	
+		if (processPeopleQuantity != null) {
+			if (processPeopleQuantity < 0) {
+				throw new ParameterException("人数不合理");
+			}
+			modelCapacity.setProcessPeopleQuantity(processPeopleQuantity);
+		}
+		if (capacity != null) {
+			if (capacity < 0) {
+				throw new ParameterException("产能不合理");
+			}
+			modelCapacity.setCapacity(capacity);
+	
+		}
+		if (remark != null) {
+			modelCapacity.setRemark(remark);
+		}
+	
+		return modelCapacity.update();
 	}
 
 	public Record getPlanGannt(Integer id) {
@@ -735,71 +834,6 @@ public class ProductionService {
 		return schedulingPlan.update();
 	}
 
-	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process,
-			Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
-		ModelCapacity firstModelCapacity = ModelCapacity.dao.findById(id);
-		if (firstModelCapacity == null) {
-			throw new OperationException("机型产能不存在");
-		}
-		if (position != null) {
-			ModelCapacity secondModelCapacity = ModelCapacity.dao.findById(position);
-			if (secondModelCapacity == null) {
-				throw new OperationException("机型产能不存在");
-			}
-			if (!secondModelCapacity.getSoftModel().equals(firstModelCapacity.getSoftModel())) {
-				throw new OperationException("同一个机型才可移动位置");
-			}
-			if (!secondModelCapacity.getProcessGroup().equals(firstModelCapacity.getProcessGroup())) {
-				throw new OperationException("同一个工序组才可移动位置");
-			}
-			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, firstModelCapacity.getPosition(), secondModelCapacity.getId());
-			Db.update(SQL.UPDATE_MODELCAPACITY_POSITION, secondModelCapacity.getPosition(), firstModelCapacity.getId());
-			return true;
-		}
-		if (!StrKit.isBlank(softModel) && process != null && processGroup != null) {
-			ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS,
-					softModel, process, processGroup);
-			if (modelCapacity != null) {
-				throw new OperationException("机型产能已存在");
-			}
-		}
-
-		ModelCapacity modelCapacity = new ModelCapacity();
-		if (!StrKit.isBlank(softModel)) {
-			modelCapacity.setSoftModel(softModel);
-		}
-		if (process != null) {
-			if (Process.dao.findById(process) == null) {
-				throw new OperationException("工序不存在");
-			} else {
-				modelCapacity.setProcess(process);
-			}
-		}
-		if (processGroup != null) {
-			if (ProcessGroup.dao.findById(processGroup) == null) {
-				throw new OperationException("工序组不存在");
-			} else {
-				modelCapacity.setProcessGroup(processGroup);
-			}
-		}
-		if (customerModel != null) {
-			modelCapacity.setCustomerModel(customerModel);
-		}
-
-		if (processPeopleQuantity != null) {
-			modelCapacity.setProcessPeopleQuantity(processPeopleQuantity);
-		}
-		if (capacity != null) {
-			modelCapacity.setCapacity(capacity);
-
-		}
-		if (remark != null) {
-			modelCapacity.setRemark(remark);
-		}
-
-		return modelCapacity.update();
-	}
-
 	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime,
 			String lineChangeTime, Integer capacity) {
 		Integer actualCostHours = schedulingQuantity / capacity;
@@ -810,27 +844,6 @@ public class ProductionService {
 			return false;
 		}
 		return true;
-	}
-
-	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String ascBy, String descBy, String softModel,
-			String customerModel, Integer process) {
-		StringBuilder filter = new StringBuilder();
-		if (!StrKit.isBlank(softModel)) {
-			filter.append(" and soft_model like '%" + softModel + " %' ");
-		}
-		if (!StrKit.isBlank(customerModel)) {
-			filter.append(" and customer_model like '%" + customerModel + " %' ");
-		}
-		if (process != null) {
-
-			if (Process.dao.findById(process) == null) {
-				throw new OperationException("工序不存在");
-			}
-			filter.append(" and process = " + process);
-		}
-		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_MODELCAPACITY + filter);
-		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 	public Page<Record> selectPlan(String filter, Integer pageNo, Integer pageSize) {

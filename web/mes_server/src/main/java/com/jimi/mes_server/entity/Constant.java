@@ -8,6 +8,10 @@ public class Constant {
 
 	public static final Integer ENGINEER_USERTYPE = 1;
 
+	public static final Integer SCHEDULING_SZPC_USERTYPE = 7;
+
+	public static final Integer SCHEDULING_JMPMC_USERTYPE = 8;
+
 	public static final String SUPER_ADMIN_DELETEPERMISSION = "1,1,1,1,1,1,1,1,1,1";
 
 	public static final String ORDINARY_DELETEPERMISSION = "0,0,0,0,0,0,0,0,0,0";

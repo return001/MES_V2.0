@@ -25,9 +25,9 @@ public class OrderItem {
 	private String customerName;
 
 	@Excel(col = 6, head = "订单日期")
-	private Date createTime;
+	private Date orderDate;
 
-	@Excel(col = 7, head = "数量")
+	@Excel(col = 7, head = "订单数量")
 	private Integer quantity;
 
 	@Excel(col = 8, head = "交货日期")
@@ -84,12 +84,12 @@ public class OrderItem {
 		this.customerName = customerName;
 	}
 
-	public Date getCreateTime() {
-		return createTime;
+	public Date getOrderDate() {
+		return orderDate;
 	}
 
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
+	public void setOrderDate(Date orderDate) {
+		this.orderDate = orderDate;
 	}
 
 	public Integer getQuantity() {

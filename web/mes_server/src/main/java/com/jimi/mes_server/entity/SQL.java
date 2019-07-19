@@ -120,7 +120,7 @@ public class SQL {
 
 	public final static String UPDATE_MODELCAPACITY_POSITION = "UPDATE model_capacity SET [position] = ? where id = ?";
 
-	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.*,process_group.group_name,process.process_name FROM model_capacity,process,process_group where model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
+	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.id,soft_model as softModel,customer_model as customerModel,process,model_capacity.process_group as processGroup,process_people_quantity as processPeopleQuantity,capacity,remark,[position], process_group.group_name as groupName, process.process_name as processName FROM model_capacity, process, process_group WHERE model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
 
 	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status <> 3 and orders.orders_status <> 4 GROUP BY orders ";
 
