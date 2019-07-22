@@ -26,24 +26,24 @@ public class OrderVO extends Orders {
 		this.unscheduledQuantity = unscheduledQuantity;
 	}
 
-	/*public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
+	public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
 		this.setUnscheduledQuantity(unscheduledQuantity);
 		this.set("unscheduledQuantity", getUnscheduledQuantity());
 		this.setCapacity(capacity);
 		this.set("capacity", getCapacity());
 		this.setAlias(order.getAlias());
-		this.setCreateTime(order.getCreateTime());
+		this.setOrderDate(order.getOrderDate());
 		this.setCustomerName(order.getCustomerName());
 		this.setCustomerNumber(order.getCustomerNumber());
 		this.setDeleteReason(order.getDeleteReason());
 		this.setDeliveryDate(order.getDeliveryDate());
 		this.setId(order.getId());
-		this.setOrdersStatus(order.getOrdersStatus());
+		this.setOrderStatus(order.getOrderStatus());
 		this.setProductNo(order.getProductNo());
 		this.setQuantity(order.getQuantity());
 		this.setRemark(order.getRemark());
 		this.setSoftModel(order.getSoftModel());
 		this.setVersion(order.getVersion());
 		this.setZhidan(order.getZhidan());
-	}*/
+	}
 }

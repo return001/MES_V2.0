@@ -420,6 +420,33 @@ public class ProductionService {
 		
 	}
 
+	public Page<Record> selectOrderDetail(Integer id) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_ORDERDETAIL_BY_ID);
+		sqlPara.addPara(id);
+		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+		if (!page.getList().isEmpty()) {
+			for (Record record : page.getList()) {
+				String orderModifier = record.getStr("orderModifier");
+				String deletePerson = record.getStr("deletePerson");
+				if (orderModifier!=null) {
+					LUserAccount modifier = LUserAccount.dao.findById(orderModifier);
+					if (modifier!=null) {
+						record.set("modifierName", modifier.getName());
+					}
+				}
+				if (deletePerson!=null) {
+					LUserAccount deletePersonUser = LUserAccount.dao.findById(deletePerson);
+					if (deletePersonUser!=null) {
+						record.set("deletePersonName", deletePersonUser.getName());
+					}
+				}
+			}
+		}
+		
+		return page;
+	}
+
 	public boolean editOrder(Orders order,LUserAccountVO userVO) {
 		Orders temp = Orders.dao.findById(order.getId());
 		if (temp == null) {
@@ -717,10 +744,14 @@ public class ProductionService {
 			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
 			for (Orders order : orders) {
 				Record record = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
-						Constant.ASSEMBLING_PROCESS_GROUP, "%" + order.getSoftModel() + "%");
-				/*OrderVO orderVO = new OrderVO(order, order.getQuantity(),
-						record.getInt("capacity") / record.getInt("people"));*/
-				/*orderVOs.add(orderVO);*/
+						Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
+				if (record.getInt("people").equals(0)) {
+					record.set("people", 1);
+				}
+				
+				OrderVO orderVO = new OrderVO(order, order.getQuantity(),
+						record.getInt("capacity") / record.getInt("people"));
+				orderVOs.add(orderVO);
 			}
 			return orderVOs;
 		case 1:
@@ -739,51 +770,20 @@ public class ProductionService {
 			Record peopleCapacityRecord = new Record();
 			if (type == 1) {
 				peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
-						Constant.TESTING_PROCESS_GROUP, "%" + order.getSoftModel() + "%");
+						Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
 
 			} else if (type == 2) {
 				peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
-						Constant.PACKING_PROCESS_GROUP, "%" + order.getSoftModel() + "%");
+						Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
 			}
-			/*OrderVO orderVO = new OrderVO(order, order.getQuantity() - scheduledQuantity,
+			if (peopleCapacityRecord.getInt("people").equals(0)) {
+				peopleCapacityRecord.set("people", 1);
+			}
+			OrderVO orderVO = new OrderVO(order, order.getQuantity() - scheduledQuantity,
 					peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
-			orderVOs.add(orderVO);*/
+			orderVOs.add(orderVO);
 		}
 		return orderVOs;
-	}
-
-	public boolean editPlanStatus(Integer id, Integer type, LUserAccountVO userVO) {
-		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
-		if (schedulingPlan == null) {
-			throw new OperationException("排产计划不存在");
-		}
-		switch (type) {
-		case 0:
-			schedulingPlan.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
-			break;
-		case 1:
-			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
-			break;
-		case 2:
-			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
-			break;
-		case 3:
-			schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			break;
-		default:
-			break;
-		}
-
-		return schedulingPlan.update();
-	}
-
-	public boolean deletePlan(Integer id) {
-		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
-		if (schedulingPlan == null) {
-			throw new OperationException("排产计划不存在");
-		}
-
-		return schedulingPlan.delete();
 	}
 
 	public boolean addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup,
@@ -793,25 +793,91 @@ public class ProductionService {
 		}
 		Orders orderRecord = Orders.dao.findById(order);
 		if (orderRecord == null) {
-			throw new OperationException("订单不存在");
+			throw new OperationException("添加排产计划失败，订单不存在");
+		}
+		if (ProcessGroup.dao.findById(processGroup) == null) {
+			throw new OperationException("添加排产计划失败，工序组不存在");
 		}
 		SchedulingPlan schedulingPlan = new SchedulingPlan();
 		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
+		if (orderRecord.getQuantity()<schedulingQuantity) {
+			throw new OperationException("排产数量不能大于订单数量");
+		}
 		schedulingPlan.setProcessGroup(processGroup).setLine(line).setSchedulingQuantity(schedulingQuantity)
 				.setOrders(order).setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(capacity)
 				.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
-
+		if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
+			orderRecord.setOrderStatus(Constant.SCHEDULED_ORDERSTATUS);
+			return schedulingPlan.save()&&orderRecord.update();
+		}
 		return schedulingPlan.save();
+	}
+
+	public boolean deletePlan(Integer id) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan == null) {
+			throw new OperationException("排产计划不存在");
+		}
+		Integer orderPlanNumber =Db.queryInt(SQL.SELECT_SCHEDULINGPLAN_BY_ORDERID, schedulingPlan.getOrders());
+		Orders order = Orders.dao.findById(schedulingPlan.getOrders());
+		if (orderPlanNumber==1&&Constant.SCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
+			order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS);
+			return schedulingPlan.delete()&&order.update();
+		}
+		return schedulingPlan.delete();
+	}
+
+	public Page<Record> selectPlan(String filter, Integer pageNo, Integer pageSize) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+	public Page<Record> selectPlanDetail(Integer id) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLANDETAIL_BY_ID);
+		sqlPara.addPara(id);
+		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+		if (!page.getList().isEmpty()) {
+			for (Record record : page.getList()) {
+				String planModifier = record.getStr("planModifier");
+				String productionConfirmer = record.getStr("productionConfirmer");
+				if (planModifier!=null) {
+					LUserAccount modifier = LUserAccount.dao.findById(planModifier);
+					if (modifier!=null) {
+						record.set("modifierName", modifier.getName());
+					}
+				}
+				if (productionConfirmer!=null) {
+					LUserAccount confirmer = LUserAccount.dao.findById(productionConfirmer);
+					if (confirmer!=null) {
+						record.set("confirmerName", confirmer.getName());
+					}
+				}
+			}
+		}
+		return page;
+	}
+
+	public Object selectPlanProducedQuantity(Integer id) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan==null) {
+			throw new OperationException("计划不存在");
+		}
+		return null;
 	}
 
 	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
-			Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
+			Integer producedQuantity, String remainingReason, String productionPlanningNumber,Boolean isStarting,LUserAccountVO userVO) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
+		}
+		if (Constant.COMPLETED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
+			throw new OperationException("已完成排产计划无法修改");
 		}
 		schedulingPlan.setIsUrgent(isUrgent).setLine(line).setPlanStartTime(planStartTime)
 				.setPlanCompleteTime(planCompleteTime);
@@ -845,6 +911,35 @@ public class ProductionService {
 		if (productionPlanningNumber != null) {
 			schedulingPlan.setProductionPlanningNumber(productionPlanningNumber);
 		}
+		if (isStarting) {
+			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS).setProductionConfirmer(userVO.getId());
+		}
+		schedulingPlan.setPlanModifier(userVO.getId()).setPlanModifyTime(new Date());
+		return schedulingPlan.update();
+	}
+
+	public boolean editPlanStatus(Integer id, Integer type, LUserAccountVO userVO) {
+		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
+		if (schedulingPlan == null) {
+			throw new OperationException("排产计划不存在");
+		}
+		switch (type) {
+		case 0:
+			schedulingPlan.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
+			break;
+		case 1:
+			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
+			break;
+		case 2:
+			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+			break;
+		case 3:
+			schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+			break;
+		default:
+			break;
+		}
+
 		return schedulingPlan.update();
 	}
 
@@ -858,12 +953,6 @@ public class ProductionService {
 			return false;
 		}
 		return true;
-	}
-
-	public Page<Record> selectPlan(String filter, Integer pageNo, Integer pageSize) {
-		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN_LINE + filter);
-		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 	
 

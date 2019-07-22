@@ -112,7 +112,7 @@ public class SQL {
 
 	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planEndTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
 
-	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ?";
+	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ? and is_rework = 0 ";
 
 	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.id,process_no as processNo,process_name as processName,process_remark as processRemark,process_group as processGroup,process_group.group_no as groupNo,process_group.group_name as groupName from process, process_group where process.process_group = process_group.id ";
 
@@ -122,13 +122,13 @@ public class SQL {
 
 	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.id,soft_model as softModel,customer_model as customerModel,process,model_capacity.process_group as processGroup,process_people_quantity as processPeopleQuantity,capacity,remark,[position], process_group.group_name as groupName, process.process_name as processName FROM model_capacity, process, process_group WHERE model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
 
-	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status <> 3 and orders.orders_status <> 4 GROUP BY orders ";
+	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status = 2 and is_rework = 0 GROUP BY orders ";
 
 	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? AND soft_model LIKE ? ";
 
-	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model LIKE ? ";
+	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model = ? ";
 
-	public final static String SELECT_SCHEDULINGPLAN_LINE = "SELECT scheduling_plan.*, line.line_no, line.line_name FROM scheduling_plan, orders, line WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id ";
+	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName FROM scheduling_plan, orders, line, scheduling_plan_status WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id AND scheduling_plan.scheduling_plan_status = scheduling_plan_status.id ";
 
 	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id from LUserAccount WHERE InService = 1 and Name LIKE ?";
 
@@ -138,11 +138,17 @@ public class SQL {
 
 	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
 
-	public final static String SELECT_ORDER = "SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, remark, order_status AS orderStatus, delete_reason AS deleteReason, order_creator AS orderCreator, order_create_time AS orderCreateTime, order_modifier AS orderModifier, order_modify_time AS orderModifyTime,a.Name as creatorName,b.Name as modifierName,order_status.status_name as statusName FROM orders , order_status , LUserAccount a , LUserAccount b WHERE orders.order_status = order_status.id AND b.Id = orders.order_modifier AND a.Id = orders.order_creator ";
+	public final static String SELECT_ORDER = "SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, remark, order_status AS orderStatus, delete_reason AS deleteReason, order_status.status_name AS statusName FROM orders, order_status WHERE orders.order_status = order_status.id ";
 
 	public final static String SELECT_PROCESSGROUP = "SELECT id,group_no as groupNo,group_name as groupName,group_remark as groupRemark FROM process_group";
 
 	public final static String SELECT_LINECOMPUTER_BY_LINE = "SELECT id,computer_name as computerName,remark,line,ip from line_computer WHERE line = ? ";
 
 	public final static String SELECT_LINECOMPUTER_BY_IP = "SELECT * from line_computer WHERE ip = ? ";
+
+	public final static String SELECT_ORDERDETAIL_BY_ID = "SELECT order_creator as orderCreator,LUserAccount.Name as creatorName,order_create_time as orderCreateTime,order_modifier as orderModifier,NULL as modifierName,order_modify_time as orderModifyTime,delete_person as deletePerson,NULL as deletePersonName,delete_time as deleteTime from orders JOIN LUserAccount on LUserAccount.Id = orders.order_creator WHERE orders.id = ?";
+
+	public final static String SELECT_SCHEDULINGPLAN_BY_ORDERID = "SELECT COUNT(*) FROM scheduling_plan WHERE orders = ?";
+
+	public final static String SELECT_SCHEDULINGPLANDETAIL_BY_ID = "SELECT scheduler, LUserAccount.Name AS schedulerName, scheduling_time AS schedulingTime, plan_modifier AS planModifier, NULL AS modifierName, plan_modify_time as planModifyTime, production_confirmer AS productionConfirmer, NULL AS confirmerName, line_change_time as lineChangeTime FROM scheduling_plan JOIN LUserAccount ON LUserAccount.Id = scheduling_plan.scheduler WHERE scheduling_plan.id = ?";
 }

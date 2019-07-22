@@ -261,6 +261,15 @@ public class ProductionController extends Controller {
 				.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter,isRework));
 		renderJson(result);
 	}
+	
+	public void selectOrderDetail(Integer id) {
+		if (id==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		ResultUtil result = ResultUtil
+				.succeed(productionService.selectOrderDetail(id));
+		renderJson(result);
+	}
 
 	public void editOrder(@Para("") Orders order) {
 		if (order == null) {
@@ -429,33 +438,10 @@ public class ProductionController extends Controller {
 		if (order == null || schedulingQuantity == null || line == null || capacity == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (schedulingQuantity < 0) {
-			throw new ParameterException("排产数量不合理");
+		if (schedulingQuantity < 0||capacity<0) {
+			throw new ParameterException("排产数量或产能不合理");
 		}
 		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
-	}
-
-	public void editPlanStatus(Integer id, Integer type) {
-		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (id == null || type == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		switch (type) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-			break;
-
-		default:
-			throw new ParameterException("无法识别的类型");
-		}
-		if (productionService.editPlanStatus(id, type, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -466,7 +452,7 @@ public class ProductionController extends Controller {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-
+	
 		if (productionService.deletePlan(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -498,9 +484,83 @@ public class ProductionController extends Controller {
 		filter.append(concatSqlFilter("start_time", startTimeTo, false, false));
 		filter.append(concatSqlFilter("complete_time", completeTimeFrom, false, true));
 		filter.append(concatSqlFilter("complete_time", completeTimeTo, false, false));
-
+	
 		renderJson(ResultUtil.succeed(productionService.selectPlan(filter.toString(), pageNo, pageSize)));
+	
+	}
+	
+	public void selectPlanDetail(Integer id) {
+		if (id==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		ResultUtil result = ResultUtil.succeed(productionService.selectPlanDetail(id));
+		renderJson(result);
+	}
 
+	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
+			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
+			Integer producedQuantity, String remainingReason, String productionPlanningNumber,Boolean isStarting) {
+		if (StringUtils.isAnyBlank(planStartTime, planCompleteTime, lineChangeTime)
+				|| id == null && schedulingQuantity == null || capacity == null || line == null||isCompleted==null||isUrgent==null||isStarting==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (schedulingQuantity < 0 || capacity < 0) {
+			throw new ParameterException("排产数量或产能不合理");
+		}
+		if (producedQuantity != null && producedQuantity < 0) {
+			throw new ParameterException("已生产数量不合理");
+		}
+		if (!isStarting&&isCompleted) {
+			throw new ParameterException("未开始生产的计划无法完成");
+		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date start;
+		Date end;
+		try {
+			start = dateFormat.parse(planStartTime);
+			end = dateFormat.parse(planCompleteTime);
+		} catch (ParseException e) {
+			throw new ParameterException("时间格式出错");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime,
+				capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber,isStarting,userVO)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
+	public void editPlanStatus(Integer id, Integer type) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (id == null || type == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		switch (type) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			break;
+
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		if (productionService.editPlanStatus(id, type, userVO)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
+	public void selectPlanProducedQuantity(Integer id) {
+		if (id==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		ResultUtil result = ResultUtil.succeed(productionService.selectPlanProducedQuantity(id));
+		renderJson(result);
 	}
 
 	private StringBuilder concatSqlFilter(String key, String value, Boolean isLike, Boolean isGreater) {
@@ -528,36 +588,6 @@ public class ProductionController extends Controller {
 
 		return filter;
 
-	}
-
-	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
-			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
-			Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
-		if (StringUtils.isAnyBlank(planStartTime, planCompleteTime, lineChangeTime)
-				|| id == null && schedulingQuantity == null || capacity == null || line == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (schedulingQuantity < 0 || capacity < 0) {
-			throw new ParameterException("排产数量或产能不合理");
-		}
-		if (producedQuantity != null && producedQuantity < 0) {
-			throw new ParameterException("已生产数量不合理");
-		}
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date start;
-		Date end;
-		try {
-			start = dateFormat.parse(planStartTime);
-			end = dateFormat.parse(planCompleteTime);
-		} catch (ParseException e) {
-			throw new ParameterException("时间格式出错");
-		}
-		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime,
-				capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
 	}
 
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime,
