@@ -2,6 +2,7 @@ package com.jimi.mes_server.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -13,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +30,8 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
+import com.jimi.mes_server.entity.OrderDetail;
+import com.jimi.mes_server.entity.OrderFileInfo;
 import com.jimi.mes_server.entity.OrderItem;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
@@ -373,213 +378,6 @@ public class ProductionService {
 		return lineComputer.update();
 	}
 
-	public boolean addOrder(Orders order,LUserAccountVO userVO,Boolean isRework) {
-		Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, order.getZhidan());
-		if (temp != null) {
-			throw new OperationException("订单号已存在");
-		}
-		order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS);
-		order.setOrderCreator(userVO.getId()).setOrderCreateTime(new Date());
-		
-			order.setIsRework(isRework);
-		
-		return order.save();
-	}
-
-	public boolean deleteOrder(Integer id, String deleteReason,LUserAccountVO userVO) {
-		Orders order = Orders.dao.findById(id);
-		if (order == null) {
-			throw new OperationException("删除失败，订单不存在");
-		}
-		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
-			throw new OperationException("删除失败，只能删除未排产订单");
-		}
-		order.setDeleteReason(deleteReason).setOrderStatus(Constant.DELETED_ORDERSTATUS);
-		order.setDeletePerson(userVO.getId()).setDeleteTime(new Date());
-		return order.update();
-	}
-
-	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy,
-			String filter,Boolean isRework) {
-		if (!isRework) {
-			String reworkSql = "AND is_rework = 0 ";
-			if (StrKit.isBlank(filter)) {
-				return daoService.select(SQL.SELECT_ORDER+reworkSql,pageNo, pageSize, ascBy, descBy, filter);
-			}else {
-				return daoService.select(SQL.SELECT_ORDER+reworkSql+" AND ",pageNo, pageSize, ascBy, descBy, filter);
-			}
-		}else {
-			String reworkSql = "AND is_rework = 1 ";
-			if (StrKit.isBlank(filter)) {
-				return daoService.select(SQL.SELECT_ORDER+reworkSql,pageNo, pageSize, ascBy, descBy, filter);
-			}else {
-				return daoService.select(SQL.SELECT_ORDER+reworkSql+" AND ",pageNo, pageSize, ascBy, descBy, filter);
-			}
-		}
-		
-		
-	}
-
-	public Page<Record> selectOrderDetail(Integer id) {
-		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_ORDERDETAIL_BY_ID);
-		sqlPara.addPara(id);
-		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
-		if (!page.getList().isEmpty()) {
-			for (Record record : page.getList()) {
-				String orderModifier = record.getStr("orderModifier");
-				String deletePerson = record.getStr("deletePerson");
-				if (orderModifier!=null) {
-					LUserAccount modifier = LUserAccount.dao.findById(orderModifier);
-					if (modifier!=null) {
-						record.set("modifierName", modifier.getName());
-					}
-				}
-				if (deletePerson!=null) {
-					LUserAccount deletePersonUser = LUserAccount.dao.findById(deletePerson);
-					if (deletePersonUser!=null) {
-						record.set("deletePersonName", deletePersonUser.getName());
-					}
-				}
-			}
-		}
-		
-		return page;
-	}
-
-	public boolean editOrder(Orders order,LUserAccountVO userVO) {
-		Orders temp = Orders.dao.findById(order.getId());
-		if (temp == null) {
-			throw new OperationException("订单不存在");
-		}
-		if (Constant.SCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
-			temp.setQuantity(order.getQuantity());
-			return temp.update();
-		}
-		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
-		return order.update();
-	}
-
-	public String importOrder(File file,LUserAccountVO userVO) {
-		String resultString = "导入成功";
-		ExcelHelper helper;
-		int indexOfOrderItem = 2;
-		List<Orders> orders = new ArrayList<>();
-		try {
-			helper = ExcelHelper.from(file);
-			List<OrderItem> orderItems = helper.unfill(OrderItem.class, 0);
-			if (orderItems == null) {
-				throw new OperationException("表格无有效数据或者表格格式不正确！");
-			}
-			for (OrderItem orderItem : orderItems) {
-				String zhidan = orderItem.getZhidan();
-				String softModel = orderItem.getSoftModel();
-				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null) {
-					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
-					if (temp != null) {
-						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
-						return resultString;
-					}
-					Orders order = new Orders();
-					order.setZhidan(zhidan).setSoftModel(softModel);
-					order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
-					order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
-					order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate())
-							.setRemark(orderItem.getRemark());
-					orders.add(order);
-				}
-				indexOfOrderItem++;
-			}
-			for (Orders order : orders) {
-				order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS).setOrderCreator(userVO.getId()).setOrderCreateTime(new Date()).save();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new OperationException("文件解析出错，请检查文件内容和格式");
-		} finally {
-			file.delete();
-		}
-		return resultString;
-	}
-
-	public boolean importOrderTable(List<UploadFile> uploadFiles, Integer type, Integer id,LUserAccountVO userVO) {
-		// TODO Auto-generated method stub
-		OrderFile orderFile = new OrderFile();
-		switch (type) {
-		case 0:
-			orderFile.setFileType(Constant.INFORMATION_FILETYPE);
-			break;
-		case 1:
-			orderFile.setFileType(Constant.BOM_FILETYPE);
-			break;
-		case 2:
-			orderFile.setFileType(Constant.SOP_FILETYPE);
-			break;
-
-		default:
-			throw new OperationException("无法识别的类型");
-		}
-		Orders order = Orders.dao.findById(id);
-		if (order == null) {
-			throw new OperationException("订单不存在");
-		}
-		for (UploadFile uploadFile : uploadFiles) {
-			File tempFile = uploadFile.getFile();
-			String fileName = uploadFile.getFileName();
-			// 防止文件名中携带&nbsp的空格，导致前端输入文件名查不到数据
-			try {
-				fileName = URLEncoder.encode(fileName, "utf-8");
-				fileName = fileName.replaceAll("%C2%A0", "%20");
-				fileName = URLDecoder.decode(fileName, "utf-8");
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			File dir = new File(Constant.FILE_TABLE_PATH);
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
-			File file = new File(Constant.FILE_TABLE_PATH + fileName);
-			if (file.exists()) {
-				file.delete();
-			}
-			try {
-				FileUtils.moveFile(tempFile, file);
-			} catch (IOException e) {
-				throw new OperationException("文件保存失败");
-			}
-
-			orderFile.setFileName(fileName).setPath(file.getAbsolutePath()).setOrders(id).setUploader(userVO.getId()).setUploadTime(new Date()).save();
-			orderFile.remove("id");
-
-		}
-		return true;
-	}
-
-	public List<OrderFile> selectOrderTable(Integer type, Integer id) {
-		Orders order = Orders.dao.findById(id);
-		if (order == null) {
-			throw new OperationException("订单不存在");
-		}
-		if (type == null) {
-			return OrderFile.dao.find(SQL.SELECT_ORDERFILE_BY_ORDER, id);
-		} else {
-			return OrderFile.dao.find(SQL.SELECT_ORDERFILE_BY_ORDER_FILETYPE, id, type);
-		}
-	}
-
-	public File downloadOrderTable(Integer id) {
-
-		OrderFile orderFile = OrderFile.dao.findById(id);
-		if (orderFile == null) {
-			throw new OperationException("文件记录不存在");
-		}
-		File file = new File(orderFile.getPath());
-		if (!file.exists()) {
-			throw new OperationException("文件不存在,请重新上传");
-		}
-		return file;
-	}
-
 	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
 			Integer processPeopleQuantity, Integer capacity, String remark) {
 		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel,
@@ -698,6 +496,232 @@ public class ProductionService {
 		return modelCapacity.update();
 	}
 
+	public boolean addOrder(Orders order,LUserAccountVO userVO,Boolean isRework) {
+		Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, order.getZhidan());
+		if (temp != null) {
+			throw new OperationException("订单号已存在");
+		}
+		order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS);
+		order.setOrderCreator(userVO.getId()).setOrderCreateTime(new Date());
+		
+			order.setIsRework(isRework);
+		
+		return order.save();
+	}
+
+	public boolean deleteOrder(Integer id, String deleteReason,LUserAccountVO userVO) {
+		Orders order = Orders.dao.findById(id);
+		if (order == null) {
+			throw new OperationException("删除失败，订单不存在");
+		}
+		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
+			throw new OperationException("删除失败，只能删除未排产订单");
+		}
+		order.setDeleteReason(deleteReason).setOrderStatus(Constant.DELETED_ORDERSTATUS);
+		order.setDeletePerson(userVO.getId()).setDeleteTime(new Date());
+		return order.update();
+	}
+
+	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy,
+			String filter,Boolean isRework) {
+		if (!isRework) {
+			String reworkSql = "AND is_rework = 0 ";
+			if (StrKit.isBlank(filter)) {
+				return daoService.select(SQL.SELECT_ORDER+reworkSql,pageNo, pageSize, ascBy, descBy, filter);
+			}else {
+				return daoService.select(SQL.SELECT_ORDER+reworkSql+" AND ",pageNo, pageSize, ascBy, descBy, filter);
+			}
+		}else {
+			String reworkSql = "AND is_rework = 1 ";
+			if (StrKit.isBlank(filter)) {
+				return daoService.select(SQL.SELECT_ORDER+reworkSql,pageNo, pageSize, ascBy, descBy, filter);
+			}else {
+				return daoService.select(SQL.SELECT_ORDER+reworkSql+" AND ",pageNo, pageSize, ascBy, descBy, filter);
+			}
+		}
+		
+		
+	}
+
+	public OrderDetail selectOrderDetail(Integer id) {
+		OrderDetail detail = new OrderDetail();
+		List<Record> information = new ArrayList<>();
+		List<Record> bom = new ArrayList<>();
+		List<Record> sop = new ArrayList<>();
+		List<Record> orderFiles = selectOrderFile(id);
+		for (Record orderFile : orderFiles) {
+			Integer fileType = orderFile.getInt("fileType");
+			if (Constant.INFORMATION_FILETYPE.equals(fileType)) {
+				information.add(orderFile);
+			}else if (Constant.BOM_FILETYPE.equals(fileType)) {
+				bom.add(orderFile);
+			}else if (Constant.SOP_FILETYPE.equals(fileType)) {
+				sop.add(orderFile);
+			}
+		}
+		OrderFileInfo orderFileInfo = new OrderFileInfo(information, bom, sop);
+		detail.setOrderFileInfo(orderFileInfo);
+		detail.setOrderUser(selectOrderUser(id));
+		return detail;
+	}
+	public List<Record> selectOrderUser(Integer id) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_ORDERDETAIL_BY_ID);
+		sqlPara.addPara(id);
+		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+		if (!page.getList().isEmpty()) {
+			for (Record record : page.getList()) {
+				String orderModifier = record.getStr("orderModifier");
+				String deletePerson = record.getStr("deletePerson");
+				if (orderModifier!=null) {
+					LUserAccount modifier = LUserAccount.dao.findById(orderModifier);
+					if (modifier!=null) {
+						record.set("modifierName", modifier.getName());
+					}
+				}
+				if (deletePerson!=null) {
+					LUserAccount deletePersonUser = LUserAccount.dao.findById(deletePerson);
+					if (deletePersonUser!=null) {
+						record.set("deletePersonName", deletePersonUser.getName());
+					}
+				}
+			}
+		}
+		
+		return page.getList();
+	}
+
+	public List<Record> selectOrderFile(Integer id) {
+		Orders order = Orders.dao.findById(id);
+		if (order == null) {
+			throw new OperationException("订单不存在");
+		}
+		
+			return Db.find(SQL.SELECT_ORDERFILE_BY_ORDER, id);
+		
+	}
+
+	public boolean editOrder(Orders order,LUserAccountVO userVO) {
+		Orders temp = Orders.dao.findById(order.getId());
+		if (temp == null) {
+			throw new OperationException("订单不存在");
+		}
+		if (Constant.SCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
+			temp.setQuantity(order.getQuantity());
+			return temp.update();
+		}
+		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
+		return order.update();
+	}
+
+	public String importOrder(File file,LUserAccountVO userVO) {
+		String resultString = "导入成功";
+		ExcelHelper helper;
+		int indexOfOrderItem = 2;
+		List<Orders> orders = new ArrayList<>();
+		try {
+			helper = ExcelHelper.from(file);
+			List<OrderItem> orderItems = helper.unfill(OrderItem.class, 0);
+			if (orderItems == null) {
+				throw new OperationException("表格无有效数据或者表格格式不正确！");
+			}
+			for (OrderItem orderItem : orderItems) {
+				String zhidan = orderItem.getZhidan();
+				String softModel = orderItem.getSoftModel();
+				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null) {
+					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
+					if (temp != null) {
+						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
+						return resultString;
+					}
+					Orders order = new Orders();
+					order.setZhidan(zhidan).setSoftModel(softModel);
+					order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
+					order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
+					order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate())
+							.setRemark(orderItem.getRemark());
+					orders.add(order);
+				}
+				indexOfOrderItem++;
+			}
+			for (Orders order : orders) {
+				order.setOrderStatus(Constant.UNSCHEDULED_ORDERSTATUS).setOrderCreator(userVO.getId()).setOrderCreateTime(new Date()).save();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new OperationException("文件解析出错，请检查文件内容和格式");
+		} finally {
+			file.delete();
+		}
+		return resultString;
+	}
+
+	public boolean importOrderTable(List<UploadFile> uploadFiles, Integer type, Integer id,LUserAccountVO userVO) {
+		// TODO Auto-generated method stub
+		OrderFile orderFile = new OrderFile();
+		switch (type) {
+		case 0:
+			orderFile.setFileType(Constant.INFORMATION_FILETYPE);
+			break;
+		case 1:
+			orderFile.setFileType(Constant.BOM_FILETYPE);
+			break;
+		case 2:
+			orderFile.setFileType(Constant.SOP_FILETYPE);
+			break;
+
+		default:
+			throw new OperationException("无法识别的类型");
+		}
+		Orders order = Orders.dao.findById(id);
+		if (order == null) {
+			throw new OperationException("订单不存在");
+		}
+		for (UploadFile uploadFile : uploadFiles) {
+			File tempFile = uploadFile.getFile();
+			String fileName = uploadFile.getFileName();
+			// 防止文件名中携带&nbsp的空格，导致前端输入文件名查不到数据
+			try {
+				fileName = URLEncoder.encode(fileName, "utf-8");
+				fileName = fileName.replaceAll("%C2%A0", "%20");
+				fileName = URLDecoder.decode(fileName, "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			File dir = new File(Constant.FILE_TABLE_PATH);
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+			File file = new File(Constant.FILE_TABLE_PATH + fileName);
+			if (file.exists()) {
+				file.delete();
+			}
+			try {
+				FileUtils.moveFile(tempFile, file);
+			} catch (IOException e) {
+				throw new OperationException("文件保存失败");
+			}
+
+			orderFile.setFileName(fileName).setPath(file.getAbsolutePath()).setOrders(id).setUploader(userVO.getId()).setUploadTime(new Date()).save();
+			orderFile.remove("id");
+
+		}
+		return true;
+	}
+
+	public File downloadOrderTable(Integer id) {
+
+		OrderFile orderFile = OrderFile.dao.findById(id);
+		if (orderFile == null) {
+			throw new OperationException("文件记录不存在");
+		}
+		File file = new File(orderFile.getPath());
+		if (!file.exists()) {
+			throw new OperationException("文件不存在,请重新上传");
+		}
+		return file;
+	}
+
 	public Record getPlanGannt(Integer id) {
 		Record record = Db.findFirst(SQL.SELECT_PLAN_GANT_INFORMATION, id);
 		if (record == null) {
@@ -708,40 +732,19 @@ public class ProductionService {
 		return record;
 	}
 
-	private void checkUserById(Integer id) {
-		LUserAccount user = LUserAccount.dao.findById(id);
-		if (user == null) {
-			throw new OperationException("产线负责人不存在");
-		}
-		if (!user.getInService()) {
-			throw new OperationException("产线负责人未启用");
-		}
-	}
-
-	private long getDateIntervalDays(String startDate, String endDate) {
-		long daysBetween = 0;
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
-		// 解析String为Date
-
-		try {
-			Date start = format.parse(startDate);
-			Date end = format.parse(endDate);
-			daysBetween = (end.getTime() - start.getTime()) / (3600 * 24 * 1000);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return daysBetween;
-	}
-
-	public List<OrderVO> selectUnscheduledPlan(Integer type) {
+	public List<OrderVO> selectUnscheduledPlan(Integer type,Boolean isRework) {
 		List<OrderVO> orderVOs = new ArrayList<>();
 		List<Record> records = new ArrayList<>();
-		switch (type) {
-		case 0:
-			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
+		List<Orders> orders=null;
+		if (isRework) {
+			orders = Orders.dao.find(SQL.SELECT_REWORK_ORDER);
+			if (orders==null||orders.isEmpty()) {
+				throw new OperationException("不存在返工订单");
+			}
+		}else if (type.equals(0)) {
+			orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
+		}
+		if (orders!=null&&!orders.isEmpty()) {
 			for (Orders order : orders) {
 				Record record = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP,
 						Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
@@ -754,6 +757,8 @@ public class ProductionService {
 				orderVOs.add(orderVO);
 			}
 			return orderVOs;
+		}
+		switch (type) {
 		case 1:
 			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP);
 			break;
@@ -820,6 +825,9 @@ public class ProductionService {
 		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
 		}
+		if (!Constant.SCHEDULED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
+			throw new OperationException("只能删除状态为已排产的计划");
+		}
 		Integer orderPlanNumber =Db.queryInt(SQL.SELECT_SCHEDULINGPLAN_BY_ORDERID, schedulingPlan.getOrders());
 		Orders order = Orders.dao.findById(schedulingPlan.getOrders());
 		if (orderPlanNumber==1&&Constant.SCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
@@ -829,7 +837,32 @@ public class ProductionService {
 		return schedulingPlan.delete();
 	}
 
-	public Page<Record> selectPlan(String filter, Integer pageNo, Integer pageSize) {
+	public Page<Record> selectPlan(Integer pageNo, Integer pageSize, Integer schedulingPlanStatus, String zhidan,
+			String customerName, String orderDateFrom, String orderDateTo, String planStartTimeFrom,
+			String planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo, String startTimeFrom,
+			String startTimeTo, String completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
+			String productionPlanningNumber, String softModel, String productNo) {
+		StringBuilder filter = new StringBuilder();
+		filter.append(concatEqualSqlFilter("scheduling_plan_status", schedulingPlanStatus));
+		filter.append(concatEqualSqlFilter("scheduling_plan.process_group", processGroup));
+		filter.append(concatEqualSqlFilter("line", line));
+		filter.append(concatSqlFilter("zhidan", zhidan, true, false));
+		filter.append(concatSqlFilter("customer_name", customerName, true, false));
+		filter.append(concatSqlFilter("production_planning_number", productionPlanningNumber, true, false));
+		filter.append(concatSqlFilter("soft_model", softModel, true, false));
+		filter.append(concatSqlFilter("product_no", productNo, true, false));
+		filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
+		filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
+		filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false, true));
+		filter.append(concatSqlFilter("plan_start_time", planStartTimeTo, false, false));
+		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeFrom, false, true));
+		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo, false, false));
+		filter.append(concatSqlFilter("start_time", startTimeFrom, false, true));
+		filter.append(concatSqlFilter("start_time", startTimeTo, false, false));
+		filter.append(concatSqlFilter("complete_time", completeTimeFrom, false, true));
+		filter.append(concatSqlFilter("complete_time", completeTimeTo, false, false));
+		
+		
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter);
 		return Db.paginate(pageNo, pageSize, sqlPara);
@@ -861,12 +894,34 @@ public class ProductionService {
 		return page;
 	}
 
-	public Object selectPlanProducedQuantity(Integer id) {
+	public Record selectPlanProducedQuantity(Integer id) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan==null) {
 			throw new OperationException("计划不存在");
 		}
-		return null;
+		Orders order = Orders.dao.findById(schedulingPlan.getOrders());
+		if (order==null) {
+			throw new OperationException("订单不存在");
+		}
+		List<LineComputer> lineComputers = LineComputer.dao.find(SQL.SELECT_LINECOMPUTER_BY_LINE, schedulingPlan.getLine());
+		if (lineComputers==null||lineComputers.isEmpty()) {
+			throw new OperationException("产线电脑不存在");
+		}
+		String sql = null;
+		Integer planProducedQuantity = 0;
+		if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+			sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+		}else if (Constant.TESTING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+			sql = SQL.SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+		}else if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+			sql = SQL.SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+		}
+		for (LineComputer lineComputer : lineComputers) {
+			planProducedQuantity += Db.queryInt(sql, order.getZhidan(),order.getSoftModel(),"%"+lineComputer.getIp()+"%");
+		}
+		Record record = new Record();
+		record.set("planProducedQuantity", planProducedQuantity);
+		return record;
 	}
 
 	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
@@ -892,9 +947,6 @@ public class ProductionService {
 		if (capacity != null) {
 			schedulingPlan.setCapacity(capacity);
 		}
-		if (isCompleted) {
-			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
-		}
 		if (producedQuantity != null) {
 			if (producedQuantity > schedulingQuantity) {
 				throw new ParameterException("已完成数量不能超过排产数量");
@@ -911,10 +963,32 @@ public class ProductionService {
 		if (productionPlanningNumber != null) {
 			schedulingPlan.setProductionPlanningNumber(productionPlanningNumber);
 		}
-		if (isStarting) {
-			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS).setProductionConfirmer(userVO.getId());
-		}
+		
 		schedulingPlan.setPlanModifier(userVO.getId()).setPlanModifyTime(new Date());
+		Orders order = Orders.dao.findById(schedulingPlan.getOrders());
+		if (order==null) {
+			throw new OperationException("订单不存在");
+		}
+		
+		if (Constant.SCHEDULED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())&&isStarting) {
+			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS).setProductionConfirmer(userVO.getId());
+		}else if (isCompleted) {
+			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+			Integer quantity = 0;
+			List<SchedulingPlan> schedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER, schedulingPlan.getOrders());
+			if (schedulingPlans!=null&&!schedulingPlans.isEmpty()) {
+				for (SchedulingPlan plan : schedulingPlans) {
+					quantity += plan.getProducedQuantity();
+				}
+			}
+			if (quantity+producedQuantity>=order.getQuantity()) {
+				order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+				return schedulingPlan.update()&&order.update();
+			}
+			
+		}
+		
+		
 		return schedulingPlan.update();
 	}
 
@@ -943,6 +1017,30 @@ public class ProductionService {
 		return schedulingPlan.update();
 	}
 
+	public void exportPlan(Page<Record> page, HttpServletResponse response, OutputStream output) throws Exception {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		int size = page.getTotalRow();
+		List<Record> records = page.getList();
+		for (Record record : records) {
+			if (record.getBoolean("isUrgent")) {
+				record.set("isUrgent", "是");
+			}else {
+				record.set("isUrgent", "否");
+			}
+		}
+		String fileName = "排产计划导出_" + simpleDateFormat.format(new Date()) + "_" + size + ".xlsx";
+		String title = "排产计划单";
+		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
+		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+		ExcelHelper helper = ExcelHelper.create(true);
+		String[] field = new String[] { "id", "lineNo", "lineName", "statusName", "zhidan", "alias", "softModel", "productNo", "customerNumber", "customerName", "isUrgent", "orderDate", "deliveryDate", "schedulingQuantity", "productionPlanningNumber", "planStartTime", "planCompleteTime", "remark"};
+		String[] head = new String[] { "序号", "线别", "线名", "状态", "订单号", "内部替换号", "机型", "成品编码", "客户编号", "客户名称", "是否紧急", "订单日期", "交货日期", "排产数量", "生产计划单号", "预计开始时间", "预计完成时间", "备注"};
+		helper.fill(records, title, field, head);
+		helper.write(output, true);
+		
+	}
+
 	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime,
 			String lineChangeTime, Integer capacity) {
 		Integer actualCostHours = schedulingQuantity / capacity;
@@ -953,6 +1051,61 @@ public class ProductionService {
 			return false;
 		}
 		return true;
+	}
+	
+	private void checkUserById(Integer id) {
+		LUserAccount user = LUserAccount.dao.findById(id);
+		if (user == null) {
+			throw new OperationException("产线负责人不存在");
+		}
+		if (!user.getInService()) {
+			throw new OperationException("产线负责人未启用");
+		}
+	}
+
+	private long getDateIntervalDays(String startDate, String endDate) {
+		long daysBetween = 0;
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+	
+		// 解析String为Date
+	
+		try {
+			Date start = format.parse(startDate);
+			Date end = format.parse(endDate);
+			daysBetween = (end.getTime() - start.getTime()) / (3600 * 24 * 1000);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+		return daysBetween;
+	}
+
+	private StringBuilder concatSqlFilter(String key, String value, Boolean isLike, Boolean isGreater) {
+		StringBuilder filter = new StringBuilder();
+		if (!StrKit.isBlank(value)) {
+			if (isLike) {
+				filter.append(" AND " + key + " like '%" + value + "%'");
+			} else {
+				if (isGreater) {
+					filter.append(" AND " + key + " > '" + value + "'");
+				} else {
+					filter.append(" AND " + key + " < '" + value + "'");
+				}
+			}
+		}
+		return filter;
+
+	}
+
+	private StringBuilder concatEqualSqlFilter(String key, Integer value) {
+		StringBuilder filter = new StringBuilder();
+		if (value != null) {
+			filter.append(" AND " + key + " = " + value);
+		}
+
+		return filter;
+
 	}
 	
 

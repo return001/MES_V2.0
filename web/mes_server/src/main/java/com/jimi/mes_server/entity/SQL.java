@@ -96,19 +96,11 @@ public class SQL {
 
 	public final static String SELECT_ORDER_BY_ZHIDAN = "SELECT * from orders WHERE zhidan = ?";
 
-	public final static String SELECT_ORDERFILE_BY_ORDER = "SELECT order_file.id, file_name AS fileName, file_type AS fileType, file_type.type_name AS typeName,LUserAccount.Name as uploaderName,upload_time as uploadTime FROM order_file, file_type ,LUserAccount WHERE file_type.id = order_file.file_type and LUserAccount.Id = order_file.uploader ";
-
-	public final static String SELECT_ORDERFILE_BY_ORDER_FILETYPE = "SELECT order_file.id, file_name AS fileName, file_type AS fileType, file_type.type_name AS typeName,LUserAccount.Name as uploaderName,upload_time as uploadTime FROM order_file, file_type ,LUserAccount WHERE orders = ? and file_type = ? ";
+	public final static String SELECT_ORDERFILE_BY_ORDER = "SELECT order_file.id, file_name AS fileName, file_type AS fileType, file_type.type_name AS typeName, LUserAccount.Name AS uploaderName, upload_time AS uploadTime FROM order_file, file_type, LUserAccount, orders WHERE file_type.id = order_file.file_type AND LUserAccount.Id = order_file.uploader AND orders.id = order_file.orders AND order_file.orders = ? ORDER BY file_type";
 
 	public final static String SELECT_MODELCAPACITY_BY_MODEL_PROCESS = "SELECT * from model_capacity WHERE soft_model = ? and process = ? and process_group = ?";
 
 	public final static String SELECT_CARTONNUM_BY_TESTTIME = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? AND TestTime < ?";
-
-	public final static String SELECT_ZHIDAN_VERSION_SOFTMODEL_BY_TESTTIME = "SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result2 where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result3 where TestTime > ? and TestTime < ?  GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_CoupleTest_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel,Version UNION SELECT ZhiDan,Version,SoftModel from Gps_CartonBoxTwenty_Result where TestTime > ? and TestTime < ? GROUP BY ZhiDan,Version,SoftModel UNION SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam WHERE CH_PrintTime > ? and CH_PrintTime < ? GROUP BY ZhiDan,Version,SoftModel UNION SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam WHERE JS_PrintTime > ? and JS_PrintTime < ? GROUP BY ZhiDan,Version,SoftModel";
-
-	public final static String SELECT_PRODUCTION_BY_ZHIDAN_VERSION_SOFTMODEL_TESTTIME = "SELECT (SELECT count(*) from Gps_AutoTest_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as FunctionProduct, (SELECT count(*) from Gps_AutoTest_Result2 WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as SMTProduct, (SELECT count(*) from Gps_AutoTest_Result3 WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as AgedProduct, (SELECT count(*) from Gps_CoupleTest_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as CouplingProduct, (SELECT count(*) from Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and Version = ? and SoftModel = ? and TestTime > ? and TestTime < ?) as CartonProduct, (SELECT count(*) from Gps_ManuPrintParam WHERE ZhiDan = ? and Version = ? and SoftModel = ? and CH_PrintTime > ? and CH_PrintTime < ?) as CHPrintProduct, (SELECT count(*) from Gps_ManuPrintParam WHERE ZhiDan = ? and Version = ? and SoftModel = ? and  JS_PrintTime > ? and JS_PrintTime  < ?) as JSPrintProduct";
-
-	public final static String SELECT_RENCENT_SIXDAYS_PRODUCTION = "SELECT top 6 quantity,[time] from daily_completion ORDER BY Id DESC";
 
 	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planEndTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
 
@@ -128,7 +120,7 @@ public class SQL {
 
 	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT COUNT(process_people_quantity) as people,count(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model = ? ";
 
-	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName FROM scheduling_plan, orders, line, scheduling_plan_status WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id AND scheduling_plan.scheduling_plan_status = scheduling_plan_status.id ";
+	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName, zhidan,alias,soft_model as softModel,product_no as productNo,customer_number as customerNumber,customer_name as customerName,order_date as orderDate,delivery_date as deliveryDate FROM scheduling_plan, orders, line, scheduling_plan_status WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id AND scheduling_plan.scheduling_plan_status = scheduling_plan_status.id ";
 
 	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id from LUserAccount WHERE InService = 1 and Name LIKE ?";
 
@@ -151,4 +143,14 @@ public class SQL {
 	public final static String SELECT_SCHEDULINGPLAN_BY_ORDERID = "SELECT COUNT(*) FROM scheduling_plan WHERE orders = ?";
 
 	public final static String SELECT_SCHEDULINGPLANDETAIL_BY_ID = "SELECT scheduler, LUserAccount.Name AS schedulerName, scheduling_time AS schedulingTime, plan_modifier AS planModifier, NULL AS modifierName, plan_modify_time as planModifyTime, production_confirmer AS productionConfirmer, NULL AS confirmerName, line_change_time as lineChangeTime FROM scheduling_plan JOIN LUserAccount ON LUserAccount.Id = scheduling_plan.scheduler WHERE scheduling_plan.id = ?";
+
+	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_AutoTest_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+
+	public final static String SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CoupleTest_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+
+	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+
+	public final static String SELECT_REWORK_ORDER = "SELECT * FROM orders WHERE is_rework = 1 and order_status = 1 or order_status = 2";
+	
+	public final static String SELECT_PRODUCEDQUANTITY_BY_ORDER = "SELECT * FROM scheduling_plan WHERE scheduling_plan_status = 3 AND orders = ?";
 }

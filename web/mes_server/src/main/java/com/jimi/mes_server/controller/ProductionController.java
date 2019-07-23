@@ -1,5 +1,7 @@
 package com.jimi.mes_server.controller;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.jfinal.aop.Enhancer;
@@ -16,6 +20,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
@@ -218,14 +223,61 @@ public class ProductionController extends Controller {
 
 	}
 
+	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
+			Integer processPeopleQuantity, Integer capacity, String remark) {
+		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null
+				|| capacity == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (processPeopleQuantity < 0 || capacity < 0) {
+			throw new ParameterException("产能或人数不合理");
+		}
+		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity,
+				capacity, remark)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
+	public void deleteCapacity(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (productionService.deleteCapacity(id)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	
+	}
+
+	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel,
+			String customerModel, Integer process) {
+		renderJson(ResultUtil.succeed(
+				productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, process)));
+	}
+
+	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup,
+			Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity,
+				capacity, remark, position)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
 	public void addOrder(@Para("") Orders order,Boolean isRework) {
 		if (order == null||isRework==null) {
 			throw new ParameterException("参数不能为空");
 		}
-		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel(),
-				order.getVersion());
+		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel());
 		if (isOrderInformationExist || order.getQuantity() == null) {
-			throw new ParameterException("订单号、机型、版本和数量不能为空");
+			throw new ParameterException("订单号、机型和数量不能为空");
 		}
 		if (order.getQuantity()<0) {
 			throw new ParameterException("订单数量格式错误");
@@ -255,7 +307,7 @@ public class ProductionController extends Controller {
 
 	public void selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter,Boolean isRework) {
 		if (isRework==null) {
-			throw new ParameterException("参数是否为返工订单不能为空");
+			throw new ParameterException("是否为返工订单的参数不能为空");
 		}
 		ResultUtil result = ResultUtil
 				.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter,isRework));
@@ -266,10 +318,11 @@ public class ProductionController extends Controller {
 		if (id==null) {
 			throw new ParameterException("参数不能为空");
 		}
-		ResultUtil result = ResultUtil
-				.succeed(productionService.selectOrderDetail(id));
-		renderJson(result);
+		
+		renderJson(ResultUtil
+				.succeed(productionService.selectOrderDetail(id)));
 	}
+
 
 	public void editOrder(@Para("") Orders order) {
 		if (order == null) {
@@ -278,7 +331,7 @@ public class ProductionController extends Controller {
 		boolean isOrderInformationExist = StringUtils.isAnyBlank(order.getZhidan(), order.getSoftModel()
 				);
 		if (isOrderInformationExist || order.getQuantity() == null) {
-			throw new ParameterException("订单号、机型、版本和数量不能为空");
+			throw new ParameterException("订单号、机型和数量不能为空");
 		}
 		if (order.getQuantity()<0) {
 			throw new ParameterException("订单数量格式错误");
@@ -332,24 +385,6 @@ public class ProductionController extends Controller {
 
 	}
 
-	public void selectOrderTable(Integer type, Integer id) {
-		if (id == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (type != null) {
-			switch (type) {
-			case 0:
-			case 1:
-			case 2:
-				break;
-			default:
-				throw new OperationException("无法识别的类型");
-			}
-		}
-		renderJson(ResultUtil.succeed(productionService.selectOrderTable(type, id)));
-
-	}
-
 	public synchronized void downloadOrderTable(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -357,55 +392,6 @@ public class ProductionController extends Controller {
 		renderFile(productionService.downloadOrderTable(id));
 
 	}
-
-	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity, String remark) {
-		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null
-				|| capacity == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (processPeopleQuantity < 0 || capacity < 0) {
-			throw new ParameterException("产能或人数不合理");
-		}
-		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity,
-				capacity, remark)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
-	}
-
-	public void deleteCapacity(Integer id) {
-		if (id == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (productionService.deleteCapacity(id)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
-
-	}
-
-	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel,
-			String customerModel, Integer process) {
-		renderJson(ResultUtil.succeed(
-				productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, process)));
-	}
-
-	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup,
-			Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
-		if (id == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity,
-				capacity, remark, position)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
-	}
-
 
 	public void getPlanGannt(Integer id) {
 		if (id == null) {
@@ -416,19 +402,22 @@ public class ProductionController extends Controller {
 	}
 
 	// 查询未排产
-	public void selectUnscheduledPlan(Integer type) {
-		if (type == null) {
+	public void selectUnscheduledPlan(Integer type,Boolean isRework) {
+		if (isRework==null) {
 			throw new ParameterException("参数不能为空");
 		}
-		switch (type) {
-		case 0:
-		case 1:
-		case 2:
-			break;
-		default:
-			throw new OperationException("无法识别的类型");
+		if (type!=null) {
+			switch (type) {
+			case 0:
+			case 1:
+			case 2:
+				break;
+			default:
+				throw new OperationException("无法识别的类型");
+			}
 		}
-		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type)));
+		
+		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type,isRework)));
 
 	}
 
@@ -465,27 +454,13 @@ public class ProductionController extends Controller {
 			String planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo, String startTimeFrom,
 			String startTimeTo, String completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
 			String productionPlanningNumber, String softModel, String productNo) {
-		StringBuilder filter = new StringBuilder();
-		filter.append(concatEqualSqlFilter("scheduling_plan_status", schedulingPlanStatus));
-		filter.append(concatEqualSqlFilter("scheduling_plan.process_group", processGroup));
-		filter.append(concatEqualSqlFilter("line", line));
-		filter.append(concatSqlFilter("zhidan", zhidan, true, false));
-		filter.append(concatSqlFilter("customer_name", customerName, true, false));
-		filter.append(concatSqlFilter("production_planning_number", productionPlanningNumber, true, false));
-		filter.append(concatSqlFilter("soft_model", softModel, true, false));
-		filter.append(concatSqlFilter("product_no", productNo, true, false));
-		filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
-		filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
-		filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false, true));
-		filter.append(concatSqlFilter("plan_start_time", planStartTimeTo, false, false));
-		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeFrom, false, true));
-		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo, false, false));
-		filter.append(concatSqlFilter("start_time", startTimeFrom, false, true));
-		filter.append(concatSqlFilter("start_time", startTimeTo, false, false));
-		filter.append(concatSqlFilter("complete_time", completeTimeFrom, false, true));
-		filter.append(concatSqlFilter("complete_time", completeTimeTo, false, false));
+		
 	
-		renderJson(ResultUtil.succeed(productionService.selectPlan(filter.toString(), pageNo, pageSize)));
+		renderJson(ResultUtil.succeed(productionService.selectPlan( pageNo, pageSize, schedulingPlanStatus,  zhidan,
+				 customerName,  orderDateFrom,  orderDateTo,  planStartTimeFrom,
+				 planStartTimeTo,  planCompleteTimeFrom,  planCompleteTimeTo,  startTimeFrom,
+				 startTimeTo,  completeTimeFrom,  completeTimeTo,  processGroup,  line,
+				 productionPlanningNumber,  softModel,  productNo)));
 	
 	}
 	
@@ -562,33 +537,38 @@ public class ProductionController extends Controller {
 		ResultUtil result = ResultUtil.succeed(productionService.selectPlanProducedQuantity(id));
 		renderJson(result);
 	}
-
-	private StringBuilder concatSqlFilter(String key, String value, Boolean isLike, Boolean isGreater) {
-		StringBuilder filter = new StringBuilder();
-		if (!StrKit.isBlank(value)) {
-			if (isLike) {
-				filter.append(" AND " + key + " like '%" + value + "%'");
-			} else {
-				if (isGreater) {
-					filter.append(" AND " + key + " > '" + value + "'");
-				} else {
-					filter.append(" AND " + key + " < '" + value + "'");
+	
+	public void exportPlan(Integer schedulingPlanStatus, String zhidan,
+			String customerName, String orderDateFrom, String orderDateTo, String planStartTimeFrom,
+			String planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo, String startTimeFrom,
+			String startTimeTo, String completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
+			String productionPlanningNumber, String softModel, String productNo) {
+		OutputStream output = null;
+		Page<Record> page = productionService.selectPlan( Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, schedulingPlanStatus,  zhidan,
+				 customerName,  orderDateFrom,  orderDateTo,  planStartTimeFrom,
+				 planStartTimeTo,  planCompleteTimeFrom,  planCompleteTimeTo,  startTimeFrom,
+				 startTimeTo,  completeTimeFrom,  completeTimeTo,  processGroup,  line,
+				 productionPlanningNumber,  softModel,  productNo);
+		try {
+			// 设置响应
+			HttpServletResponse response = getResponse();
+			output = response.getOutputStream();
+			productionService.exportPlan(page, response, output);
+		} catch (Exception e) {
+			renderJson(ResultUtil.failed());
+		} finally {
+			try {
+				if (output != null) {
+					output.close();
 				}
+			} catch (IOException e) {
+				renderJson(ResultUtil.failed());
 			}
 		}
-		return filter;
-
+		renderNull();
 	}
 
-	private StringBuilder concatEqualSqlFilter(String key, Integer value) {
-		StringBuilder filter = new StringBuilder();
-		if (value != null) {
-			filter.append(" AND " + key + " = " + value);
-		}
-
-		return filter;
-
-	}
+	
 
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime,
 			String lineChangeTime, Integer capacity) {
@@ -614,100 +594,6 @@ public class ProductionController extends Controller {
 		}
 	}
 
-	public void dailyReport() {
-		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat testDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		SimpleDateFormat printDateFormat = new SimpleDateFormat("yyyy.MM.dd");
-		// 设置起始和结束时间
-		/*
-		 * String startTestTime = testDateFormat.format(calendar.getTime()) +
-		 * " 00:00:00"; String endTestTime = testDateFormat.format(calendar.getTime()) +
-		 * " 23:59:59"; String startPrintTime =
-		 * printDateFormat.format(calendar.getTime()) + " 00:00:00:000"; String
-		 * endPrintTime = printDateFormat.format(calendar.getTime()) + " 23:59:59:999";
-		 */
-
-		String startTestTime = "2017-01-05 00:00:00";
-		String endTestTime = "2017-01-05 23:59:59";
-		String startPrintTime = "2017.01.05 00:00:00:000";
-		String endPrintTime = "2017.01.05 23:59:59:999";
-		Object[] timeParas = { startTestTime, endTestTime, startTestTime, endTestTime, startTestTime, endTestTime,
-				startTestTime, endTestTime, startTestTime, endTestTime, startPrintTime, endPrintTime, startPrintTime,
-				endPrintTime };
-		long t1 = System.currentTimeMillis();
-		List<Record> records = Db.find(SQL.SELECT_ZHIDAN_VERSION_SOFTMODEL_BY_TESTTIME, timeParas);
-		System.out.println("t1" + (System.currentTimeMillis() - t1));
-		long t2 = System.currentTimeMillis();
-		List<DailyOrderProduction> orderProductions = new ArrayList<>();
-		if (records != null && !records.isEmpty()) {
-			int dailyFunctionProduct = 0, dailySmtProduct = 0, dailyAgedProduct = 0, dailyCouplingProduct = 0,
-					dailyCartonProduct = 0, dailyChPrintProduct = 0, dailyJsPrintProduct = 0;
-			for (Record record : records) {
-				String zhidan = record.get("ZhiDan");
-				String version = record.get("Version");
-				String softModel = record.get("SoftModel");
-				if (StrKit.isBlank(zhidan)) {
-					zhidan = "";
-				}
-				if (StrKit.isBlank(version)) {
-					version = "";
-				}
-				if (StrKit.isBlank(softModel)) {
-					softModel = "";
-				}
-				Object[] paras = { zhidan, version, softModel, startTestTime, endTestTime, zhidan, version, softModel,
-						startTestTime, endTestTime, zhidan, version, softModel, startTestTime, endTestTime, zhidan,
-						version, softModel, startTestTime, endTestTime, zhidan, version, softModel, startTestTime,
-						endTestTime, zhidan, version, softModel, startPrintTime, endPrintTime, zhidan, version,
-						softModel, startPrintTime, endPrintTime };
-				Record productionRecord = Db.findFirst(SQL.SELECT_PRODUCTION_BY_ZHIDAN_VERSION_SOFTMODEL_TESTTIME,
-						paras);
-				DailyOrderProduction orderproduction = new DailyOrderProduction(zhidan, version, softModel);
-				orderproduction.setFunctionProduct(productionRecord.getInt("FunctionProduct"));
-				orderproduction.setSmtProduct(productionRecord.getInt("SMTProduct"));
-				orderproduction.setAgedProduct(productionRecord.getInt("AgedProduct"));
-				orderproduction.setCouplingProduct(productionRecord.getInt("CouplingProduct"));
-				orderproduction.setCartonProduct(productionRecord.getInt("CartonProduct"));
-				orderproduction.setChPrintProduct(productionRecord.getInt("CHPrintProduct"));
-				orderproduction.setJsPrintProduct(productionRecord.getInt("JSPrintProduct"));
-				orderProductions.add(orderproduction);
-
-				dailyFunctionProduct += orderproduction.getFunctionProduct();
-				dailySmtProduct += orderproduction.getSmtProduct();
-				dailyAgedProduct += orderproduction.getAgedProduct();
-				dailyCouplingProduct += orderproduction.getCouplingProduct();
-				dailyCartonProduct += orderproduction.getCartonProduct();
-				dailyChPrintProduct += orderproduction.getChPrintProduct();
-				dailyJsPrintProduct += orderproduction.getJsPrintProduct();
-
-			}
-			Production production = new Production();
-			production.setFunctionProduct(dailyFunctionProduct);
-			production.setSmtProduct(dailySmtProduct);
-			production.setAgedProduct(dailyAgedProduct);
-			production.setCouplingProduct(dailyCouplingProduct);
-			production.setCartonProduct(dailyCartonProduct);
-			production.setChPrintProduct(dailyChPrintProduct);
-			production.setJsPrintProduct(dailyJsPrintProduct);
-
-			List<DailyCompletion> dailyCompletions = DailyCompletion.dao.find(SQL.SELECT_RENCENT_SIXDAYS_PRODUCTION);
-			DailyCompletion dailyCompletion = new DailyCompletion();
-
-			Integer quantity = production.getFunctionProduct() + production.getSmtProduct()
-					+ production.getAgedProduct() + production.getCouplingProduct() + production.getCartonProduct()
-					+ production.getChPrintProduct() + production.getJsPrintProduct();
-			dailyCompletion.setTime(new Date());
-			dailyCompletion.setQuantity(quantity);
-			dailyCompletions.add(dailyCompletion);
-			System.out.println();
-			DailyReport dailyReport = new DailyReport(orderProductions, production, dailyCompletions);
-			System.out.println("t2" + (System.currentTimeMillis() - t2));
-			renderJson(ResultUtil.succeed(dailyReport));
-		} else {
-			renderJson(ResultUtil.failed("当天没有进行中的工单"));
-		}
-
-	}
 	public static boolean validateIP(String ipAddress) {  
         String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";   
         Pattern pattern = Pattern.compile(regex);  

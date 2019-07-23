@@ -31,7 +31,24 @@ public class OrderVO extends Orders {
 		this.set("unscheduledQuantity", getUnscheduledQuantity());
 		this.setCapacity(capacity);
 		this.set("capacity", getCapacity());
-		this.setAlias(order.getAlias());
+		
+		this.set("alias", order.getAlias());
+		this.set("orderDate", order.getOrderDate());
+		this.set("customerName", order.getCustomerName());
+		this.set("customerNumber", order.getCustomerNumber());
+		this.set("deliveryDate", order.getDeliveryDate());
+		this.set("id", order.getId());
+		this.set("productNo", order.getProductNo());
+		this.set("quantity", order.getQuantity());
+		this.set("remark", order.getRemark());
+		this.set("softModel", order.getSoftModel());
+		this.set("zhidan", order.getZhidan());
+		
+		
+		
+		
+		
+		/*this.setAlias(order.getAlias());
 		this.setOrderDate(order.getOrderDate());
 		this.setCustomerName(order.getCustomerName());
 		this.setCustomerNumber(order.getCustomerNumber());
@@ -44,6 +61,7 @@ public class OrderVO extends Orders {
 		this.setRemark(order.getRemark());
 		this.setSoftModel(order.getSoftModel());
 		this.setVersion(order.getVersion());
-		this.setZhidan(order.getZhidan());
+		this.setZhidan(order.getZhidan());*/
+		
 	}
 }
