@@ -130,6 +130,10 @@ public class SQL {
 
 	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
 
+	public final static String SELECT_ORDERSTATUS_NAME_ID = "SELECT id, status_name as statusName FROM order_status";
+
+	public final static String SELECT_SCHEDULINGPLANSTATUS_NAME_ID = "SELECT id, status_name as statusName from scheduling_plan_status";
+
 	public final static String SELECT_ORDER = "SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, remark, order_status AS orderStatus, delete_reason AS deleteReason, order_status.status_name AS statusName FROM orders, order_status WHERE orders.order_status = order_status.id ";
 
 	public final static String SELECT_PROCESSGROUP = "SELECT id,group_no as groupNo,group_name as groupName,group_remark as groupRemark FROM process_group";

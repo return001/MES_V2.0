@@ -8,13 +8,6 @@ public class OrderFileInfo {
 
 	private List<Record> information;
 
-	public OrderFileInfo(List<Record> information, List<Record> bom, List<Record> sop) {
-		super();
-		this.information = information;
-		this.bom = bom;
-		this.sop = sop;
-	}
-
 	private List<Record> bom;
 
 	private List<Record> sop;
@@ -40,6 +33,13 @@ public class OrderFileInfo {
 	}
 
 	public void setSop(List<Record> sop) {
+		this.sop = sop;
+	}
+
+	public OrderFileInfo(List<Record> information, List<Record> bom, List<Record> sop) {
+		super();
+		this.information = information;
+		this.bom = bom;
 		this.sop = sop;
 	}
 

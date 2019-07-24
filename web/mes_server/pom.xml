@@ -62,6 +62,13 @@
 			<version>3.5</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.jfinal/cos -->
+		<dependency>
+		    <groupId>com.jfinal</groupId>
+		    <artifactId>cos</artifactId>
+		    <version>2017.5</version>
+		</dependency>
+
 		<!-- <dependency> -->
 		<!-- <groupId>com.jfinal</groupId> -->
 		<!-- <artifactId>jetty-server</artifactId> -->
@@ -163,11 +170,11 @@
 		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/it.sauronsoftware.cron4j/cron4j -->
-		<dependency>
+		<!-- <dependency>
 		    <groupId>it.sauronsoftware.cron4j</groupId>
 		    <artifactId>cron4j</artifactId>
 		    <version>2.2.5</version>
-		</dependency>
+		</dependency> -->
 		
 	</dependencies>
 </project>

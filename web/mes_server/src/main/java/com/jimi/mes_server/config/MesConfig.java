@@ -12,7 +12,6 @@ import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.jfinal.plugin.cron4j.Cron4jPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
 import com.jimi.mes_server.controller.DeleteHistoryController;
@@ -122,8 +121,6 @@ public class MesConfig extends JFinalConfig {
 		me.add(arp1);
 		me.add(arp2);
 		me.add(arp3);
-		Cron4jPlugin cron = new Cron4jPlugin(PropKit.use("taskConfig.txt"), "cron4j");
-		me.add(cron);
 	}
 
 

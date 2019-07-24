@@ -116,4 +116,11 @@ public class OrderItem {
 		this.remark = remark;
 	}
 
+	@Override
+	public String toString() {
+		return "OrderItem [zhidan=" + zhidan + ", alias=" + alias + ", softModel=" + softModel + ", productNo="
+				+ productNo + ", customerNumber=" + customerNumber + ", customerName=" + customerName + ", orderDate="
+				+ orderDate + ", quantity=" + quantity + ", deliveryDate=" + deliveryDate + ", remark=" + remark + "]";
+	}
+
 }
