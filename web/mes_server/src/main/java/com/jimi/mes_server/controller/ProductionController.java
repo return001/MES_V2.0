@@ -20,6 +20,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
@@ -35,26 +36,31 @@ public class ProductionController extends Controller {
 	private static ProductionService productionService = Enhancer.enhance(ProductionService.class);
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getProcessGroup() {
 		renderJson(ResultUtil.succeed(productionService.getProcessGroup()));
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getProcess() {
 		renderJson(ResultUtil.succeed(productionService.getProcess()));
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getLine() {
 		renderJson(ResultUtil.succeed(productionService.getLine()));
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getOrderStatus() {
 		renderJson(ResultUtil.succeed(productionService.getOrderStatus()));
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getSchedulingPlanStatus() {
 		renderJson(ResultUtil.succeed(productionService.getSchedulingPlanStatus()));
 	}
@@ -282,6 +288,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingSZPC" })
 	public void addOrder(@Para("") Orders order) {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
@@ -303,6 +310,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingSZPC" })
 	public void deleteOrder(Integer id, String deleteReason) {
 		if (id == null || StrKit.isBlank(deleteReason)) {
 			throw new ParameterException("参数不能为空");
@@ -317,15 +325,18 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework) {
 		if (isRework == null) {
 			throw new ParameterException("是否为返工订单的参数不能为空");
 		}
-		ResultUtil result = ResultUtil.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter, isRework));
-		renderJson(result);
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		renderJson(ResultUtil.succeed(productionService.selectOrder(pageNo, pageSize, ascBy, descBy, filter, isRework,userVO)));
 	}
 
 
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectOrderDetail(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -334,6 +345,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingSZPC" })
 	public void editOrder(@Para("") Orders order) {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
@@ -355,6 +367,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingSZPC" })
 	public void importOrder(UploadFile uploadFile, Boolean isRework) {
 		uploadFile = getFile();
 		if (uploadFile == null || isRework == null) {
@@ -371,11 +384,23 @@ public class ProductionController extends Controller {
 	}
 
 
-	public void importOrderTable(List<UploadFile> uploadFiles, Integer type, Integer id) {
+	@Access({ "schedulingSZPC", "engineer" })
+	public void importOrderTable() {
+		List<UploadFile> uploadFiles = getFiles();
+		if (uploadFiles == null || uploadFiles.isEmpty()) {
+			throw new ParameterException("请添加文件");
+		}
+		Integer type;
+		Integer id;
+		try {
+			type = getParaToInt("type");
+			id = getParaToInt("id");
+		} catch (Exception e) {
+			throw new ParameterException("请输入正确格式的参数");
+		}
 		if (type == null || id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (Constant.SCHEDULING_SZPC_USERTYPE.equals(userVO.getWebUserType()) && type.equals(2)) {
@@ -384,16 +409,13 @@ public class ProductionController extends Controller {
 		if (Constant.ENGINEER_USERTYPE.equals(userVO.getWebUserType()) && !type.equals(2)) {
 			throw new OperationException("工程及生产只能上传SOP表");
 		}
-		uploadFiles = getFiles();
-		if (uploadFiles == null || uploadFiles.isEmpty()) {
-			throw new ParameterException("请添加文件");
-		}
 		if (productionService.importOrderTable(uploadFiles, type, id, userVO)) {
 			renderJson(ResultUtil.succeed());
 		}
 	}
 
 
+	@Access({ "schedulingSZPC", "engineer", "schedulingJMPMC" })
 	public void downloadOrderTable(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");

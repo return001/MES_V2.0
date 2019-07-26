@@ -5,6 +5,7 @@ import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.controller.UserController;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.AccessException;
 import com.jimi.mes_server.service.UserService;
@@ -36,6 +37,10 @@ public class AccessInterceptor implements Interceptor {
 		TokenBox.put(token, UserController.SESSION_KEY_LOGIN_USER, userVO);
 		if (!userVO.getInService()) {
 			throw new AccessException("此用户未启用");
+		}
+		if (userVO.getWebUserType() != null && Constant.SUPER_ADMIN_USERTYPE.equals(userVO.getWebUserType())) {
+			invocation.invoke();
+			return;
 		}
 		String[] accessUserTypes = access.value();
 		String typeName = userVO.getTypeName();

@@ -523,8 +523,12 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework) {
+	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework,LUserAccountVO userVO) {
 		Page<Record> page = new Page<>();
+		Boolean isOperator = false;
+		if (Constant.SUPER_OPERATOR_USERTYPE.equals(userVO.getWebUserType())) {
+			isOperator = true;
+		}
 		if (!isRework) {
 			String reworkSql = "AND is_rework = 0 ";
 			if (StrKit.isBlank(filter)) {
@@ -540,7 +544,7 @@ public class ProductionService {
 				page = daoService.select(SQL.SELECT_ORDER + reworkSql + " AND ", pageNo, pageSize, ascBy, descBy, filter);
 			}
 		}
-		return formatOrderDate(page);
+		return formatOrderDateAndCustomer(page,isOperator);
 	}
 
 
@@ -567,13 +571,14 @@ public class ProductionService {
 	}
 
 
-	public List<Record> selectOrderUser(Integer id) {
+	public Record selectOrderUser(Integer id) {
 		SqlPara sqlPara = new SqlPara();
+		Record record = new Record();
 		sqlPara.setSql(SQL.SELECT_ORDERDETAIL_BY_ID);
 		sqlPara.addPara(id);
 		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 		if (!page.getList().isEmpty()) {
-			for (Record record : page.getList()) {
+			record = page.getList().get(0);
 				String orderModifier = record.getStr("orderModifier");
 				String deletePerson = record.getStr("deletePerson");
 				if (orderModifier != null) {
@@ -588,9 +593,9 @@ public class ProductionService {
 						record.set("deletePersonName", deletePersonUser.getName());
 					}
 				}
-			}
+			
 		}
-		return page.getList();
+		return record;
 	}
 
 
@@ -611,6 +616,9 @@ public class ProductionService {
 		if (Constant.SCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
 			temp.setQuantity(order.getQuantity());
 			return temp.update();
+		}
+		if (Constant.COMPLETED_ORDERSTATUS.equals(temp.getOrderStatus())) {
+			throw new OperationException("已完成的订单无法修改");
 		}
 		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
 		return order.update();
@@ -681,9 +689,13 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
+		File dir = new File(Constant.FILE_TABLE_PATH);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
 		for (UploadFile uploadFile : uploadFiles) {
 			File tempFile = uploadFile.getFile();
-			String fileName = uploadFile.getFileName();
+			String fileName = uploadFile.getOriginalFileName();
 			// 防止文件名中携带&nbsp的空格，导致前端输入文件名查不到数据
 			try {
 				fileName = URLEncoder.encode(fileName, "utf-8");
@@ -692,10 +704,7 @@ public class ProductionService {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			File dir = new File(Constant.FILE_TABLE_PATH);
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
+			
 			File file = new File(Constant.FILE_TABLE_PATH + fileName);
 			if (file.exists()) {
 				file.delete();
@@ -879,7 +888,7 @@ public class ProductionService {
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " ORDER BY is_timeout DESC ";
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
-		return formatOrderDate(Db.paginate(planQueryCriteria.getPageNo(), planQueryCriteria.getPageSize(), sqlPara));
+		return formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), planQueryCriteria.getPageSize(), sqlPara),null);
 	}
 
 
@@ -1128,10 +1137,14 @@ public class ProductionService {
 	}
 
 
-	private Page<Record> formatOrderDate(Page<Record> page) {
+	private Page<Record> formatOrderDateAndCustomer(Page<Record> page,Boolean isOperator) {
 		List<Record> records = page.getList();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		for (Record record : records) {
+			if (isOperator!=null&&isOperator) {
+				record.set("customerNumber", "***");
+				record.set("customerName", "***");
+			}
 			try {
 				record.set("orderDate", dateFormat.format(record.getDate("orderDate")));
 				record.set("deliveryDate", dateFormat.format(record.getDate("deliveryDate")));
@@ -1142,4 +1155,5 @@ public class ProductionService {
 		}
 		return page;
 	}
+	
 }

@@ -4,9 +4,11 @@ import java.io.File;
 
 public class Constant {
 
+	public static final Integer ENGINEER_USERTYPE = 1;
+
 	public static final Integer SUPER_ADMIN_USERTYPE = 2;
 
-	public static final Integer ENGINEER_USERTYPE = 1;
+	public static final Integer SUPER_OPERATOR_USERTYPE = 3;
 
 	public static final Integer SCHEDULING_SZPC_USERTYPE = 7;
 

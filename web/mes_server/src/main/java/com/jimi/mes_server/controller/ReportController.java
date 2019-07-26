@@ -57,7 +57,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		ResultUtil result = ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter, type));
 		renderJson(result);
@@ -72,7 +72,7 @@ public class ReportController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectDataRelativeSheet(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		ResultUtil result = ResultUtil.succeed(reportService.selectDataRelativeSheet(pageNo, pageSize, ascBy, descBy, filter, isReferred));
 		renderJson(result);
@@ -92,7 +92,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectGpsManuPrintParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -140,7 +140,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectGpsManuSimDataParam(Integer pageNo, Integer pageSize, String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -176,7 +176,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void delete(String table, String filter, Integer type) {
 		if (table.equals("Gps_ManuCpParam")) {
 			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
@@ -212,7 +212,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @param type
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void deleteByIds(String table, String filter, Integer type) {
 		if (table.equals("Gps_ManuCpParam")) {
 			throw new OperationException("Gps_ManuCpParam仅能查询不能删除");
@@ -251,7 +251,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void deleteGpsManuPrintParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		String table = "Gps_ManuPrintParam";
@@ -312,7 +312,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void deleteGpsManuSimDataParam(String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
@@ -368,7 +368,7 @@ public class ReportController extends Controller {
 	 * @param filter
 	 * @date 2018年10月11日 下午5:58:28
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void download(String table, String ascBy, String descBy, String filter, Integer type) {
 		OutputStream output = null;
 		try {
@@ -402,7 +402,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param printType
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void downloadGpsManuPrintParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, Integer printType, Boolean isIMEIHex) {
 		String filter = "";
 		if (zhiDan != null && !zhiDan.equals("")) {
@@ -463,7 +463,7 @@ public class ReportController extends Controller {
 	 * @param endTime
 	 * @param rID
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void downloadGpsManuSimDataParam(String ascBy, String descBy, String startIMEI, String endIMEI, String zhiDan, Date startTime, Date endTime, String rID, Boolean isIMEIHex) {
 		String filter = "";
 		if (rID != null && !rID.equals("")) {
@@ -514,7 +514,7 @@ public class ReportController extends Controller {
 	 * @param dataRelativeSheet
 	 * @date 2018年10月13日 下午8:57:33
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void updateRelativeSheet(@Para("") DataRelativeSheet dataRelativeSheet) {
 		if (reportService.updateRelativeSheet(dataRelativeSheet)) {
 			renderJson(ResultUtil.succeed());
@@ -530,7 +530,7 @@ public class ReportController extends Controller {
 	 * @param items 需要进行操作的字段
 	 * @date 2019年5月29日 下午3:39:32
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void cleanupInRel(String imei, String items) {
 		if (StrKit.isBlank(imei) || StrKit.isBlank(items)) {
 			throw new ParameterException("参数不能存在空值");
@@ -561,7 +561,7 @@ public class ReportController extends Controller {
 	 * @param zhiDan 订单名称
 	 * @date 2019年6月5日 下午3:53:14
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectZhiDanInfo(String zhiDan) {
 		if (StringUtils.isBlank(zhiDan)) {
 			throw new ParameterException("参数不能为空");
@@ -577,7 +577,7 @@ public class ReportController extends Controller {
 	 * @param zhiDan 订单名称
 	 * @date 2019年6月5日 下午3:53:59
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		if (StringUtils.isAnyBlank(zhiDan, startIMEI, endIMEI)) {
 			throw new ParameterException("参数不能为空");
@@ -598,7 +598,7 @@ public class ReportController extends Controller {
 	 * @param output 输出流
 	 * @date 2019年6月5日 下午3:57:01
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void downloadUnusedIMEI(String startIMEI, String endIMEI, String zhiDan) {
 		OutputStream output = null;
 		try {
@@ -629,7 +629,7 @@ public class ReportController extends Controller {
 	 * @param type 参数类型
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void multiTableQuery(String imei, String sn, String zhiDan, Integer type, Boolean isIMEIHex) {
 		if (type == null) {
 			throw new ParameterException("类型不能为空");
@@ -673,7 +673,7 @@ public class ReportController extends Controller {
 	 * @param deleteTable 需要进行删除的表格
 	 * @date 2019年6月10日 下午3:34:01
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void multiTableDelete(String imei, String sn, String zhiDan, Integer type, String deleteTable, Boolean isIMEIHex) {
 		if (isIMEIHex != null && isIMEIHex) {
 			for (String eachIMEI : imei.split(",")) {
@@ -726,7 +726,7 @@ public class ReportController extends Controller {
 	 * @param isReferred 是否与关联表相关联
 	 * @date 2019年6月14日 上午8:51:06
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void selectGpsCartonBox(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null) {
 			throw new ParameterException("isReferred不能为空");
@@ -744,7 +744,7 @@ public class ReportController extends Controller {
 	 * @param isReferred 是否与关联表相关联
 	 * @date 2019年6月14日 上午8:52:47
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void downloadGpsCartonBox(String ascBy, String descBy, String filter, Boolean isReferred) {
 		if (isReferred == null || !isReferred) {
 			throw new ParameterException("isReferred必须为true");
@@ -778,7 +778,7 @@ public class ReportController extends Controller {
 	 * @param type 参数类型
 	 * @date 2019年6月25日 下午3:25:43
 	 */
-	@Access({ "SuperAdmin", "operator", "engineer" })
+	@Access({ "operator", "engineer" })
 	public void downloadMultiTable(String imei, String sn, String zhiDan, Integer type, Boolean isIMEIHex) {
 		if (isIMEIHex) {
 			for (String eachIMEI : imei.split(",")) {

@@ -26,7 +26,7 @@ public class UserController extends Controller {
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
 
-	@Access({ "SuperAdmin", "operator", "administration" })
+	@Access({ "operator", "administration" })
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}
@@ -72,7 +72,7 @@ public class UserController extends Controller {
 	}
 
 
-	@Access({ "SuperAdmin", "administration" })
+	@Access({ "administration" })
 	public void add(@Para("") LUserAccount user) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO tokenUser = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
@@ -84,7 +84,7 @@ public class UserController extends Controller {
 	}
 
 
-	@Access({ "SuperAdmin", "administration" })
+	@Access({ "administration" })
 	public void update(@Para("") LUserAccount user) {
 		if (userService.update(user)) {
 			renderJson(ResultUtil.succeed());
@@ -98,7 +98,7 @@ public class UserController extends Controller {
 	 * 获取用户角色
 	 * @date 2019年5月15日 下午2:48:40
 	 */
-	@Access({ "SuperAdmin", "administration", "engineer" })
+	@Access({ "administration", "engineer" })
 	public void getUserType() {
 		renderJson(userService.getUserType());
 	}
@@ -108,7 +108,7 @@ public class UserController extends Controller {
 	 * 校验传入的参数与内存中记录的TOKEN是否一致
 	 * @date 2019年5月14日 下午5:19:31
 	 */
-	@Access({ "SuperAdmin", "administration", "engineer" })
+	@Access({ "administration", "engineer" })
 	public void validate(String name, String password) {
 		userService.validate(name, password);
 		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);

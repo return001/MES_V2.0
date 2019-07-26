@@ -25,7 +25,7 @@ public class ReworkController extends Controller {
 	 * @param mac MAC
 	 * @date 2019年6月28日 上午10:21:18
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void getMacReworkInfo(String sn, String version, String softModel, String mac) {
 		if (!(StrKit.isBlank(sn) && !StrKit.isBlank(mac) || !StrKit.isBlank(sn) && StrKit.isBlank(mac))) {
 			throw new ParameterException("SN号和MAC地址不能同时为空或者同时存在");
@@ -42,7 +42,7 @@ public class ReworkController extends Controller {
 	 * @param mac MAC
 	 * @date 2019年6月28日 上午10:21:57
 	 */
-	@Access({ "SuperAdmin", "engineer" })
+	@Access({ "engineer" })
 	public void macRework(String sn, String version, String softModel, String mac) {
 		if (!(StrKit.isBlank(sn) && !StrKit.isBlank(mac) || !StrKit.isBlank(sn) && StrKit.isBlank(mac))) {
 			throw new ParameterException("SN号和MAC地址不能同时为空或者同时存在");
