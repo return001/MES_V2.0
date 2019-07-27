@@ -66,6 +66,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void addProcessGroup(String groupNo, String groupName, String groupRemark) {
 		if (StringUtils.isAnyBlank(groupNo, groupName)) {
 			throw new ParameterException("参数不能为空");
@@ -78,6 +79,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void deleteProcessGroup(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -90,12 +92,14 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer", "operator" })
 	public void selectProcessGroup(String filter) {
 		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(filter));
 		renderJson(result);
 	}
 
 
+	@Access({ "engineer" })
 	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -108,6 +112,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer,
 			Integer lineQc, Integer processGroup) {
 		if (StringUtils.isAnyBlank(lineNo, lineName)) {
@@ -121,6 +126,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void deleteLine(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -133,11 +139,13 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer", "operator" })
 	public void selectLine(String lineNo, String lineName, Integer processGroup) {
 		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup)));
 	}
 
 
+	@Access({ "engineer" })
 	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector,
 			Integer lineEngineer, Integer lineQc, Integer processGroup) {
 		if (id == null) {
@@ -152,6 +160,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void addProcess(String processNo, String processName, String processRemark, Integer processGroup) {
 		if (StringUtils.isAnyBlank(processNo, processName)) {
 			throw new ParameterException("参数不能为空");
@@ -164,6 +173,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void deleteProcess(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -176,11 +186,13 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer", "operator" })
 	public void selectProcess(String processNo, String processName, Integer processGroup) {
 		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo, processName, processGroup)));
 	}
 
 
+	@Access({ "engineer" })
 	public void editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -193,6 +205,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void addComputer(String ip, String computerName, String remark, Integer line) {
 		if (line == null || StrKit.isBlank(ip)) {
 			throw new ParameterException("参数不能为空");
@@ -208,6 +221,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void deleteComputer(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -220,6 +234,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer", "operator" })
 	public void selectComputer(Integer lineId) {
 		if (lineId == null) {
 			throw new ParameterException("参数不能为空");
@@ -228,6 +243,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void editComputer(Integer id, String ip, String computerName, String remark) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -243,6 +259,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark) {
 		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null) {
 			throw new ParameterException("参数不能为空");
@@ -258,6 +275,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer" })
 	public void deleteCapacity(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -270,11 +288,13 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "engineer", "operator" })
 	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer process) {
 		renderJson(ResultUtil.succeed(productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, process)));
 	}
 
 
+	@Access({ "engineer" })
 	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -373,6 +393,9 @@ public class ProductionController extends Controller {
 		if (uploadFile == null || isRework == null) {
 			throw new ParameterException("参数不能为空");
 		}
+		if (!uploadFile.getOriginalFileName().endsWith(".xls") && !uploadFile.getOriginalFileName().endsWith(".xlsx")) {
+			throw new ParameterException("只能上传Excel文件");
+		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		String result = productionService.importOrder(uploadFile.getFile(), userVO, isRework);
@@ -433,11 +456,11 @@ public class ProductionController extends Controller {
 
 
 	// 查询未排产
-	public void selectUnscheduledPlan(Integer type, Boolean isRework) {
-		if (isRework == null) {
+	public void selectUnscheduledPlan(Integer type) {
+		if (type == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (type != null) {
+		
 			switch (type) {
 			case 0:
 			case 1:
@@ -446,8 +469,26 @@ public class ProductionController extends Controller {
 			default:
 				throw new OperationException("无法识别的类型");
 			}
+		
+		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type)));
+	}
+	
+	
+	public void selectReworkPlan(Integer type) {
+		if (type == null) {
+			throw new ParameterException("参数不能为空");
 		}
-		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type, isRework)));
+		
+			switch (type) {
+			case 0:
+			case 1:
+			case 2:
+				break;
+			default:
+				throw new OperationException("无法识别的类型");
+			}
+		
+		renderJson(ResultUtil.succeed(productionService.selectReworkPlan(type)));
 	}
 
 

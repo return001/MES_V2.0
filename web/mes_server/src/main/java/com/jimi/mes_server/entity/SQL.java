@@ -157,4 +157,6 @@ public class SQL {
 	public final static String SELECT_REWORK_ORDER = "SELECT * FROM orders WHERE is_rework = 1 and order_status = 1 or order_status = 2";
 	
 	public final static String SELECT_PRODUCEDQUANTITY_BY_ORDER = "SELECT * FROM scheduling_plan WHERE scheduling_plan_status = 3 AND orders = ?";
+
+	public final static String SELECT_PRODUCEDQUANTITY_BY_ORDER_PROCESSGROUP = "SELECT * FROM scheduling_plan WHERE scheduling_plan_status = 3 AND orders = ? AND process_group = ?";
 }

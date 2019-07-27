@@ -23,15 +23,16 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.jfinal.plugin.activerecord.Record;
 
@@ -97,8 +98,9 @@ public class ExcelHelper {
 
 	/**
 	 * 传入一个excel表格，构造Helper
+	 * @throws InvalidFormatException 
 	 */
-	public static ExcelHelper from(File file) throws IOException {
+	public static ExcelHelper from(File file) throws IOException, InvalidFormatException {
 		return new ExcelHelper(file);
 	}
 
@@ -633,13 +635,14 @@ public class ExcelHelper {
 	}
 
 
-	protected ExcelHelper(File file) throws IOException {
+	protected ExcelHelper(File file) throws IOException, InvalidFormatException {
 		// 判断格式
-		if (file.getName().endsWith(".xlsx")) {
+		/*if (file.getName().endsWith(".xlsx")) {
 			workbook = new XSSFWorkbook(new FileInputStream(file));
 		} else {
 			workbook = new HSSFWorkbook(new FileInputStream(file));
-		}
+		}*/
+		workbook = WorkbookFactory.create(new FileInputStream(file));
 		init();
 	}
 
