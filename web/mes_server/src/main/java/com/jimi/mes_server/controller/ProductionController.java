@@ -1,7 +1,12 @@
 package com.jimi.mes_server.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,6 +14,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -443,7 +449,34 @@ public class ProductionController extends Controller {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		renderFile(productionService.downloadOrderTable(id));
+		File file = productionService.downloadOrderTable(id);
+		System.out.println(file.getName());
+		HttpServletResponse response = getResponse();
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(response.getHeader("Content-Disposition"));
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+		if(file.getName().contains(".xlsx")) {
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		}else if(file.getName().contains(".xls")) {
+			response.setContentType("application/vnd.ms-excel");
+		}
+		try(ServletOutputStream os = response.getOutputStream();FileInputStream input = new FileInputStream(file);) {
+			byte[] buffer = new byte[1024];
+			int i = 0;
+			while( (i = input.read(buffer, 0, 1024)) != -1) {
+				os.write(buffer, 0, i);
+			}
+			os.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		renderNull();
 	}
 
 

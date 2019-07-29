@@ -187,10 +187,10 @@ public class ProductionService {
 	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(lineNo)) {
-			filter.append(" and line_no like '%" + lineNo + " %'");
+			filter.append(" and line_no like '%" + lineNo + "%'");
 		}
 		if (!StrKit.isBlank(lineName)) {
-			filter.append(" and line_name like '%" + lineName + " %'");
+			filter.append(" and line_name like '%" + lineName + "%'");
 		}
 		if (processGroup != null) {
 
@@ -415,10 +415,10 @@ public class ProductionService {
 	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer process) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(softModel)) {
-			filter.append(" and soft_model like '%" + softModel + " %' ");
+			filter.append(" and soft_model like '%" + softModel + "%' ");
 		}
 		if (!StrKit.isBlank(customerModel)) {
-			filter.append(" and customer_model like '%" + customerModel + " %' ");
+			filter.append(" and customer_model like '%" + customerModel + "%' ");
 		}
 		if (process != null) {
 			if (Process.dao.findById(process) == null) {
@@ -993,11 +993,10 @@ public class ProductionService {
 		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
-		if (!StrKit.isBlank(lineChangeTime) && lineChangeTime.length() < 8) {
-			schedulingPlan.setLineChangeTime(lineChangeTime);
-		} else {
-			throw new ParameterException("转线时间的长度过长");
-		}
+		if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
+			throw new ParameterException("转线时间内容为空或长度过长");
+		} 
+		schedulingPlan.setLineChangeTime(lineChangeTime);
 		if (capacity != null) {
 			schedulingPlan.setCapacity(capacity);
 		}
@@ -1216,8 +1215,8 @@ public class ProductionService {
 				record.set("orderDate", dateFormat.format(record.getDate("orderDate")));
 				record.set("deliveryDate", dateFormat.format(record.getDate("deliveryDate")));
 			} catch (Exception e) {
-				record.set("orderDate", record.getDate("orderDate"));
-				record.set("deliveryDate", record.getDate("deliveryDate"));
+				record.set("orderDate", record.getStr("orderDate"));
+				record.set("deliveryDate", record.getStr("deliveryDate"));
 			}
 		}
 		return page;

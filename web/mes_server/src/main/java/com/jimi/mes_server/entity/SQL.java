@@ -104,7 +104,7 @@ public class SQL {
 
 	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planEndTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
 
-	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE orders_status = ? and is_rework = 0 ";
+	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE order_status = ? and is_rework = 0 ";
 
 	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.id,process_no as processNo,process_name as processName,process_remark as processRemark,process_group as processGroup,process_group.group_no as groupNo,process_group.group_name as groupName from process, process_group where process.process_group = process_group.id ";
 
