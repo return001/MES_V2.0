@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -646,6 +647,32 @@ public class ReportService extends SelectService{
 		} else {
 			helper.write(output, true);
 		}
+	}
+
+
+	public List<Record> selectDashboard(Integer line) {
+		switch (line) {
+		case 0:
+		case 1:
+		case 2:
+			break;
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		Date startDate = calendar.getTime();
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		Date endDate = calendar.getTime();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String startTime = format.format(startDate);
+		String endTime = format.format(endDate);
+			return Db.find(SQL.SELECT_DASHBOARD, line,startTime,endTime);
+		
 	}
 
 

@@ -28,7 +28,7 @@ public class UserService extends SelectService{
 
 	private static final String loginSql = "SELECT * FROM LUserAccount WHERE Name = ? AND Password = ?";
 	private static final String userTypeSql = "SELECT * FROM WebUserType WHERE  TypeId = ?";
-	private static final String uniqueCheckSql = "SELECT * FROM LUserAccount WHERE Name = ?";
+	private static final String uniqueCheckSql = "SELECT * FROM LUserAccount WHERE Name = ? AND InService = 1";
 
 
 	/**@author HCJ
@@ -88,6 +88,9 @@ public class UserService extends SelectService{
 		LUserAccount originalUser = LUserAccount.dao.findById(user.getId());
 		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType()) && !Constant.SUPER_ADMIN_USERTYPE.equals(originalUser.getWebUserType())) {
 			throw new OperationException("权限不足以修改为超级管理员");
+		}
+		if (LUserAccount.dao.find(uniqueCheckSql, user.getName()).size() != 0) {
+			throw new OperationException("用户名已存在");
 		}
 		return setDeletePermission(user).update();
 	}

@@ -114,7 +114,7 @@ public class SQL {
 
 	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.id,soft_model as softModel,customer_model as customerModel,process,model_capacity.process_group as processGroup,process_people_quantity as processPeopleQuantity,capacity,remark,[position], process_group.group_name as groupName, process.process_name as processName FROM model_capacity, process, process_group WHERE model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
 
-	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.orders_status = 2 and is_rework = 0 GROUP BY orders ";
+	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT orders, COUNT (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.order_status = 2 and is_rework = 0 GROUP BY orders ";
 
 	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? AND soft_model LIKE ? ";
 
@@ -122,13 +122,13 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName, zhidan,alias,soft_model as softModel,product_no as productNo,customer_number as customerNumber,customer_name as customerName,order_date as orderDate,delivery_date as deliveryDate FROM scheduling_plan, orders, line, scheduling_plan_status WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id AND scheduling_plan.scheduling_plan_status = scheduling_plan_status.id ";
 
-	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id from LUserAccount WHERE InService = 1 and Name LIKE ?";
+	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id, UserDes as userDes from LUserAccount WHERE InService = 1 and Name LIKE ?";
 
-	public final static String SELECT_PROCESS_NAME_ID = "SELECT id, process_name as processName from process";
+	public final static String SELECT_PROCESS_NAME_ID = "SELECT id, process_name as processName, process_group as processGroup from process";
 
 	public final static String SELECT_PROCESSGROUP_NAME_ID = "SELECT id, group_name as groupName from process_group";
 
-	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName FROM line";
+	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName, process_group as processGroup FROM line";
 
 	public final static String SELECT_ORDERSTATUS_NAME_ID = "SELECT id, status_name as statusName FROM order_status";
 
@@ -155,8 +155,16 @@ public class SQL {
 	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
 
 	public final static String SELECT_REWORK_ORDER = "SELECT * FROM orders WHERE is_rework = 1 and order_status = 1 or order_status = 2";
-	
+
 	public final static String SELECT_PRODUCEDQUANTITY_BY_ORDER = "SELECT * FROM scheduling_plan WHERE scheduling_plan_status = 3 AND orders = ?";
 
 	public final static String SELECT_PRODUCEDQUANTITY_BY_ORDER_PROCESSGROUP = "SELECT * FROM scheduling_plan WHERE scheduling_plan_status = 3 AND orders = ? AND process_group = ?";
+
+	public final static String SELECT_AUTOTEST_PRODUCTION_BY_TESTTIME = "SELECT ZhiDan,SoftModel,count(*) as Production FROM Gps_AutoTest_Result WHERE TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel ";
+
+	public final static String SELECT_COUPLETEST_PRODUCTION_BY_TESTTIME = "SELECT ZhiDan,SoftModel,count(*) as Production FROM Gps_CoupleTest_Result WHERE TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel ";
+
+	public final static String SELECT_CARTONTEST_PRODUCTION_BY_TESTTIME = "SELECT ZhiDan,SoftModel,count(*) as Production FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel ";
+
+	public final static String SELECT_DASHBOARD = "SELECT id,zhidan,soft_model as softModel,plan_production as planProduction,actual_production as actualProduction,cast( convert (decimal(4,0),100*completion_rate ) as varchar)+'%' as completionRate,cast( convert (decimal(4,0),100*testing_rate ) as varchar)+'%' as testingRate,start_time as startTime,end_time as endTime,remark FROM dashboard WHERE line = ? and end_time > ? and end_time < ? ";
 }

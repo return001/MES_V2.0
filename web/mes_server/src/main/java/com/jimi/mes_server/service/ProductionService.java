@@ -200,7 +200,8 @@ public class ProductionService {
 			filter.append(" and process_group = " + processGroup);
 		}
 		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter);
+		String orderBy = " order by processGroup ";
+		sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter+orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
@@ -295,7 +296,8 @@ public class ProductionService {
 			filter.append(" and process_group = " + processGroup);
 		}
 		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter);
+		String orderBy = " order by processGroup ";
+		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter+orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
@@ -335,6 +337,10 @@ public class ProductionService {
 	public boolean addComputer(String ip, String computerName, String remark, Integer line) {
 		if (Line.dao.findById(line) == null) {
 			throw new OperationException("产线不存在");
+		}
+		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
+		if (computer != null) {
+			throw new OperationException("IP地址已存在，请直接引用");
 		}
 		LineComputer lineComputer = new LineComputer();
 		lineComputer.setIp(ip).setLine(line);
@@ -617,8 +623,8 @@ public class ProductionService {
 			temp.setQuantity(order.getQuantity());
 			return temp.update();
 		}
-		if (Constant.COMPLETED_ORDERSTATUS.equals(temp.getOrderStatus())) {
-			throw new OperationException("已完成的订单无法修改");
+		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
+			throw new OperationException("已完成、已删除的订单无法修改");
 		}
 		order.setOrderModifier(userVO.getId()).setOrderModifyTime(new Date());
 		return order.update();

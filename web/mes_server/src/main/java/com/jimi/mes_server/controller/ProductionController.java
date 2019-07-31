@@ -326,6 +326,9 @@ public class ProductionController extends Controller {
 		if (order.getQuantity() < 0) {
 			throw new ParameterException("订单数量格式错误");
 		}
+		if (order.getOrderDate().after(order.getDeliveryDate())) {
+			throw new ParameterException("订单日期与交货日期冲突");
+		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (productionService.addOrder(order, userVO)) {
@@ -383,6 +386,9 @@ public class ProductionController extends Controller {
 		if (order.getQuantity() < 0) {
 			throw new ParameterException("订单数量格式错误");
 		}
+		if (order.getOrderDate().after(order.getDeliveryDate())) {
+			throw new ParameterException("订单日期与交货日期冲突");
+		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (productionService.editOrder(order, userVO)) {
@@ -418,6 +424,11 @@ public class ProductionController extends Controller {
 		List<UploadFile> uploadFiles = getFiles();
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
 			throw new ParameterException("请添加文件");
+		}
+		for (UploadFile uploadFile : uploadFiles) {
+			if (!uploadFile.getOriginalFileName().endsWith(".xls") && !uploadFile.getOriginalFileName().endsWith(".xlsx")) {
+				throw new ParameterException("只能上传Excel文件");
+			}
 		}
 		Integer type;
 		Integer id;

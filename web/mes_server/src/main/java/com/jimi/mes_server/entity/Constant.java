@@ -70,5 +70,11 @@ public class Constant {
 
 	public static final String DEFAULT_LINE_CHANGE_TIME = "0.5";
 
-	public static final int MAX_RECORD_ROWS = 2000;
+	public static final Integer AUTOTEST_LINEID = 0;
+
+	public static final Integer COUPLETEST_LINEID = 1;
+
+	public static final Integer CARTONTEST_LINEID = 2;
+
+	
 }

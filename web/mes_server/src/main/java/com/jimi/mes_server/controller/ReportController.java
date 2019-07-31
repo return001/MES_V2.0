@@ -806,6 +806,14 @@ public class ReportController extends Controller {
 		}
 		renderNull();
 	}
+	
+	
+	public void selectDashboard(Integer line) {
+		if (line==null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(reportService.selectDashboard(line)));
+	}
 
 
 	/**
