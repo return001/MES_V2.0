@@ -1,12 +1,8 @@
 package com.jimi.mes_server.interceptor;
 
-import java.io.File;
-import java.util.List;
-
 import com.jfinal.aop.Aop;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
-import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.entity.Constant;
@@ -32,9 +28,11 @@ public class AccessInterceptor implements Interceptor {
 			return;
 		}
 		UserService userService = Aop.get(UserService.class);
+		/**
+		 * 先获取所有文件，才能获取到其他的参数
+		 */
 		if (invocation.getController().getRequest().getContentType().contains("multipart/form-data")) {
-			// 获取文件
-			List<UploadFile> uploadFiles = invocation.getController().getFiles();
+			invocation.getController().getFiles();
 		}
 		String token = invocation.getController().getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);

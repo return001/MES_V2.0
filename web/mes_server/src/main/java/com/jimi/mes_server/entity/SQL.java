@@ -102,8 +102,6 @@ public class SQL {
 
 	public final static String SELECT_CARTONNUM_BY_TESTTIME = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? AND TestTime < ?";
 
-	public final static String SELECT_PLAN_GANT_INFORMATION = "SELECT scheduling_plan.id, orders.ZhiDan as zhidan, plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planEndTime, '' as interval from scheduling_plan INNER JOIN orders on orders.id = scheduling_plan.orders WHERE scheduling_plan.id = ? ";
-
 	public final static String SELECT_ORDER_BY_STATUS = "SELECT * from orders WHERE order_status = ? and is_rework = 0 ";
 
 	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.id,process_no as processNo,process_name as processName,process_remark as processRemark,process_group as processGroup,process_group.group_no as groupNo,process_group.group_name as groupName from process, process_group where process.process_group = process_group.id ";
@@ -166,5 +164,7 @@ public class SQL {
 
 	public final static String SELECT_CARTONTEST_PRODUCTION_BY_TESTTIME = "SELECT ZhiDan,SoftModel,count(*) as Production FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? and TestTime < ? GROUP BY ZhiDan,SoftModel ";
 
-	public final static String SELECT_DASHBOARD = "SELECT id,zhidan,soft_model as softModel,plan_production as planProduction,actual_production as actualProduction,cast( convert (decimal(4,0),100*completion_rate ) as varchar)+'%' as completionRate,cast( convert (decimal(4,0),100*testing_rate ) as varchar)+'%' as testingRate,start_time as startTime,end_time as endTime,remark FROM dashboard WHERE line = ? and end_time > ? and end_time < ? ";
+	public final static String SELECT_DASHBOARD = "SELECT id,zhidan,soft_model as softModel,plan_production as planProduction,actual_production as actualProduction,cast( convert (decimal(4,0),100*completion_rate ) as varchar)+'%' as completionRate,cast( convert (decimal(4,0),100*testing_rate ) as varchar)+'%' as testingRate,start_time as startTime,end_time as endTime,remark,'' as time FROM dashboard WHERE line = ? and end_time > ? and end_time < ? order by start_time";
+
+	public final static String SELECT_PLAN_INFORMATION = "SELECT orders.ZhiDan,orders.soft_model,capacity,scheduling_quantity,line_computer.ip FROM scheduling_plan,orders,line_computer WHERE orders.id = scheduling_plan.orders and line_computer.line= scheduling_plan.line and scheduling_plan.id = ? ";
 }

@@ -1137,7 +1137,13 @@ public class ProductionService {
 
 
 	public Record getPlanGannt(Integer id) {
-		Record record = Db.findFirst(SQL.SELECT_PLAN_GANT_INFORMATION, id);
+		List<Record> records = Db.find(SQL.SELECT_PLAN_INFORMATION, id);
+		if (records==null||records.isEmpty()) {
+			throw new OperationException("此排产计划无法获取甘特图,请检查所有配置信息");
+		}
+		for (Record record : records) {
+			
+		}
 		if (record == null) {
 			throw new OperationException("查询失败，计划不存在");
 		}

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -650,6 +651,11 @@ public class ReportService extends SelectService{
 	}
 
 
+	/**@author HCJ
+	 * 查询看板数据
+	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
+	 * @date 2019年8月1日 上午10:08:08
+	 */
 	public List<Record> selectDashboard(Integer line) {
 		switch (line) {
 		case 0:
@@ -671,8 +677,13 @@ public class ReportService extends SelectService{
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String startTime = format.format(startDate);
 		String endTime = format.format(endDate);
-			return Db.find(SQL.SELECT_DASHBOARD, line,startTime,endTime);
-		
+		List<Record> records = Db.find(SQL.SELECT_DASHBOARD, line, startTime, endTime);
+		if (records != null && !records.isEmpty()) {
+			for (Record record : records) {
+				record.set("time", "从 "+record.getStr("startTime")+"\n至 "+record.getStr("endTime"));
+			}
+		}
+		return records;
 	}
 
 
