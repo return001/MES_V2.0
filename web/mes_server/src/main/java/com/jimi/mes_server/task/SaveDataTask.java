@@ -25,11 +25,6 @@ public class SaveDataTask implements Runnable {
 	 */
 	private static final int DEFAULT_NUMBER = 0;
 
-	/**
-	 * PERCENTAGE_DIVISOR : 获取百分比时的除数
-	 */
-	private static final double PERCENTAGE_DIVISOR = 100.0;
-
 
 	@Override
 	public void run() {
@@ -63,18 +58,25 @@ public class SaveDataTask implements Runnable {
 			for (Record record : records) {
 				Dashboard dashboard = new Dashboard();
 				Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, record.getStr("ZhiDan"));
-				if (order == null || StrKit.isBlank(order.getRemark())) {
-					dashboard.setRemark("-");
+				if (order != null) {
+					if (StrKit.isBlank(order.getRemark())) {
+						dashboard.setRemark("-");
+					} else {
+						dashboard.setRemark(order.getRemark());
+					}
+					dashboard.setPlanProduction(order.getQuantity());
+					dashboard.setActualProduction(record.getInt("Production")).setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
+					dashboard.setCompletionRate(BigDecimal.valueOf((double) dashboard.getActualProduction() / (double) dashboard.getPlanProduction()).setScale(2, BigDecimal.ROUND_HALF_UP));
+
+					// TODO 测试率
+					dashboard.setTestingRate(BigDecimal.valueOf(0));
+					dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
+
 				} else {
-					dashboard.setRemark(order.getRemark());
+					dashboard.setRemark("-").setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
+					dashboard.setCompletionRate(BigDecimal.valueOf(DEFAULT_NUMBER)).setActualProduction(DEFAULT_NUMBER).setPlanProduction(DEFAULT_NUMBER).setTestingRate(BigDecimal.valueOf(DEFAULT_NUMBER));
+					dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 				}
-				Double completionRate = genRandomNum() / PERCENTAGE_DIVISOR;
-				dashboard.setCompletionRate(BigDecimal.valueOf(completionRate));
-				dashboard.setActualProduction(record.getInt("Production"));
-				dashboard.setPlanProduction((int) Math.ceil(dashboard.getActualProduction() / completionRate));
-				dashboard.setTestingRate(BigDecimal.valueOf(genRandomNum() / PERCENTAGE_DIVISOR));
-				dashboard.setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
-				dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 			}
 		} else {
 			Dashboard dashboard = new Dashboard();
@@ -82,16 +84,6 @@ public class SaveDataTask implements Runnable {
 			dashboard.setCompletionRate(BigDecimal.valueOf(DEFAULT_NUMBER)).setActualProduction(DEFAULT_NUMBER).setPlanProduction(DEFAULT_NUMBER).setTestingRate(BigDecimal.valueOf(DEFAULT_NUMBER));
 			dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 		}
-	}
-
-
-	/**@author HCJ
-	 * 随机生成95、96、97、98、99其中之一的数
-	 * @date 2019年8月1日 上午9:37:37
-	 */
-	private static Integer genRandomNum() {
-		long variationNumber = Math.round(Math.random() * 4);
-		return (int) (variationNumber + 95);
 	}
 
 }

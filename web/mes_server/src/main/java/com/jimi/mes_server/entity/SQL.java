@@ -166,5 +166,14 @@ public class SQL {
 
 	public final static String SELECT_DASHBOARD = "SELECT id,zhidan,soft_model as softModel,plan_production as planProduction,actual_production as actualProduction,cast( convert (decimal(4,0),100*completion_rate ) as varchar)+'%' as completionRate,cast( convert (decimal(4,0),100*testing_rate ) as varchar)+'%' as testingRate,start_time as startTime,end_time as endTime,remark,'' as time FROM dashboard WHERE line = ? and end_time > ? and end_time < ? order by start_time";
 
-	public final static String SELECT_PLAN_INFORMATION = "SELECT orders.ZhiDan,orders.soft_model,capacity,scheduling_quantity,line_computer.ip FROM scheduling_plan,orders,line_computer WHERE orders.id = scheduling_plan.orders and line_computer.line= scheduling_plan.line and scheduling_plan.id = ? ";
+	public final static String SELECT_PLAN_INFORMATION = "SELECT orders.ZhiDan,orders.soft_model,scheduling_quantity,line_computer.ip FROM scheduling_plan,orders,line_computer WHERE orders.id = scheduling_plan.orders and line_computer.line= scheduling_plan.line and scheduling_plan.id = ? ";
+
+	public final static String SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
+
+	public final static String SELECT_FIRST_SMTTEST = "SELECT TOP 1 * FROM Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
+
+	public final static String SELECT_LAST_SMTTEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
+	
+	public final static String SELECT_LAST_SMTTEST_FRAGMENT_TWO = " ORDER BY TestTime ASC) SMT ORDER BY SMT.TestTime DESC";
+
 }

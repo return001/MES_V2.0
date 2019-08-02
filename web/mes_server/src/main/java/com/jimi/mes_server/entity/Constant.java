@@ -76,6 +76,16 @@ public class Constant {
 
 	public static final Integer CARTONTEST_LINEID = 2;
 
-	
+	public static final String SMT_TEST = "SMT功能测试位";
+
+	public static final String FUNCTION_TEST = "组装测试位";
+
+	public static final String AGED_TEST = "老化后测试";
+
+	public static final String COUPLING_TEST = "耦合测试";
+
+	public static final String IMEI_TEST = "IMEI对比";
+
+	public static final String CARTON_TEST = "卡通箱测试";
 	
 }

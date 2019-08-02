@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -27,12 +28,14 @@ import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderDetail;
 import com.jimi.mes_server.entity.OrderFileInfo;
 import com.jimi.mes_server.entity.OrderItem;
+import com.jimi.mes_server.entity.PlanGannt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
+import com.jimi.mes_server.model.GpsAutotestResult2;
 import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.LineComputer;
@@ -1134,23 +1137,147 @@ public class ProductionService {
 		helper.fill(records, title, field, head);
 		helper.write(output, true);
 	}
+public static void main(String[] args) {
+	Integer a = 13;
+	Integer b = 12;
+	String c =  String.valueOf((double)a/(double)b*100.0);
+	System.out.println(c.substring(0, c.indexOf("."))+"%");
+}
 
-
-	public Record getPlanGannt(Integer id) {
+	public List<Record> getPlanGannt(Integer id) {
 		List<Record> records = Db.find(SQL.SELECT_PLAN_INFORMATION, id);
 		if (records==null||records.isEmpty()) {
 			throw new OperationException("此排产计划无法获取甘特图,请检查所有配置信息");
 		}
+		int index = 1;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String zhidan = records.get(0).getStr("ZhiDan");
+		Integer planProduction = records.get(0).getInt("scheduling_quantity");
+		
+		PlanGannt planGannt = new PlanGannt();
+		
+		PlanGannt functionGannt = new PlanGannt();
+		PlanGannt agedGannt = new PlanGannt();
+		PlanGannt couplingGannt = new PlanGannt();
+		PlanGannt imeiGannt = new PlanGannt();
+		PlanGannt cartonGannt = new PlanGannt();
+		
+		planGannt.setId(index);
+		planGannt.setName(zhidan);
+		planGannt.setPlanProduction(planProduction.toString());
+		StringBuilder computerSql = new StringBuilder(" and (");
 		for (Record record : records) {
+			computerSql.append(" Computer LIKE '%"+record.getStr("ip")+"%' or ");	
+		}
+		if (StringUtils.endsWith(computerSql, "or ")) {
+			computerSql.delete(computerSql.lastIndexOf("or"), computerSql.length());
+		}
+		computerSql.append(")");
+		
+		PlanGannt smtGannt = new PlanGannt();
+		smtGannt.setName(Constant.SMT_TEST);
+		smtGannt.setId(index+1);
+		
+		Integer smtNumber = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER+computerSql, zhidan);
+		if (smtNumber > 0) {
+			smtGannt.setPlanProduction(planProduction.toString());
+			GpsAutotestResult2 first = GpsAutotestResult2.dao.findFirst(SQL.SELECT_FIRST_SMTTEST+computerSql, zhidan);
+			smtGannt.setStartTime(dateFormat.format(first.getTestTime()));
+			if (smtNumber>=planProduction) {
+				GpsAutotestResult2 last = GpsAutotestResult2.dao.findFirst(SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE+computerSql+SQL.SELECT_LAST_SMTTEST_FRAGMENT_TWO,planProduction, zhidan);
+				smtGannt.setEndTime(dateFormat.format(last.getTestTime()));
+				smtGannt.setIntervalDay(getDateIntervalDays(smtGannt.getStartTime(),smtGannt.getEndTime())+"");
+				smtGannt.setCompletionQuantity(smtNumber.toString());
+				smtGannt.setCompletionRate("100%");
+			}else {
+				smtGannt.setEndTime("-");
+				smtGannt.setIntervalDay("-");
+				smtGannt.setCompletionQuantity(smtNumber.toString());
+				String completionRate =  String.valueOf((double)smtNumber/(double)planProduction*100.0);
+				smtGannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf("."))+"%");
+
+			}
 			
+			
+		}else {
+			
+			smtGannt.setCompletionQuantity("-");
+			smtGannt.setCompletionRate("-");
+			smtGannt.setEndTime("-");
+			smtGannt.setIntervalDay("-");
+			smtGannt.setPlanProduction("-");
+			smtGannt.setStartTime("-");
 		}
-		if (record == null) {
-			throw new OperationException("查询失败，计划不存在");
-		}
-		record.set("interval", getDateIntervalDays(record.getStr("planStartTime"), record.getStr("planEndTime")) + 1);
-		return record;
+		
+		
+		
+		return records;
+		
 	}
 
+	private PlanGannt genPlanGannt(PlanGannt gannt,Integer index,String zhidan,Integer planProduction,String computerSql) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Integer number = 0;
+		gannt.setId(index);
+		switch (index) {
+		case 1:
+			gannt.setName(Constant.SMT_TEST);
+			
+			number = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER+computerSql, zhidan);
+			break;
+		case 2:
+			
+			break;
+		case 3:
+	
+	break;
+		case 4:
+	
+	break;
+		case 5:
+	
+	break;
+
+		default:
+			break;
+		}
+		
+		
+		
+		if (number > 0) {
+			gannt.setPlanProduction(planProduction.toString());
+			Record firstRecord = Db.findFirst(SQL.SELECT_FIRST_SMTTEST+computerSql, zhidan);
+			gannt.setStartTime(dateFormat.format(firstRecord.getDate("TestTime")));
+			if (number>=planProduction) {
+				Record lastRecord = Db.findFirst(SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE+computerSql+SQL.SELECT_LAST_SMTTEST_FRAGMENT_TWO,planProduction, zhidan);
+				gannt.setEndTime(dateFormat.format(lastRecord.getDate("TestTime")));
+				gannt.setIntervalDay(getDateIntervalDays(gannt.getStartTime(),gannt.getEndTime())+"");
+				gannt.setCompletionQuantity(number.toString());
+				gannt.setCompletionRate("100%");
+			}else {
+				gannt.setEndTime("-");
+				gannt.setIntervalDay("-");
+				gannt.setCompletionQuantity(number.toString());
+				String completionRate =  String.valueOf((double)number/(double)planProduction*100.0);
+				gannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf("."))+"%");
+
+			}
+			
+			
+		}else {
+			
+			gannt.setCompletionQuantity("-");
+			gannt.setCompletionRate("-");
+			gannt.setEndTime("-");
+			gannt.setIntervalDay("-");
+			gannt.setPlanProduction("-");
+			gannt.setStartTime("-");
+		}
+		
+		
+		return gannt;
+		
+	}
 
 	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity) {
 		Integer actualCostHours = schedulingQuantity / capacity;
