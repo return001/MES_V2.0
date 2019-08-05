@@ -84,8 +84,6 @@ public class Constant {
 
 	public static final String COUPLING_TEST = "耦合测试";
 
-	public static final String IMEI_TEST = "IMEI对比";
-
 	public static final String CARTON_TEST = "卡通箱测试";
 	
 }

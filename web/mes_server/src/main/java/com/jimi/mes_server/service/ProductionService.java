@@ -1144,128 +1144,160 @@ public static void main(String[] args) {
 	System.out.println(c.substring(0, c.indexOf("."))+"%");
 }
 
-	public List<Record> getPlanGannt(Integer id) {
+	public List<PlanGannt> getPlanGannt(Integer id) {
 		List<Record> records = Db.find(SQL.SELECT_PLAN_INFORMATION, id);
 		if (records==null||records.isEmpty()) {
 			throw new OperationException("此排产计划无法获取甘特图,请检查所有配置信息");
 		}
 		int index = 1;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String zhidan = records.get(0).getStr("ZhiDan");
 		Integer planProduction = records.get(0).getInt("scheduling_quantity");
 		
 		PlanGannt planGannt = new PlanGannt();
-		
-		PlanGannt functionGannt = new PlanGannt();
-		PlanGannt agedGannt = new PlanGannt();
-		PlanGannt couplingGannt = new PlanGannt();
-		PlanGannt imeiGannt = new PlanGannt();
-		PlanGannt cartonGannt = new PlanGannt();
 		
 		planGannt.setId(index);
 		planGannt.setName(zhidan);
 		planGannt.setPlanProduction(planProduction.toString());
 		StringBuilder computerSql = new StringBuilder(" and (");
 		for (Record record : records) {
-			computerSql.append(" Computer LIKE '%"+record.getStr("ip")+"%' or ");	
+			computerSql.append(" Computer LIKE '%"+record.getStr("ip")+"%' or ");
+			
 		}
 		if (StringUtils.endsWith(computerSql, "or ")) {
 			computerSql.delete(computerSql.lastIndexOf("or"), computerSql.length());
 		}
-		computerSql.append(")");
 		
-		PlanGannt smtGannt = new PlanGannt();
-		smtGannt.setName(Constant.SMT_TEST);
-		smtGannt.setId(index+1);
+		String sql = computerSql.append(")").toString();
 		
-		Integer smtNumber = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER+computerSql, zhidan);
-		if (smtNumber > 0) {
-			smtGannt.setPlanProduction(planProduction.toString());
-			GpsAutotestResult2 first = GpsAutotestResult2.dao.findFirst(SQL.SELECT_FIRST_SMTTEST+computerSql, zhidan);
-			smtGannt.setStartTime(dateFormat.format(first.getTestTime()));
-			if (smtNumber>=planProduction) {
-				GpsAutotestResult2 last = GpsAutotestResult2.dao.findFirst(SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE+computerSql+SQL.SELECT_LAST_SMTTEST_FRAGMENT_TWO,planProduction, zhidan);
-				smtGannt.setEndTime(dateFormat.format(last.getTestTime()));
-				smtGannt.setIntervalDay(getDateIntervalDays(smtGannt.getStartTime(),smtGannt.getEndTime())+"");
-				smtGannt.setCompletionQuantity(smtNumber.toString());
-				smtGannt.setCompletionRate("100%");
-			}else {
-				smtGannt.setEndTime("-");
-				smtGannt.setIntervalDay("-");
-				smtGannt.setCompletionQuantity(smtNumber.toString());
-				String completionRate =  String.valueOf((double)smtNumber/(double)planProduction*100.0);
-				smtGannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf("."))+"%");
-
+		PlanGannt smtGannt = genPlanGannt(index+1, zhidan, planProduction, sql);
+		PlanGannt functionGannt = genPlanGannt(index+2, zhidan, planProduction, sql);
+		PlanGannt agedGannt = genPlanGannt(index+3, zhidan, planProduction, sql);
+		PlanGannt couplingGannt = genPlanGannt(index+4, zhidan, planProduction, sql);
+		PlanGannt cartonGannt = genPlanGannt(index+5, zhidan, planProduction, sql);
+		
+		List<PlanGannt> gannts = new ArrayList<>();
+		gannts.add(planGannt);
+		gannts.add(smtGannt);
+		gannts.add(functionGannt);
+		gannts.add(agedGannt);
+		gannts.add(couplingGannt);
+		gannts.add(cartonGannt);
+		planGannt.setStartTime("-");
+		for (int i = 1; i < gannts.size(); i++) {
+			if (!gannts.get(i).getStartTime().equals("-")) {
+				planGannt.setStartTime(gannts.get(i).getStartTime());
+				break;
 			}
-			
-			
-		}else {
-			
-			smtGannt.setCompletionQuantity("-");
-			smtGannt.setCompletionRate("-");
-			smtGannt.setEndTime("-");
-			smtGannt.setIntervalDay("-");
-			smtGannt.setPlanProduction("-");
-			smtGannt.setStartTime("-");
 		}
-		
-		
-		
-		return records;
+		if (!cartonGannt.getEndTime().equals("-")) {
+			planGannt.setEndTime(cartonGannt.getEndTime());
+		}else {
+			planGannt.setEndTime("-");
+		}
+		if (!planGannt.getStartTime().equals("-")&&!planGannt.getEndTime().equals("-")) {
+			planGannt.setIntervalDay(getDateIntervalDays(planGannt.getStartTime(), planGannt.getEndTime())+"");
+		}else {
+			planGannt.setIntervalDay("-");
+		}
+		planGannt.setCompletionRate(cartonGannt.getCompletionRate());
+		planGannt.setCompletionQuantity(cartonGannt.getCompletionQuantity());
+		return gannts;
 		
 	}
 
-	private PlanGannt genPlanGannt(PlanGannt gannt,Integer index,String zhidan,Integer planProduction,String computerSql) {
+	private PlanGannt genPlanGannt(Integer index, String zhidan, Integer planProduction, String computerSql) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Integer number = 0;
+		PlanGannt gannt = new PlanGannt();
 		gannt.setId(index);
 		switch (index) {
-		case 1:
-			gannt.setName(Constant.SMT_TEST);
-			
-			number = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER+computerSql, zhidan);
-			break;
 		case 2:
-			
+			gannt.setName(Constant.SMT_TEST);
+			number = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		case 3:
-	
-	break;
-		case 4:
-	
-	break;
-		case 5:
-	
-	break;
-
-		default:
+			gannt.setName(Constant.FUNCTION_TEST);
+			number = Db.queryInt(SQL.SELECT_FUNCTIONTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
+		case 4:
+			gannt.setName(Constant.AGED_TEST);
+			number = Db.queryInt(SQL.SELECT_AGEDTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
+			break;
+		case 5:
+			gannt.setName(Constant.COUPLING_TEST);
+			number = Db.queryInt(SQL.SELECT_COUPLETEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
+			break;
+		case 6:
+			gannt.setName(Constant.CARTON_TEST);
+			number = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
+			break;
+		default:
+			throw new OperationException("无法识别的类型");
 		}
-		
-		
-		
 		if (number > 0) {
 			gannt.setPlanProduction(planProduction.toString());
-			Record firstRecord = Db.findFirst(SQL.SELECT_FIRST_SMTTEST+computerSql, zhidan);
+			Record firstRecord = new Record();
+			switch (index) {
+			case 2:
+				firstRecord = Db.findFirst(SQL.SELECT_FIRST_SMTTEST + computerSql, zhidan);
+				break;
+			case 3:
+				firstRecord = Db.findFirst(SQL.SELECT_FIRST_FUNCTIONTEST + computerSql, zhidan);
+				break;
+			case 4:
+				firstRecord = Db.findFirst(SQL.SELECT_FIRST_AGEDTEST + computerSql, zhidan);
+				break;
+			case 5:
+				firstRecord = Db.findFirst(SQL.SELECT_FIRST_COUPLETEST + computerSql, zhidan);
+				break;
+			case 6:
+				firstRecord = Db.findFirst(SQL.SELECT_FIRST_CARTONTEST + computerSql, zhidan);
+				break;
+			default:
+				break;
+			}
 			gannt.setStartTime(dateFormat.format(firstRecord.getDate("TestTime")));
-			if (number>=planProduction) {
-				Record lastRecord = Db.findFirst(SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE+computerSql+SQL.SELECT_LAST_SMTTEST_FRAGMENT_TWO,planProduction, zhidan);
+			if (number >= planProduction) {
+				Record lastRecord = new Record();
+				switch (index) {
+				case 2:
+					lastRecord = Db.findFirst(
+							SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
+							planProduction, zhidan);
+					break;
+				case 3:
+					lastRecord = Db.findFirst(
+							SQL.SELECT_LAST_FUNCTIONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
+							planProduction, zhidan);
+					break;
+				case 4:
+					lastRecord = Db.findFirst(
+							SQL.SELECT_LAST_AGEDTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
+							planProduction, zhidan);
+					break;
+				case 5:
+					lastRecord = Db.findFirst(
+							SQL.SELECT_LAST_COUPLETEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
+							planProduction, zhidan);
+					break;
+				case 6:
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_CARTONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,planProduction, zhidan);
+					break;
+				default:
+					break;
+				}
 				gannt.setEndTime(dateFormat.format(lastRecord.getDate("TestTime")));
-				gannt.setIntervalDay(getDateIntervalDays(gannt.getStartTime(),gannt.getEndTime())+"");
+				gannt.setIntervalDay(getDateIntervalDays(gannt.getStartTime(), gannt.getEndTime()) + "");
 				gannt.setCompletionQuantity(number.toString());
 				gannt.setCompletionRate("100%");
-			}else {
+			} else {
 				gannt.setEndTime("-");
 				gannt.setIntervalDay("-");
 				gannt.setCompletionQuantity(number.toString());
-				String completionRate =  String.valueOf((double)number/(double)planProduction*100.0);
-				gannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf("."))+"%");
-
+				String completionRate = String.valueOf((double) number / (double) planProduction * 100.0);
+				gannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf(".")) + "%");
 			}
-			
-			
-		}else {
-			
+		} else {
 			gannt.setCompletionQuantity("-");
 			gannt.setCompletionRate("-");
 			gannt.setEndTime("-");
@@ -1273,10 +1305,7 @@ public static void main(String[] args) {
 			gannt.setPlanProduction("-");
 			gannt.setStartTime("-");
 		}
-		
-		
 		return gannt;
-		
 	}
 
 	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity) {

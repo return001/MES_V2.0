@@ -168,12 +168,47 @@ public class SQL {
 
 	public final static String SELECT_PLAN_INFORMATION = "SELECT orders.ZhiDan,orders.soft_model,scheduling_quantity,line_computer.ip FROM scheduling_plan,orders,line_computer WHERE orders.id = scheduling_plan.orders and line_computer.line= scheduling_plan.line and scheduling_plan.id = ? ";
 
+	public final static String SELECT_FUNCTION_ERROR = "SELECT errorName,count(errorName) as errorNum FROM (SELECT substring(ErrorMessage1,charindex('+++',ErrorMessage1)+3,charindex('->',ErrorMessage1)-6) as errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage1 IS NOT NULL) test GROUP BY test.errorName ";
+
+	public final static String SELECT_COUPLE_ERROR = "SELECT errorName,count(errorName) as errorNum FROM (SELECT substring(ErrorMessage2,charindex('+++',ErrorMessage2)+3,charindex('->',ErrorMessage2)-6) as errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL) test GROUP BY test.errorName ";
+
+	public final static String SELECT_CARTON_ERROR = "SELECT errorName,count(errorName) as errorNum FROM (SELECT substring(ErrorMessage4,charindex('+++',ErrorMessage4)+3,charindex('->',ErrorMessage4)-6) as errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage4 IS NOT NULL) test GROUP BY test.errorName ";
+
+	public final static String SELECT_FUNCTION_ERRORNUM_BY_ZHIDAN = "SELECT count(*) FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ZhiDan = ? AND SoftModel = ? AND ErrorMessage1 IS NOT NULL ";
+
+	public final static String SELECT_COUPLE_ERRORNUM_BY_ZHIDAN = "SELECT count(*) FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ZhiDan = ? AND SoftModel = ? AND ErrorMessage2 IS NOT NULL ";
+
+	public final static String SELECT_CARTON_ERRORNUM_BY_ZHIDAN = "SELECT count(*) FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ZhiDan = ? AND SoftModel = ? AND ErrorMessage4 IS NOT NULL ";
+
+	public final static String SELECT_LAST_TEST_FRAGMENT_TWO = " ORDER BY TestTime ASC) TEST ORDER BY TEST.TestTime DESC";
+
 	public final static String SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
 
 	public final static String SELECT_FIRST_SMTTEST = "SELECT TOP 1 * FROM Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
 
 	public final static String SELECT_LAST_SMTTEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_AutoTest_Result2 WHERE ZhiDan = ? ";
-	
-	public final static String SELECT_LAST_SMTTEST_FRAGMENT_TWO = " ORDER BY TestTime ASC) SMT ORDER BY SMT.TestTime DESC";
 
+	public final static String SELECT_FUNCTIONTEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_AutoTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_FIRST_FUNCTIONTEST = "SELECT TOP 1 * FROM Gps_AutoTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_LAST_FUNCTIONTEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_AutoTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_AGEDTEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_AutoTest_Result3 WHERE ZhiDan = ? ";
+
+	public final static String SELECT_FIRST_AGEDTEST = "SELECT TOP 1 * FROM Gps_AutoTest_Result3 WHERE ZhiDan = ? ";
+
+	public final static String SELECT_LAST_AGEDTEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_AutoTest_Result3 WHERE ZhiDan = ? ";
+
+	public final static String SELECT_COUPLETEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_CoupleTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_FIRST_COUPLETEST = "SELECT TOP 1 * FROM Gps_CoupleTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_LAST_COUPLETEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_CoupleTest_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_COMPUTER = "SELECT count(*) from Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_FIRST_CARTONTEST = "SELECT TOP 1 * FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? ";
+
+	public final static String SELECT_LAST_CARTONTEST_FRAGMENT_ONE = "SELECT TOP 1 * FROM (SELECT TOP ? * FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? ";
 }

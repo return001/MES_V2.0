@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jimi.mes_server.entity.Constant;
+import com.jimi.mes_server.entity.DashboardInfo;
 import com.jimi.mes_server.entity.MultiTableQueryInfo;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
@@ -656,15 +656,8 @@ public class ReportService extends SelectService{
 	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
 	 * @date 2019年8月1日 上午10:08:08
 	 */
-	public List<Record> selectDashboard(Integer line) {
-		switch (line) {
-		case 0:
-		case 1:
-		case 2:
-			break;
-		default:
-			throw new ParameterException("无法识别的类型");
-		}
+	public DashboardInfo selectDashboard(Integer line) {
+		
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 0);
@@ -677,13 +670,32 @@ public class ReportService extends SelectService{
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String startTime = format.format(startDate);
 		String endTime = format.format(endDate);
-		List<Record> records = Db.find(SQL.SELECT_DASHBOARD, line, startTime, endTime);
-		if (records != null && !records.isEmpty()) {
-			for (Record record : records) {
+		List<Record> error = new ArrayList<>();
+		Object[] param = {"2017-10-06 13:49:29.157","2017-10-08 13:49:29.157"};
+		switch (line) {
+		case 0:
+			error = Db.find(SQL.SELECT_FUNCTION_ERROR,  param);
+			break;
+		case 1:
+			error = Db.find(SQL.SELECT_COUPLE_ERROR,  startTime, endTime);
+			break;
+		case 2:
+			error = Db.find(SQL.SELECT_CARTON_ERROR,  startTime, endTime);
+			break;
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		List<Record> table = Db.find(SQL.SELECT_DASHBOARD, line, startTime, endTime);
+		if (table != null && !table.isEmpty()) {
+			for (Record record : table) {
 				record.set("time", "从 "+record.getStr("startTime")+"\n至 "+record.getStr("endTime"));
 			}
 		}
-		return records;
+		
+		DashboardInfo dashboardInfo = new DashboardInfo();
+		dashboardInfo.setTable(table);
+		dashboardInfo.setError(error);
+		return dashboardInfo;
 	}
 
 
