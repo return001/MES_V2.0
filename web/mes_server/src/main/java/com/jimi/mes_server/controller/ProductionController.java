@@ -2,7 +2,6 @@ package com.jimi.mes_server.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -461,15 +460,13 @@ public class ProductionController extends Controller {
 			throw new ParameterException("参数不能为空");
 		}
 		File file = productionService.downloadOrderTable(id);
-		System.out.println(file.getName());
 		HttpServletResponse response = getResponse();
 		try {
-			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
+			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8").replaceAll("%C2%A0", "%20"));
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(response.getHeader("Content-Disposition"));
 		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		if(file.getName().contains(".xlsx")) {
 			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -491,15 +488,7 @@ public class ProductionController extends Controller {
 	}
 
 
-	public void getPlanGannt(Integer id) {
-		if (id == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		renderJson(ResultUtil.succeed(productionService.getPlanGannt(id)));
-	}
-
-
-	// 查询未排产
+	@Access({ "schedulingJMPMC" })
 	public void selectUnscheduledPlan(Integer type) {
 		if (type == null) {
 			throw new ParameterException("参数不能为空");
@@ -516,8 +505,9 @@ public class ProductionController extends Controller {
 		
 		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type)));
 	}
+
 	
-	
+	@Access({ "schedulingJMPMC" })
 	public void selectReworkPlan(Integer type) {
 		if (type == null) {
 			throw new ParameterException("参数不能为空");
@@ -536,13 +526,10 @@ public class ProductionController extends Controller {
 	}
 
 
-	// 添加排产计划
-	public void addPlan(Integer order, String remark, Integer schedulingQuantity, Integer line, Integer processGroup, Integer capacity) {
-		if (order == null || schedulingQuantity == null || line == null || capacity == null) {
+	@Access({ "schedulingJMPMC" })
+	public void addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity) {
+		if (order == null || processGroup == null || StringUtils.isAnyBlank(schedulingQuantity,line,capacity)) {
 			throw new ParameterException("参数不能为空");
-		}
-		if (schedulingQuantity < 0 || capacity < 0) {
-			throw new ParameterException("排产数量或产能不合理");
 		}
 		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity)) {
 			renderJson(ResultUtil.succeed());
@@ -552,6 +539,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({ "schedulingJMPMC" })
 	public void deletePlan(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -575,11 +563,12 @@ public class ProductionController extends Controller {
 				productionPlanningNumber, softModel, productNo)));
 	}*/
 	
+	@Access({"schedulingJMPMC", "engineer", "operator" })
 	public void selectPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		renderJson(ResultUtil.succeed(productionService.selectPlan(planQueryCriteria)));
 	}
 
-
+	@Access({"schedulingJMPMC", "engineer", "operator" })
 	public void selectPlanDetail(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -589,6 +578,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({"schedulingJMPMC", "engineer"})
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
 			Integer producedQuantity, String remainingReason, String productionPlanningNumber, Boolean isStarting) {
@@ -627,6 +617,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({"schedulingJMPMC", "engineer"})
 	public void editPlanStatus(Integer id, Integer type) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -642,6 +633,14 @@ public class ProductionController extends Controller {
 		default:
 			throw new ParameterException("无法识别的类型");
 		}
+		String typeName = userVO.getTypeName();
+		if ("engineer".equals(typeName)&&type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS-1)) {
+			throw new ParameterException("工程只能修改计划状态是否为开始或完成");
+		}
+		if ("schedulingJMPMC".equals(typeName)&&!type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS-1)) {
+			throw new ParameterException("PMC只能修改计划状态是否为待通知");
+		}
+		
 		if (productionService.editPlanStatus(id, type, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -650,6 +649,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({"schedulingJMPMC" })
 	public void selectPlanProducedQuantity(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -688,6 +688,16 @@ public class ProductionController extends Controller {
 	}*/
 
 
+	@Access({ "schedulingJMPMC" })
+	public void getPlanGannt(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(productionService.getPlanGannt(id)));
+	}
+
+
+	@Access({"schedulingJMPMC" })
 	public void exportPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		OutputStream output = null;
 		planQueryCriteria.setPageNo(Constant.DEFAULT_PAGE_NUM);
@@ -713,6 +723,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@Access({"schedulingJMPMC" })
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity) {
 		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null) {
 			throw new ParameterException("参数不能为空");

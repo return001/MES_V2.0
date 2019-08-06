@@ -813,11 +813,18 @@ public class ReportController extends Controller {
 	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
 	 * @date 2019年8月1日 上午10:08:08
 	 */
-	public void selectDashboard(Integer line) {
+	public void selectDashboardTable(Integer line) {
 		if (line == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		renderJson(ResultUtil.succeed(reportService.selectDashboard(line)));
+		renderJson(ResultUtil.succeed(reportService.selectDashboardTable(line)));
+	}
+	
+	public void selectErrorMsg(Integer line) {
+		if (line == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(reportService.selectErrorMsg(line)));
 	}
 
 

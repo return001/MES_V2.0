@@ -652,50 +652,48 @@ public class ReportService extends SelectService{
 
 
 	/**@author HCJ
-	 * 查询看板数据
+	 * 查询看板表格数据
 	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
 	 * @date 2019年8月1日 上午10:08:08
 	 */
-	public DashboardInfo selectDashboard(Integer line) {
-		
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		Date startDate = calendar.getTime();
-		calendar.set(Calendar.HOUR_OF_DAY, 23);
-		calendar.set(Calendar.MINUTE, 59);
-		calendar.set(Calendar.SECOND, 59);
-		Date endDate = calendar.getTime();
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String startTime = format.format(startDate);
-		String endTime = format.format(endDate);
-		List<Record> error = new ArrayList<>();
-		Object[] param = {"2017-10-06 13:49:29.157","2017-10-08 13:49:29.157"};
+	public List<Record> selectDashboardTable(Integer line) {
+		Map<String, String> timeMap = getBeginAndEndTime();
+		List<Record> dashboardTable = Db.find(SQL.SELECT_DASHBOARD, line, timeMap.get("startTime"), timeMap.get("endTime"));
+		if (dashboardTable != null && !dashboardTable.isEmpty()) {
+			for (Record record : dashboardTable) {
+				record.set("time", "从 " + record.getStr("startTime") + "\n至 " + record.getStr("endTime"));
+			}
+		}
+		return dashboardTable;
+	}
+
+
+	/**@author HCJ
+	 * 查询看板不良数据
+	 * @method selectErrorMsg
+	 * @param line
+	 * @return
+	 * @return List<Record>
+	 * @date 2019年8月6日 上午11:06:37
+	 */
+	public List<Record> selectErrorMsg(Integer line) {
+		Map<String, String> timeMap = getBeginAndEndTime();
+		List<Record> errorMsg = new ArrayList<>();
+		Object[] param = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
 		switch (line) {
 		case 0:
-			error = Db.find(SQL.SELECT_FUNCTION_ERROR,  param);
+			errorMsg = Db.find(SQL.SELECT_FUNCTION_ERROR, param);
 			break;
 		case 1:
-			error = Db.find(SQL.SELECT_COUPLE_ERROR,  startTime, endTime);
+			errorMsg = Db.find(SQL.SELECT_COUPLE_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
 			break;
 		case 2:
-			error = Db.find(SQL.SELECT_CARTON_ERROR,  startTime, endTime);
+			errorMsg = Db.find(SQL.SELECT_CARTON_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
 			break;
 		default:
 			throw new ParameterException("无法识别的类型");
 		}
-		List<Record> table = Db.find(SQL.SELECT_DASHBOARD, line, startTime, endTime);
-		if (table != null && !table.isEmpty()) {
-			for (Record record : table) {
-				record.set("time", "从 "+record.getStr("startTime")+"\n至 "+record.getStr("endTime"));
-			}
-		}
-		
-		DashboardInfo dashboardInfo = new DashboardInfo();
-		dashboardInfo.setTable(table);
-		dashboardInfo.setError(error);
-		return dashboardInfo;
+		return errorMsg;
 	}
 
 
@@ -1087,5 +1085,27 @@ public class ReportService extends SelectService{
 			e.printStackTrace();
 			throw new OperationException("删除数据时出错");
 		}
+	}
+
+
+	/**@author HCJ
+	 * 获取当天的最早时间和最晚时间
+	 * @date 2019年8月6日 上午11:08:24
+	 */
+	private Map<String, String> getBeginAndEndTime() {
+		Map<String, String> map = new HashMap<>();
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		Date startDate = calendar.getTime();
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		Date endDate = calendar.getTime();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		map.put("startTime", format.format(startDate));
+		map.put("endTime", format.format(endDate));
+		return map;
 	}
 }
