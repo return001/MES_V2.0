@@ -531,7 +531,9 @@ public class ProductionController extends Controller {
 		if (order == null || processGroup == null || StringUtils.isAnyBlank(schedulingQuantity,line,capacity)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity,userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -581,10 +583,10 @@ public class ProductionController extends Controller {
 	@Access({"schedulingJMPMC", "engineer"})
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
-			Integer producedQuantity, String remainingReason, String productionPlanningNumber, Boolean isStarting) {
+			Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
 		if (StringUtils.isAnyBlank(planStartTime, planCompleteTime, lineChangeTime)
 				|| id == null && schedulingQuantity == null || capacity == null || line == null || isCompleted == null
-				|| isUrgent == null || isStarting == null) {
+				|| isUrgent == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (schedulingQuantity < 0 || capacity < 0) {
@@ -593,8 +595,8 @@ public class ProductionController extends Controller {
 		if (producedQuantity != null && producedQuantity < 0) {
 			throw new ParameterException("已生产数量不合理");
 		}
-		if (!isStarting && isCompleted) {
-			throw new ParameterException("未开始生产的计划无法完成");
+		if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
+			throw new ParameterException("转线时间内容为空或长度过长");
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date start;
@@ -608,7 +610,7 @@ public class ProductionController extends Controller {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime,
-				capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber, isStarting,
+				capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber,
 				userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -725,10 +727,10 @@ public class ProductionController extends Controller {
 
 	@Access({"schedulingJMPMC" })
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity) {
-		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null) {
+		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null||lineChangeTime==null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (schedulingQuantity < 0 || capacity < 0) {
+		if (schedulingQuantity <= 0 || capacity <= 0) {
 			throw new ParameterException("排产数量或产能不合理");
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -740,11 +742,8 @@ public class ProductionController extends Controller {
 		} catch (Exception e) {
 			throw new ParameterException("时间格式出错");
 		}
-		if (productionService.checkCompleteTime(schedulingQuantity, start, end, lineChangeTime, capacity)) {
-			renderJson(ResultUtil.succeed("计划时间内能够完成任务"));
-		} else {
-			renderJson(ResultUtil.failed("计划时间内无法完成任务"));
-		}
+		renderJson(ResultUtil.succeed(productionService.checkCompleteTime(schedulingQuantity, start, end, lineChangeTime, capacity)));
+		
 	}
 
 

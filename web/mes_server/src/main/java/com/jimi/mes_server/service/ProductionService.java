@@ -838,7 +838,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity) {
+	public boolean addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity,LUserAccountVO userVO) {
 		String[] quantitys = schedulingQuantity.split(",");
 		String[] lines = line.split(",");
 		String[] capacitys = capacity.split(",");
@@ -863,6 +863,7 @@ public class ProductionService {
 			}
 			schedulingPlan.setProcessGroup(processGroup).setLine(Integer.parseInt(lines[i])).setSchedulingQuantity(Integer.parseInt(quantitys[i])).setOrders(order).setIsTimeout(false);
 			schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
+			schedulingPlan.setScheduler(userVO.getId()).setSchedulingTime(new Date());
 			schedulingPlan.save();
 			
 		}
@@ -921,7 +922,7 @@ public class ProductionService {
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
 		return formatOrderDate(Db.paginate(pageNo, pageSize, sqlPara));
 	}*/
-
+//TODO
 	public Page<Record> selectPlan(PlanQueryCriteria planQueryCriteria) {
 		StringBuilder filter = new StringBuilder();
 		filter.append(concatEqualSqlFilter("scheduling_plan_status", planQueryCriteria.getSchedulingPlanStatus()));
@@ -945,7 +946,7 @@ public class ProductionService {
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " ORDER BY is_timeout DESC ";
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
-		return formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), planQueryCriteria.getPageSize(), sqlPara),null);
+		return formatPlanTimeOut(formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), 10, sqlPara),null));
 	}
 
 
@@ -975,7 +976,7 @@ public class ProductionService {
 		return page;
 	}
 
-
+//TODO
 	public Record selectPlanProducedQuantity(Integer id) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
@@ -1009,7 +1010,7 @@ public class ProductionService {
 
 	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
 			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
-			Integer producedQuantity, String remainingReason, String productionPlanningNumber, Boolean isStarting,
+			Integer producedQuantity, String remainingReason, String productionPlanningNumber,
 			LUserAccountVO userVO) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
@@ -1018,25 +1019,27 @@ public class ProductionService {
 		if (Constant.COMPLETED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
 			throw new OperationException("已完成排产计划无法修改");
 		}
+		double changeLineTime = 0.0;
+		try {
+			changeLineTime = Double.parseDouble(lineChangeTime);
+		} catch (Exception e) {
+			throw new OperationException("转线时间格式出错");
+		}
+		if (changeLineTime<=0) {
+			throw new OperationException("转线时间格式出错");
+		}
+		schedulingPlan.setLineChangeTime(lineChangeTime);
 		schedulingPlan.setIsUrgent(isUrgent).setLine(line).setPlanStartTime(planStartTime)
-				.setPlanCompleteTime(planCompleteTime);
+				.setPlanCompleteTime(planCompleteTime).setCapacity(capacity);
 		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
-		if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
-			throw new ParameterException("转线时间内容为空或长度过长");
-		} 
-		schedulingPlan.setLineChangeTime(lineChangeTime);
-		if (capacity != null) {
-			schedulingPlan.setCapacity(capacity);
-		}
 		if (producedQuantity != null) {
-			if (producedQuantity > schedulingQuantity) {
-				throw new ParameterException("已完成数量不能超过排产数量");
-			}
-			schedulingPlan.setProducedQuantity(producedQuantity).setSchedulingQuantity(schedulingQuantity).setRemainingQuantity(schedulingQuantity - producedQuantity);
-			if (schedulingPlan.getRemainingQuantity() > 0) {
-				schedulingPlan.setIsTimeout(true);
+			schedulingPlan.setProducedQuantity(producedQuantity).setSchedulingQuantity(schedulingQuantity);
+			if (producedQuantity>=schedulingQuantity) {
+				schedulingPlan.setRemainingQuantity(0);
+			}else {
+				schedulingPlan.setRemainingQuantity(schedulingQuantity-producedQuantity);
 			}
 		}
 		if (remainingReason != null) {
@@ -1050,17 +1053,16 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
-		if (Constant.SCHEDULED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus()) && isStarting) {
-			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS).setProductionConfirmer(userVO.getId());
-		} else if (isCompleted) {
+		if (isCompleted) {
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+			schedulingPlan.setCompleteTime(new Date());
 			if (!order.getIsRework()) {
 				Integer quantity = 0;
 				List<SchedulingPlan> schedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER,
 						schedulingPlan.getOrders());
 				if (schedulingPlans != null && !schedulingPlans.isEmpty()) {
 					for (SchedulingPlan plan : schedulingPlans) {
-						quantity += plan.getProducedQuantity();
+						quantity += plan.getSchedulingQuantity();
 					}
 				}
 				if (quantity + producedQuantity >= order.getQuantity()) {
@@ -1117,10 +1119,16 @@ public class ProductionService {
 		}
 		Integer planStatus = schedulingPlan.getSchedulingPlanStatus();
 		if (planStatus.equals(Constant.COMPLETED_PLANSTATUS)) {
-			throw new OperationException("已完成排产计划无法修改");
+			throw new OperationException("已完成的排产计划无法修改");
 		}
-		if (type<planStatus-1) {
-			throw new OperationException("计划状态无法逆转");
+		if (Constant.SCHEDULED_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.WORKING_PLANSTATUS-1)&&!type.equals(Constant.COMPLETED_PLANSTATUS-1)) {
+			throw new OperationException("已排产的排产计划只能修改为进行中或已完成");
+		}
+		if (Constant.WORKING_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.COMPLETED_PLANSTATUS-1)&&!type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS-1)) {
+			throw new OperationException("进行中的排产计划只能修改为待通知或已完成");
+		}
+		if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.WORKING_PLANSTATUS-1)) {
+			throw new OperationException("待通知的排产计划只能修改为进行中");
 		}
 		switch (type) {
 		case 0:
@@ -1128,6 +1136,8 @@ public class ProductionService {
 			break;
 		case 1:
 			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
+			schedulingPlan.setProductionConfirmer(userVO.getId());
+			schedulingPlan.setStartTime(new Date());
 			break;
 		case 2:
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
@@ -1233,6 +1243,27 @@ public static void main(String[] args) {
 		
 	}
 
+	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity) {
+		double changeLineTime = 0.0;
+		try {
+			changeLineTime = Double.parseDouble(lineChangeTime);
+		} catch (Exception e) {
+			throw new OperationException("转线时间格式出错");
+		}
+		if (changeLineTime<=0) {
+			throw new OperationException("转线时间格式出错");
+		}
+		double actualCostHours = BigDecimal.valueOf((double)schedulingQuantity / (double)capacity).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
+		long lineChangeCostMilliseconds = (long) ( changeLineTime* 60 * 60 * 1000);
+		long actualCostMilliseconds = (long)actualCostHours * 60 * 60 * 1000 + lineChangeCostMilliseconds;
+		long planCostMilliseconds = planCompleteTime.getTime() - planStartTime.getTime()+1;
+		if (actualCostMilliseconds > planCostMilliseconds) {
+			return false;
+		}
+		return true;
+	}
+
+
 	private PlanGannt genPlanGannt(Integer index, String zhidan, Integer planProduction, String computerSql) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Integer number = 0;
@@ -1336,17 +1367,6 @@ public static void main(String[] args) {
 		return gannt;
 	}
 
-	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity) {
-		Integer actualCostHours = schedulingQuantity / capacity;
-		long lineChangeCostMilliseconds = (long) (Double.parseDouble(lineChangeTime) * 60 * 60 * 1000);
-		long actualCostMilliseconds = actualCostHours * 60 * 60 * 1000 + lineChangeCostMilliseconds;
-		long planCostMilliseconds = planCompleteTime.getTime() - planStartTime.getTime();
-		if (actualCostMilliseconds > planCostMilliseconds) {
-			return false;
-		}
-		return true;
-	}
-
 
 	private void checkUserById(Integer id) {
 		LUserAccount user = LUserAccount.dao.findById(id);
@@ -1399,11 +1419,11 @@ public static void main(String[] args) {
 	}
 
 
-	private Page<Record> formatOrderDateAndCustomer(Page<Record> page,Boolean isOperator) {
+	private Page<Record> formatOrderDateAndCustomer(Page<Record> page, Boolean isOperator) {
 		List<Record> records = page.getList();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		for (Record record : records) {
-			if (isOperator!=null&&isOperator) {
+			if (isOperator != null && isOperator) {
 				record.set("customerNumber", "***");
 				record.set("customerName", "***");
 			}
@@ -1417,5 +1437,18 @@ public static void main(String[] args) {
 		}
 		return page;
 	}
-	
+
+
+	private Page<Record> formatPlanTimeOut(Page<Record> page) {
+		List<Record> records = page.getList();
+		for (Record record : records) {
+			if (new Date().after(record.getDate("planCompleteTime"))) {
+				if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
+					record.set("isTimeout", true);
+				}
+			}
+		}
+		return page;
+	}
+
 }
