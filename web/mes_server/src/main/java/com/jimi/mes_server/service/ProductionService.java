@@ -742,96 +742,51 @@ public class ProductionService {
 		return file;
 	}
 
-
+	
 	public List<OrderVO> selectUnscheduledPlan(Integer type) {
 		List<OrderVO> orderVOs = new ArrayList<>();
-		List<Record> records = new ArrayList<>();
+		List<Record> orderRecords = new ArrayList<>();
+		Integer rework = 0;
 		switch (type) {
 		case 0:
-			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS, Constant.UNSCHEDULED_ORDERSTATUS);
-			if (orders != null && !orders.isEmpty()) {
-				for (Orders order : orders) {
-					OrderVO orderVO = new OrderVO(order, order.getQuantity(), null);
-					Record record = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-					if (record==null) {
-						orderVO.setCapacity(0);
-					}else {
-						orderVO.setCapacity(record.getInt("capacity") / record.getInt("people"));
-					}
-					orderVOs.add(orderVO);
-				}
+			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
+			if (orders==null||orders.isEmpty()) {
+				throw new OperationException("不存在可排产的订单");
 			}
+				for (Orders order : orders) {
+					orderVOs.add(genOrderVO(order,type));
+				}
 			return orderVOs;
 		case 1:
-			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP);
+			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
+			if (orderRecords==null||orderRecords.isEmpty()) {
+				throw new OperationException("不存在前置工序组已排产的订单");
+			}
 			break;
 		case 2:
-			records = Db.find(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP);
+			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
+			if (orderRecords==null||orderRecords.isEmpty()) {
+				throw new OperationException("不存在前置工序组已排产的订单");
+			}
 			break;
 		default:
 			break;
 		}
-		if (records != null && !records.isEmpty()) {
-			for (Record record : records) {
-				Orders order = Orders.dao.findById(record.getInt("orders"));
-				OrderVO orderVO = new OrderVO(order, order.getQuantity() - record.getInt("scheduled_quantity"), null);
-				Record peopleCapacityRecord = null;
-				if (type == 1) {
-					peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
-				} else if (type == 2) {
-					peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
-				}
-				if (peopleCapacityRecord==null) {
-					orderVO.setCapacity(0);
-				}else {
-					orderVO.setCapacity(peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
-				}
-				orderVOs.add(orderVO);
+			for (Record orderRecord : orderRecords) {
+				Orders order = Orders.dao.findById(orderRecord.getInt("orders"));
+				orderVOs.add(genOrderVO(order,type));
 			}
-		}
 		return orderVOs;
 	}
-
-
 	public List<OrderVO> selectReworkPlan(Integer type) {
 		List<OrderVO> orderVOs = new ArrayList<>();
-		List<Orders> orders = null;
-		Record capacityRecord = null;
-		Integer scheduledQuantity = null;
-		orders = Orders.dao.find(SQL.SELECT_REWORK_ORDER);
+		Integer rework = 1;
+		List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
 		if (orders == null || orders.isEmpty()) {
 			throw new OperationException("不存在返工订单");
 		}
 			for (Orders order : orders) {
-				OrderVO orderVO = new OrderVO(order, null, null);
-				switch (type) {
-				case 0:
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-					scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_REWORK_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP,order.getId());
-					break;
-				case 1:
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
-					scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_REWORK_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP,order.getId());
-					break;
-				case 2:
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
-					scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_REWORK_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP,order.getId());
-					break;
-				default:
-					break;
-				}
-				
-				if (capacityRecord==null) {
-					orderVO.setCapacity(0);
-				}else {
-					orderVO.setCapacity(capacityRecord.getInt("capacity") / capacityRecord.getInt("people"));
-				}
-				if (scheduledQuantity==null) {
-					orderVO.setUnscheduledQuantity(order.getQuantity());
-				}else {
-					orderVO.setUnscheduledQuantity(order.getQuantity()-scheduledQuantity);
-				}
-				orderVOs.add(orderVO);
+				orderVOs.add(genOrderVO(order,type));
 			}
 		
 		return orderVOs;
@@ -922,7 +877,7 @@ public class ProductionService {
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
 		return formatOrderDate(Db.paginate(pageNo, pageSize, sqlPara));
 	}*/
-//TODO
+
 	public Page<Record> selectPlan(PlanQueryCriteria planQueryCriteria) {
 		StringBuilder filter = new StringBuilder();
 		filter.append(concatEqualSqlFilter("scheduling_plan_status", planQueryCriteria.getSchedulingPlanStatus()));
@@ -976,7 +931,7 @@ public class ProductionService {
 		return page;
 	}
 
-//TODO
+
 	public Record selectPlanProducedQuantity(Integer id) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
@@ -1389,7 +1344,7 @@ public static void main(String[] args) {
 		} catch (Exception e) {
 			throw new OperationException("格式化时间出错，请检查时间格式");
 		}
-		return daysBetween;
+		return daysBetween+1;
 	}
 
 
@@ -1449,6 +1404,36 @@ public static void main(String[] args) {
 			}
 		}
 		return page;
+	}
+
+
+	private OrderVO genOrderVO(Orders order,Integer type) {
+		OrderVO orderVO = new OrderVO(order, null, null);
+		Record peopleCapacityRecord = null;
+		Integer scheduledQuantity = null;
+		if (type == 0) {
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP,order.getId());
+			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
+		}else if (type == 1) {
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP,order.getId());
+			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
+		} else if (type == 2) {
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP,order.getId());
+			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
+		}
+		if (scheduledQuantity==null) {
+			orderVO.setUnscheduledQuantity(order.getQuantity());
+		}else {
+			orderVO.setUnscheduledQuantity(order.getQuantity()-scheduledQuantity);
+		}
+		if (peopleCapacityRecord==null) {
+			orderVO.setCapacity(0);
+		}else {
+			orderVO.setCapacity(peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
+		}
+		
+		return orderVO;
+		
 	}
 
 }
