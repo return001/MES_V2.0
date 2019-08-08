@@ -2,7 +2,6 @@ package com.jimi.mes_server.task;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -15,7 +14,7 @@ import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.model.Dashboard;
 import com.jimi.mes_server.model.Orders;
 
-/**保存看板数据任务
+/**保存看板表格数据任务
  * @author   HCJ
  * @date     2019年8月1日 上午9:36:28
  */
@@ -48,13 +47,13 @@ public class SaveDataTask implements Runnable {
 		 */
 		String start = "2017-01-04 08:34:17.010";
 		String end = "2017-01-04 09:34:17.010";
-		saveDashboard(Db.find(SQL.SELECT_AUTOTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.AUTOTEST_LINEID,start,end);
-		saveDashboard(Db.find(SQL.SELECT_COUPLETEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.COUPLETEST_LINEID,start,end);
-		saveDashboard(Db.find(SQL.SELECT_CARTONTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.CARTONTEST_LINEID,start,end);
+		saveDashboard(Db.find(SQL.SELECT_AUTOTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.AUTOTEST_LINEID, start, end);
+		saveDashboard(Db.find(SQL.SELECT_COUPLETEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.COUPLETEST_LINEID, start, end);
+		saveDashboard(Db.find(SQL.SELECT_CARTONTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.CARTONTEST_LINEID, start, end);
 	}
 
 
-	private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId,String startTimeString,String endTimeString) {
+	private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId, String startTimeString, String endTimeString) {
 		if (records != null && !records.isEmpty()) {
 			for (Record record : records) {
 				Dashboard dashboard = new Dashboard();
@@ -68,38 +67,36 @@ public class SaveDataTask implements Runnable {
 					dashboard.setPlanProduction(order.getQuantity());
 					dashboard.setActualProduction(record.getInt("Production")).setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
 					double completionRate = (double) dashboard.getActualProduction() / (double) dashboard.getPlanProduction();
-					if (completionRate>1) {
+					if (completionRate > 1) {
 						dashboard.setCompletionRate(BigDecimal.valueOf(1));
-					}else {
+					} else {
 						dashboard.setCompletionRate(BigDecimal.valueOf(completionRate).setScale(2, BigDecimal.ROUND_HALF_UP));
 					}
-					
-
-					// TODO 测试率
 					Integer errorNum = null;
-					Object[] param = {startTimeString,endTimeString,record.getStr("ZhiDan"),record.getStr("SoftModel")};
+					Object[] param = { startTimeString, endTimeString, record.getStr("ZhiDan"), record.getStr("SoftModel") };
 					switch (lineId) {
 					case 0:
-						errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_ZHIDAN,param);
+						// 查询组装测试位错误信息
+						errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_ZHIDAN, param);
 						break;
 					case 1:
-						errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_ZHIDAN,param);
+						// 查询耦合测试位错误信息
+						errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_ZHIDAN, param);
 						break;
 					case 2:
-						errorNum = Db.queryInt(SQL.SELECT_CARTON_ERRORNUM_BY_ZHIDAN,param);
+						// 查询卡通箱测试位错误信息
+						errorNum = Db.queryInt(SQL.SELECT_CARTON_ERRORNUM_BY_ZHIDAN, param);
 						break;
-
 					default:
 						break;
 					}
-					if (errorNum==null||errorNum==0) {
+					if (errorNum == null || errorNum == 0) {
 						dashboard.setTestingRate(BigDecimal.valueOf(1));
-					}else {
-						double testingRate = 1-(double)errorNum/((double)(errorNum+record.getInt("Production")));
+					} else {
+						double testingRate = 1 - (double) errorNum / ((double) (errorNum + record.getInt("Production")));
 						dashboard.setTestingRate(BigDecimal.valueOf(testingRate).setScale(2, BigDecimal.ROUND_HALF_UP));
 					}
 					dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
-
 				} else {
 					dashboard.setRemark("-").setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
 					dashboard.setCompletionRate(BigDecimal.valueOf(DEFAULT_NUMBER)).setActualProduction(DEFAULT_NUMBER).setPlanProduction(DEFAULT_NUMBER).setTestingRate(BigDecimal.valueOf(DEFAULT_NUMBER));
@@ -113,5 +110,4 @@ public class SaveDataTask implements Runnable {
 			dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 		}
 	}
-
 }

@@ -28,14 +28,13 @@ import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderDetail;
 import com.jimi.mes_server.entity.OrderFileInfo;
 import com.jimi.mes_server.entity.OrderItem;
-import com.jimi.mes_server.entity.PlanGannt;
+import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
-import com.jimi.mes_server.model.GpsAutotestResult2;
 import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.LineComputer;
@@ -196,7 +195,6 @@ public class ProductionService {
 			filter.append(" and line_name like '%" + lineName + "%'");
 		}
 		if (processGroup != null) {
-
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
@@ -204,7 +202,7 @@ public class ProductionService {
 		}
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " order by processGroup ";
-		sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter+orderBy);
+		sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter + orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
@@ -300,7 +298,7 @@ public class ProductionService {
 		}
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " order by processGroup ";
-		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter+orderBy);
+		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter + orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
@@ -406,7 +404,7 @@ public class ProductionService {
 		if (!StrKit.isBlank(remark)) {
 			modelCapacity.setRemark(remark);
 		}
-		modelCapacity.setSoftModel(softModel).setCustomerModel(customerModel).setProcess(process) .setProcessGroup(processGroup);
+		modelCapacity.setSoftModel(softModel).setCustomerModel(customerModel).setProcess(process).setProcessGroup(processGroup);
 		modelCapacity.setProcessPeopleQuantity(processPeopleQuantity).setCapacity(capacity).save();
 		return modelCapacity.setPosition(modelCapacity.getId()).update();
 	}
@@ -463,13 +461,11 @@ public class ProductionService {
 			return true;
 		}
 		if (!StrKit.isBlank(softModel) && process != null && processGroup != null) {
-			ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS,
-					softModel, process, processGroup);
-			if (modelCapacity != null&&!modelCapacity.getId().equals(id)) {
+			ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel, process, processGroup);
+			if (modelCapacity != null && !modelCapacity.getId().equals(id)) {
 				throw new OperationException("机型产能已存在");
 			}
 		}
-		
 		if (!StrKit.isBlank(softModel)) {
 			firstModelCapacity.setSoftModel(softModel);
 		}
@@ -532,7 +528,7 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework,LUserAccountVO userVO) {
+	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework, LUserAccountVO userVO) {
 		Page<Record> page = new Page<>();
 		Boolean isOperator = false;
 		if (Constant.SUPER_OPERATOR_USERTYPE.equals(userVO.getWebUserType())) {
@@ -553,7 +549,7 @@ public class ProductionService {
 				page = daoService.select(SQL.SELECT_ORDER + reworkSql + " AND ", pageNo, pageSize, ascBy, descBy, filter);
 			}
 		}
-		return formatOrderDateAndCustomer(page,isOperator);
+		return formatOrderDateAndCustomer(page, isOperator);
 	}
 
 
@@ -588,21 +584,21 @@ public class ProductionService {
 		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 		if (!page.getList().isEmpty()) {
 			record = page.getList().get(0);
-				String orderModifier = record.getStr("orderModifier");
-				String deletePerson = record.getStr("deletePerson");
-				if (orderModifier != null) {
-					LUserAccount modifier = LUserAccount.dao.findById(orderModifier);
-					if (modifier != null) {
-						record.set("modifierName", modifier.getUserDes());
-					}
+			String orderModifier = record.getStr("orderModifier");
+			String deletePerson = record.getStr("deletePerson");
+			if (orderModifier != null) {
+				LUserAccount modifier = LUserAccount.dao.findById(orderModifier);
+				if (modifier != null) {
+					record.set("modifierName", modifier.getUserDes());
 				}
-				if (deletePerson != null) {
-					LUserAccount deletePersonUser = LUserAccount.dao.findById(deletePerson);
-					if (deletePersonUser != null) {
-						record.set("deletePersonName", deletePersonUser.getUserDes());
-					}
+			}
+			if (deletePerson != null) {
+				LUserAccount deletePersonUser = LUserAccount.dao.findById(deletePerson);
+				if (deletePersonUser != null) {
+					record.set("deletePersonName", deletePersonUser.getUserDes());
 				}
-			
+			}
+
 		}
 		return record;
 	}
@@ -713,7 +709,7 @@ public class ProductionService {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			
+
 			File file = new File(Constant.FILE_TABLE_PATH + fileName);
 			if (file.exists()) {
 				file.delete();
@@ -742,62 +738,64 @@ public class ProductionService {
 		return file;
 	}
 
-	
+
 	public List<OrderVO> selectUnscheduledPlan(Integer type) {
 		List<OrderVO> orderVOs = new ArrayList<>();
 		List<Record> orderRecords = new ArrayList<>();
 		Integer rework = 0;
 		switch (type) {
 		case 0:
-			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
-			if (orders==null||orders.isEmpty()) {
+			List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS);
+			if (orders == null || orders.isEmpty()) {
 				throw new OperationException("不存在可排产的订单");
 			}
-				for (Orders order : orders) {
-					orderVOs.add(genOrderVO(order,type));
-				}
+			for (Orders order : orders) {
+				orderVOs.add(genOrderVO(order, type));
+			}
 			return orderVOs;
 		case 1:
-			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
-			if (orderRecords==null||orderRecords.isEmpty()) {
+			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS);
+			if (orderRecords == null || orderRecords.isEmpty()) {
 				throw new OperationException("不存在前置工序组已排产的订单");
 			}
 			break;
 		case 2:
-			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
-			if (orderRecords==null||orderRecords.isEmpty()) {
+			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS);
+			if (orderRecords == null || orderRecords.isEmpty()) {
 				throw new OperationException("不存在前置工序组已排产的订单");
 			}
 			break;
 		default:
 			break;
 		}
-			for (Record orderRecord : orderRecords) {
-				Orders order = Orders.dao.findById(orderRecord.getInt("orders"));
-				orderVOs.add(genOrderVO(order,type));
-			}
+		for (Record orderRecord : orderRecords) {
+			Orders order = Orders.dao.findById(orderRecord.getInt("orders"));
+			orderVOs.add(genOrderVO(order, type));
+		}
 		return orderVOs;
 	}
+
+
 	public List<OrderVO> selectReworkPlan(Integer type) {
 		List<OrderVO> orderVOs = new ArrayList<>();
 		Integer rework = 1;
-		List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework,Constant.UNSCHEDULED_ORDERSTATUS,Constant.SCHEDULED_ORDERSTATUS);
+		List<Orders> orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS);
 		if (orders == null || orders.isEmpty()) {
 			throw new OperationException("不存在返工订单");
 		}
-			for (Orders order : orders) {
-				orderVOs.add(genOrderVO(order,type));
-			}
-		
+		for (Orders order : orders) {
+			orderVOs.add(genOrderVO(order, type));
+		}
+
 		return orderVOs;
 	}
 
 
-	public boolean addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity,LUserAccountVO userVO) {
+	public boolean addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity, LUserAccountVO userVO) {
 		String[] quantitys = schedulingQuantity.split(",");
 		String[] lines = line.split(",");
 		String[] capacitys = capacity.split(",");
-		if (quantitys.length!=lines.length||quantitys.length!=capacitys.length||lines.length!=capacitys.length) {
+		if (quantitys.length != lines.length || quantitys.length != capacitys.length || lines.length != capacitys.length) {
 			throw new ParameterException("多产线排产时参数个数必须一致");
 		}
 		Orders orderRecord = Orders.dao.findById(order);
@@ -807,7 +805,7 @@ public class ProductionService {
 		if (ProcessGroup.dao.findById(processGroup) == null) {
 			throw new OperationException("添加排产计划失败，工序组不存在");
 		}
-		
+
 		for (int i = 0; i < capacitys.length; i++) {
 			if (orderRecord.getQuantity() < Integer.parseInt(quantitys[i])) {
 				throw new OperationException("排产数量不能大于订单数量");
@@ -820,7 +818,6 @@ public class ProductionService {
 			schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
 			schedulingPlan.setScheduler(userVO.getId()).setSchedulingTime(new Date());
 			schedulingPlan.save();
-			
 		}
 		if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
 			orderRecord.setOrderStatus(Constant.SCHEDULED_ORDERSTATUS);
@@ -847,36 +844,45 @@ public class ProductionService {
 		return schedulingPlan.delete();
 	}
 
-	/*public Page<Record> selectPlan(Integer pageNo, Integer pageSize, Integer schedulingPlanStatus, String zhidan,
-			String customerName, String orderDateFrom, String orderDateTo, String planStartTimeFrom,
-			String planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo, String startTimeFrom,
-			String startTimeTo, String completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
-			String productionPlanningNumber, String softModel, String productNo) {
-		StringBuilder filter = new StringBuilder();
-		filter.append(concatEqualSqlFilter("scheduling_plan_status", schedulingPlanStatus));
-		filter.append(concatEqualSqlFilter("scheduling_plan.process_group", processGroup));
-		filter.append(concatEqualSqlFilter("line", line));
-		filter.append(concatSqlFilter("zhidan", zhidan, true, false));
-		filter.append(concatSqlFilter("customer_name", customerName, true, false));
-		filter.append(concatSqlFilter("production_planning_number", productionPlanningNumber, true, false));
-		filter.append(concatSqlFilter("soft_model", softModel, true, false));
-		filter.append(concatSqlFilter("product_no", productNo, true, false));
-		filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
-		filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
-		filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false, true));
-		filter.append(concatSqlFilter("plan_start_time", planStartTimeTo, false, false));
-		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeFrom, false, true));
-		filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo, false, false));
-		filter.append(concatSqlFilter("start_time", startTimeFrom, false, true));
-		filter.append(concatSqlFilter("start_time", startTimeTo, false, false));
-		filter.append(concatSqlFilter("complete_time", completeTimeFrom, false, true));
-		filter.append(concatSqlFilter("complete_time", completeTimeTo, false, false));
 
-		SqlPara sqlPara = new SqlPara();
-		String orderBy = " ORDER BY is_timeout DESC ";
-		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
-		return formatOrderDate(Db.paginate(pageNo, pageSize, sqlPara));
-	}*/
+	/*
+	 * public Page<Record> selectPlan(Integer pageNo, Integer pageSize, Integer
+	 * schedulingPlanStatus, String zhidan, String customerName, String
+	 * orderDateFrom, String orderDateTo, String planStartTimeFrom, String
+	 * planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo,
+	 * String startTimeFrom, String startTimeTo, String completeTimeFrom, String
+	 * completeTimeTo, Integer processGroup, Integer line, String
+	 * productionPlanningNumber, String softModel, String productNo) { StringBuilder
+	 * filter = new StringBuilder();
+	 * filter.append(concatEqualSqlFilter("scheduling_plan_status",
+	 * schedulingPlanStatus));
+	 * filter.append(concatEqualSqlFilter("scheduling_plan.process_group",
+	 * processGroup)); filter.append(concatEqualSqlFilter("line", line));
+	 * filter.append(concatSqlFilter("zhidan", zhidan, true, false));
+	 * filter.append(concatSqlFilter("customer_name", customerName, true, false));
+	 * filter.append(concatSqlFilter("production_planning_number",
+	 * productionPlanningNumber, true, false));
+	 * filter.append(concatSqlFilter("soft_model", softModel, true, false));
+	 * filter.append(concatSqlFilter("product_no", productNo, true, false));
+	 * filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
+	 * filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
+	 * filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false,
+	 * true)); filter.append(concatSqlFilter("plan_start_time", planStartTimeTo,
+	 * false, false)); filter.append(concatSqlFilter("plan_complete_time",
+	 * planCompleteTimeFrom, false, true));
+	 * filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo,
+	 * false, false)); filter.append(concatSqlFilter("start_time", startTimeFrom,
+	 * false, true)); filter.append(concatSqlFilter("start_time", startTimeTo,
+	 * false, false)); filter.append(concatSqlFilter("complete_time",
+	 * completeTimeFrom, false, true));
+	 * filter.append(concatSqlFilter("complete_time", completeTimeTo, false,
+	 * false));
+	 * 
+	 * SqlPara sqlPara = new SqlPara(); String orderBy =
+	 * " ORDER BY is_timeout DESC "; sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN +
+	 * filter + orderBy); return formatOrderDate(Db.paginate(pageNo, pageSize,
+	 * sqlPara)); }
+	 */
 
 	public Page<Record> selectPlan(PlanQueryCriteria planQueryCriteria) {
 		StringBuilder filter = new StringBuilder();
@@ -899,9 +905,9 @@ public class ProductionService {
 		filter.append(concatSqlFilter("complete_time", planQueryCriteria.getCompleteTimeFrom(), false, true));
 		filter.append(concatSqlFilter("complete_time", planQueryCriteria.getCompleteTimeTo(), false, false));
 		SqlPara sqlPara = new SqlPara();
-		String orderBy = " ORDER BY is_timeout DESC ";
+		String orderBy = " ORDER BY id DESC ";
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
-		return formatPlanTimeOut(formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), 10, sqlPara),null));
+		return formatPlanTimeOut(formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), 10, sqlPara), null));
 	}
 
 
@@ -910,7 +916,7 @@ public class ProductionService {
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLANDETAIL_BY_ID);
 		sqlPara.addPara(id);
 		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
-		if (page.getList()!=null&&!page.getList().isEmpty()) {
+		if (page.getList() != null && !page.getList().isEmpty()) {
 			for (Record record : page.getList()) {
 				String planModifier = record.getStr("planModifier");
 				String productionConfirmer = record.getStr("productionConfirmer");
@@ -963,10 +969,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line,
-			Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted,
-			Integer producedQuantity, String remainingReason, String productionPlanningNumber,
-			LUserAccountVO userVO) {
+	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, Integer producedQuantity, String remainingReason, String productionPlanningNumber, LUserAccountVO userVO) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
@@ -980,21 +983,20 @@ public class ProductionService {
 		} catch (Exception e) {
 			throw new OperationException("转线时间格式出错");
 		}
-		if (changeLineTime<=0) {
+		if (changeLineTime <= 0) {
 			throw new OperationException("转线时间格式出错");
 		}
 		schedulingPlan.setLineChangeTime(lineChangeTime);
-		schedulingPlan.setIsUrgent(isUrgent).setLine(line).setPlanStartTime(planStartTime)
-				.setPlanCompleteTime(planCompleteTime).setCapacity(capacity);
+		schedulingPlan.setIsUrgent(isUrgent).setLine(line).setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime).setCapacity(capacity);
 		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
 		if (producedQuantity != null) {
 			schedulingPlan.setProducedQuantity(producedQuantity).setSchedulingQuantity(schedulingQuantity);
-			if (producedQuantity>=schedulingQuantity) {
+			if (producedQuantity >= schedulingQuantity) {
 				schedulingPlan.setRemainingQuantity(0);
-			}else {
-				schedulingPlan.setRemainingQuantity(schedulingQuantity-producedQuantity);
+			} else {
+				schedulingPlan.setRemainingQuantity(schedulingQuantity - producedQuantity);
 			}
 		}
 		if (remainingReason != null) {
@@ -1013,8 +1015,7 @@ public class ProductionService {
 			schedulingPlan.setCompleteTime(new Date());
 			if (!order.getIsRework()) {
 				Integer quantity = 0;
-				List<SchedulingPlan> schedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER,
-						schedulingPlan.getOrders());
+				List<SchedulingPlan> schedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER, schedulingPlan.getOrders());
 				if (schedulingPlans != null && !schedulingPlans.isEmpty()) {
 					for (SchedulingPlan plan : schedulingPlans) {
 						quantity += plan.getSchedulingQuantity();
@@ -1076,13 +1077,13 @@ public class ProductionService {
 		if (planStatus.equals(Constant.COMPLETED_PLANSTATUS)) {
 			throw new OperationException("已完成的排产计划无法修改");
 		}
-		if (Constant.SCHEDULED_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.WORKING_PLANSTATUS-1)&&!type.equals(Constant.COMPLETED_PLANSTATUS-1)) {
+		if (Constant.SCHEDULED_PLANSTATUS.equals(planStatus) && !type.equals(Constant.WORKING_PLANSTATUS - 1) && !type.equals(Constant.COMPLETED_PLANSTATUS - 1)) {
 			throw new OperationException("已排产的排产计划只能修改为进行中或已完成");
 		}
-		if (Constant.WORKING_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.COMPLETED_PLANSTATUS-1)&&!type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS-1)) {
+		if (Constant.WORKING_PLANSTATUS.equals(planStatus) && !type.equals(Constant.COMPLETED_PLANSTATUS - 1) && !type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS - 1)) {
 			throw new OperationException("进行中的排产计划只能修改为待通知或已完成");
 		}
-		if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus)&&!type.equals(Constant.WORKING_PLANSTATUS-1)) {
+		if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus) && !type.equals(Constant.WORKING_PLANSTATUS - 1)) {
 			throw new OperationException("待通知的排产计划只能修改为进行中");
 		}
 		switch (type) {
@@ -1130,73 +1131,71 @@ public class ProductionService {
 		helper.fill(records, title, field, head);
 		helper.write(output, true);
 	}
-public static void main(String[] args) {
-	Integer a = 13;
-	Integer b = 12;
-	String c =  String.valueOf((double)a/(double)b*100.0);
-	System.out.println(c.substring(0, c.indexOf("."))+"%");
-}
 
-	public List<PlanGannt> getPlanGannt(Integer id) {
+
+	public static void main(String[] args) {
+		Integer a = 13;
+		Integer b = 12;
+		String c = String.valueOf((double) a / (double) b * 100.0);
+		System.out.println(c.substring(0, c.indexOf(".")) + "%");
+	}
+
+
+	public List<PlanGantt> getPlanGantt(Integer id) {
 		List<Record> records = Db.find(SQL.SELECT_PLAN_INFORMATION, id);
-		if (records==null||records.isEmpty()) {
+		if (records == null || records.isEmpty()) {
 			throw new OperationException("此排产计划无法获取甘特图,请检查所有配置信息");
 		}
 		int index = 1;
 		String zhidan = records.get(0).getStr("ZhiDan");
 		Integer planProduction = records.get(0).getInt("scheduling_quantity");
-		
-		PlanGannt planGannt = new PlanGannt();
-		
-		planGannt.setId(index);
-		planGannt.setName(zhidan);
-		planGannt.setPlanProduction(planProduction.toString());
+		PlanGantt planGantt = new PlanGantt();
+		planGantt.setId(index);
+		planGantt.setName(zhidan);
+		planGantt.setPlanProduction(planProduction.toString());
 		StringBuilder computerSql = new StringBuilder(" and (");
 		for (Record record : records) {
-			computerSql.append(" Computer LIKE '%"+record.getStr("ip")+"%' or ");
-			
+			computerSql.append(" Computer LIKE '%" + record.getStr("ip") + "%' or ");
 		}
 		if (StringUtils.endsWith(computerSql, "or ")) {
 			computerSql.delete(computerSql.lastIndexOf("or"), computerSql.length());
 		}
-		
 		String sql = computerSql.append(")").toString();
-		
-		PlanGannt smtGannt = genPlanGannt(index+1, zhidan, planProduction, sql);
-		PlanGannt functionGannt = genPlanGannt(index+2, zhidan, planProduction, sql);
-		PlanGannt agedGannt = genPlanGannt(index+3, zhidan, planProduction, sql);
-		PlanGannt couplingGannt = genPlanGannt(index+4, zhidan, planProduction, sql);
-		PlanGannt cartonGannt = genPlanGannt(index+5, zhidan, planProduction, sql);
-		
-		List<PlanGannt> gannts = new ArrayList<>();
-		gannts.add(planGannt);
-		gannts.add(smtGannt);
-		gannts.add(functionGannt);
-		gannts.add(agedGannt);
-		gannts.add(couplingGannt);
-		gannts.add(cartonGannt);
-		planGannt.setStartTime("-");
-		for (int i = 1; i < gannts.size(); i++) {
-			if (!gannts.get(i).getStartTime().equals("-")) {
-				planGannt.setStartTime(gannts.get(i).getStartTime());
+		PlanGantt smtGantt = genPlanGantt(index + 1, zhidan, planProduction, sql);
+		PlanGantt functionGantt = genPlanGantt(index + 2, zhidan, planProduction, sql);
+		PlanGantt agedGantt = genPlanGantt(index + 3, zhidan, planProduction, sql);
+		PlanGantt couplingGantt = genPlanGantt(index + 4, zhidan, planProduction, sql);
+		PlanGantt cartonGantt = genPlanGantt(index + 5, zhidan, planProduction, sql);
+		List<PlanGantt> gantts = new ArrayList<>();
+		gantts.add(planGantt);
+		gantts.add(smtGantt);
+		gantts.add(functionGantt);
+		gantts.add(agedGantt);
+		gantts.add(couplingGantt);
+		gantts.add(cartonGantt);
+		planGantt.setStartTime("-");
+		for (int i = 1; i < gantts.size(); i++) {
+			if (!gantts.get(i).getStartTime().equals("-")) {
+				planGantt.setStartTime(gantts.get(i).getStartTime());
 				break;
 			}
 		}
-		if (!cartonGannt.getEndTime().equals("-")) {
-			planGannt.setEndTime(cartonGannt.getEndTime());
-		}else {
-			planGannt.setEndTime("-");
+		if (!cartonGantt.getEndTime().equals("-")) {
+			planGantt.setEndTime(cartonGantt.getEndTime());
+		} else {
+			planGantt.setEndTime("-");
 		}
-		if (!planGannt.getStartTime().equals("-")&&!planGannt.getEndTime().equals("-")) {
-			planGannt.setIntervalDay(getDateIntervalDays(planGannt.getStartTime(), planGannt.getEndTime())+"");
-		}else {
-			planGannt.setIntervalDay("-");
+		if (!planGantt.getStartTime().equals("-") && !planGantt.getEndTime().equals("-")) {
+			planGantt.setIntervalDay(getDateIntervalDays(planGantt.getStartTime(), planGantt.getEndTime()) + "");
+		} else {
+			planGantt.setIntervalDay("-");
 		}
-		planGannt.setCompletionRate(cartonGannt.getCompletionRate());
-		planGannt.setCompletionQuantity(cartonGannt.getCompletionQuantity());
-		return gannts;
-		
+		planGantt.setCompletionRate(cartonGantt.getCompletionRate());
+		planGantt.setCompletionQuantity(cartonGantt.getCompletionQuantity());
+		return gantts;
+
 	}
+
 
 	public boolean checkCompleteTime(Integer schedulingQuantity, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity) {
 		double changeLineTime = 0.0;
@@ -1205,13 +1204,13 @@ public static void main(String[] args) {
 		} catch (Exception e) {
 			throw new OperationException("转线时间格式出错");
 		}
-		if (changeLineTime<=0) {
+		if (changeLineTime <= 0) {
 			throw new OperationException("转线时间格式出错");
 		}
-		double actualCostHours = BigDecimal.valueOf((double)schedulingQuantity / (double)capacity).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
-		long lineChangeCostMilliseconds = (long) ( changeLineTime* 60 * 60 * 1000);
-		long actualCostMilliseconds = (long)actualCostHours * 60 * 60 * 1000 + lineChangeCostMilliseconds;
-		long planCostMilliseconds = planCompleteTime.getTime() - planStartTime.getTime()+1;
+		double actualCostHours = BigDecimal.valueOf((double) schedulingQuantity / (double) capacity).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
+		long lineChangeCostMilliseconds = (long) (changeLineTime * 60 * 60 * 1000);
+		long actualCostMilliseconds = (long) actualCostHours * 60 * 60 * 1000 + lineChangeCostMilliseconds;
+		long planCostMilliseconds = planCompleteTime.getTime() - planStartTime.getTime() + 1;
 		if (actualCostMilliseconds > planCostMilliseconds) {
 			return false;
 		}
@@ -1219,37 +1218,37 @@ public static void main(String[] args) {
 	}
 
 
-	private PlanGannt genPlanGannt(Integer index, String zhidan, Integer planProduction, String computerSql) {
+	private PlanGantt genPlanGantt(Integer index, String zhidan, Integer planProduction, String computerSql) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Integer number = 0;
-		PlanGannt gannt = new PlanGannt();
-		gannt.setId(index);
+		PlanGantt gantt = new PlanGantt();
+		gantt.setId(index);
 		switch (index) {
 		case 2:
-			gannt.setName(Constant.SMT_TEST);
+			gantt.setName(Constant.SMT_TEST);
 			number = Db.queryInt(SQL.SELECT_SMTTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		case 3:
-			gannt.setName(Constant.FUNCTION_TEST);
+			gantt.setName(Constant.FUNCTION_TEST);
 			number = Db.queryInt(SQL.SELECT_FUNCTIONTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		case 4:
-			gannt.setName(Constant.AGED_TEST);
+			gantt.setName(Constant.AGED_TEST);
 			number = Db.queryInt(SQL.SELECT_AGEDTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		case 5:
-			gannt.setName(Constant.COUPLING_TEST);
+			gantt.setName(Constant.COUPLING_TEST);
 			number = Db.queryInt(SQL.SELECT_COUPLETEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		case 6:
-			gannt.setName(Constant.CARTON_TEST);
+			gantt.setName(Constant.CARTON_TEST);
 			number = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_COMPUTER + computerSql, zhidan);
 			break;
 		default:
 			throw new OperationException("无法识别的类型");
 		}
 		if (number > 0) {
-			gannt.setPlanProduction(planProduction.toString());
+			gantt.setPlanProduction(planProduction.toString());
 			Record firstRecord = new Record();
 			switch (index) {
 			case 2:
@@ -1270,56 +1269,48 @@ public static void main(String[] args) {
 			default:
 				break;
 			}
-			gannt.setStartTime(dateFormat.format(firstRecord.getDate("TestTime")));
+			gantt.setStartTime(dateFormat.format(firstRecord.getDate("TestTime")));
 			if (number >= planProduction) {
 				Record lastRecord = new Record();
 				switch (index) {
 				case 2:
-					lastRecord = Db.findFirst(
-							SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
-							planProduction, zhidan);
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_SMTTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO, planProduction, zhidan);
 					break;
 				case 3:
-					lastRecord = Db.findFirst(
-							SQL.SELECT_LAST_FUNCTIONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
-							planProduction, zhidan);
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_FUNCTIONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO, planProduction, zhidan);
 					break;
 				case 4:
-					lastRecord = Db.findFirst(
-							SQL.SELECT_LAST_AGEDTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
-							planProduction, zhidan);
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_AGEDTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO, planProduction, zhidan);
 					break;
 				case 5:
-					lastRecord = Db.findFirst(
-							SQL.SELECT_LAST_COUPLETEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,
-							planProduction, zhidan);
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_COUPLETEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO, planProduction, zhidan);
 					break;
 				case 6:
-					lastRecord = Db.findFirst(SQL.SELECT_LAST_CARTONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO,planProduction, zhidan);
+					lastRecord = Db.findFirst(SQL.SELECT_LAST_CARTONTEST_FRAGMENT_ONE + computerSql + SQL.SELECT_LAST_TEST_FRAGMENT_TWO, planProduction, zhidan);
 					break;
 				default:
 					break;
 				}
-				gannt.setEndTime(dateFormat.format(lastRecord.getDate("TestTime")));
-				gannt.setIntervalDay(getDateIntervalDays(gannt.getStartTime(), gannt.getEndTime()) + "");
-				gannt.setCompletionQuantity(number.toString());
-				gannt.setCompletionRate("100%");
+				gantt.setEndTime(dateFormat.format(lastRecord.getDate("TestTime")));
+				gantt.setIntervalDay(getDateIntervalDays(gantt.getStartTime(), gantt.getEndTime()) + "");
+				gantt.setCompletionQuantity(number.toString());
+				gantt.setCompletionRate("100%");
 			} else {
-				gannt.setEndTime("-");
-				gannt.setIntervalDay("-");
-				gannt.setCompletionQuantity(number.toString());
+				gantt.setEndTime("-");
+				gantt.setIntervalDay("-");
+				gantt.setCompletionQuantity(number.toString());
 				String completionRate = String.valueOf((double) number / (double) planProduction * 100.0);
-				gannt.setCompletionRate(completionRate.substring(0, completionRate.indexOf(".")) + "%");
+				gantt.setCompletionRate(completionRate.substring(0, completionRate.indexOf(".")) + "%");
 			}
 		} else {
-			gannt.setCompletionQuantity("-");
-			gannt.setCompletionRate("-");
-			gannt.setEndTime("-");
-			gannt.setIntervalDay("-");
-			gannt.setPlanProduction("-");
-			gannt.setStartTime("-");
+			gantt.setCompletionQuantity("-");
+			gantt.setCompletionRate("-");
+			gantt.setEndTime("-");
+			gantt.setIntervalDay("-");
+			gantt.setPlanProduction("-");
+			gantt.setStartTime("-");
 		}
-		return gannt;
+		return gantt;
 	}
 
 
@@ -1344,7 +1335,7 @@ public static void main(String[] args) {
 		} catch (Exception e) {
 			throw new OperationException("格式化时间出错，请检查时间格式");
 		}
-		return daysBetween+1;
+		return daysBetween + 1;
 	}
 
 
@@ -1407,33 +1398,31 @@ public static void main(String[] args) {
 	}
 
 
-	private OrderVO genOrderVO(Orders order,Integer type) {
+	private OrderVO genOrderVO(Orders order, Integer type) {
 		OrderVO orderVO = new OrderVO(order, null, null);
 		Record peopleCapacityRecord = null;
 		Integer scheduledQuantity = null;
 		if (type == 0) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP,order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-		}else if (type == 1) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP,order.getId());
+		} else if (type == 1) {
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
 		} else if (type == 2) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP,order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
 		}
-		if (scheduledQuantity==null) {
+		if (scheduledQuantity == null) {
 			orderVO.setUnscheduledQuantity(order.getQuantity());
-		}else {
-			orderVO.setUnscheduledQuantity(order.getQuantity()-scheduledQuantity);
+		} else {
+			orderVO.setUnscheduledQuantity(order.getQuantity() - scheduledQuantity);
 		}
-		if (peopleCapacityRecord==null) {
+		if (peopleCapacityRecord == null) {
 			orderVO.setCapacity(0);
-		}else {
+		} else {
 			orderVO.setCapacity(peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
 		}
-		
 		return orderVO;
-		
 	}
 
 }

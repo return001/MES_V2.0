@@ -1,6 +1,6 @@
 package com.jimi.mes_server.entity;
 
-public class PlanGannt {
+public class PlanGantt {
 
 	private Integer id;
 
