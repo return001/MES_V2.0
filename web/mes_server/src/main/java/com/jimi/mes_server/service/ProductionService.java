@@ -99,7 +99,8 @@ public class ProductionService {
 		if (!StrKit.isBlank(groupRemark)) {
 			processGroup.setGroupRemark(groupRemark);
 		}
-		return processGroup.save();
+		processGroup.save();
+		return processGroup.setPosition(processGroup.getId()).update();
 	}
 
 
@@ -113,12 +114,21 @@ public class ProductionService {
 
 
 	public Page<Record> selectProcessGroup(String filter) {
-		return daoService.select(SQL.SELECT_PROCESSGROUP, Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, null, null, filter);
+		return daoService.select(SQL.SELECT_PROCESSGROUP, Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, "position", null, filter);
 	}
 
 
-	public boolean editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark) {
+	public boolean editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer position) {
 		ProcessGroup processGroup = ProcessGroup.dao.findById(id);
+		if (position != null) {
+			ProcessGroup secondProcessGroup = ProcessGroup.dao.findById(position);
+			if (secondProcessGroup == null) {
+				throw new OperationException("需要进行交换位置的工序组不存在");
+			}
+			Db.update(SQL.UPDATE_PROCESSGROUP_POSITION, processGroup.getPosition(), secondProcessGroup.getId());
+			Db.update(SQL.UPDATE_PROCESSGROUP_POSITION, secondProcessGroup.getPosition(), processGroup.getId());
+			return true;
+		}
 		if (processGroup == null) {
 			throw new OperationException("修改失败，项目组不存在");
 		}
@@ -269,7 +279,8 @@ public class ProductionService {
 			}
 			process.setProcessGroup(processGroup);
 		}
-		return process.save();
+		process.save();
+		return process.setPosition(process.getId()).update();
 	}
 
 
@@ -297,16 +308,25 @@ public class ProductionService {
 			filter.append(" and process_group = " + processGroup);
 		}
 		SqlPara sqlPara = new SqlPara();
-		String orderBy = " order by processGroup ";
+		String orderBy = " order by processGroup,position ";
 		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter + orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
 
 
-	public boolean editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup) {
+	public boolean editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		Process process = Process.dao.findById(id);
 		if (process == null) {
 			throw new OperationException("修改失败，工序不存在");
+		}
+		if (position != null) {
+			Process secondProcess = Process.dao.findById(position);
+			if (secondProcess == null) {
+				throw new OperationException("需要进行交换位置的工序组不存在");
+			}
+			Db.update(SQL.UPDATE_PROCESS_POSITION, process.getPosition(), secondProcess.getId());
+			Db.update(SQL.UPDATE_PROCESS_POSITION, secondProcess.getPosition(), process.getId());
+			return true;
 		}
 		if (!StrKit.isBlank(processNo)) {
 			Process temp = Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo);

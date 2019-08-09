@@ -150,11 +150,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:43:47
 	 */
 	@Access({ "engineer" })
-	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark) {
+	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark)) {
+		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark, position)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -304,11 +304,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:52:31
 	 */
 	@Access({ "engineer" })
-	public void editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup) {
+	public void editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editProcess(id, processNo, processName, processRemark, processGroup)) {
+		if (productionService.editProcess(id, processNo, processName, processRemark, processGroup, position)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

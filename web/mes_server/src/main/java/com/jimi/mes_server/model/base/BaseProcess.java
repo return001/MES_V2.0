@@ -54,4 +54,13 @@ public abstract class BaseProcess<M extends BaseProcess<M>> extends Model<M> imp
 		return getInt("process_group");
 	}
 
+	public M setPosition(java.lang.Integer position) {
+		set("position", position);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getPosition() {
+		return getInt("position");
+	}
+
 }

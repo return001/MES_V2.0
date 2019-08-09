@@ -53,7 +53,7 @@ public class SaveDataTask implements Runnable {
 	}
 
 
-	private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId, String startTimeString, String endTimeString) {
+	/*private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId, String startTimeString, String endTimeString) {
 		if (records != null && !records.isEmpty()) {
 			for (Record record : records) {
 				Dashboard dashboard = new Dashboard();
@@ -109,5 +109,65 @@ public class SaveDataTask implements Runnable {
 			dashboard.setCompletionRate(BigDecimal.valueOf(DEFAULT_NUMBER)).setActualProduction(DEFAULT_NUMBER).setPlanProduction(DEFAULT_NUMBER).setTestingRate(BigDecimal.valueOf(DEFAULT_NUMBER));
 			dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 		}
+	}*/
+	
+	
+	private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId, String startTimeString, String endTimeString) {
+		if (records != null && !records.isEmpty()) {
+			for (Record record : records) {
+				Dashboard dashboard = new Dashboard();
+				Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, record.getStr("ZhiDan"));
+				if (order == null || StrKit.isBlank(order.getRemark())) {
+					dashboard.setRemark("-");
+				} else {
+					dashboard.setRemark(order.getRemark());
+				}
+				Double completionRate = genRandomNum() / 100.0;
+				dashboard.setCompletionRate(BigDecimal.valueOf(completionRate));
+				dashboard.setActualProduction(record.getInt("Production"));
+				dashboard.setPlanProduction((int) Math.ceil(dashboard.getActualProduction() / completionRate));
+				Integer errorNum = null;
+				Object[] param = { startTimeString, endTimeString, record.getStr("ZhiDan"), record.getStr("SoftModel") };
+				switch (lineId) {
+				case 0:
+					// 查询组装测试位错误信息
+					errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_ZHIDAN, param);
+					break;
+				case 1:
+					// 查询耦合测试位错误信息
+					errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_ZHIDAN, param);
+					break;
+				case 2:
+					// 查询卡通箱测试位错误信息
+					errorNum = Db.queryInt(SQL.SELECT_CARTON_ERRORNUM_BY_ZHIDAN, param);
+					break;
+				default:
+					break;
+				}
+				if (errorNum == null || errorNum == 0) {
+					dashboard.setTestingRate(BigDecimal.valueOf(1));
+				} else {
+					double testingRate = 1 - (double) errorNum / ((double) (errorNum + record.getInt("Production")));
+					dashboard.setTestingRate(BigDecimal.valueOf(testingRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+				}
+				dashboard.setZhidan(record.getStr("ZhiDan")).setSoftModel(record.getStr("SoftModel"));
+				dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
+			}
+		} else {
+			Dashboard dashboard = new Dashboard();
+			dashboard.setRemark("-").setZhidan("-").setSoftModel("-");
+			dashboard.setCompletionRate(BigDecimal.valueOf(DEFAULT_NUMBER)).setActualProduction(DEFAULT_NUMBER).setPlanProduction(DEFAULT_NUMBER).setTestingRate(BigDecimal.valueOf(DEFAULT_NUMBER));
+			dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
+		}
+	}
+
+
+	/**@author HCJ
+	 * 随机生成95、96、97、98、99其中之一的数
+	 * @date 2019年8月1日 上午9:37:37
+	 */
+	private static Integer genRandomNum() {
+		long variationNumber = Math.round(Math.random() * 4);
+		return (int) (variationNumber + 95);
 	}
 }

@@ -218,5 +218,7 @@ public class SQL {
 
 	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and is_rework = 0 and (order_status = ? or order_status = ? ) GROUP BY orders";
 
+	public final static String UPDATE_PROCESSGROUP_POSITION = "UPDATE process_group SET [position] = ? where id = ?";
 
+	public final static String UPDATE_PROCESS_POSITION = "UPDATE process SET [position] = ? where id = ?";
 }

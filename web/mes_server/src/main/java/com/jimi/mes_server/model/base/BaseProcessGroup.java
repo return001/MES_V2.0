@@ -45,4 +45,13 @@ public abstract class BaseProcessGroup<M extends BaseProcessGroup<M>> extends Mo
 		return getStr("group_remark");
 	}
 
+	public M setPosition(java.lang.Integer position) {
+		set("position", position);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getPosition() {
+		return getInt("position");
+	}
+
 }
