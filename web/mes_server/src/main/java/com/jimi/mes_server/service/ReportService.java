@@ -24,7 +24,6 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jimi.mes_server.entity.Constant;
-import com.jimi.mes_server.entity.DashboardInfo;
 import com.jimi.mes_server.entity.MultiTableQueryInfo;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.exception.OperationException;
@@ -670,25 +669,32 @@ public class ReportService extends SelectService{
 
 	/**@author HCJ
 	 * 查询看板不良数据
-	 * @method selectErrorMsg
-	 * @param line
-	 * @return
-	 * @return List<Record>
-	 * @date 2019年8月6日 上午11:06:37
+	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
+	 * @date 2019年8月1日 上午10:08:08
 	 */
-	public List<Record> selectErrorMsg(Integer line) {
+	public Record selectErrorMsg(Integer line) {
 		Map<String, String> timeMap = getBeginAndEndTime();
-		List<Record> errorMsg = new ArrayList<>();
-		Object[] param = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
+		Record errorMsg = new Record();
+		Integer errorNum = 0;
+		/*timeMap.get("startTime"), timeMap.get("endTime")*/
+		Object[] param1 = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
+		Object[] param2 = { "2017-08-21 16:59:44.333", "2017-08-23 16:59:44.333" };
+		Object[] param3 = { "2017-10-06 13:49:29.157", "2017-10-12 13:49:29.157" };
 		switch (line) {
 		case 0:
-			errorMsg = Db.find(SQL.SELECT_FUNCTION_ERROR, param);
+			errorMsg = Db.findFirst(SQL.SELECT_FUNCTION_ERROR, param1);
+			errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_TESTTIME, param1);
+			errorMsg.set("errorNum5", errorNum-errorMsg.getInt("errorNumSum"));
+			errorMsg.remove("errorNumSum");
 			break;
 		case 1:
-			errorMsg = Db.find(SQL.SELECT_COUPLE_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			errorMsg = Db.findFirst(SQL.SELECT_COUPLE_ERROR, param2);
+			errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_TESTTIME, param2);
+			errorMsg.set("errorNum4", errorNum-errorMsg.getInt("errorNumSum"));
+			errorMsg.remove("errorNumSum");
 			break;
 		case 2:
-			errorMsg = Db.find(SQL.SELECT_CARTON_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			errorMsg = Db.findFirst(SQL.SELECT_CARTON_ERROR, param3);
 			break;
 		default:
 			throw new ParameterException("无法识别的类型");

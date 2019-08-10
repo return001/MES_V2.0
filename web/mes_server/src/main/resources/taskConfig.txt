@@ -1,6 +1,6 @@
 cron4j=task_save_data
 
-task_save_data.cron=45 9,10,11,12,14,15,16,17,18 * * *
+task_save_data.cron=20 9,10,11,12,14,15,16,17,18 * * *
 task_save_data.class=com.jimi.mes_server.task.SaveDataTask
 task_save_data.daemon=true
 task_save_data.enable=true
