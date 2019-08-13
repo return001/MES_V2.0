@@ -41,12 +41,12 @@ public class SaveDataTask implements Runnable {
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - 1);
 		Date startTime = calendar.getTime();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		/*
-		 * String start = dateFormat.format(startTime); String end =
-		 * dateFormat.format(endTime);
-		 */
-		String start = "2017-01-04 08:34:17.010";
-		String end = "2017-01-04 09:34:17.010";
+		
+		  String start = dateFormat.format(startTime); 
+		  String end = dateFormat.format(endTime);
+		 
+		/*String start = "2017-01-04 08:34:17.010";
+		String end = "2017-01-04 09:34:17.010";*/
 		saveDashboard(Db.find(SQL.SELECT_AUTOTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.AUTOTEST_LINEID, start, end);
 		saveDashboard(Db.find(SQL.SELECT_COUPLETEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.COUPLETEST_LINEID, start, end);
 		saveDashboard(Db.find(SQL.SELECT_CARTONTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.CARTONTEST_LINEID, start, end);

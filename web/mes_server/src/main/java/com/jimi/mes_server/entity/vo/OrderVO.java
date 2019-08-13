@@ -15,7 +15,7 @@ public class OrderVO extends Orders {
 	}
 
 	public void setCapacity(Integer capacity) {
-		this.capacity = capacity;
+		this.set("capacity", capacity);
 	}
 
 	public Integer getUnscheduledQuantity() {
@@ -23,14 +23,14 @@ public class OrderVO extends Orders {
 	}
 
 	public void setUnscheduledQuantity(Integer unscheduledQuantity) {
-		this.unscheduledQuantity = unscheduledQuantity;
+		this.set("unscheduledQuantity", unscheduledQuantity);
 	}
 
 	public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
 		this.setUnscheduledQuantity(unscheduledQuantity);
-		this.set("unscheduledQuantity", getUnscheduledQuantity());
+		/*this.set("unscheduledQuantity", getUnscheduledQuantity());*/
 		this.setCapacity(capacity);
-		this.set("capacity", getCapacity());
+		/*this.set("capacity", getCapacity());*/
 		
 		this.set("alias", order.getAlias());
 		this.set("orderDate", order.getOrderDate());

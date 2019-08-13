@@ -677,24 +677,24 @@ public class ReportService extends SelectService{
 		Record errorMsg = new Record();
 		Integer errorNum = 0;
 		/*timeMap.get("startTime"), timeMap.get("endTime")*/
-		Object[] param1 = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
+		/*Object[] param1 = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
 		Object[] param2 = { "2017-08-21 16:59:44.333", "2017-08-23 16:59:44.333" };
-		Object[] param3 = { "2017-10-06 13:49:29.157", "2017-10-12 13:49:29.157" };
+		Object[] param3 = { "2017-10-06 13:49:29.157", "2017-10-12 13:49:29.157" };*/
 		switch (line) {
 		case 0:
-			errorMsg = Db.findFirst(SQL.SELECT_FUNCTION_ERROR, param1);
-			errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_TESTTIME, param1);
+			errorMsg = Db.findFirst(SQL.SELECT_FUNCTION_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_TESTTIME, timeMap.get("startTime"), timeMap.get("endTime"));
 			errorMsg.set("errorNum5", errorNum-errorMsg.getInt("errorNumSum"));
 			errorMsg.remove("errorNumSum");
 			break;
 		case 1:
-			errorMsg = Db.findFirst(SQL.SELECT_COUPLE_ERROR, param2);
-			errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_TESTTIME, param2);
+			errorMsg = Db.findFirst(SQL.SELECT_COUPLE_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_TESTTIME, timeMap.get("startTime"), timeMap.get("endTime"));
 			errorMsg.set("errorNum4", errorNum-errorMsg.getInt("errorNumSum"));
 			errorMsg.remove("errorNumSum");
 			break;
 		case 2:
-			errorMsg = Db.findFirst(SQL.SELECT_CARTON_ERROR, param3);
+			errorMsg = Db.findFirst(SQL.SELECT_CARTON_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
 			break;
 		default:
 			throw new ParameterException("无法识别的类型");

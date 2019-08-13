@@ -45,6 +45,7 @@ import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
 import com.jimi.mes_server.model.SchedulingPlan;
 import com.jimi.mes_server.service.base.SelectService;
+import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
 
 public class ProductionService {
@@ -308,7 +309,7 @@ public class ProductionService {
 			filter.append(" and process_group = " + processGroup);
 		}
 		SqlPara sqlPara = new SqlPara();
-		String orderBy = " order by processGroup,position ";
+		String orderBy = " order by processGroup,process.position ";
 		sqlPara.setSql(SQL.SELECT_PROCESS_PROCESSGROUP + filter + orderBy);
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
@@ -361,7 +362,12 @@ public class ProductionService {
 		}
 		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
 		if (computer != null) {
-			throw new OperationException("IP地址已存在，请直接引用");
+			Line temp = Line.dao.findById(computer.getLine());
+			if (line!=null) {
+				throw new OperationException("此IP地址已被产线： "+temp.getLineName()+" 所使用");
+			}else {
+				throw new OperationException("此IP地址已被使用");
+			}
 		}
 		LineComputer lineComputer = new LineComputer();
 		lineComputer.setIp(ip).setLine(line);
@@ -402,7 +408,13 @@ public class ProductionService {
 		}
 		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
 		if (computer != null && !computer.getId().equals(id)) {
-			throw new OperationException("IP地址已存在，请直接引用");
+			Line line = Line.dao.findById(computer.getLine());
+			if (line!=null) {
+				throw new OperationException("此IP地址已被产线： "+line.getLineName()+" 所使用");
+			}else {
+				throw new OperationException("此IP地址已被使用");
+			}
+			
 		}
 		lineComputer.setIp(ip);
 		if (!StrKit.isBlank(computerName)) {
@@ -453,7 +465,7 @@ public class ProductionService {
 			}
 			filter.append(" and process = " + process);
 		}
-		String orderBy = "ORDER BY soft_model,[position]";
+		String orderBy = "ORDER BY soft_model,process_group.[position],model_capacity.[position]";
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_MODELCAPACITY + filter + orderBy);
 		return Db.paginate(pageNo, pageSize, sqlPara);
@@ -667,7 +679,8 @@ public class ProductionService {
 			for (OrderItem orderItem : orderItems) {
 				String zhidan = orderItem.getZhidan();
 				String softModel = orderItem.getSoftModel();
-				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null) {
+				boolean isDate = orderItem.getOrderDate()!=null&&orderItem.getDeliveryDate()!=null;
+				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null&&isDate) {
 					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
 					if (temp != null) {
 						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
@@ -833,6 +846,9 @@ public class ProductionService {
 			SchedulingPlan schedulingPlan = new SchedulingPlan();
 			if (!StrKit.isBlank(remark)) {
 				schedulingPlan.setRemark(remark);
+			}
+			if (!CommonUtil.isNum(lines[i])||!CommonUtil.isNum(quantitys[i])||!CommonUtil.isNum(capacitys[i])) {
+				throw new OperationException("格式必须为数字");
 			}
 			schedulingPlan.setProcessGroup(processGroup).setLine(Integer.parseInt(lines[i])).setSchedulingQuantity(Integer.parseInt(quantitys[i])).setOrders(order).setIsTimeout(false);
 			schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
@@ -1337,10 +1353,10 @@ public class ProductionService {
 	private void checkUserById(Integer id) {
 		LUserAccount user = LUserAccount.dao.findById(id);
 		if (user == null) {
-			throw new OperationException("产线负责人不存在");
+			throw new OperationException("此用户不存在");
 		}
 		if (!user.getInService()) {
-			throw new OperationException("产线负责人未启用");
+			throw new OperationException("此用户未启用");
 		}
 	}
 
@@ -1408,11 +1424,16 @@ public class ProductionService {
 	private Page<Record> formatPlanTimeOut(Page<Record> page) {
 		List<Record> records = page.getList();
 		for (Record record : records) {
-			if (new Date().after(record.getDate("planCompleteTime"))) {
-				if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
-					record.set("isTimeout", true);
+			if (record.getDate("planCompleteTime")==null) {
+				continue;
+			}else {
+				if (new Date().after(record.getDate("planCompleteTime"))) {
+					if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
+						record.set("isTimeout", true);
+					}
 				}
 			}
+			
 		}
 		return page;
 	}
@@ -1437,10 +1458,17 @@ public class ProductionService {
 		} else {
 			orderVO.setUnscheduledQuantity(order.getQuantity() - scheduledQuantity);
 		}
+		
 		if (peopleCapacityRecord == null) {
 			orderVO.setCapacity(0);
 		} else {
-			orderVO.setCapacity(peopleCapacityRecord.getInt("capacity") / peopleCapacityRecord.getInt("people"));
+			Integer capacity = peopleCapacityRecord.getInt("capacity");
+			Integer people = peopleCapacityRecord.getInt("people");
+			if (capacity==null||people==null) {
+				orderVO.setCapacity(0);
+			}else {
+				orderVO.setCapacity(capacity / people);
+			}
 		}
 		return orderVO;
 	}

@@ -120,7 +120,7 @@ public class UserController extends Controller {
 	}
 	
 	
-	public void getUserIdAndName(String name) {
-		renderJson(ResultUtil.succeed(userService.getUserIdAndName(name)));
+	public void getUserIdAndName(String userName) {
+		renderJson(ResultUtil.succeed(userService.getUserIdAndName(userName)));
 	}
 }
