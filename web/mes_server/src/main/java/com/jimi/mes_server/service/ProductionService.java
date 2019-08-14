@@ -847,8 +847,8 @@ public class ProductionService {
 			if (!StrKit.isBlank(remark)) {
 				schedulingPlan.setRemark(remark);
 			}
-			if (!CommonUtil.isNum(lines[i])||!CommonUtil.isNum(quantitys[i])||!CommonUtil.isNum(capacitys[i])) {
-				throw new OperationException("格式必须为数字");
+			if (!CommonUtil.isPositiveInteger(lines[i])||!CommonUtil.isPositiveInteger(quantitys[i])||!CommonUtil.isPositiveInteger(capacitys[i])) {
+				throw new OperationException("格式必须为正整数");
 			}
 			schedulingPlan.setProcessGroup(processGroup).setLine(Integer.parseInt(lines[i])).setSchedulingQuantity(Integer.parseInt(quantitys[i])).setOrders(order).setIsTimeout(false);
 			schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
@@ -1424,7 +1424,9 @@ public class ProductionService {
 	private Page<Record> formatPlanTimeOut(Page<Record> page) {
 		List<Record> records = page.getList();
 		for (Record record : records) {
-			if (record.getDate("planCompleteTime")==null) {
+			record.set("isTimeout", true);
+			break;
+			/*if (record.getDate("planCompleteTime")==null) {
 				continue;
 			}else {
 				if (new Date().after(record.getDate("planCompleteTime"))) {
@@ -1432,7 +1434,7 @@ public class ProductionService {
 						record.set("isTimeout", true);
 					}
 				}
-			}
+			}*/
 			
 		}
 		return page;

@@ -89,7 +89,8 @@ public class UserService extends SelectService{
 		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType()) && !Constant.SUPER_ADMIN_USERTYPE.equals(originalUser.getWebUserType())) {
 			throw new OperationException("权限不足以修改为超级管理员");
 		}
-		if (LUserAccount.dao.find(uniqueCheckSql, user.getName()).size() != 0) {
+		LUserAccount temp = LUserAccount.dao.findFirst(uniqueCheckSql, user.getName());
+		if (temp!=null&&!temp.getId().equals(user.getId())) {
 			throw new OperationException("用户名已存在");
 		}
 		return setDeletePermission(user).update();

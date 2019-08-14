@@ -99,8 +99,13 @@ public class CommonUtil {
 	 * @param input 输入字符串
 	 * @date 2019年8月10日 下午3:44:25
 	 */
-	public static boolean isNum(String input) {
+	public static boolean isInteger(String input) {
 		String regex = "^-?[1-9]\\\\d*$";
+		return match(regex, input);
+	}
+	
+	public static boolean isPositiveInteger(String input) {
+		String regex = "^[1-9]\\d*|0$";
 		return match(regex, input);
 	}
 
