@@ -100,7 +100,7 @@ public class CommonUtil {
 	 * @date 2019年8月10日 下午3:44:25
 	 */
 	public static boolean isInteger(String input) {
-		String regex = "^-?[1-9]\\\\d*$";
+		String regex = "^-?[1-9]\\d*$";
 		return match(regex, input);
 	}
 	
@@ -112,6 +112,11 @@ public class CommonUtil {
 
 	public static boolean isEmail(String input) {
 		String regex = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
+		return match(regex, input);
+	}
+	
+	public static boolean isIPAddress(String input) {
+		String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
 		return match(regex, input);
 	}
 

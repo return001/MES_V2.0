@@ -48,6 +48,10 @@ import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
 
+/**排产模块业务层
+ * @author   HCJ
+ * @date     2019年8月16日 上午11:53:55
+ */
 public class ProductionService {
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
@@ -363,9 +367,9 @@ public class ProductionService {
 		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
 		if (computer != null) {
 			Line temp = Line.dao.findById(computer.getLine());
-			if (line!=null) {
-				throw new OperationException("此IP地址已被产线： "+temp.getLineName()+" 所使用");
-			}else {
+			if (line != null) {
+				throw new OperationException("此IP地址已被产线： " + temp.getLineName() + " 所使用");
+			} else {
 				throw new OperationException("此IP地址已被使用");
 			}
 		}
@@ -409,12 +413,11 @@ public class ProductionService {
 		LineComputer computer = LineComputer.dao.findFirst(SQL.SELECT_LINECOMPUTER_BY_IP, ip);
 		if (computer != null && !computer.getId().equals(id)) {
 			Line line = Line.dao.findById(computer.getLine());
-			if (line!=null) {
-				throw new OperationException("此IP地址已被产线： "+line.getLineName()+" 所使用");
-			}else {
+			if (line != null) {
+				throw new OperationException("此IP地址已被产线： " + line.getLineName() + " 所使用");
+			} else {
 				throw new OperationException("此IP地址已被使用");
 			}
-			
 		}
 		lineComputer.setIp(ip);
 		if (!StrKit.isBlank(computerName)) {
@@ -554,6 +557,7 @@ public class ProductionService {
 		if (!Constant.UNSCHEDULED_ORDERSTATUS.equals(order.getOrderStatus())) {
 			throw new OperationException("删除失败，只能删除未排产订单");
 		}
+		checkOrderUserType(userVO, order);
 		order.setDeleteReason(deleteReason).setOrderStatus(Constant.DELETED_ORDERSTATUS);
 		order.setDeletePerson(userVO.getId()).setDeleteTime(new Date());
 		return order.update();
@@ -630,7 +634,6 @@ public class ProductionService {
 					record.set("deletePersonName", deletePersonUser.getUserDes());
 				}
 			}
-
 		}
 		return record;
 	}
@@ -650,6 +653,7 @@ public class ProductionService {
 		if (temp == null) {
 			throw new OperationException("订单不存在");
 		}
+		checkOrderUserType(userVO, temp);
 		if (Constant.SCHEDULED_ORDERSTATUS.equals(temp.getOrderStatus())) {
 			temp.setQuantity(order.getQuantity());
 			return temp.update();
@@ -679,8 +683,8 @@ public class ProductionService {
 			for (OrderItem orderItem : orderItems) {
 				String zhidan = orderItem.getZhidan();
 				String softModel = orderItem.getSoftModel();
-				boolean isDate = orderItem.getOrderDate()!=null&&orderItem.getDeliveryDate()!=null;
-				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null&&isDate) {
+				boolean isDate = orderItem.getOrderDate() != null && orderItem.getDeliveryDate() != null;
+				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null && isDate) {
 					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
 					if (temp != null) {
 						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
@@ -742,7 +746,6 @@ public class ProductionService {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-
 			File file = new File(Constant.FILE_TABLE_PATH + fileName);
 			if (file.exists()) {
 				file.delete();
@@ -819,7 +822,6 @@ public class ProductionService {
 		for (Orders order : orders) {
 			orderVOs.add(genOrderVO(order, type));
 		}
-
 		return orderVOs;
 	}
 
@@ -838,17 +840,16 @@ public class ProductionService {
 		if (ProcessGroup.dao.findById(processGroup) == null) {
 			throw new OperationException("添加排产计划失败，工序组不存在");
 		}
-
 		for (int i = 0; i < capacitys.length; i++) {
+			if (!CommonUtil.isPositiveInteger(lines[i]) || !CommonUtil.isPositiveInteger(quantitys[i]) || !CommonUtil.isPositiveInteger(capacitys[i])) {
+				throw new OperationException("格式必须为正整数");
+			}
 			if (orderRecord.getQuantity() < Integer.parseInt(quantitys[i])) {
 				throw new OperationException("排产数量不能大于订单数量");
 			}
 			SchedulingPlan schedulingPlan = new SchedulingPlan();
 			if (!StrKit.isBlank(remark)) {
 				schedulingPlan.setRemark(remark);
-			}
-			if (!CommonUtil.isPositiveInteger(lines[i])||!CommonUtil.isPositiveInteger(quantitys[i])||!CommonUtil.isPositiveInteger(capacitys[i])) {
-				throw new OperationException("格式必须为正整数");
 			}
 			schedulingPlan.setProcessGroup(processGroup).setLine(Integer.parseInt(lines[i])).setSchedulingQuantity(Integer.parseInt(quantitys[i])).setOrders(order).setIsTimeout(false);
 			schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
@@ -880,45 +881,6 @@ public class ProductionService {
 		return schedulingPlan.delete();
 	}
 
-
-	/*
-	 * public Page<Record> selectPlan(Integer pageNo, Integer pageSize, Integer
-	 * schedulingPlanStatus, String zhidan, String customerName, String
-	 * orderDateFrom, String orderDateTo, String planStartTimeFrom, String
-	 * planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo,
-	 * String startTimeFrom, String startTimeTo, String completeTimeFrom, String
-	 * completeTimeTo, Integer processGroup, Integer line, String
-	 * productionPlanningNumber, String softModel, String productNo) { StringBuilder
-	 * filter = new StringBuilder();
-	 * filter.append(concatEqualSqlFilter("scheduling_plan_status",
-	 * schedulingPlanStatus));
-	 * filter.append(concatEqualSqlFilter("scheduling_plan.process_group",
-	 * processGroup)); filter.append(concatEqualSqlFilter("line", line));
-	 * filter.append(concatSqlFilter("zhidan", zhidan, true, false));
-	 * filter.append(concatSqlFilter("customer_name", customerName, true, false));
-	 * filter.append(concatSqlFilter("production_planning_number",
-	 * productionPlanningNumber, true, false));
-	 * filter.append(concatSqlFilter("soft_model", softModel, true, false));
-	 * filter.append(concatSqlFilter("product_no", productNo, true, false));
-	 * filter.append(concatSqlFilter("create_time", orderDateFrom, false, true));
-	 * filter.append(concatSqlFilter("create_time", orderDateTo, false, false));
-	 * filter.append(concatSqlFilter("plan_start_time", planStartTimeFrom, false,
-	 * true)); filter.append(concatSqlFilter("plan_start_time", planStartTimeTo,
-	 * false, false)); filter.append(concatSqlFilter("plan_complete_time",
-	 * planCompleteTimeFrom, false, true));
-	 * filter.append(concatSqlFilter("plan_complete_time", planCompleteTimeTo,
-	 * false, false)); filter.append(concatSqlFilter("start_time", startTimeFrom,
-	 * false, true)); filter.append(concatSqlFilter("start_time", startTimeTo,
-	 * false, false)); filter.append(concatSqlFilter("complete_time",
-	 * completeTimeFrom, false, true));
-	 * filter.append(concatSqlFilter("complete_time", completeTimeTo, false,
-	 * false));
-	 * 
-	 * SqlPara sqlPara = new SqlPara(); String orderBy =
-	 * " ORDER BY is_timeout DESC "; sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN +
-	 * filter + orderBy); return formatOrderDate(Db.paginate(pageNo, pageSize,
-	 * sqlPara)); }
-	 */
 
 	public Page<Record> selectPlan(PlanQueryCriteria planQueryCriteria) {
 		StringBuilder filter = new StringBuilder();
@@ -1013,26 +975,45 @@ public class ProductionService {
 		if (Constant.COMPLETED_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
 			throw new OperationException("已完成排产计划无法修改");
 		}
-		double changeLineTime = 0.0;
-		try {
-			changeLineTime = Double.parseDouble(lineChangeTime);
-		} catch (Exception e) {
-			throw new OperationException("转线时间格式出错");
+		if (lineChangeTime != null) {
+			double changeLineTime = 0.0;
+			try {
+				changeLineTime = Double.parseDouble(lineChangeTime);
+			} catch (Exception e) {
+				throw new OperationException("转线时间格式出错");
+			}
+			if (changeLineTime <= 0) {
+				throw new OperationException("转线时间格式出错");
+			}
+			schedulingPlan.setLineChangeTime(lineChangeTime);
 		}
-		if (changeLineTime <= 0) {
-			throw new OperationException("转线时间格式出错");
+		if (isUrgent != null) {
+			schedulingPlan.setIsUrgent(isUrgent);
 		}
-		schedulingPlan.setLineChangeTime(lineChangeTime);
-		schedulingPlan.setIsUrgent(isUrgent).setLine(line).setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime).setCapacity(capacity);
+		if (line != null) {
+			schedulingPlan.setLine(line);
+		}
+		if (planStartTime != null) {
+			schedulingPlan.setPlanStartTime(planStartTime);
+		}
+		if (planCompleteTime != null) {
+			schedulingPlan.setPlanCompleteTime(planCompleteTime);
+		}
+		if (capacity != null) {
+			schedulingPlan.setCapacity(capacity);
+		}
 		if (remark != null) {
 			schedulingPlan.setRemark(remark);
 		}
+		if (schedulingQuantity != null) {
+			schedulingPlan.setSchedulingQuantity(schedulingQuantity);
+		}
 		if (producedQuantity != null) {
-			schedulingPlan.setProducedQuantity(producedQuantity).setSchedulingQuantity(schedulingQuantity);
-			if (producedQuantity >= schedulingQuantity) {
+			schedulingPlan.setProducedQuantity(producedQuantity);
+			if (producedQuantity >= schedulingPlan.getSchedulingQuantity()) {
 				schedulingPlan.setRemainingQuantity(0);
 			} else {
-				schedulingPlan.setRemainingQuantity(schedulingQuantity - producedQuantity);
+				schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - producedQuantity);
 			}
 		}
 		if (remainingReason != null) {
@@ -1046,58 +1027,13 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
-		if (isCompleted) {
+		if (isCompleted != null && isCompleted) {
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			schedulingPlan.setCompleteTime(new Date());
-			if (!order.getIsRework()) {
-				Integer quantity = 0;
-				List<SchedulingPlan> schedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER, schedulingPlan.getOrders());
-				if (schedulingPlans != null && !schedulingPlans.isEmpty()) {
-					for (SchedulingPlan plan : schedulingPlans) {
-						quantity += plan.getSchedulingQuantity();
-					}
-				}
-				if (quantity + producedQuantity >= order.getQuantity()) {
-					order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
-					return schedulingPlan.update() && order.update();
-				}
-			} else {
-				Integer assemblingQuantity = 0, testingQuantity = 0, packingQuantity = 0;
-				Boolean isAssemblingCompleted = false, isTestingCompleted = false, isPackingCompleted = false;
-				List<SchedulingPlan> assemblingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER_PROCESSGROUP, schedulingPlan.getOrders(), Constant.ASSEMBLING_PROCESS_GROUP);
-				if (assemblingPlans != null && !assemblingPlans.isEmpty()) {
-					for (SchedulingPlan assemblingPlan : assemblingPlans) {
-						assemblingQuantity += assemblingPlan.getProducedQuantity();
-					}
-					if (assemblingQuantity + producedQuantity >= order.getQuantity()) {
-						isAssemblingCompleted = true;
-					}
-				}
-				List<SchedulingPlan> testingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER_PROCESSGROUP, schedulingPlan.getOrders(), Constant.TESTING_PROCESS_GROUP);
-				if (testingPlans != null && !testingPlans.isEmpty()) {
-					for (SchedulingPlan testingPlan : testingPlans) {
-						testingQuantity += testingPlan.getProducedQuantity();
-					}
-					if (testingQuantity + producedQuantity >= order.getQuantity()) {
-						isTestingCompleted = true;
-					}
-				}
-				List<SchedulingPlan> packingPlans = SchedulingPlan.dao.find(SQL.SELECT_PRODUCEDQUANTITY_BY_ORDER_PROCESSGROUP, schedulingPlan.getOrders(), Constant.PACKING_PROCESS_GROUP);
-				if (packingPlans != null && !packingPlans.isEmpty()) {
-					for (SchedulingPlan packingPlan : packingPlans) {
-						packingQuantity += packingPlan.getProducedQuantity();
-					}
-					if (packingQuantity + producedQuantity >= order.getQuantity()) {
-						isPackingCompleted = true;
-					}
-				}
-				Boolean assembling = assemblingQuantity == 0 || (assemblingQuantity > 0 && isAssemblingCompleted);
-				Boolean testing = testingQuantity == 0 || (testingQuantity > 0 && isTestingCompleted);
-				Boolean packing = packingQuantity == 0 || (packingQuantity > 0 && isPackingCompleted);
-				if (assembling && testing && packing) {
-					order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
-					return schedulingPlan.update() && order.update();
-				}
+			Integer quantity = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL, order.getZhidan(), order.getSoftModel());
+			if (quantity >= order.getQuantity()) {
+				order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+				return schedulingPlan.update() && order.update();
 			}
 		}
 		return schedulingPlan.update();
@@ -1150,15 +1086,16 @@ public class ProductionService {
 		int size = page.getTotalRow();
 		List<Record> records = page.getList();
 		for (Record record : records) {
-			if (record.getBoolean("isUrgent")) {
-				record.set("isUrgent", "是");
-			} else {
+			Boolean isUrgent = record.getBoolean("isUrgent");
+			if (isUrgent == null || !isUrgent) {
 				record.set("isUrgent", "否");
+			} else {
+				record.set("isUrgent", "是");
 			}
 		}
 		String fileName = "排产计划单导出_" + simpleDateFormat.format(new Date()) + "_" + size + ".xlsx";
 		String title = "排产计划单";
-		response.setHeader("Content-Disposition", "attachment; filename=" + new String((fileName).getBytes("utf-8"), "iso-8859-1"));
+		response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, "utf-8"));
 		response.setContentType("application/vnd.ms-excel");
 		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		ExcelHelper helper = ExcelHelper.create(true);
@@ -1254,6 +1191,14 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 生成甘特图
+	 * @param index 位置
+	 * @param zhidan 订单号
+	 * @param planProduction 计划产量
+	 * @param computerSql 产线电脑IP的查询条件
+	 * @date 2019年8月16日 上午11:56:26
+	 */
 	private PlanGantt genPlanGantt(Integer index, String zhidan, Integer planProduction, String computerSql) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Integer number = 0;
@@ -1350,6 +1295,11 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 检查用户情况
+	 * @param id 用户ID
+	 * @date 2019年8月16日 上午11:57:48
+	 */
 	private void checkUserById(Integer id) {
 		LUserAccount user = LUserAccount.dao.findById(id);
 		if (user == null) {
@@ -1361,6 +1311,12 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 获取间隔天数
+	 * @param startDate 开始日期
+	 * @param endDate 结束日期
+	 * @date 2019年8月16日 上午11:58:05
+	 */
 	private long getDateIntervalDays(String startDate, String endDate) {
 		long daysBetween = 0;
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -1375,6 +1331,14 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 拼接sql语句
+	 * @param key 键
+	 * @param value 值
+	 * @param isLike 是否为like语句
+	 * @param isGreater 是否为大于
+	 * @date 2019年8月16日 上午11:58:32
+	 */
 	private StringBuilder concatSqlFilter(String key, String value, Boolean isLike, Boolean isGreater) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(value)) {
@@ -1392,6 +1356,12 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 拼接含=号的sql语句
+	 * @param key 键
+	 * @param value 值
+	 * @date 2019年8月16日 上午11:59:19
+	 */
 	private StringBuilder concatEqualSqlFilter(String key, Integer value) {
 		StringBuilder filter = new StringBuilder();
 		if (value != null) {
@@ -1401,6 +1371,12 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 格式化订单日期和客户信息
+	 * @param page 需要进行格式化的内容
+	 * @param isOperator 用户类型是否为操作员
+	 * @date 2019年8月16日 上午11:59:47
+	 */
 	private Page<Record> formatOrderDateAndCustomer(Page<Record> page, Boolean isOperator) {
 		List<Record> records = page.getList();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -1421,26 +1397,34 @@ public class ProductionService {
 	}
 
 
+	/**@author HCJ
+	 * 设置计划是否超时的字段
+	 * @param page 需要进行设置的内容
+	 * @date 2019年8月16日 下午12:00:40
+	 */
 	private Page<Record> formatPlanTimeOut(Page<Record> page) {
 		List<Record> records = page.getList();
 		for (Record record : records) {
-			record.set("isTimeout", true);
-			break;
-			/*if (record.getDate("planCompleteTime")==null) {
+			if (record.getDate("planCompleteTime") == null) {
 				continue;
-			}else {
+			} else {
 				if (new Date().after(record.getDate("planCompleteTime"))) {
 					if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
 						record.set("isTimeout", true);
 					}
 				}
-			}*/
-			
+			}
 		}
 		return page;
 	}
 
 
+	/**@author HCJ
+	 * 生成OrderVO
+	 * @param order 订单
+	 * @param type 类型
+	 * @date 2019年8月16日 下午12:01:26
+	 */
 	private OrderVO genOrderVO(Orders order, Integer type) {
 		OrderVO orderVO = new OrderVO(order, null, null);
 		Record peopleCapacityRecord = null;
@@ -1460,19 +1444,34 @@ public class ProductionService {
 		} else {
 			orderVO.setUnscheduledQuantity(order.getQuantity() - scheduledQuantity);
 		}
-		
 		if (peopleCapacityRecord == null) {
 			orderVO.setCapacity(0);
 		} else {
 			Integer capacity = peopleCapacityRecord.getInt("capacity");
 			Integer people = peopleCapacityRecord.getInt("people");
-			if (capacity==null||people==null) {
+			if (capacity == null || people == null) {
 				orderVO.setCapacity(0);
-			}else {
+			} else {
 				orderVO.setCapacity(capacity / people);
 			}
 		}
 		return orderVO;
+	}
+
+
+	/**@author HCJ
+	 * 检查操作订单的用户类型
+	 * @param userVO TOKEN内的用户信息
+	 * @param order 订单
+	 * @date 2019年8月16日 下午12:02:06
+	 */
+	private void checkOrderUserType(LUserAccountVO userVO, Orders order) {
+		LUserAccount user = LUserAccount.dao.findById(order.getOrderCreator());
+		if (user != null && user.getWebUserType() != null) {
+			if (!userVO.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE) && !user.getWebUserType().equals(userVO.getWebUserType())) {
+				throw new OperationException("当前角色无法操作此订单");
+			}
+		}
 	}
 
 }

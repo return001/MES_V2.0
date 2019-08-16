@@ -10,8 +10,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -33,9 +31,14 @@ import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.service.ProductionService;
+import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.util.TokenBox;
 
+/**排产模块控制器
+ * @author   HCJ
+ * @date     2019年8月16日 上午11:52:31
+ */
 public class ProductionController extends Controller {
 
 	private static ProductionService productionService = Enhancer.enhance(ProductionService.class);
@@ -331,7 +334,7 @@ public class ProductionController extends Controller {
 		if (line == null || StrKit.isBlank(ip)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (!validateIP(ip)) {
+		if (!CommonUtil.isIPAddress(ip)) {
 			throw new ParameterException("无效的IP地址");
 		}
 		if (productionService.addComputer(ip, computerName, remark, line)) {
@@ -387,7 +390,7 @@ public class ProductionController extends Controller {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (!StrKit.isBlank(ip) && !validateIP(ip)) {
+		if (!StrKit.isBlank(ip) && !CommonUtil.isIPAddress(ip)) {
 			throw new ParameterException("无效的IP地址");
 		}
 		if (productionService.editComputer(id, ip, computerName, remark)) {
@@ -489,8 +492,10 @@ public class ProductionController extends Controller {
 	 * @param order 订单信息
 	 * @date 2019年8月8日 下午3:57:34
 	 */
-	@Access({ "schedulingSZPC" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void addOrder(@Para("") Orders order) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
 		}
@@ -504,8 +509,6 @@ public class ProductionController extends Controller {
 		if (order.getOrderDate().after(order.getDeliveryDate())) {
 			throw new ParameterException("订单日期与交货日期冲突");
 		}
-		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (productionService.addOrder(order, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -520,7 +523,7 @@ public class ProductionController extends Controller {
 	 * @param deleteReason 删除原因
 	 * @date 2019年8月8日 下午3:57:52
 	 */
-	@Access({ "schedulingSZPC" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void deleteOrder(Integer id, String deleteReason) {
 		if (id == null || StrKit.isBlank(deleteReason)) {
 			throw new ParameterException("参数不能为空");
@@ -575,7 +578,7 @@ public class ProductionController extends Controller {
 	 * @param order 订单信息
 	 * @date 2019年8月8日 下午3:59:13
 	 */
-	@Access({ "schedulingSZPC" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void editOrder(@Para("") Orders order) {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
@@ -587,8 +590,8 @@ public class ProductionController extends Controller {
 		if (order.getQuantity() < 0) {
 			throw new ParameterException("订单数量格式错误");
 		}
-		if (order.getOrderDate().after(order.getDeliveryDate())) {
-			throw new ParameterException("订单日期与交货日期冲突");
+		if (order.getOrderDate().compareTo(order.getDeliveryDate()) >= 0) {
+			throw new ParameterException("订单日期不能晚于或者等于交货日期");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -679,7 +682,7 @@ public class ProductionController extends Controller {
 		File file = productionService.downloadOrderTable(id);
 		HttpServletResponse response = getResponse();
 		try {
-			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8").replaceAll("%C2%A0", "%20"));
+			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			renderJson(ResultUtil.failed("文件下载出错"));
@@ -705,6 +708,11 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 查询未排产普通订单
+	 * @param type
+	 * @date 2019年8月16日 上午11:42:33
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void selectUnscheduledPlan(Integer type) {
 		if (type == null) {
@@ -722,12 +730,16 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 查询未排产返工订单
+	 * @param type
+	 * @date 2019年8月16日 上午11:42:55
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void selectReworkPlan(Integer type) {
 		if (type == null) {
 			throw new ParameterException("参数不能为空");
 		}
-
 		switch (type) {
 		case 0:
 		case 1:
@@ -736,11 +748,20 @@ public class ProductionController extends Controller {
 		default:
 			throw new OperationException("无法识别的类型");
 		}
-
 		renderJson(ResultUtil.succeed(productionService.selectReworkPlan(type)));
 	}
 
 
+	/**@author HCJ
+	 * 添加排产计划
+	 * @param order 订单ID
+	 * @param remark 备注
+	 * @param schedulingQuantity 排产数量
+	 * @param line 产线ID
+	 * @param processGroup 工序组ID
+	 * @param capacity 产能
+	 * @date 2019年8月16日 上午11:43:23
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity) {
 		if (order == null || processGroup == null || StringUtils.isAnyBlank(schedulingQuantity, line, capacity)) {
@@ -756,6 +777,11 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 删除排产计划
+	 * @param id 计划ID
+	 * @date 2019年8月16日 上午11:47:46
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void deletePlan(Integer id) {
 		if (id == null) {
@@ -769,27 +795,22 @@ public class ProductionController extends Controller {
 	}
 
 
-	/*
-	 * public void selectPlan(Integer pageNo, Integer pageSize, Integer
-	 * schedulingPlanStatus, String zhidan, String customerName, String
-	 * orderDateFrom, String orderDateTo, String planStartTimeFrom, String
-	 * planStartTimeTo, String planCompleteTimeFrom, String planCompleteTimeTo,
-	 * String startTimeFrom, String startTimeTo, String completeTimeFrom, String
-	 * completeTimeTo, Integer processGroup, Integer line, String
-	 * productionPlanningNumber, String softModel, String productNo) {
-	 * renderJson(ResultUtil.succeed(productionService.selectPlan(pageNo, pageSize,
-	 * schedulingPlanStatus, zhidan, customerName, orderDateFrom, orderDateTo,
-	 * planStartTimeFrom, planStartTimeTo, planCompleteTimeFrom, planCompleteTimeTo,
-	 * startTimeFrom, startTimeTo, completeTimeFrom, completeTimeTo, processGroup,
-	 * line, productionPlanningNumber, softModel, productNo))); }
+	/**@author HCJ
+	 * 查询排产计划
+	 * @param planQueryCriteria 查询条件类
+	 * @date 2019年8月16日 上午11:47:58
 	 */
-
 	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		renderJson(ResultUtil.succeed(productionService.selectPlan(planQueryCriteria)));
 	}
 
 
+	/**@author HCJ
+	 * 查询排产计划详情
+	 * @param id 计划ID
+	 * @date 2019年8月16日 上午11:48:07
+	 */
 	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectPlanDetail(Integer id) {
 		if (id == null) {
@@ -800,28 +821,43 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 编辑排产计划
+	 * @param id 计划ID
+	 * @param isUrgent 是否紧急
+	 * @param remark 备注
+	 * @param schedulingQuantity 排产数量
+	 * @param line 产线ID
+	 * @param planStartTime 计划开始时间
+	 * @param planCompleteTime 计划完成时间
+	 * @param lineChangeTime 换线时间
+	 * @param capacity 产能
+	 * @param isCompleted 是否完成
+	 * @param producedQuantity 已生产数量
+	 * @param remainingReason 未完成原因
+	 * @param productionPlanningNumber 生产计划编号
+	 * @date 2019年8月16日 上午11:48:39
+	 */
 	@Access({ "schedulingJMPMC", "engineer" })
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
-		if (StringUtils.isAnyBlank(planStartTime, planCompleteTime, lineChangeTime) || id == null && schedulingQuantity == null || capacity == null || line == null || isCompleted == null || isUrgent == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		if (schedulingQuantity < 0 || capacity < 0) {
-			throw new ParameterException("排产数量或产能不合理");
-		}
-		if (producedQuantity != null && producedQuantity < 0) {
-			throw new ParameterException("已生产数量不合理");
-		}
-		if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
-			throw new ParameterException("转线时间内容为空或长度过长");
+		if (lineChangeTime != null) {
+			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
+				throw new ParameterException("转线时间内容为空或长度过长");
+			}
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date start;
-		Date end;
-		try {
-			start = dateFormat.parse(planStartTime);
-			end = dateFormat.parse(planCompleteTime);
-		} catch (ParseException e) {
-			throw new ParameterException("时间格式出错");
+		Date start = null;
+		Date end = null;
+		if (planStartTime != null && planCompleteTime != null) {
+			try {
+				start = dateFormat.parse(planStartTime);
+				end = dateFormat.parse(planCompleteTime);
+			} catch (ParseException e) {
+				throw new ParameterException("时间格式出错");
+			}
+			if (start.compareTo(end) >= 0) {
+				throw new ParameterException("开始时间不能晚于或者等于结束时间");
+			}
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -833,6 +869,12 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 编辑计划状态
+	 * @param id 计划ID
+	 * @param type 类型
+	 * @date 2019年8月16日 上午11:50:05
+	 */
 	@Access({ "schedulingJMPMC", "engineer" })
 	public void editPlanStatus(Integer id, Integer type) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -856,7 +898,6 @@ public class ProductionController extends Controller {
 		if ("schedulingJMPMC".equals(typeName) && !type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS - 1)) {
 			throw new ParameterException("PMC只能修改计划状态是否为待通知");
 		}
-
 		if (productionService.editPlanStatus(id, type, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -865,7 +906,12 @@ public class ProductionController extends Controller {
 	}
 
 
-	@Access({ "schedulingJMPMC" })
+	/**@author HCJ
+	 * 查询计划已生产数量
+	 * @param id 计划ID
+	 * @date 2019年8月16日 上午11:50:51
+	 */
+	@Access({ "schedulingJMPMC", "engineer" })
 	public void selectPlanProducedQuantity(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -875,27 +921,11 @@ public class ProductionController extends Controller {
 	}
 
 
-	/*
-	 * public void exportPlan(Integer schedulingPlanStatus, String zhidan, String
-	 * customerName, String orderDateFrom, String orderDateTo, String
-	 * planStartTimeFrom, String planStartTimeTo, String planCompleteTimeFrom,
-	 * String planCompleteTimeTo, String startTimeFrom, String startTimeTo, String
-	 * completeTimeFrom, String completeTimeTo, Integer processGroup, Integer line,
-	 * String productionPlanningNumber, String softModel, String productNo) {
-	 * OutputStream output = null; Page<Record> page =
-	 * productionService.selectPlan(Constant.DEFAULT_PAGE_NUM,
-	 * Constant.DEFAULT_PAGE_SIZE, schedulingPlanStatus, zhidan, customerName,
-	 * orderDateFrom, orderDateTo, planStartTimeFrom, planStartTimeTo,
-	 * planCompleteTimeFrom, planCompleteTimeTo, startTimeFrom, startTimeTo,
-	 * completeTimeFrom, completeTimeTo, processGroup, line,
-	 * productionPlanningNumber, softModel, productNo); try { // 设置响应
-	 * HttpServletResponse response = getResponse(); output =
-	 * response.getOutputStream(); productionService.exportPlan(page, response,
-	 * output); } catch (Exception e) { renderJson(ResultUtil.failed()); } finally {
-	 * try { if (output != null) { output.close(); } } catch (IOException e) {
-	 * renderJson(ResultUtil.failed()); } } renderNull(); }
+	/**@author HCJ
+	 * 获取计划甘特图
+	 * @param id 计划ID
+	 * @date 2019年8月16日 上午11:51:11
 	 */
-
 	@Access({ "schedulingJMPMC" })
 	public void getPlanGantt(Integer id) {
 		if (id == null) {
@@ -905,6 +935,11 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 导出排产计划单
+	 * @param planQueryCriteria 查询条件类
+	 * @date 2019年8月16日 上午11:51:25
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void exportPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		OutputStream output = null;
@@ -931,6 +966,15 @@ public class ProductionController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 校验完成时间
+	 * @param schedulingQuantity 排产数量
+	 * @param planStartTime 计划开始时间
+	 * @param planCompleteTime 计划完成时间
+	 * @param lineChangeTime 换线时间
+	 * @param capacity 产能
+	 * @date 2019年8月16日 上午11:51:43
+	 */
 	@Access({ "schedulingJMPMC" })
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity) {
 		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null || lineChangeTime == null) {
@@ -949,14 +993,5 @@ public class ProductionController extends Controller {
 			throw new ParameterException("时间格式出错");
 		}
 		renderJson(ResultUtil.succeed(productionService.checkCompleteTime(schedulingQuantity, start, end, lineChangeTime, capacity)));
-
-	}
-
-
-	public static boolean validateIP(String ipAddress) {
-		String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(ipAddress);
-		return matcher.matches();
 	}
 }

@@ -225,4 +225,6 @@ public class SQL {
 	public final static String UPDATE_PROCESSGROUP_POSITION = "UPDATE process_group SET [position] = ? where id = ?";
 
 	public final static String UPDATE_PROCESS_POSITION = "UPDATE process SET [position] = ? where id = ?";
+
+	public final static String SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ?";
 }
