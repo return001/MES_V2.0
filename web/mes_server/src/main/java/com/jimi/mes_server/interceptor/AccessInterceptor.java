@@ -11,7 +11,6 @@ import com.jimi.mes_server.exception.AccessException;
 import com.jimi.mes_server.service.UserService;
 import com.jimi.mes_server.util.TokenBox;
 
-
 /**
  * 用户权限拦截器
  * <br>

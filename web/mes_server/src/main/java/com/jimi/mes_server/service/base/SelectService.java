@@ -9,7 +9,6 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.mes_server.exception.ParameterException;
 
-
 /**
  * 通用查询业务层
  * <br>
@@ -17,10 +16,10 @@ import com.jimi.mes_server.exception.ParameterException;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class SelectService {
-	
-	private final static String[] OPERATORS = {"#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#"};
-	
-	
+
+	private final static String[] OPERATORS = { "#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#" };
+
+
 	/**
 	 * 分页查询，支持筛选和排序
 	 * @param table 提供可读的表名
@@ -31,7 +30,7 @@ public class SelectService {
 	 * @param filter 按字段筛选，支持<, >, >,=, <=, !=, =，多个字段请用&隔开
 	 * @return Page对象
 	 */
-	public Page<Record> select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
+	public Page<Record> select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		StringBuffer sql = new StringBuffer();
 		List<String> questionValues = new ArrayList<>();
 		createFrom(table, sql);
@@ -39,9 +38,9 @@ public class SelectService {
 		createOrderBy(ascBy, descBy, sql);
 		return paginateAndFillWhereValues(pageNo, pageSize, sql, questionValues, type);
 	}
-	
-	
-	public Page<Record> select(String resultSet, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+
+
+	public Page<Record> select(String resultSet, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		StringBuffer sql = new StringBuffer();
 		List<String> questionValues = new ArrayList<>();
 		sql.append(resultSet.substring(resultSet.indexOf("FROM")));
@@ -49,26 +48,26 @@ public class SelectService {
 		createOrderBy(ascBy, descBy, sql);
 		return paginateAndFillWhereValues(resultSet, pageNo, pageSize, sql, questionValues);
 	}
-	
-	
+
+
 	private void createFrom(String table, StringBuffer sql) {
-		//表名非空判断
-		if(table == null) {
+		// 表名非空判断
+		if (table == null) {
 			throw new ParameterException("table name must be provided");
 		}
-		//表是否在可读范围内
+		// 表是否在可读范围内
 		String[] reportTables = PropKit.use("properties.ini").get("readableTables").split(",");
 		for (String tablePara : reportTables) {
-			//按冒号分割表名和主键名（多个主键用&隔开）
-			if(tablePara.equals(table)) {
+			// 按冒号分割表名和主键名（多个主键用&隔开）
+			if (tablePara.equals(table)) {
 				sql.append(" FROM " + table);
 				return;
 			}
 		}
 		throw new ParameterException("not a readable table");
 	}
-	
-	
+
+
 	private void createWhere(String filter, List<String> questionValues, StringBuffer sql) {
 		// 判断filter存在与否
 		if (filter != null) {
@@ -96,7 +95,7 @@ public class SelectService {
 				String value = whereUnit.substring(operatorStartIndex + operationLength, whereUnit.length());
 				if (operator.toString().equals("in")) {
 					sql.append(key + " " + operator.toString() + " " + value + " AND ");
-				}else {
+				} else {
 					sql.append(key + " " + operator.toString() + " ? AND ");
 				}
 				if (OPERATORS[i].equals("#like#")) {
@@ -112,14 +111,14 @@ public class SelectService {
 			System.out.println(sql + "  " + questionValues);
 		}
 	}
-	
-	
+
+
 	private void createOrderBy(String ascBy, String descBy, StringBuffer sql) {
-		if(ascBy != null && descBy != null) {
+		if (ascBy != null && descBy != null) {
 			throw new ParameterException("ascBy and descBy can not be provided at the same time");
-		}else if(ascBy != null) {
+		} else if (ascBy != null) {
 			sql.append(" ORDER BY " + ascBy + " ASC ");
-		}else if(descBy != null){
+		} else if (descBy != null) {
 			sql.append(" ORDER BY " + descBy + " DESC ");
 		}
 	}
@@ -181,7 +180,7 @@ public class SelectService {
 	}
 
 
-	private Page<Record> paginateAndFillWhereValues( String resultSet, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
+	private Page<Record> paginateAndFillWhereValues(String resultSet, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
 		if ((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
 			throw new ParameterException("pageNo and pageSize must be provided at the same time");
 		}
@@ -192,5 +191,5 @@ public class SelectService {
 			return Db.paginate(pageNo, pageSize, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
 		}
 	}
-	
+
 }

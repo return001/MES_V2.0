@@ -15,7 +15,7 @@ import com.jimi.mes_server.util.ResultUtil;
  * @date 2019年1月8日
  */
 public class DeleteHistoryController extends Controller {
-	
+
 	private static DeleteHistoryService deleteHistoryService = new DeleteHistoryService();
 
 

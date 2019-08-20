@@ -10,7 +10,6 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.service.base.SelectService;
 
-
 /**
  * 删除备份记录业务层
  * @type DeleteHistoryService
@@ -21,10 +20,10 @@ import com.jimi.mes_server.service.base.SelectService;
 public class DeleteHistoryService {
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
-	
+
 	private static final String SELECT_DELETE_HISTORY_BY_ID = "select * from DeleteHistory where ID = ?";
-	
-	
+
+
 	/**
 	 * 根据条件查询删除备份记录
 	 * @param pageNo
@@ -34,12 +33,12 @@ public class DeleteHistoryService {
 	 * @param filter
 	 * @return
 	 */
-	public Page<Record> select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+	public Page<Record> select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		Page<Record> records = selectService.select("DeleteHistory", pageNo, pageSize, ascBy, descBy, filter, null);
 		return records;
 	}
-	
-	
+
+
 	/**
 	 * 下载删除备份记录
 	 * @param id
@@ -57,8 +56,8 @@ public class DeleteHistoryService {
 		}
 		return file;
 	}
-	
-	
+
+
 	/**
 	 * 添加删除备份记录，仅供删除时使用
 	 * @param fileName

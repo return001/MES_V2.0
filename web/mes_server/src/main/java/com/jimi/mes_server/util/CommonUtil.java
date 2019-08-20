@@ -103,7 +103,8 @@ public class CommonUtil {
 		String regex = "^-?[1-9]\\d*$";
 		return match(regex, input);
 	}
-	
+
+
 	public static boolean isPositiveInteger(String input) {
 		String regex = "^[1-9]\\d*|0$";
 		return match(regex, input);
@@ -114,7 +115,8 @@ public class CommonUtil {
 		String regex = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
 		return match(regex, input);
 	}
-	
+
+
 	public static boolean isIPAddress(String input) {
 		String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
 		return match(regex, input);

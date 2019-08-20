@@ -6,10 +6,9 @@ import java.util.List;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.SqlPara;
 
-
 public class DeleteService {
 
-	private final static String[] OPERATORS = {"#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#"};
+	private final static String[] OPERATORS = { "#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#" };
 
 
 	public void delete(String table, String filter, Integer type) {
@@ -83,7 +82,7 @@ public class DeleteService {
 				String value = whereUnit.substring(operatorStartIndex + operationLength, whereUnit.length());
 				if (operator.toString().equals("in")) {
 					sql.append(key + " " + operator.toString() + " " + value + " AND ");
-				}else {
+				} else {
 					sql.append(key + " " + operator.toString() + " ? AND ");
 				}
 				if (OPERATORS[i].equals("#like#")) {

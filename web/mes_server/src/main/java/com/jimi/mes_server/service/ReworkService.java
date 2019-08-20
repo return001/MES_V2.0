@@ -13,13 +13,11 @@ import com.jimi.mes_server.model.GpsAutotestResult2;
 import com.jimi.mes_server.model.GpsTestresult;
 import com.jimi.mes_server.util.ResultUtil;
 
-
 /**返工功能业务层
  * @author   HCJ
  * @date     2019年6月28日 上午10:38:38
  */
 public class ReworkService {
-
 
 	/**@author HCJ 
 	 * 获取mac返工信息

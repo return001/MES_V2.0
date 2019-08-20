@@ -1,5 +1,9 @@
 package com.jimi.mes_server.entity;
 
+/**排产计划甘特图类
+ * @author   HCJ
+ * @date     2019年8月20日 上午10:01:50
+ */
 public class PlanGantt {
 
 	private Integer id;
@@ -18,65 +22,81 @@ public class PlanGantt {
 
 	private String completionQuantity;
 
+
 	public Integer getId() {
 		return id;
 	}
+
 
 	public void setId(Integer id) {
 		this.id = id;
 	}
 
+
 	public String getName() {
 		return name;
 	}
+
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
+
 	public String getPlanProduction() {
 		return planProduction;
 	}
+
 
 	public void setPlanProduction(String planProduction) {
 		this.planProduction = planProduction;
 	}
 
+
 	public String getIntervalDay() {
 		return intervalDay;
 	}
+
 
 	public void setIntervalDay(String intervalDay) {
 		this.intervalDay = intervalDay;
 	}
 
+
 	public String getStartTime() {
 		return startTime;
 	}
+
 
 	public void setStartTime(String startTime) {
 		this.startTime = startTime;
 	}
 
+
 	public String getEndTime() {
 		return endTime;
 	}
+
 
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
 
+
 	public String getCompletionRate() {
 		return completionRate;
 	}
+
 
 	public void setCompletionRate(String completionRate) {
 		this.completionRate = completionRate;
 	}
 
+
 	public String getCompletionQuantity() {
 		return completionQuantity;
 	}
+
 
 	public void setCompletionQuantity(String completionQuantity) {
 		this.completionQuantity = completionQuantity;

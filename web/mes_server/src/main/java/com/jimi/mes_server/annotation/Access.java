@@ -19,5 +19,5 @@ public @interface Access {
 	 * 提供一组TypeName，不属于组内用户类型的用户无法访问被标记的方法
 	 */
 	String[] value();
-	
+
 }

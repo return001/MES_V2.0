@@ -14,7 +14,6 @@ import com.jimi.mes_server.service.base.SelectService;
  */
 public class OrderService extends SelectService {
 
-
 	public boolean update(GpsManuorderparam order) {
 		GpsManuorderparam orderInDb = GpsManuorderparam.dao.findById(order.getId());
 		if (orderInDb.getStatus() != 0) {

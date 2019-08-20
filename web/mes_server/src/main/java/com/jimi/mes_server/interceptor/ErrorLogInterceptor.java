@@ -13,7 +13,6 @@ import com.jimi.mes_server.util.ResultUtil;
 
 import cc.darhao.dautils.api.ResourcesUtil;
 
-
 /**
  * 错误Logger拦截器
  * <br>
@@ -23,28 +22,29 @@ import cc.darhao.dautils.api.ResourcesUtil;
 public class ErrorLogInterceptor implements Interceptor {
 
 	private static Logger logger;
-	
+
 	static {
-		try(InputStream inputStream = ResourcesUtil.getResourceAsStream("log4j.properties")){
+		try (InputStream inputStream = ResourcesUtil.getResourceAsStream("log4j.properties")) {
 			PropertyConfigurator.configure(inputStream);
 			logger = LogManager.getRootLogger();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
+
 	@Override
 	public void intercept(Invocation invocation) {
 		try {
 			invocation.invoke();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			int result;
 			switch (e.getClass().getSimpleName()) {
 			case "AccessException":
 				result = 401;
 				break;
 			case "ParameterException":
-				result = 400;			
+				result = 400;
 				break;
 			case "OperationException":
 				result = 412;

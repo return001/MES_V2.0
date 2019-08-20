@@ -54,7 +54,9 @@ public class ExcelHelper {
 	@Target(ElementType.FIELD)
 	@Retention(RetentionPolicy.RUNTIME)
 	public @interface Excel {
+
 		String head();
+
 		int col();
 	}
 

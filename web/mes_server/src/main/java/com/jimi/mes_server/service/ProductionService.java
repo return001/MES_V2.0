@@ -10,7 +10,10 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -520,13 +523,13 @@ public class ProductionService {
 			firstModelCapacity.setCustomerModel(customerModel);
 		}
 		if (processPeopleQuantity != null) {
-			if (processPeopleQuantity < 0) {
+			if (processPeopleQuantity < Constant.INTEGER_ZERO) {
 				throw new ParameterException("人数不合理");
 			}
 			firstModelCapacity.setProcessPeopleQuantity(processPeopleQuantity);
 		}
 		if (capacity != null) {
-			if (capacity < 0) {
+			if (capacity < Constant.INTEGER_ZERO) {
 				throw new ParameterException("产能不合理");
 			}
 			firstModelCapacity.setCapacity(capacity);
@@ -671,6 +674,7 @@ public class ProductionService {
 		ExcelHelper helper;
 		int indexOfOrderItem = 2;
 		List<Orders> orders = new ArrayList<>();
+		Map<String, Integer> zhidanMap = new HashMap<String, Integer>();
 		try {
 			helper = ExcelHelper.from(file);
 			List<OrderItem> orderItems = helper.unfill(OrderItem.class, 0);
@@ -683,20 +687,33 @@ public class ProductionService {
 			for (OrderItem orderItem : orderItems) {
 				String zhidan = orderItem.getZhidan();
 				String softModel = orderItem.getSoftModel();
-				boolean isDate = orderItem.getOrderDate() != null && orderItem.getDeliveryDate() != null;
-				if (!StringUtils.isAnyBlank(zhidan, softModel) && orderItem.getQuantity() != null && isDate) {
-					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
-					if (temp != null) {
-						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
-						return resultString;
-					}
-					Orders order = new Orders();
-					order.setZhidan(zhidan).setSoftModel(softModel);
-					order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
-					order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
-					order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate()).setRemark(orderItem.getRemark());
-					orders.add(order);
+				boolean isDateExist = orderItem.getOrderDate() != null && orderItem.getDeliveryDate() != null;
+				boolean isQuantityExist = orderItem.getQuantity() != null;
+				if (StringUtils.isAnyBlank(zhidan, softModel) || !isDateExist || !isQuantityExist) {
+					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号和机型为空或者订单日期、交货日期和订单数量格式错误！";
+					return resultString;
 				}
+				Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, orderItem.getZhidan());
+				if (temp != null) {
+					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
+					return resultString;
+				}
+				if (!zhidanMap.isEmpty()) {
+					for (Entry<String, Integer> entry : zhidanMap.entrySet()) {
+						if (entry.getKey().equals(zhidan)) {
+							resultString = "导入失败，表格第 " + entry.getValue() + " 行和第 " + indexOfOrderItem + " 行的订单号重复！";
+							return resultString;
+						}
+					}
+				}
+				zhidanMap.put(zhidan, indexOfOrderItem);
+				Orders order = new Orders();
+				order.setZhidan(zhidan).setSoftModel(softModel).setVersion(orderItem.getVersion());
+				order.setCustomerName(orderItem.getCustomerName()).setCustomerNumber(orderItem.getCustomerNumber());
+				order.setAlias(orderItem.getAlias()).setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
+				order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate()).setRemark(orderItem.getRemark());
+				orders.add(order);
+
 				indexOfOrderItem++;
 			}
 			for (Orders order : orders) {
@@ -982,7 +999,7 @@ public class ProductionService {
 			} catch (Exception e) {
 				throw new OperationException("转线时间格式出错");
 			}
-			if (changeLineTime <= 0) {
+			if (changeLineTime <= Constant.INTEGER_ZERO) {
 				throw new OperationException("转线时间格式出错");
 			}
 			schedulingPlan.setLineChangeTime(lineChangeTime);
@@ -1011,7 +1028,7 @@ public class ProductionService {
 		if (producedQuantity != null) {
 			schedulingPlan.setProducedQuantity(producedQuantity);
 			if (producedQuantity >= schedulingPlan.getSchedulingQuantity()) {
-				schedulingPlan.setRemainingQuantity(0);
+				schedulingPlan.setRemainingQuantity(Constant.INTEGER_ZERO);
 			} else {
 				schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - producedQuantity);
 			}
@@ -1177,7 +1194,7 @@ public class ProductionService {
 		} catch (Exception e) {
 			throw new OperationException("转线时间格式出错");
 		}
-		if (changeLineTime <= 0) {
+		if (changeLineTime <= Constant.INTEGER_ZERO) {
 			throw new OperationException("转线时间格式出错");
 		}
 		double actualCostHours = BigDecimal.valueOf((double) schedulingQuantity / (double) capacity).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
@@ -1429,13 +1446,13 @@ public class ProductionService {
 		OrderVO orderVO = new OrderVO(order, null, null);
 		Record peopleCapacityRecord = null;
 		Integer scheduledQuantity = null;
-		if (type == 0) {
+		if (type == Constant.AUTOTEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-		} else if (type == 1) {
+		} else if (type == Constant.COUPLETEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
-		} else if (type == 2) {
+		} else if (type == Constant.CARTONTEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId());
 			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
 		}
@@ -1445,12 +1462,12 @@ public class ProductionService {
 			orderVO.setUnscheduledQuantity(order.getQuantity() - scheduledQuantity);
 		}
 		if (peopleCapacityRecord == null) {
-			orderVO.setCapacity(0);
+			orderVO.setCapacity(Constant.INTEGER_ZERO);
 		} else {
 			Integer capacity = peopleCapacityRecord.getInt("capacity");
 			Integer people = peopleCapacityRecord.getInt("people");
 			if (capacity == null || people == null) {
-				orderVO.setCapacity(0);
+				orderVO.setCapacity(Constant.INTEGER_ZERO);
 			} else {
 				orderVO.setCapacity(capacity / people);
 			}

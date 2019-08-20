@@ -24,10 +24,12 @@ import com.jimi.mes_server.util.ResultUtil;
  * <b>2018年5月29日</b>
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
-public class UserService extends SelectService{
+public class UserService extends SelectService {
 
 	private static final String loginSql = "SELECT * FROM LUserAccount WHERE Name = ? AND Password = ?";
+
 	private static final String userTypeSql = "SELECT * FROM WebUserType WHERE  TypeId = ?";
+
 	private static final String uniqueCheckSql = "SELECT * FROM LUserAccount WHERE Name = ? AND InService = 1";
 
 
@@ -90,7 +92,7 @@ public class UserService extends SelectService{
 			throw new OperationException("权限不足以修改为超级管理员");
 		}
 		LUserAccount temp = LUserAccount.dao.findFirst(uniqueCheckSql, user.getName());
-		if (temp!=null&&!temp.getId().equals(user.getId())) {
+		if (temp != null && !temp.getId().equals(user.getId())) {
 			throw new OperationException("用户名已存在");
 		}
 		return setDeletePermission(user).update();
@@ -123,7 +125,7 @@ public class UserService extends SelectService{
 
 	public String getTypeName(Integer typeId) {
 		WebUserType webUserType = WebUserType.dao.findFirst(SQL.SELECT_TYPENAME_BY_TYPEID, typeId);
-		if(webUserType == null) {
+		if (webUserType == null) {
 			throw new OperationException("不存在此用户类型");
 		}
 		return webUserType.getTypeName();
@@ -167,8 +169,8 @@ public class UserService extends SelectService{
 		// TODO Auto-generated method stub
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_USER_NAME_ID_BY_NAME);
-		sqlPara.addPara("%"+userName+"%");
-		Page<Record> page= Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+		sqlPara.addPara("%" + userName + "%");
+		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 		for (Record record : page.getList()) {
 			System.err.println(record);
 		}

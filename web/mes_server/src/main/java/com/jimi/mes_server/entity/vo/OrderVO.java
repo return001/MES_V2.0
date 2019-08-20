@@ -10,19 +10,9 @@ public class OrderVO extends Orders {
 
 	private static final long serialVersionUID = 5840191253006973812L;
 
-	/**
-	 * unscheduledQuantity : 未排产数量
-	 */
-	private Integer unscheduledQuantity;
-
-	/**
-	 * capacity : 产能
-	 */
-	private Integer capacity;
-
 
 	public Integer getCapacity() {
-		return capacity;
+		return this.getInt("capacity");
 	}
 
 
@@ -32,7 +22,7 @@ public class OrderVO extends Orders {
 
 
 	public Integer getUnscheduledQuantity() {
-		return unscheduledQuantity;
+		return this.getInt("unscheduledQuantity");
 	}
 
 

@@ -85,5 +85,10 @@ public class Constant {
 	public static final String COUPLING_TEST = "耦合测试";
 
 	public static final String CARTON_TEST = "卡通箱测试";
-	
+
+	public static final Integer DEFAULT_MAX_PROCESSGROUP_ID = 3;
+
+	public static final Integer INTEGER_ZERO = 0;
+
+	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;
 }

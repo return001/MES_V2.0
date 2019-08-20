@@ -41,7 +41,6 @@ import com.jimi.mes_server.util.TokenBox;
  */
 public class MesConfig extends JFinalConfig {
 
-
 	@Override
 	public void configConstant(Constants me) {
 		me.setDevMode(true);

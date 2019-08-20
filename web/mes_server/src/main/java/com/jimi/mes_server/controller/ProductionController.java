@@ -121,15 +121,18 @@ public class ProductionController extends Controller {
 	 */
 	@Access({ "engineer" })
 	public void deleteProcessGroup(Integer id) {
-		throw new OperationException("无法操作");
-		/*if (id == null) {
+		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
+		if (id <= Constant.DEFAULT_MAX_PROCESSGROUP_ID) {
+			throw new OperationException("无法操作");
+		}
+
 		if (productionService.deleteProcessGroup(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
-		}*/
+		}
 	}
 
 
@@ -155,15 +158,18 @@ public class ProductionController extends Controller {
 	 */
 	@Access({ "engineer" })
 	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer position) {
-		throw new OperationException("无法操作");
-		/*if (id == null) {
+		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
+		if (id <= Constant.DEFAULT_MAX_PROCESSGROUP_ID || position <= Constant.DEFAULT_MAX_PROCESSGROUP_ID) {
+			throw new OperationException("无法操作");
+		}
+
 		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark, position)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
-		}*/
+		}
 	}
 
 
@@ -417,7 +423,7 @@ public class ProductionController extends Controller {
 		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (processPeopleQuantity < 0 || capacity < 0) {
+		if (processPeopleQuantity < Constant.INTEGER_ZERO || capacity < Constant.INTEGER_ZERO) {
 			throw new ParameterException("产能或人数不合理");
 		}
 		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark)) {
@@ -503,7 +509,7 @@ public class ProductionController extends Controller {
 		if (isOrderInformationExist || order.getQuantity() == null || order.getIsRework() == null) {
 			throw new ParameterException("订单号、机型、数量和是否为返工订单不能为空");
 		}
-		if (order.getQuantity() < 0) {
+		if (order.getQuantity() < Constant.INTEGER_ZERO) {
 			throw new ParameterException("订单数量格式错误");
 		}
 		if (order.getOrderDate().after(order.getDeliveryDate())) {
@@ -587,10 +593,10 @@ public class ProductionController extends Controller {
 		if (isOrderInformationExist || order.getQuantity() == null) {
 			throw new ParameterException("订单号、机型和数量不能为空");
 		}
-		if (order.getQuantity() < 0) {
+		if (order.getQuantity() < Constant.INTEGER_ZERO) {
 			throw new ParameterException("订单数量格式错误");
 		}
-		if (order.getOrderDate().compareTo(order.getDeliveryDate()) >= 0) {
+		if (order.getOrderDate().compareTo(order.getDeliveryDate()) >= Constant.INTEGER_ZERO) {
 			throw new ParameterException("订单日期不能晚于或者等于交货日期");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -841,7 +847,7 @@ public class ProductionController extends Controller {
 	@Access({ "schedulingJMPMC", "engineer" })
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
 		if (lineChangeTime != null) {
-			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > 8) {
+			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > Constant.MAX_LINECHANGETIME_LENGTH) {
 				throw new ParameterException("转线时间内容为空或长度过长");
 			}
 		}
@@ -855,7 +861,7 @@ public class ProductionController extends Controller {
 			} catch (ParseException e) {
 				throw new ParameterException("时间格式出错");
 			}
-			if (start.compareTo(end) >= 0) {
+			if (start.compareTo(end) >= Constant.INTEGER_ZERO) {
 				throw new ParameterException("开始时间不能晚于或者等于结束时间");
 			}
 		}
@@ -980,7 +986,7 @@ public class ProductionController extends Controller {
 		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null || lineChangeTime == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (schedulingQuantity <= 0 || capacity <= 0) {
+		if (schedulingQuantity <= Constant.INTEGER_ZERO || capacity <= Constant.INTEGER_ZERO) {
 			throw new ParameterException("排产数量或产能不合理");
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

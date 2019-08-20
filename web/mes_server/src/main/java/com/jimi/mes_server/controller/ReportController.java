@@ -25,7 +25,6 @@ import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.util.TokenBox;
 
-
 /**
  * 报表控制器 <br>
  * <b>2018年5月23日</b>
@@ -819,7 +818,8 @@ public class ReportController extends Controller {
 		}
 		renderJson(ResultUtil.succeed(reportService.selectDashboardTable(line)));
 	}
-	
+
+
 	/**@author HCJ
 	 * 查询看板不良数据
 	 * @param line 产线ID，目前有0：组装,1：测试,2：包装

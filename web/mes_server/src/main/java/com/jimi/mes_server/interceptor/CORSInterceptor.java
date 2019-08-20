@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 
-
 /**
  * 跨域许可拦截器
  * <br>
@@ -22,17 +21,17 @@ public class CORSInterceptor implements Interceptor {
 		}else {
 			origin = PropKit.use("properties.ini").get("d_frontURI");
 		}*/
-		 HttpServletResponse response = invocation.getController().getResponse();
-		 response.addHeader("Access-Control-Allow-Origin", "*");
-		 response.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-		 response.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST");
-		
-		// HttpServletResponse response = invocation.getController().getResponse();
-		 //response.addHeader("Access-Control-Allow-Origin", "http://" + origin);
-		 //response.addHeader("Access-Control-Allow-Credentials", "true");
-//		 response.setHeader("Ac("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//		 response.setHeader("Ac("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST");
-		 invocation.invoke();
+		HttpServletResponse response = invocation.getController().getResponse();
+		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		response.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST");
+
+		/*HttpServletResponse response = invocation.getController().getResponse();
+		response.addHeader("Access-Control-Allow-Origin", "http://" + origin);
+		response.addHeader("Access-Control-Allow-Credentials", "true");
+		response.setHeader("Ac("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		response.setHeader("Ac("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST");*/
+		invocation.invoke();
 	}
 
 }

@@ -22,16 +22,16 @@ public class OrderController extends Controller {
 
 
 	@Access({ "operator", "engineer" })
-	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type){
+	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		renderJson(ResultUtil.succeed(orderService.select(ORDER_TABLE_NAME, pageNo, pageSize, ascBy, descBy, filter, type)));
 	}
 
 
 	@Access({ "engineer" })
 	public void update(@Para("") GpsManuorderparam order) {
-		if(orderService.update(order)) {
+		if (orderService.update(order)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -39,9 +39,9 @@ public class OrderController extends Controller {
 
 	@Access({ "engineer" })
 	public void create(@Para("") GpsManuorderparam order) {
-		if(orderService.create(order)) {
+		if (orderService.create(order)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -49,9 +49,9 @@ public class OrderController extends Controller {
 
 	@Access({ "engineer" })
 	public void copy(String key) {
-		if(orderService.copy(key)) {
+		if (orderService.copy(key)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -59,9 +59,9 @@ public class OrderController extends Controller {
 
 	@Access({ "engineer" })
 	public void start(String key) {
-		if(orderService.start(key)) {
+		if (orderService.start(key)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -69,9 +69,9 @@ public class OrderController extends Controller {
 
 	@Access({ "engineer" })
 	public void finish(String key) {
-		if(orderService.finish(key)) {
+		if (orderService.finish(key)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -79,9 +79,9 @@ public class OrderController extends Controller {
 
 	@Access({ "engineer" })
 	public void cancel(String key) {
-		if(orderService.cancel(key)) {
+		if (orderService.cancel(key)) {
 			renderJson(ResultUtil.succeed());
-		}else {
+		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}

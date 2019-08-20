@@ -23,12 +23,13 @@ import com.jfinal.plugin.activerecord.generator.TableMeta;
  */
 public class SqlServerTableFilter extends MetaBuilder {
 
-	
 	protected Set<String> containTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+
 
 	public SqlServerTableFilter(DataSource dataSource) {
 		super(dataSource);
 	}
+
 
 	@Override
 	protected ResultSet getTablesResultSet() throws SQLException {
@@ -38,6 +39,7 @@ public class SqlServerTableFilter extends MetaBuilder {
 		return rs;
 	}
 
+
 	@Override
 	protected void buildTableNames(List<TableMeta> ret) throws SQLException {
 		ResultSet rs = getTablesResultSet();
@@ -46,7 +48,7 @@ public class SqlServerTableFilter extends MetaBuilder {
 //			String schem = rs.getString("TABLE_SCHEM");
 			String tableName = rs.getString("TABLE_Name");
 			for (String genTable : genTables) {
-				if(genTable.equals(tableName)) {
+				if (genTable.equals(tableName)) {
 					TableMeta tableMeta = new TableMeta();
 					tableMeta.name = tableName;
 					tableMeta.remarks = rs.getString("REMARKS");
@@ -78,6 +80,7 @@ public class SqlServerTableFilter extends MetaBuilder {
 		}
 		rs.close();
 	}
+
 
 	@Override
 	protected void buildPrimaryKey(TableMeta tableMeta) throws SQLException {

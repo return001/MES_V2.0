@@ -7,11 +7,9 @@ package com.jimi.mes_server.exception;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class OperationException extends RuntimeException {
-	
-	/**
-	 * serialVersionUID : TODO
-	 */
+
 	private static final long serialVersionUID = -8092355628604347372L;
+
 
 	public OperationException(String message) {
 		super(message);

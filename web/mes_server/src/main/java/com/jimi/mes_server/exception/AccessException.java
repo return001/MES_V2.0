@@ -8,13 +8,11 @@ package com.jimi.mes_server.exception;
  */
 public class AccessException extends RuntimeException {
 
-	/**
-	 * serialVersionUID : TODO
-	 */
 	private static final long serialVersionUID = 3003607108310165286L;
+
 
 	public AccessException(String message) {
 		super(message);
 	}
-	
+
 }

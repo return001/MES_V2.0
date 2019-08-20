@@ -14,7 +14,6 @@ import com.jimi.mes_server.service.base.SelectService;
  */
 public class TestService extends SelectService {
 
-
 	public boolean copy(String oldKey, Integer type, String newKey) {
 		TestSystemSetting coupleSetTing = null;
 		TestSystemSettingFunc functionSetTing = null;

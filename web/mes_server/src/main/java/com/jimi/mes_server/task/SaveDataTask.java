@@ -41,10 +41,10 @@ public class SaveDataTask implements Runnable {
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - 1);
 		Date startTime = calendar.getTime();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		
-		  String start = dateFormat.format(startTime); 
-		  String end = dateFormat.format(endTime);
-		 
+
+		String start = dateFormat.format(startTime);
+		String end = dateFormat.format(endTime);
+
 		/*String start = "2017-01-04 08:34:17.010";
 		String end = "2017-01-04 09:34:17.010";*/
 		saveDashboard(Db.find(SQL.SELECT_AUTOTEST_PRODUCTION_BY_TESTTIME, start, end), startTime, endTime, Constant.AUTOTEST_LINEID, start, end);
@@ -110,8 +110,7 @@ public class SaveDataTask implements Runnable {
 			dashboard.setStartTime(startTime).setEndTime(endTime).setLine(lineId).save();
 		}
 	}*/
-	
-	
+
 	private void saveDashboard(List<Record> records, Date startTime, Date endTime, Integer lineId, String startTimeString, String endTimeString) {
 		if (records != null && !records.isEmpty()) {
 			for (Record record : records) {
