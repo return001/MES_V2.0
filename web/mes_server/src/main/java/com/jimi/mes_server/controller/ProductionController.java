@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
@@ -24,6 +25,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.annotation.Access;
+import com.jimi.mes_server.entity.AddPlanInfo;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
@@ -419,14 +421,17 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:54:49
 	 */
 	@Access({ "engineer" })
-	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark) {
-		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null) {
+	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark,Integer rhythm) {
+		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null|| rhythm == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (processPeopleQuantity < Constant.INTEGER_ZERO || capacity < Constant.INTEGER_ZERO) {
 			throw new ParameterException("产能或人数不合理");
 		}
-		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark)) {
+		if (rhythm<0||rhythm>3600) {
+			throw new ParameterException("节拍不合理");
+		}
+		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark,rhythm)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -481,11 +486,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:56:19
 	 */
 	@Access({ "engineer" })
-	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
+	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position,Integer rhythm) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, position)) {
+		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, position,rhythm)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -769,13 +774,14 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月16日 上午11:43:23
 	 */
 	@Access({ "schedulingJMPMC" })
-	public void addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity) {
-		if (order == null || processGroup == null || StringUtils.isAnyBlank(schedulingQuantity, line, capacity)) {
+	public void addPlan(String setting) {
+		List<AddPlanInfo> addPlanInfos = JSONObject.parseArray(setting, AddPlanInfo.class);
+		if (addPlanInfos==null||addPlanInfos.isEmpty()) {
 			throw new ParameterException("参数不能为空");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (productionService.addPlan(order, remark, schedulingQuantity, line, processGroup, capacity, userVO)) {
+		if (productionService.addPlan(addPlanInfos, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

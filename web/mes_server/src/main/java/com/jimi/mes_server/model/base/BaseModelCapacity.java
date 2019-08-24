@@ -90,4 +90,13 @@ public abstract class BaseModelCapacity<M extends BaseModelCapacity<M>> extends 
 		return getInt("position");
 	}
 
+	public M setRhythm(java.lang.Integer rhythm) {
+		set("rhythm", rhythm);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getRhythm() {
+		return getInt("rhythm");
+	}
+
 }

@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,10 +28,12 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.entity.AddPlanInfo;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.OrderDetail;
 import com.jimi.mes_server.entity.OrderFileInfo;
 import com.jimi.mes_server.entity.OrderItem;
+import com.jimi.mes_server.entity.PlanDetail;
 import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
@@ -433,7 +436,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark) {
+	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer rhythm) {
 		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel, process, processGroup);
 		if (modelCapacity != null) {
 			throw new OperationException("机型产能已存在");
@@ -444,7 +447,9 @@ public class ProductionService {
 		}
 		modelCapacity.setSoftModel(softModel).setCustomerModel(customerModel).setProcess(process).setProcessGroup(processGroup);
 		modelCapacity.setProcessPeopleQuantity(processPeopleQuantity).setCapacity(capacity).save();
-		return modelCapacity.setPosition(modelCapacity.getId()).update();
+		modelCapacity.setPosition(modelCapacity.getId()).update();
+		Db.update(SQL.UPDATE_MODELCAPACITY_BY_MODEL_PROCESS, rhythm, processGroup, softModel);
+		return true;
 	}
 
 
@@ -478,7 +483,12 @@ public class ProductionService {
 	}
 
 
-	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position) {
+	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Integer rhythm) {
+		if (rhythm != null) {
+			if (rhythm < 0 || rhythm > 3600) {
+				throw new ParameterException("节拍不合理");
+			}
+		}
 		ModelCapacity firstModelCapacity = ModelCapacity.dao.findById(id);
 		if (firstModelCapacity == null) {
 			throw new OperationException("机型产能不存在");
@@ -537,7 +547,11 @@ public class ProductionService {
 		if (remark != null) {
 			firstModelCapacity.setRemark(remark);
 		}
-		return firstModelCapacity.update();
+		firstModelCapacity.update();
+		if (rhythm != null && processGroup != null && softModel != null) {
+			Db.update(SQL.UPDATE_MODELCAPACITY_BY_MODEL_PROCESS, rhythm, processGroup, softModel);
+		}
+		return true;
 	}
 
 
@@ -805,7 +819,7 @@ public class ProductionService {
 			for (Orders order : orders) {
 				orderVOs.add(genOrderVO(order, type));
 			}
-			return orderVOs;
+			return removeScheduledOrder(orderVOs);
 		case 1:
 			orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS);
 			if (orderRecords == null || orderRecords.isEmpty()) {
@@ -825,7 +839,7 @@ public class ProductionService {
 			Orders order = Orders.dao.findById(orderRecord.getInt("orders"));
 			orderVOs.add(genOrderVO(order, type));
 		}
-		return orderVOs;
+		return removeScheduledOrder(orderVOs);
 	}
 
 
@@ -839,12 +853,55 @@ public class ProductionService {
 		for (Orders order : orders) {
 			orderVOs.add(genOrderVO(order, type));
 		}
-		return orderVOs;
+		return removeScheduledOrder(orderVOs);
 	}
 
 
-	public boolean addPlan(Integer order, String remark, String schedulingQuantity, String line, Integer processGroup, String capacity, LUserAccountVO userVO) {
-		String[] quantitys = schedulingQuantity.split(",");
+	public boolean addPlan(List<AddPlanInfo> addPlanInfos, LUserAccountVO userVO) {
+		for (AddPlanInfo addPlanInfo : addPlanInfos) {
+			String[] quantitys = addPlanInfo.getSchedulingQuantity().split(",");
+			String[] lines = addPlanInfo.getLine().split(",");
+			String[] capacitys = addPlanInfo.getCapacity().split(",");
+			Integer processGroup = addPlanInfo.getProcessGroup();
+			Integer order = addPlanInfo.getOrder();
+			Date planStartTime=addPlanInfo.getPlanStartTime();
+			Date planCompleteTime=addPlanInfo.getPlanCompleteTime();
+			if (planStartTime.compareTo(planCompleteTime) >= Constant.INTEGER_ZERO) {
+				throw new ParameterException("开始时间不能晚于或者等于结束时间");
+			}
+			if (quantitys.length != lines.length || quantitys.length != capacitys.length || lines.length != capacitys.length) {
+				throw new ParameterException("多产线排产时参数个数必须一致");
+			}
+			Orders orderRecord = Orders.dao.findById(addPlanInfo.getOrder());
+			if (orderRecord == null) {
+				throw new OperationException("添加排产计划失败，订单不存在");
+			}
+			if (ProcessGroup.dao.findById(addPlanInfo.getProcessGroup()) == null) {
+				throw new OperationException("添加排产计划失败，工序组不存在");
+			}
+			for (int i = 0; i < capacitys.length; i++) {
+				if (!CommonUtil.isPositiveInteger(lines[i]) || !CommonUtil.isPositiveInteger(quantitys[i]) || !CommonUtil.isPositiveInteger(capacitys[i])) {
+					throw new OperationException("格式必须为正整数");
+				}
+				if (orderRecord.getQuantity() < Integer.parseInt(quantitys[i])) {
+					throw new OperationException("排产数量不能大于订单数量");
+				}
+				SchedulingPlan schedulingPlan = new SchedulingPlan();
+				if (!StrKit.isBlank(addPlanInfo.getRemark())) {
+					schedulingPlan.setRemark(addPlanInfo.getRemark());
+				}
+				schedulingPlan.setProcessGroup(processGroup).setLine(Integer.parseInt(lines[i])).setSchedulingQuantity(Integer.parseInt(quantitys[i])).setOrders(order).setIsTimeout(false);
+				schedulingPlan.setLineChangeTime(Constant.DEFAULT_LINE_CHANGE_TIME).setCapacity(Integer.parseInt(capacitys[i])).setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
+				schedulingPlan.setScheduler(userVO.getId()).setSchedulingTime(new Date());
+				schedulingPlan.setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime);
+				schedulingPlan.save();
+			}
+			if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
+				orderRecord.setOrderStatus(Constant.SCHEDULED_ORDERSTATUS);
+				orderRecord.update();
+			}
+		}
+		/*String[] quantitys = schedulingQuantity.split(",");
 		String[] lines = line.split(",");
 		String[] capacitys = capacity.split(",");
 		if (quantitys.length != lines.length || quantitys.length != capacitys.length || lines.length != capacitys.length) {
@@ -876,7 +933,7 @@ public class ProductionService {
 		if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
 			orderRecord.setOrderStatus(Constant.SCHEDULED_ORDERSTATUS);
 			orderRecord.update();
-		}
+		}*/
 		return true;
 	}
 
@@ -926,30 +983,36 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectPlanDetail(Integer id) {
+	public PlanDetail selectPlanDetail(Integer id) {
+		PlanDetail planDetail = new PlanDetail();
+		Record planUser = new Record();
+		Record order = new Record();
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLANDETAIL_BY_ID);
 		sqlPara.addPara(id);
 		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 		if (page.getList() != null && !page.getList().isEmpty()) {
-			for (Record record : page.getList()) {
-				String planModifier = record.getStr("planModifier");
-				String productionConfirmer = record.getStr("productionConfirmer");
-				if (planModifier != null) {
-					LUserAccount modifier = LUserAccount.dao.findById(planModifier);
-					if (modifier != null) {
-						record.set("modifierName", modifier.getUserDes());
-					}
-				}
-				if (productionConfirmer != null) {
-					LUserAccount confirmer = LUserAccount.dao.findById(productionConfirmer);
-					if (confirmer != null) {
-						record.set("confirmerName", confirmer.getUserDes());
-					}
+			planUser = page.getList().get(0);
+			String planModifier = planUser.getStr("planModifier");
+			String productionConfirmer = planUser.getStr("productionConfirmer");
+			if (planModifier != null) {
+				LUserAccount modifier = LUserAccount.dao.findById(planModifier);
+				if (modifier != null) {
+					planUser.set("modifierName", modifier.getUserDes());
 				}
 			}
+			if (productionConfirmer != null) {
+				LUserAccount confirmer = LUserAccount.dao.findById(productionConfirmer);
+				if (confirmer != null) {
+					planUser.set("confirmerName", confirmer.getUserDes());
+				}
+			}
+
 		}
-		return page;
+		order = Db.findFirst(SQL.SELECT_ORDER_BY_PLAN_ID, id);
+		planDetail.setOrder(order);
+		planDetail.setPlanUser(planUser);
+		return planDetail;
 	}
 
 
@@ -978,6 +1041,7 @@ public class ProductionService {
 		for (LineComputer lineComputer : lineComputers) {
 			planProducedQuantity += Db.queryInt(sql, order.getZhidan(), order.getSoftModel(), "%" + lineComputer.getIp() + "%");
 		}
+		schedulingPlan.setProducedQuantity(planProducedQuantity).update();
 		Record record = new Record();
 		record.set("planProducedQuantity", planProducedQuantity);
 		return record;
@@ -1080,6 +1144,9 @@ public class ProductionService {
 			schedulingPlan.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
 			break;
 		case 1:
+			if (schedulingPlan.getPlanStartTime() == null || schedulingPlan.getPlanCompleteTime() == null) {
+				throw new OperationException("排产计划的预计开始和预计结束时间不能为空");
+			}
 			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
 			schedulingPlan.setProductionConfirmer(userVO.getId());
 			schedulingPlan.setStartTime(new Date());
@@ -1124,10 +1191,12 @@ public class ProductionService {
 
 
 	public static void main(String[] args) {
-		Integer a = 13;
-		Integer b = 12;
+		Integer a = 76;
+		Integer b = 6;
 		String c = String.valueOf((double) a / (double) b * 100.0);
+		Double double1 = (double) a / (double) b;
 		System.out.println(c.substring(0, c.indexOf(".")) + "%");
+		System.out.println(BigDecimal.valueOf(double1).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
 	}
 
 
@@ -1444,32 +1513,31 @@ public class ProductionService {
 	 */
 	private OrderVO genOrderVO(Orders order, Integer type) {
 		OrderVO orderVO = new OrderVO(order, null, null);
-		Record peopleCapacityRecord = null;
+		Record rhythmRecord = null;
 		Integer scheduledQuantity = null;
 		if (type == Constant.AUTOTEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId());
-			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
+			rhythmRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
 		} else if (type == Constant.COUPLETEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId());
-			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
+			rhythmRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
 		} else if (type == Constant.CARTONTEST_LINEID) {
 			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId());
-			peopleCapacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
+			rhythmRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
 		}
 		if (scheduledQuantity == null) {
 			orderVO.setUnscheduledQuantity(order.getQuantity());
 		} else {
 			orderVO.setUnscheduledQuantity(order.getQuantity() - scheduledQuantity);
 		}
-		if (peopleCapacityRecord == null) {
+		if (rhythmRecord == null) {
 			orderVO.setCapacity(Constant.INTEGER_ZERO);
 		} else {
-			Integer capacity = peopleCapacityRecord.getInt("capacity");
-			Integer people = peopleCapacityRecord.getInt("people");
-			if (capacity == null || people == null) {
+			Integer rhythm = rhythmRecord.getInt("rhythm");
+			if (rhythm == null) {
 				orderVO.setCapacity(Constant.INTEGER_ZERO);
 			} else {
-				orderVO.setCapacity(capacity / people);
+				orderVO.setCapacity(BigDecimal.valueOf((double) 3600 / (double) rhythm).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
 			}
 		}
 		return orderVO;
@@ -1489,6 +1557,25 @@ public class ProductionService {
 				throw new OperationException("当前角色无法操作此订单");
 			}
 		}
+	}
+
+
+	/**@author HCJ
+	 * 移除已经排产完的订单
+	 * @param orderVOs 需要进行排产的订单
+	 * @date 2019年8月24日 上午10:59:13
+	 */
+	private List<OrderVO> removeScheduledOrder(List<OrderVO> orderVOs) {
+		if (orderVOs != null && !orderVOs.isEmpty()) {
+			Iterator<OrderVO> iterator = orderVOs.iterator();
+			while (iterator.hasNext()) {
+				OrderVO orderVO = iterator.next();
+				if (orderVO.getUnscheduledQuantity() <= Constant.INTEGER_ZERO) {
+					iterator.remove();
+				}
+			}
+		}
+		return orderVOs;
 	}
 
 }

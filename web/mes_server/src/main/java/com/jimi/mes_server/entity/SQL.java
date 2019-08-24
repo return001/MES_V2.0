@@ -110,13 +110,13 @@ public class SQL {
 
 	public final static String UPDATE_MODELCAPACITY_POSITION = "UPDATE model_capacity SET [position] = ? where id = ?";
 
-	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.id,soft_model as softModel,customer_model as customerModel,process,model_capacity.process_group as processGroup,process_people_quantity as processPeopleQuantity,capacity,remark,model_capacity.[position], process_group.group_name as groupName, process.process_name as processName FROM model_capacity, process, process_group WHERE model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
+	public final static String SELECT_MODELCAPACITY = "SELECT model_capacity.id,soft_model as softModel,customer_model as customerModel,process,model_capacity.process_group as processGroup,process_people_quantity as processPeopleQuantity,capacity,remark,model_capacity.[position], process_group.group_name as groupName, process.process_name as processName,rhythm FROM model_capacity, process, process_group WHERE model_capacity.process = process.id AND model_capacity.process_group = process_group.id ";
 
 	public final static String SELECT_SCHEDULED_ORDER_AND_QUANTITY = "SELECT orders, SUM(scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND ( scheduling_plan_status = ? OR scheduling_plan_status = ? OR scheduling_plan_status = ? ) GROUP BY orders ";
 
 	public final static String SELECT_MODELCAPACITY_BY_ORDER_PROCESS = "SELECT * from model_capacity WHERE process_group = ? and process = ? AND soft_model LIKE ? ";
 
-	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT sum(process_people_quantity) as people,sum(capacity) as capacity FROM model_capacity WHERE process_group = ? AND soft_model = ? ";
+	public final static String SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP = "SELECT rhythm FROM model_capacity WHERE process_group = ? AND soft_model = ? ";
 
 	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName, zhidan,alias,soft_model as softModel,product_no as productNo,customer_number as customerNumber,customer_name as customerName,order_date as orderDate,delivery_date as deliveryDate,line_change_time as lineChangeTime FROM scheduling_plan, orders, line, scheduling_plan_status WHERE scheduling_plan.orders = orders.id AND scheduling_plan.line = line.id AND scheduling_plan.scheduling_plan_status = scheduling_plan_status.id ";
 
@@ -227,4 +227,8 @@ public class SQL {
 	public final static String UPDATE_PROCESS_POSITION = "UPDATE process SET [position] = ? where id = ?";
 
 	public final static String SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ?";
+
+	public final static String UPDATE_MODELCAPACITY_BY_MODEL_PROCESS = "UPDATE model_capacity SET rhythm = ? WHERE process_group = ? and  soft_model = ?";
+
+	public final static String SELECT_ORDER_BY_PLAN_ID = "SELECT zhidan,alias,soft_model as softModel,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,delivery_date as deliveryDate,quantity from orders INNER JOIN scheduling_plan on scheduling_plan.orders = orders.id WHERE scheduling_plan.id = ?";
 }
