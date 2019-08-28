@@ -91,4 +91,6 @@ public class Constant {
 	public static final Integer INTEGER_ZERO = 0;
 
 	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;
+
+	public static final Integer HOUR_TO_SECOND = 3600;
 }

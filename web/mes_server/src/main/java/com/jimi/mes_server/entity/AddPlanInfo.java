@@ -2,22 +2,50 @@ package com.jimi.mes_server.entity;
 
 import java.util.Date;
 
+/**添加计划信息类
+ * @author   HCJ
+ * @date     2019年8月27日 下午3:12:09
+ */
 public class AddPlanInfo {
 
+	/**
+	 * order : 订单ID
+	 */
 	private Integer order;
 
+	/**
+	 * remark : 备注
+	 */
 	private String remark;
 
+	/**
+	 * schedulingQuantity : 所有的排产数量，以逗号分隔
+	 */
 	private String schedulingQuantity;
 
+	/**
+	 * line : 所有的产线ID，以逗号分隔
+	 */
 	private String line;
 
+	/**
+	 * capacity : 所有的产能，以逗号分隔
+	 */
 	private String capacity;
 
+	/**
+	 * processGroup : 工序组ID
+	 */
 	private Integer processGroup;
 
+	/**
+	 * planStartTime : 计划开始时间
+	 */
 	private Date planStartTime;
 
+	/**
+	 * planCompleteTime : 计划结束时间
+	 */
 	private Date planCompleteTime;
 
 

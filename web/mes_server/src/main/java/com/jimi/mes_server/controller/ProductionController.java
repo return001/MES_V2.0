@@ -421,17 +421,17 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:54:49
 	 */
 	@Access({ "engineer" })
-	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark,Integer rhythm) {
-		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null|| rhythm == null) {
+	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer rhythm) {
+		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null || rhythm == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (processPeopleQuantity < Constant.INTEGER_ZERO || capacity < Constant.INTEGER_ZERO) {
 			throw new ParameterException("产能或人数不合理");
 		}
-		if (rhythm<0||rhythm>3600) {
+		if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND) {
 			throw new ParameterException("节拍不合理");
 		}
-		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark,rhythm)) {
+		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, rhythm)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -486,11 +486,16 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:56:19
 	 */
 	@Access({ "engineer" })
-	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position,Integer rhythm) {
+	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Integer rhythm) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, position,rhythm)) {
+		if (rhythm != null) {
+			if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND) {
+				throw new ParameterException("节拍不合理");
+			}
+		}
+		if (productionService.editCapacity(id, softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, position, rhythm)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -668,10 +673,7 @@ public class ProductionController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (Constant.SCHEDULING_SZPC_USERTYPE.equals(userVO.getWebUserType()) && type.equals(2)) {
-			throw new OperationException("深圳PC无法上传SOP表");
-		}
-		if (Constant.ENGINEER_USERTYPE.equals(userVO.getWebUserType()) && !type.equals(2)) {
+		if (Constant.ENGINEER_USERTYPE.equals(userVO.getWebUserType()) && !type.equals(Constant.SOP_FILETYPE - 1)) {
 			throw new OperationException("工程及生产只能上传SOP表");
 		}
 		if (productionService.importOrderTable(uploadFiles, type, id, userVO)) {
@@ -716,6 +718,26 @@ public class ProductionController extends Controller {
 			renderJson(ResultUtil.failed("文件下载出错"));
 		}
 		renderNull();
+	}
+
+
+	/**@author HCJ
+	 * 删除订单的相关文件
+	 * @param id 文件ID
+	 * @date 2019年8月28日 上午9:45:06
+	 */
+	@Access({ "schedulingSZPC", "engineer" })
+	public void deleteOrderTable(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.deleteOrderTable(id, userVO)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
 	}
 
 
@@ -776,7 +798,7 @@ public class ProductionController extends Controller {
 	@Access({ "schedulingJMPMC" })
 	public void addPlan(String setting) {
 		List<AddPlanInfo> addPlanInfos = JSONObject.parseArray(setting, AddPlanInfo.class);
-		if (addPlanInfos==null||addPlanInfos.isEmpty()) {
+		if (addPlanInfos == null || addPlanInfos.isEmpty()) {
 			throw new ParameterException("参数不能为空");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -851,7 +873,7 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月16日 上午11:48:39
 	 */
 	@Access({ "schedulingJMPMC", "engineer" })
-	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, Integer producedQuantity, String remainingReason, String productionPlanningNumber) {
+	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber) {
 		if (lineChangeTime != null) {
 			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > Constant.MAX_LINECHANGETIME_LENGTH) {
 				throw new ParameterException("转线时间内容为空或长度过长");
@@ -873,7 +895,7 @@ public class ProductionController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime, capacity, isCompleted, producedQuantity, remainingReason, productionPlanningNumber, userVO)) {
+		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime, capacity, isCompleted, remainingReason, productionPlanningNumber, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

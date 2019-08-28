@@ -132,6 +132,18 @@ public class UserService extends SelectService {
 	}
 
 
+	public Page<Record> getUserIdAndName(String userName) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SQL.SELECT_USER_NAME_ID_BY_NAME);
+		sqlPara.addPara("%" + userName + "%");
+		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
+		for (Record record : page.getList()) {
+			System.err.println(record);
+		}
+		return page;
+	}
+
+
 	private void checkUser(LUserAccount user) {
 		Integer webUserTypeId = user.getWebUserType();
 		if (webUserTypeId == null || WebUserType.dao.find(userTypeSql, webUserTypeId).size() == 0) {
@@ -162,18 +174,5 @@ public class UserService extends SelectService {
 		} else {
 			return user;
 		}
-	}
-
-
-	public Page<Record> getUserIdAndName(String userName) {
-		// TODO Auto-generated method stub
-		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_USER_NAME_ID_BY_NAME);
-		sqlPara.addPara("%" + userName + "%");
-		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
-		for (Record record : page.getList()) {
-			System.err.println(record);
-		}
-		return page;
 	}
 }

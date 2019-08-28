@@ -120,6 +120,11 @@ public class UserController extends Controller {
 	}
 
 
+	/**@author HCJ
+	 * 根据用户名称模糊搜索获取用户ID和名称
+	 * @param userName
+	 * @date 2019年8月27日 下午3:20:02
+	 */
 	public void getUserIdAndName(String userName) {
 		renderJson(ResultUtil.succeed(userService.getUserIdAndName(userName)));
 	}

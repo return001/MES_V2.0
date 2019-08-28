@@ -10,16 +10,34 @@ public class PlanGantt {
 
 	private String name;
 
+	/**
+	 * planProduction : 计划产量
+	 */
 	private String planProduction;
 
+	/**
+	 * intervalDay : 工期
+	 */
 	private String intervalDay;
 
+	/**
+	 * startTime : 开始时间
+	 */
 	private String startTime;
 
+	/**
+	 * endTime : 结束时间
+	 */
 	private String endTime;
 
+	/**
+	 * completionRate : 完成率
+	 */
 	private String completionRate;
 
+	/**
+	 * completionQuantity : 完成数量
+	 */
 	private String completionQuantity;
 
 
