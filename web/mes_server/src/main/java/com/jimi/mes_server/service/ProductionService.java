@@ -436,7 +436,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer rhythm) {
+	public boolean addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Double rhythm) {
 		ModelCapacity modelCapacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, softModel, process, processGroup);
 		if (modelCapacity != null) {
 			throw new OperationException("机型产能已存在");
@@ -483,7 +483,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Integer rhythm) {
+	public boolean editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Double rhythm) {
 		ModelCapacity firstModelCapacity = ModelCapacity.dao.findById(id);
 		if (firstModelCapacity == null) {
 			throw new OperationException("机型产能不存在");
@@ -1543,11 +1543,11 @@ public class ProductionService {
 		if (rhythmRecord == null) {
 			orderVO.setCapacity(Constant.INTEGER_ZERO);
 		} else {
-			Integer rhythm = rhythmRecord.getInt("rhythm");
+			Double rhythm = rhythmRecord.getDouble("rhythm");
 			if (rhythm == null) {
 				orderVO.setCapacity(Constant.INTEGER_ZERO);
 			} else {
-				orderVO.setCapacity(BigDecimal.valueOf((double) Constant.HOUR_TO_SECOND / (double) rhythm).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+				orderVO.setCapacity(BigDecimal.valueOf((double) Constant.HOUR_TO_SECOND /  rhythm).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
 			}
 		}
 		return orderVO;

@@ -669,6 +669,23 @@ public class ReportService extends SelectService {
 
 
 	/**@author HCJ
+	 * 查询看板表格数据客户版
+	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
+	 * @date 2019年9月2日 上午10:31:48
+	 */
+	public List<Record> selectDashboardTableForCustomer(Integer line) {
+		Map<String, String> timeMap = getBeginAndEndTime();
+		List<Record> dashboardTable = Db.find(SQL.SELECT_DASHBOARD_FOR_CUSTOMER, line, timeMap.get("startTime"), timeMap.get("endTime"));
+		if (dashboardTable != null && !dashboardTable.isEmpty()) {
+			for (Record record : dashboardTable) {
+				record.set("time", "从 " + record.getStr("startTime") + "\n至 " + record.getStr("endTime"));
+			}
+		}
+		return dashboardTable;
+	}
+
+
+	/**@author HCJ
 	 * 查询看板不良数据
 	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
 	 * @date 2019年8月1日 上午10:08:08
@@ -685,14 +702,59 @@ public class ReportService extends SelectService {
 		case 0:
 			errorMsg = Db.findFirst(SQL.SELECT_FUNCTION_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
 			errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_TESTTIME, timeMap.get("startTime"), timeMap.get("endTime"));
-			errorMsg.set("errorNum5", errorNum - errorMsg.getInt("errorNumSum"));
-			errorMsg.remove("errorNumSum");
+			if (errorMsg.get("errorNumSum") == null) {
+				errorMsg.remove("errorNumSum");
+			} else {
+				errorMsg.set("errorNum5", errorNum - errorMsg.getInt("errorNumSum"));
+				errorMsg.remove("errorNumSum");
+			}
 			break;
 		case 1:
 			errorMsg = Db.findFirst(SQL.SELECT_COUPLE_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
 			errorNum = Db.queryInt(SQL.SELECT_COUPLE_ERRORNUM_BY_TESTTIME, timeMap.get("startTime"), timeMap.get("endTime"));
-			errorMsg.set("errorNum4", errorNum - errorMsg.getInt("errorNumSum"));
-			errorMsg.remove("errorNumSum");
+			if (errorMsg.get("errorNumSum") == null) {
+				errorMsg.remove("errorNumSum");
+			} else {
+				errorMsg.set("errorNum4", errorNum - errorMsg.getInt("errorNumSum"));
+				errorMsg.remove("errorNumSum");
+			}
+			break;
+		case 2:
+			errorMsg = Db.findFirst(SQL.SELECT_CARTON_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			break;
+		default:
+			throw new ParameterException("无法识别的类型");
+		}
+		return errorMsg;
+	}
+
+
+	/**@author HCJ
+	 * 查询看板不良数据客户版
+	 * @param line 产线ID，目前有0：组装,1：测试,2：包装
+	 * @date 2019年9月2日 上午10:32:21
+	 */
+	public Record selectErrorMsgForCustomer(Integer line) {
+		Map<String, String> timeMap = getBeginAndEndTime();
+		Record errorMsg = new Record();
+		/*timeMap.get("startTime"), timeMap.get("endTime")*/
+		/*Object[] param1 = { "2017-10-06 13:49:29.157", "2017-10-08 13:49:29.157" };
+		Object[] param2 = { "2017-08-21 16:59:44.333", "2017-08-23 16:59:44.333" };
+		Object[] param3 = { "2017-10-06 13:49:29.157", "2017-10-12 13:49:29.157" };*/
+		switch (line) {
+		case 0:
+			Integer errorNum = 0;
+			errorMsg = Db.findFirst(SQL.SELECT_FUNCTION_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));
+			errorNum = Db.queryInt(SQL.SELECT_FUNCTION_ERRORNUM_BY_TESTTIME, timeMap.get("startTime"), timeMap.get("endTime"));
+			if (errorMsg.get("errorNumSum") == null) {
+				errorMsg.remove("errorNumSum");
+			} else {
+				errorMsg.set("errorNum5", errorNum - errorMsg.getInt("errorNumSum"));
+				errorMsg.remove("errorNumSum");
+			}
+			break;
+		case 1:
+			errorMsg = Db.findFirst(SQL.SELECT_COUPLE_ERROR_FOR_CUSTOMER, timeMap.get("startTime"), timeMap.get("endTime"));
 			break;
 		case 2:
 			errorMsg = Db.findFirst(SQL.SELECT_CARTON_ERROR, timeMap.get("startTime"), timeMap.get("endTime"));

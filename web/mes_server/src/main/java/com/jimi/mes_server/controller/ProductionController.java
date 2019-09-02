@@ -421,14 +421,14 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:54:49
 	 */
 	@Access({ "engineer" })
-	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer rhythm) {
+	public void addCapacity(String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Double rhythm) {
 		if (StrKit.isBlank(softModel) || process == null || processGroup == null || processPeopleQuantity == null || capacity == null || rhythm == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (processPeopleQuantity < Constant.INTEGER_ZERO || capacity < Constant.INTEGER_ZERO) {
 			throw new ParameterException("产能或人数不合理");
 		}
-		if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND) {
+		if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND||rhythm.toString().length()>7) {
 			throw new ParameterException("节拍不合理");
 		}
 		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, rhythm)) {
@@ -486,12 +486,12 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:56:19
 	 */
 	@Access({ "engineer" })
-	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Integer rhythm) {
+	public void editCapacity(Integer id, String softModel, String customerModel, Integer process, Integer processGroup, Integer processPeopleQuantity, Integer capacity, String remark, Integer position, Double rhythm) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (rhythm != null) {
-			if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND) {
+			if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND||rhythm.toString().length()>7) {
 				throw new ParameterException("节拍不合理");
 			}
 		}

@@ -17,6 +17,7 @@ public class MappingKit {
 	
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("dashboard", "id", Dashboard.class);
+		arp.addMapping("dashboard_for_customer", "id", DashboardForCustomer.class);
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
 		arp.addMapping("DataRelativeUnique", "DATA1", DataRelativeUnique.class);
 		arp.addMapping("file_type", "id", FileType.class);
