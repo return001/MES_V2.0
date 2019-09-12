@@ -224,7 +224,7 @@ int ADOManage::adoToResultSheet(CString result, CString imei)//把结果记录至总表
 	CString strSql;
 	try
 	{
-		strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_TestResult] SET [WeightResult]=%s,  WHERE [IMEI]='") + imei + _T("'"), result);
+		strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_TestResult] SET [WeightResult]=%s WHERE [IMEI]='") + imei + _T("'"), result);
 		m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 	}
 	catch (_com_error &e)
@@ -372,7 +372,7 @@ void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, 
 	    //	if (Affectline.vt == 0)
 		try
 		{
-			strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam] SET [IMEISyllable]=%d, [SNSyllable]=%d, [SIMSyllable]=%d, [VIPSyllable]=%d, [ICCIDSyllable]=%d, [BATSyllable]=%d, [MACSyllable]=%d, [EquipmentSyllable]=%d,[RFIDSyllable]=%d,[UpperLimit]=%s,[DownLimit]=%s,[DisUpperLimit]=%s,[DisDownLimit]=%s WHERE [ZhiDan]='") + order + _T("'"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID, uplimit, downlimit, disuplimit, disdownlimit);
+			strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam] SET [IMEISyllable]=%d, [SNSyllable]=%d, [SIMSyllable]=%d, [VIPSyllable]=%d, [ICCIDSyllable]=%d, [BATSyllable]=%d, [MACSyllable]=%d, [EquipmentSyllable]=%d,[RFIDSyllable]=%d,[IMEI2Syllable]=%d,[UpperLimit]=%s,[DownLimit]=%s,[DisUpperLimit]=%s,[DisDownLimit]=%s WHERE [ZhiDan]='") + order + _T("'"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID, IMEI2, uplimit, downlimit, disuplimit, disdownlimit);
 			m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 		}
 		catch (_com_error &e)

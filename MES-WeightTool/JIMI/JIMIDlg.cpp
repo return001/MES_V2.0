@@ -65,8 +65,8 @@ END_MESSAGE_MAP()
 
 CJIMIDlg::CJIMIDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_JIMI_DIALOG, pParent)
-	, m_disDownLimit(_T("-10000000"))
-	, m_disUpLimit(_T("1000000"))
+	, m_disDownLimit(_T("20"))
+	, m_disUpLimit(_T("600"))
 	, m_DownLimit(_T("50"))
 	, m_UpLimit(_T("500"))
 	, LockFlag(FALSE)
@@ -109,11 +109,11 @@ void CJIMIDlg::DoDataExchange(CDataExchange* pDX)
 	//DDX_Control(pDX, IDC_RFIDBIND_CHECK, m_rfidBindCheck);
 
 	DDX_Control(pDX, IDC_OPENIMEI3EDIT_CHECK, m_OpenImei3EditCheck);
-	DDX_Control(pDX, IDC_BTN_StateView, m_StateView);
-	DDX_Control(pDX, IDC_BTN_OK_View, m_OKView);
-	DDX_Control(pDX, IDC_BTN_Over_View, m_OverView);
-	DDX_Control(pDX, IDC_BTN_NULL_View, m_NullView);
-	DDX_Control(pDX, IDC_BTN_Down_View, m_DownView);
+	//DDX_Control(pDX, IDC_BTN_StateView, m_StateView);
+	//DDX_Control(pDX, IDC_BTN_OK_View, m_OKView);
+	//DDX_Control(pDX, IDC_BTN_Over_View, m_OverView);
+	//DDX_Control(pDX, IDC_BTN_NULL_View, m_NullView);
+	//DDX_Control(pDX, IDC_BTN_Down_View, m_DownView);
 
 	DDX_Text(pDX, IDC_EDIT_disDownLmt, m_disDownLimit);
 	DDX_Text(pDX, IDC_EDIT_disUpLmt, m_disUpLimit);
@@ -136,6 +136,7 @@ BEGIN_MESSAGE_MAP(CJIMIDlg, CDialogEx)
 
 	ON_MESSAGE(WM_RunLog, &CJIMIDlg::OnRunlog)
 	ON_MESSAGE(WM_Voice, &CJIMIDlg::OnVoice)
+	ON_MESSAGE(WM_MySetFocus, &CJIMIDlg::OnMySetFocus)
 	ON_BN_CLICKED(IDC_BTN_ClearError, &CJIMIDlg::OnBnClickedBtnClearerror)
 	ON_MESSAGE(WM_ReadWeighPortRet, &CJIMIDlg::OnReadweighportret)
 	ON_CBN_DROPDOWN(IDC_COMBO_COM, &CJIMIDlg::OnDropdownComboCom)
@@ -212,11 +213,11 @@ BOOL CJIMIDlg::OnInitDialog()
 		return FALSE;
 	}
 
-	m_StateView.Blank();
-	m_OKView.Green();
-	m_OverView.Red();
-	m_DownView.Yellow();
-	m_NullView.Blank();
+	//m_StateView.Blank();
+	//m_OKView.Green();
+	//m_OverView.Red();
+	//m_DownView.Yellow();
+	//m_NullView.Blank();
 
 	ShowWindow(SW_MAXIMIZE);//对话框默认最大化弹出
 	pComThread = NULL;
@@ -234,7 +235,7 @@ BOOL CJIMIDlg::OnInitDialog()
 
 	IniVoice();
 	AddToRunList(_T("初始化完成！！"));
-
+	bThreadEnd = true;
 	OnBnClickedButtonUpdataorder();
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -327,6 +328,7 @@ HANDLE CJIMIDlg::InitCom(CString comName)
 	dcb.StopBits = ONESTOPBIT; //1个停止位
 	SetCommState(hCom, &dcb);
 	PurgeComm(hCom, PURGE_TXCLEAR | PURGE_RXCLEAR);
+	
 	//SetRicheditText(L"串口初始化成功！", 0);
 	return hCom;
 }
@@ -523,36 +525,78 @@ UINT CJIMIDlg::ComRxThread(LPVOID pParam)
 	return 0;
 }
 
+void CJIMIDlg::GetWeightDEAL()
+{
+	m_OKValue = _T("");
+	m_WeightValue = _T("");
+	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
+	if (!GetWeightValue())
+	{
+		AddToErrorList(_T("获取重量值超时，请检查问题后,重新扫描此产品!"));
+		RecordResult(_T("error501、获取重量值超时，请检查问题后,重新扫描此产品!"));
+		SetDlgItemText(IDC_HINT_STATIC, L"获取重量值超时");
+//		SetEditEmpty();//清空编辑框    	
+	}
+	else
+	{
+		//if (iValResult == 0)
+		{
+            RecordResult(_T("结果：重量值为:") + m_WeightValue + _T(";详情为：") + sResult);
+			ToResultSheet();//记录数据至总表,目前总表的IMEI号为空
+		}
+		AfxBeginThread(VoiceThread, this);//开启与语音读数据的线程																	//重量不正常则不需要上传数据，需求说明有提到
+		AddToRunList(_T("IMEI:") + m_IMEIValue + _T("重量值为:") + m_WeightValue + _T(";详情为：") + sResult);
+		//SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+		SetDlgItemText(IDC_IMEI2_EDIT, m_WeightValue);
+	//	SetEditEmpty();//清空编辑框   
+	}
+	return;
+}
+BOOL CJIMIDlg::Process()
+{
+	return TRUE;
+}
+
 UINT CJIMIDlg::GetWeightThread(LPVOID pParam)
 {
 	CJIMIDlg *pThisThreadDlg = (CJIMIDlg *)pParam;
+	//pThisThreadDlg->bThreadEnd = false;
 	pThisThreadDlg->m_OKValue = _T("");
-	pThisThreadDlg->m_WeightValue = _T("");
-	pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
-	
+    pThisThreadDlg->m_WeightValue = _T("");
+	//pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
 	if (!pThisThreadDlg->GetWeightValue())
 	{
 		pThisThreadDlg->AddToErrorList(_T("获取重量值超时，请检查问题后,重新扫描此产品!"));
 		pThisThreadDlg->RecordResult(_T("error501、获取重量值超时，请检查问题后,重新扫描此产品!"));
 		pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"获取重量值超时");
-		pThisThreadDlg->SetEditEmpty();//清空编辑框    	
-		pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+		//pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+		//::PostMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
+		::SendMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
+		//pThisThreadDlg->SetEditEmpty();//清空编辑框    	
 	}
 	else
 	{
 		//if (pThisThreadDlg->iValResult == 0)
 		{
 			pThisThreadDlg->RecordResult(_T("结果：重量值为:") + pThisThreadDlg->m_WeightValue + _T(";详情为：") + pThisThreadDlg->sResult);
-			pThisThreadDlg->ToResultSheet();//记录数据至总表
+			Sleep(10);
+			pThisThreadDlg->ToResultSheet();//记录数据至总表,目前总表的IMEI号为空
 		}
+		//AfxBeginThread(pThisThreadDlg->VoiceThread, pThisThreadDlg);//开启与语音读数据的线程
 		//重量不正常则不需要上传数据，需求说明有提到
-		pThisThreadDlg->AddToRunList(_T("IMEI:") + pThisThreadDlg->m_IMEIValue + _T("重量值为:") + pThisThreadDlg->m_WeightValue + _T(";详情为：") + pThisThreadDlg->sResult);
-		pThisThreadDlg->SetEditEmpty();//清空编辑框    	
-		pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
-		pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+		pThisThreadDlg->AddToRunList(_T("IMEI:") + pThisThreadDlg->m_IMEIValue + _T("重量值为:") + pThisThreadDlg->m_WeightValue + _T(";详情为：") + pThisThreadDlg->sResult);		
+		//pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 		pThisThreadDlg->SetDlgItemText(IDC_IMEI2_EDIT, pThisThreadDlg->m_WeightValue);	
-		AfxBeginThread(pThisThreadDlg->VoiceThread, pThisThreadDlg);//开启与语音读数据的线程
+		//pThisThreadDlg->SetEditEmpty();//清空编辑框   
+	
+		//pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+		//::PostMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
+		::SendMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
+		//pThisThreadDlg->SetDlgItemText(IDC_IMEI3_EDIT, L"");
+		//HWND hd = pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->GetSafeHwnd();
+		//pThisThreadDlg->SetForegroundWindow();		
 	}	
+	//pThisThreadDlg->bThreadEnd = true;
 	return TRUE;
 }
 
@@ -601,7 +645,7 @@ bool CJIMIDlg::IniVoice()
 	if (SUCCEEDED(SpFindBestToken(SPCAT_VOICES, L"language=804", NULL, &pSpObjectToken)))//804代表中文 
 	{
 		pVoice->SetVoice(pSpObjectToken);//声音大小
-		pVoice->SetRate(1);//语速
+		pVoice->SetRate(3);//语速
 		pSpObjectToken->Release();
 	}
 	else {
@@ -712,6 +756,14 @@ afx_msg LRESULT CJIMIDlg::OnVoice(WPARAM wParam, LPARAM lParam)
 	char * pBuf = (char *)wParam;
 	CString sVoice = CString(pBuf);
 	hr = pVoice->Speak(sVoice.AllocSysString(), 0, NULL);
+	return 0;
+}
+afx_msg LRESULT CJIMIDlg::OnMySetFocus(WPARAM wParam, LPARAM lParam)
+{
+//	SetDlgItemText(IDC_IMEI3_EDIT, L"");
+//	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+	GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();	
+	bThreadEnd = true;
 	return 0;
 }
 afx_msg LRESULT CJIMIDlg::OnRunlog(WPARAM wParam, LPARAM lParam)
@@ -875,7 +927,7 @@ void CJIMIDlg::OnSelchangeZhidanCombo()
 
 	RelationEnableWindow(TRUE);
 
-	m_StateView.Blank();
+	//m_StateView.Blank();
 	ChImei3EnableWindow(TRUE);
 	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
 	GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(FALSE);
@@ -887,6 +939,10 @@ void CJIMIDlg::OnSelchangeZhidanCombo()
 
 	GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
+	AddToRunList(_T("选择订单号为") + strzhidan);
+	//OnBnClickedImeisyllableCheck();
+	m_imeiSyllableCheck.SetCheck(1);
+	UpdateData(FALSE);
 }
 
 //根据订单号获取IMEI起始号和结束号
@@ -932,7 +988,7 @@ void CJIMIDlg::OnBnClickedButtonUpdataorder()
 	InitComboBox();//读取数据库文件
 	SetDlgItemText(IDC_IMEISTART_EDIT, L"");
 	SetDlgItemText(IDC_IMEIOVER_EDIT, L"");
-	SetEditEmpty();//清空编辑框
+	//SetEditEmpty();//清空编辑框
 	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 	RelationEnableWindow(FALSE);
 	ChImei3EnableWindow(FALSE);
@@ -966,9 +1022,11 @@ void CJIMIDlg::SetEditEmpty()
 {
 //	SetDlgItemText(IDC_IMEI1_EDIT, L"");
 //	SetDlgItemText(IDC_IMEI2_EDIT, L"");
-	
-	SetDlgItemText(IDC_IMEI3_EDIT, L"");
-	GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+	//m_StateView.Blank();
+	//SetDlgItemText(IDC_IMEI3_EDIT, L"");
+	//GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
+	//GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+	bThreadEnd = true;
 	strno1 = L"NULL";
 	strno2 = L"NULL";
 	strno3 = L"NULL";
@@ -1059,8 +1117,8 @@ void CJIMIDlg::CleanSyllableCheck()
 	OnBnClickedImei2syllableCheck();
 	m_UpLimit = _T("500");
 	m_DownLimit = _T("50");
-	m_disUpLimit = _T("1000000");
-	m_disDownLimit = _T("-1000000");	
+	m_disUpLimit = _T("600");
+	m_disDownLimit = _T("20");	
 	UpdateData(FALSE);
 }
 
@@ -1125,6 +1183,7 @@ void CJIMIDlg::OnBnClickedButtonComok2()
 		catch (const std::exception&)
 		{
 		}		
+		//m_StateView.Blank();
 		SetDlgItemText(IDC_BUTTON_COMOK2, _T("连接"));
 		SetDlgItemText(IDC_WeightView, _T("电子秤未连接"));		
 		GetDlgItem(IDC_COMBO_COM)->EnableWindow(TRUE);
@@ -1133,7 +1192,6 @@ void CJIMIDlg::OnBnClickedButtonComok2()
 	}
 	
 }
-
 
 void CJIMIDlg::OnKillfocusZhidanCombo()
 {
@@ -1570,16 +1628,18 @@ void CJIMIDlg::OnBnClickedLockButton()
 			RelationEnableWindow(TRUE);
 			ChImei3EnableWindow(TRUE);
 			//ImeiInputEnableWindow(FALSE);
+			SetDlgItemText(IDC_IMEI3_EDIT, L"");
 			GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_UpdataOrder)->EnableWindow(TRUE);
 			SetDlgItemText(IDC_LOCK_BUTTON, L"开始");
+			//m_StateView.Blank();
 			AddToRunList(m_UserName + _T(",停止称重!!!!!!!!"));
 
 			LockFlag = FALSE;
 		}
-
-		SetEditEmpty();//清空编辑框
+		
+		
 		SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 	}
 	else if (LockFlag == FALSE)
@@ -1671,32 +1731,40 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 	CString str1 = L"", str2 = L"", str3 = L"";//分别装载IMEI1扫描框，IMEI2扫描框，IMEI3扫描框的字符串
 	int mm;
 	int resultflag1, resultflag2, resultflag3;//分别装载IMEI1扫描框，IMEI2扫描框，IMEI3扫描框的一些查询结果，根据这些结果来判定成功与否
-	ADOManage adomanage;
+	
 
 	//如果为空就不要继续往下面执行了
-	if (Imei3Flag == TRUE)
+//	if (Imei3Flag == TRUE)
 	{
 		GetDlgItemText(IDC_IMEI3_EDIT, str3);
-		if (str3 == "")
+		if (str3 == "")			
 		{
 			return CDialogEx::PreTranslateMessage(pMsg);
 		}
 	}
 	//不断的读键盘输入的东西
-	if (pMsg->message == WM_KEYDOWN)
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN )
 	{
-		m_StateView.Blank();
-		int nVirtKey = (int)pMsg->wParam;
-		if (nVirtKey == VK_RETURN)
+		if (false == bThreadEnd)
+		{
+			SetDlgItemText(IDC_IMEI3_EDIT, L"");
+			return CDialogEx::PreTranslateMessage(pMsg);
+		}
+		bThreadEnd = false;
+		ADOManage adomanage;
+		//m_StateView.Blank();
+	//	int nVirtKey = (int)pMsg->wParam;
+	//	if (nVirtKey == VK_RETURN)
 		{//回车
-			if (pMsg->hwnd == GetDlgItem(IDC_IMEI3_EDIT)->GetSafeHwnd())
+			//if (pMsg->hwnd == GetDlgItem(IDC_IMEI3_EDIT)->GetSafeHwnd())
 			{
 				SetDlgItemText(IDC_HINT_STATIC, L"");
 				SetDlgItemText(IDC_IMEI1_EDIT, _T(""));
 				SetDlgItemText(IDC_IMEI2_EDIT, _T(""));
-				m_StateView.Blank();
+				//m_StateView.Blank();
 				GetDlgItemText(IDC_IMEI3_EDIT, str3);
-				GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
+				SetDlgItemText(IDC_IMEI3_EDIT, L"");
+				//GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(FALSE);
 				SetDlgItemText(IDC_STATIC_LASTInput, str3);
 				AddToRunList(_T("扫码输入：")+ str3);
 				//-------1、判断输入是否合格 ----------------------//
@@ -1705,10 +1773,11 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 				if (mm == FALSE)
 				{			
 					SetDlgItemText(IDC_HINT_STATIC, L"输入格式不合法");
-					SetEditEmpty();//清空编辑框
-					GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+					
 					AddToErrorList(_T("输入内容格式不合法"));
 					PlayVoice(_T("格式错误"));
+					SetEditEmpty();//清空编辑框
+					GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 					return FALSE;
 				//	return CDialogEx::PreTranslateMessage(pMsg);
 				}
@@ -1739,9 +1808,9 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 					{
 						SetDlgItemText(IDC_HINT_STATIC, L"没匹配到相应的IMEI号");
 						AddToErrorList(_T("此订单没匹配到相应的IMEI号码！"));
-						SetEditEmpty();//清空编辑框
-						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 						PlayVoice(_T("订单无此号"));
+						SetEditEmpty();//清空编辑框
+						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();						
 						return FALSE;
 					}					
 				}
@@ -1756,10 +1825,11 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 				{			
 				//	RecordResult(_T("error201、号段在范围外"));//把错误日志写进数据库
 					SetDlgItemText(IDC_HINT_STATIC, L"号段在范围外");
+					PlayVoice(_T("号段异常"));
 					SetEditEmpty();//清空编辑框
 					GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
 					AddToErrorList(L"号段在范围外");
-					PlayVoice(_T("号段异常"));
+					
 					return FALSE;
 				//	return CDialogEx::PreTranslateMessage(pMsg);
 				}
@@ -1776,10 +1846,11 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 					RecordResult(L"error302、对比标志位不正常");
 					SetDlgItemText(IDC_HINT_STATIC, L"对比标志位不正常");
 					AddToErrorList(L"对比工位标志位不正常：" + m_IMEIValue);
+					PlayVoice(_T("对比位异常"));
 					SetDlgItemText(IDC_IMEI1_EDIT, _T(""));
 					SetEditEmpty();//清空编辑框
 				    GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
-					PlayVoice(_T("对比位异常"));
+					
 					return FALSE;
 				}								
 			    //-------------4、 查询对比工位彩盒判断字段CHRESULT号是否在订单中----------------------//前面很多地方判断过了，这里就不用了
@@ -1794,9 +1865,11 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 					{
 						SetDlgItemText(IDC_HINT_STATIC, L"查询彩盒判断标志位不正常");
 						AddToErrorList(L"查询彩盒判断标志位不正常：" + str3);
+						PlayVoice(_T("彩盒检异常"));
 						SetDlgItemText(IDC_IMEI1_EDIT, _T(""));
 						SetEditEmpty();//清空编辑框
-						PlayVoice(_T("彩盒检异常"));
+						GetDlgItem(IDC_IMEI3_EDIT)->SetFocus();
+						
 						return FALSE;
 					}
 					adomanage.CloseAll();
@@ -1804,12 +1877,9 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 				
 			    //-------------5、 此产品的重量是否合格----------------------//
 				pWeightThread = AfxBeginThread(GetWeightThread, this);//开启读数据的线程
-
 				return TRUE;
-			//	return CDialogEx::PreTranslateMessage(pMsg);
-
 			}
-			pMsg->wParam = VK_TAB;
+			//pMsg->wParam = VK_TAB;
 		}
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
@@ -1919,7 +1989,7 @@ void CJIMIDlg::ToResultSheet()
 //获取当前的串口返回的有效的重量值
 bool CJIMIDlg::GetWeightValue()
 {
-	int num = 40;//获取串口返回值的最大次数，次数*sleep（）时间即为超时时间200*130 =30000,即300s没获取到值，则获取稳定值超时
+	int num = 40;//获取串口返回值的最大次数，次数*sleep（）时间即为超时时间40*60 =2400,即300s没获取到值，则获取稳定值超时
 	int isafe = 0;//稳定值，共秤4次
 	double dbnewVAL, dboldVALdb,dbUplimit,dbDownlimit;//最新重量值，上次重量值，上下限值
 	dboldVALdb = 0;//初始化为0
@@ -1928,18 +1998,18 @@ bool CJIMIDlg::GetWeightValue()
 	{
 		if (_T("")== m_newWeightValue)
 		{
-			Sleep(130);
+			Sleep(60);
 			continue;
 		}		
 		dbnewVAL = _wtof(m_newWeightValue.GetBuffer());
 		dbUplimit = _wtof(m_UpLimit.GetBuffer());
 		dbDownlimit = _wtof(m_DownLimit.GetBuffer());
 
-		//秤的精度为0.2，五次称重后，前后两次重量差在0.3
+		//秤的精度为0.2，三次称重后，前后两次重量差在0.3
 		if (fabs(dbnewVAL - dboldVALdb) <= 0.3)
 		{
-			if (isafe == 3)
-			{//如果称量到第四次ok，则给m_WeightValue赋值
+			if (isafe == 2)
+			{//如果称量到第三次ok，则给m_WeightValue赋值
 				m_WeightValue = m_newWeightValue;
 				if (dbnewVAL> dbUplimit)
 				{
@@ -1947,8 +2017,11 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("偏重:")+ str +_T("g");				
 					m_OKValue = _T("0");
 					iValResult = 2;
-					m_StateView.Red();
-				//	AfxBeginThread(VoiceThread, this);//开启读数据的线程
+					//m_StateView.Red();
+					SetDlgItemText(IDC_HINT_STATIC, L"偏重");
+					strText = _T("偏重");
+					PlayVoice(strText);
+					//AfxBeginThread(VoiceThread, this);//开启读数据的线程
 				}
 				else if (dbnewVAL < dbDownlimit)
 				{
@@ -1956,7 +2029,10 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("偏轻:") + str + _T("g");					
 					m_OKValue = _T("0");
 					iValResult = 1;
-					m_StateView.Yellow();
+					//m_StateView.Yellow();
+					SetDlgItemText(IDC_HINT_STATIC, L"偏轻");
+					strText = _T("偏轻");
+					PlayVoice(strText);
 				//	AfxBeginThread(VoiceThread, this);//开启读数据的线程
 				}
 				else 
@@ -1965,7 +2041,10 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("重量正常:") + str + _T("g");					
 					m_OKValue = _T("1");
 					iValResult = 0;
-					m_StateView.Green();
+					//m_StateView.Green();
+					strText = _T("正常");
+					SetDlgItemText(IDC_HINT_STATIC, L"正常");
+					PlayVoice(strText);
 				//	AfxBeginThread(VoiceThread, this);//开启读数据的线程
 				}
 				m_newWeightValue = _T("");
@@ -1976,14 +2055,14 @@ bool CJIMIDlg::GetWeightValue()
 			{//新值赋值给旧值，继续读
 				dboldVALdb = dbnewVAL;
 				isafe++;
-				Sleep(130);
+				Sleep(60);
 				continue;
 			}		    	
 		}
 		else
 		{//如果两者重量值差很多，则继续获取新的值
 			iValResult = 3;
-			Sleep(130);
+			Sleep(80);
 			dboldVALdb = dbnewVAL;
 		}
 	}
@@ -2081,7 +2160,7 @@ void CJIMIDlg::FontInit()
 	GetDlgItem(IDC_LOCK_BUTTON)->SetFont(&Font1);
 	GetDlgItem(IDC_BUTTON_COMOK2)->SetFont(&Font4);
 	GetDlgItem(IDC_BUTTON_UpdataOrder)->SetFont(&Font4);
-	GetDlgItem(IDC_HINT_STATIC)->SetFont(&Font4);
+	GetDlgItem(IDC_HINT_STATIC)->SetFont(&Font1);
 	
 }
 

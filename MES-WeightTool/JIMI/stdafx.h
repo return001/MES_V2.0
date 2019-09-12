@@ -59,6 +59,8 @@
 
 #define WM_Voice (WM_USER + 3)  //用于语音播报称重结果
 
+#define WM_MySetFocus (WM_USER + 4)  //用于语音播报称重结果
+
 #define d_SimBindCheck                  4
 #define d_VipBindCheck                  5
 #define d_IccidBindCheck                6

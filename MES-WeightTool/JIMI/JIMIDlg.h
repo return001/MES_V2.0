@@ -68,6 +68,9 @@ public:
 	static UINT ComRxThread(LPVOID pParam);//串口接收数据线程
 	static UINT GetWeightThread(LPVOID pParam);//重量计算线程
 	static UINT VoiceThread(LPVOID pParam);//重量计算线程
+	BOOL Process();
+	void GetWeightDEAL();//重量结果处理
+	bool bThreadEnd;//判断线城结束的变量
 	OVERLAPPED m_osRead; //用于读取控制
 	OVERLAPPED m_osWrite; //用于发送控制
 
@@ -94,6 +97,7 @@ public:
 protected:
 	afx_msg LRESULT OnRunlog(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnVoice(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMySetFocus(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnReadweighportret(WPARAM wParam, LPARAM lParam);
 public:
 	afx_msg void OnBnClickedBtnClearerror();
@@ -195,11 +199,11 @@ public:
 	afx_msg void OnBnClickedReadbindButton();
 	afx_msg void OnBnClickedOpenimei3editCheck();
 	CButton m_OpenImei3EditCheck;
-	CNewButton m_StateView;
-	CNewButton m_OKView;
-	CNewButton m_OverView;
-	CNewButton m_NullView;
-	CNewButton m_DownView;
+	//CNewButton m_StateView;
+	//CNewButton m_OKView;
+	//CNewButton m_OverView;
+	//CNewButton m_NullView;
+	//CNewButton m_DownView;
 	//////////////////要传输给数据的数据////////////////
 	CString m_disDownLimit;
 	CString m_disUpLimit;
