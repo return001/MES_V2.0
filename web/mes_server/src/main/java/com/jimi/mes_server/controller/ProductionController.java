@@ -428,7 +428,7 @@ public class ProductionController extends Controller {
 		if (processPeopleQuantity < Constant.INTEGER_ZERO || capacity < Constant.INTEGER_ZERO) {
 			throw new ParameterException("产能或人数不合理");
 		}
-		if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND||rhythm.toString().length()>7) {
+		if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND || rhythm.toString().length() > 7) {
 			throw new ParameterException("节拍不合理");
 		}
 		if (productionService.addCapacity(softModel, customerModel, process, processGroup, processPeopleQuantity, capacity, remark, rhythm)) {
@@ -491,7 +491,7 @@ public class ProductionController extends Controller {
 			throw new ParameterException("参数不能为空");
 		}
 		if (rhythm != null) {
-			if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND||rhythm.toString().length()>7) {
+			if (rhythm < Constant.INTEGER_ZERO || rhythm > Constant.HOUR_TO_SECOND || rhythm.toString().length() > 7) {
 				throw new ParameterException("节拍不合理");
 			}
 		}

@@ -14,15 +14,15 @@ public class Constant {
 
 	public static final Integer SCHEDULING_JMPMC_USERTYPE = 8;
 
-	public static final String SUPER_ADMIN_DELETEPERMISSION = "1,1,1,1,1,1,1,1,1,1";
+	public static final String SUPER_ADMIN_DELETEPERMISSION = "1,1,1,1,1,1,1,1,1,1,1,1";
 
-	public static final String ORDINARY_DELETEPERMISSION = "0,0,0,0,0,0,0,0,0,0";
+	public static final String ORDINARY_DELETEPERMISSION = "0,0,0,0,0,0,0,0,0,0,0,0";
 
 	public static final String EXIST_DELETEPERMISSION = "1";
 
-	public final static String FILE_BACKUP_PATH = File.separator + "home" + File.separator + "mes_document" + File.separator + "backups" + File.separator;
+	public final static String FILE_BACKUP_PATH = "mes_document" + File.separator + "backups" + File.separator;
 
-	public final static String FILE_TABLE_PATH = File.separator + "home" + File.separator + "mes_document" + File.separator + "tables" + File.separator;
+	public final static String FILE_TABLE_PATH = "mes_document" + File.separator + "tables" + File.separator;
 
 	public static final Integer UNSCHEDULED_ORDERSTATUS = 1;
 

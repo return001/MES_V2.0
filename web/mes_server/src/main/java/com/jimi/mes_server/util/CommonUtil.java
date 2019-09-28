@@ -123,14 +123,23 @@ public class CommonUtil {
 	}
 
 
-	private static boolean match(String regex, String input) {
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(input);
-		return matcher.matches();
+	/**@author HCJ
+	 * 判断是否是windows系统下
+	 * @date 2019年9月25日 上午10:17:37
+	 */
+	public static boolean isWindows() {
+		return System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0;
 	}
 
 
 	public static void main(String[] args) {
 		getMD5("C:\\Users\\HCJ\\Desktop\\配置文件\\配置文件\\GT02F_20_61DM2_B25E_R0_V02_20151112_1042.rar");
+	}
+
+
+	private static boolean match(String regex, String input) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(input);
+		return matcher.matches();
 	}
 }

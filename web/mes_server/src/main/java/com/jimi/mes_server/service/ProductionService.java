@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jfinal.aop.Enhancer;
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
@@ -757,7 +758,14 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
-		File dir = new File(Constant.FILE_TABLE_PATH);
+		PropKit.use("properties.ini");
+		String filePath = null;
+		if (CommonUtil.isWindows()) {
+			filePath = PropKit.get("windowsFlagPath");
+		} else {
+			filePath = PropKit.get("linuxFlagPath");
+		}
+		File dir = new File(filePath + Constant.FILE_TABLE_PATH);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
@@ -772,7 +780,7 @@ public class ProductionService {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			File file = new File(Constant.FILE_TABLE_PATH + fileName);
+			File file = new File(filePath + Constant.FILE_TABLE_PATH + fileName);
 			if (file.exists()) {
 				file.delete();
 			}
@@ -1547,7 +1555,7 @@ public class ProductionService {
 			if (rhythm == null) {
 				orderVO.setCapacity(Constant.INTEGER_ZERO);
 			} else {
-				orderVO.setCapacity(BigDecimal.valueOf((double) Constant.HOUR_TO_SECOND /  rhythm).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+				orderVO.setCapacity(BigDecimal.valueOf((double) Constant.HOUR_TO_SECOND / rhythm).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
 			}
 		}
 		return orderVO;

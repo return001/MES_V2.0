@@ -42,6 +42,8 @@ public class SQL {
 
 	public final static String SELECT_DATARELATIVEUNIQUE_SQL_FRAGMENT = "SELECT * FROM DataRelativeUnique where ";
 
+	public final static String SELECT_DATARELATIVEUPDATE_SQL_FRAGMENT = "SELECT * FROM DataRelativeUpdate WHERE ";
+
 	public final static String SELECT_AUTOTEST_RESULT_SQL_FRAGMENT = "SELECT * FROM Gps_AutoTest_Result where ";
 
 	public final static String SELECT_AUTOTEST_RESULT3_SQL_FRAGMENT = "SELECT * FROM Gps_AutoTest_Result3 where ";
@@ -64,7 +66,11 @@ public class SQL {
 
 	public final static String DELETE_DATARELATIVEUNIQUE_SQL_FRAGMENT = "DELETE FROM DataRelativeUnique where ";
 
+	public final static String DELETE_DATARELATIVEUPDATE_SQL_FRAGMENT = "DELETE from DataRelativeUpdate where ";
+
 	public final static String DELETE_AUTOTEST_RESULT_SQL_FRAGMENT = "DELETE FROM Gps_AutoTest_Result where ";
+
+	public final static String DELETE_AUTOTEST_RESULT2_SQL_FRAGMENT = "DELETE FROM Gps_AutoTest_Result2 where ";
 
 	public final static String DELETE_AUTOTEST_RESULT3_SQL_FRAGMENT = "DELETE FROM Gps_AutoTest_Result3 where ";
 
@@ -170,11 +176,11 @@ public class SQL {
 
 	public final static String SELECT_PLAN_INFORMATION = "SELECT orders.ZhiDan,orders.soft_model,scheduling_quantity,line_computer.ip FROM scheduling_plan,orders,line_computer WHERE orders.id = scheduling_plan.orders and line_computer.line= scheduling_plan.line and scheduling_plan.id = ? ";
 
-	public final static String SELECT_FUNCTION_ERROR = "SELECT '设备信息' AS errorName1, num1 + num2 AS errorNum1, '电源' AS errorName2, num3 + num4 + num8 + num12 AS errorNum2, '通信' AS errorName3, num5 + num9 + num10 AS errorNum3, 'GPS' AS errorName4, num6 AS errorNum4, '其他' AS errorName5, num7 + num11 AS errorNum5, num1 + num2 + num3 + num4 + num5 + num6 + num8 + num9 + num10 + num12 AS errorNumSum FROM ( SELECT SUM ( CASE WHEN A.errorName LIKE '%芯片ID%' THEN 1 ELSE 0 END ) AS num1, SUM ( CASE WHEN A.errorName LIKE '%软件版本%' THEN 1 ELSE 0 END ) AS num2, SUM ( CASE WHEN A.errorName LIKE '%只有电池%' THEN 1 ELSE 0 END ) AS num3, SUM ( CASE WHEN A.errorName LIKE '%只有电压%' THEN 1 ELSE 0 END ) AS num4, SUM ( CASE WHEN A.errorName LIKE '%WIFI%' THEN 1 ELSE 0 END ) AS num5, SUM ( CASE WHEN A.errorName LIKE '%GPS%' THEN 1 ELSE 0 END ) AS num6, SUM ( CASE WHEN A.errorName LIKE '%光敏%' THEN 1 ELSE 0 END ) AS num7, SUM ( CASE WHEN A.errorName LIKE '%外电%' THEN 1 ELSE 0 END ) AS num8, SUM ( CASE WHEN A.errorName LIKE '%信号强度%' THEN 1 ELSE 0 END ) AS num9, SUM ( CASE WHEN A.errorName LIKE '%电话%' THEN 1 ELSE 0 END ) AS num10, SUM ( CASE WHEN A.errorName LIKE '%蜂鸣器%' THEN 1 ELSE 0 END ) AS num11, SUM ( CASE WHEN A.errorName LIKE '%电池电压%' THEN 1 ELSE 0 END ) AS num12 FROM ( SELECT SUBSTRING ( ErrorMessage1, charindex('+++', ErrorMessage1) + 3, charindex('->', ErrorMessage1) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage1 IS NOT NULL ) A ) B";
+	public final static String SELECT_FUNCTION_ERROR = "SELECT '设备信息' AS errorName1, num1 + num2 AS errorNum1, '电源' AS errorName2, num3 + num4 + num8 + num12 AS errorNum2, '通信' AS errorName3, num5 + num9 + num10 AS errorNum3, 'GPS' AS errorName4, num6 AS errorNum4, '其他' AS errorName5, num7 + num11 AS errorNum5, num1 + num2 + num3 + num4 + num5 + num6 + num8 + num9 + num10 + num12 AS errorNumSum FROM ( SELECT SUM ( CASE WHEN A.errorName LIKE '%芯片ID%' THEN 1 ELSE 0 END ) AS num1, SUM ( CASE WHEN A.errorName LIKE '%软件版本%' THEN 1 ELSE 0 END ) AS num2, SUM ( CASE WHEN A.errorName LIKE '%只有电池%' THEN 1 ELSE 0 END ) AS num3, SUM ( CASE WHEN A.errorName LIKE '%只有电压%' THEN 1 ELSE 0 END ) AS num4, SUM ( CASE WHEN A.errorName LIKE '%WIFI%' THEN 1 ELSE 0 END ) AS num5, SUM ( CASE WHEN A.errorName LIKE '%GPS%' THEN 1 ELSE 0 END ) AS num6, SUM ( CASE WHEN A.errorName LIKE '%光敏%' THEN 1 ELSE 0 END ) AS num7, SUM ( CASE WHEN A.errorName LIKE '%外电%' THEN 1 ELSE 0 END ) AS num8, SUM ( CASE WHEN A.errorName LIKE '%信号强度%' THEN 1 ELSE 0 END ) AS num9, SUM ( CASE WHEN A.errorName LIKE '%电话%' THEN 1 ELSE 0 END ) AS num10, SUM ( CASE WHEN A.errorName LIKE '%蜂鸣器%' THEN 1 ELSE 0 END ) AS num11, SUM ( CASE WHEN A.errorName LIKE '%电池电压%' THEN 1 ELSE 0 END ) AS num12 FROM ( SELECT SUBSTRING ( ErrorMessage1, charindex('+++', ErrorMessage1) + 3, charindex('->', ErrorMessage1) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage1 IS NOT NULL AND ErrorMessage1 != '' ) A ) B";
 
-	public final static String SELECT_COUPLE_ERROR = "SELECT B.*, errorNum1 + errorNum2 + errorNum3 AS errorNumSum FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2, '其他' as errorName3,sum(case WHEN A.errorName like '%数据库上传失败%' then 1 ELSE 0 END) as errorNum3, '返回值有误' as errorName4,0 as errorNum4 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL) A ) B";
+	public final static String SELECT_COUPLE_ERROR = "SELECT B.*, errorNum1 + errorNum2 + errorNum3 AS errorNumSum FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2, '其他' as errorName3,sum(case WHEN A.errorName like '%数据库上传失败%' then 1 ELSE 0 END) as errorNum3, '返回值有误' as errorName4,0 as errorNum4 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL AND ErrorMessage2 != '') A ) B";
 
-	public final static String SELECT_CARTON_ERROR = "SELECT '号码重复' as errorName1,sum(case WHEN A.errorName like '%号码重复%' then 1 ELSE 0 END) as errorNum1 , '工位漏测' as errorName2,sum(case WHEN A.errorName like '%工位漏测%' then 1 ELSE 0 END) as errorNum2, '箱号重复' as errorName3,sum(case WHEN A.errorName like '%箱号重复%' then 1 ELSE 0 END) as errorNum3 FROM ( SELECT SUBSTRING ( ErrorMessage4, charindex('+++', ErrorMessage4) + 3, charindex('->', ErrorMessage4) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage4 IS NOT NULL ) A ";
+	public final static String SELECT_CARTON_ERROR = "SELECT '号码重复' as errorName1,sum(case WHEN A.errorName like '%号码重复%' then 1 ELSE 0 END) as errorNum1 , '工位漏测' as errorName2,sum(case WHEN A.errorName like '%工位漏测%' then 1 ELSE 0 END) as errorNum2, '箱号重复' as errorName3,sum(case WHEN A.errorName like '%箱号重复%' then 1 ELSE 0 END) as errorNum3 FROM ( SELECT SUBSTRING ( ErrorMessage4, charindex('+++', ErrorMessage4) + 3, charindex('->', ErrorMessage4) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage4 IS NOT NULL AND ErrorMessage4 != '') A ";
 
 	public final static String SELECT_FUNCTION_ERRORNUM_BY_TESTTIME = "SELECT count(*) FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage1 IS NOT NULL ";
 
@@ -234,6 +240,6 @@ public class SQL {
 
 	public final static String SELECT_ORDER_BY_PLAN_ID = "SELECT zhidan,alias,soft_model as softModel,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,delivery_date as deliveryDate,quantity from orders INNER JOIN scheduling_plan on scheduling_plan.orders = orders.id WHERE scheduling_plan.id = ?";
 
-	public final static String SELECT_COUPLE_ERROR_FOR_CUSTOMER = "SELECT B.errorName1,B.errorNum1,B.errorName2,B.errorNum2 FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL) A ) B";
+	public final static String SELECT_COUPLE_ERROR_FOR_CUSTOMER = "SELECT B.errorName1,B.errorNum1,B.errorName2,B.errorNum2 FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL AND ErrorMessage2 != '') A ) B";
 
 }

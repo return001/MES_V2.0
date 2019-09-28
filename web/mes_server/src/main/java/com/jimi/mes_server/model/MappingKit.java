@@ -20,6 +20,7 @@ public class MappingKit {
 		arp.addMapping("dashboard_for_customer", "id", DashboardForCustomer.class);
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
 		arp.addMapping("DataRelativeUnique", "DATA1", DataRelativeUnique.class);
+		arp.addMapping("DataRelativeUpdate", "RelativeNum", DataRelativeUpdate.class);
 		arp.addMapping("file_type", "id", FileType.class);
 		arp.addMapping("Gps_AutoTest_AntiDup", "SN", GpsAutotestAntidup.class);
 		arp.addMapping("Gps_AutoTest_Result", "Id", GpsAutotestResult.class);
@@ -34,6 +35,8 @@ public class MappingKit {
 		arp.addMapping("Gps_TestResult", "Id", GpsTestresult.class);
 		arp.addMapping("line", "id", Line.class);
 		arp.addMapping("line_computer", "id", LineComputer.class);
+		// Composite Primary Key order: SN,SoftModel,Version
+		arp.addMapping("LTestLogMessage", "SN,SoftModel,Version", LTestLogMessage.class);
 		arp.addMapping("LUserAccount", "Id", LUserAccount.class);
 		arp.addMapping("model_capacity", "id", ModelCapacity.class);
 		arp.addMapping("order_file", "id", OrderFile.class);

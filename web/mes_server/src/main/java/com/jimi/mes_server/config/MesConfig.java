@@ -31,6 +31,7 @@ import com.jimi.mes_server.model.NetMarkIMEI;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
+import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
 
 /**
@@ -77,8 +78,14 @@ public class MesConfig extends JFinalConfig {
 		DruidPlugin dp1 = null;
 		DruidPlugin dp2 = null;
 		DruidPlugin dp3 = null;
+		String flagPath = null;
+		if (CommonUtil.isWindows()) {
+			flagPath = PropKit.get("windowsFlagPath");
+		} else {
+			flagPath = PropKit.get("linuxFlagPath");
+		}
 		// 判断是否是生产环境，配置数据连接池
-		if (isProductionEnvironment()) {
+		if (isProductionEnvironment(flagPath)) {
 			dp = new DruidPlugin(PropKit.get("p_url"), PropKit.get("p_user"), PropKit.get("p_password"));
 			dp1 = new DruidPlugin(PropKit.get("p_url1"), PropKit.get("p_user"), PropKit.get("p_password"));
 			dp2 = new DruidPlugin(PropKit.get("p_url2"), PropKit.get("p_user"), PropKit.get("p_password"));
@@ -158,6 +165,14 @@ public class MesConfig extends JFinalConfig {
 			if (new File(roots[i].toString() + "PRODUCTION_ENVIRONMENT_FLAG").exists()) {
 				return true;
 			}
+		}
+		return false;
+	}
+
+
+	public static boolean isProductionEnvironment(String path) {
+		if (new File(path + "PRODUCTION_ENVIRONMENT_FLAG").exists()) {
+			return true;
 		}
 		return false;
 	}

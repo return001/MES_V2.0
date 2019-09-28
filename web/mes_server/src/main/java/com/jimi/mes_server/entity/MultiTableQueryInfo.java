@@ -14,7 +14,11 @@ public class MultiTableQueryInfo {
 
 	private List<Record> DataRelativeUnique;
 
+	private List<Record> DataRelativeUpdate;
+
 	private List<Record> Gps_AutoTest_Result;
+
+	private List<Record> Gps_AutoTest_Result2;
 
 	private List<Record> Gps_AutoTest_Result3;
 
@@ -53,6 +57,16 @@ public class MultiTableQueryInfo {
 	}
 
 
+	public List<Record> getDataRelativeUpdate() {
+		return DataRelativeUpdate;
+	}
+
+
+	public void setDataRelativeUpdate(List<Record> dataRelativeUpdate) {
+		DataRelativeUpdate = dataRelativeUpdate;
+	}
+
+
 	public List<Record> getGps_AutoTest_Result() {
 		return Gps_AutoTest_Result;
 	}
@@ -60,6 +74,16 @@ public class MultiTableQueryInfo {
 
 	public void setGps_AutoTest_Result(List<Record> gps_AutoTest_Result) {
 		Gps_AutoTest_Result = gps_AutoTest_Result;
+	}
+
+
+	public List<Record> getGps_AutoTest_Result2() {
+		return Gps_AutoTest_Result2;
+	}
+
+
+	public void setGps_AutoTest_Result2(List<Record> gps_AutoTest_Result2) {
+		Gps_AutoTest_Result2 = gps_AutoTest_Result2;
 	}
 
 
@@ -143,11 +167,13 @@ public class MultiTableQueryInfo {
 	}
 
 
-	public MultiTableQueryInfo(List<Record> dataRelativeSheet, List<Record> dataRelativeUnique, List<Record> gps_AutoTest_Result, List<Record> gps_AutoTest_Result3, List<Record> gps_CartonBoxTwenty_Result, List<Record> gps_CoupleTest_Result, List<Record> gps_ManuCpParam, List<Record> gps_ManuPrintParam, List<Record> gps_TestResult, List<Record> netMarkIMEI, List<Record> gps_ManuSimDataParam) {
+	public MultiTableQueryInfo(List<Record> dataRelativeSheet, List<Record> dataRelativeUnique, List<Record> dataRelativeUpdate, List<Record> gps_AutoTest_Result, List<Record> gps_AutoTest_Result2, List<Record> gps_AutoTest_Result3, List<Record> gps_CartonBoxTwenty_Result, List<Record> gps_CoupleTest_Result, List<Record> gps_ManuCpParam, List<Record> gps_ManuPrintParam, List<Record> gps_TestResult, List<Record> netMarkIMEI, List<Record> gps_ManuSimDataParam) {
 		super();
 		DataRelativeSheet = dataRelativeSheet;
 		DataRelativeUnique = dataRelativeUnique;
+		DataRelativeUpdate = dataRelativeUpdate;
 		Gps_AutoTest_Result = gps_AutoTest_Result;
+		Gps_AutoTest_Result2 = gps_AutoTest_Result2;
 		Gps_AutoTest_Result3 = gps_AutoTest_Result3;
 		Gps_CartonBoxTwenty_Result = gps_CartonBoxTwenty_Result;
 		Gps_CoupleTest_Result = gps_CoupleTest_Result;
@@ -157,4 +183,5 @@ public class MultiTableQueryInfo {
 		NetMarkIMEI = netMarkIMEI;
 		Gps_ManuSimDataParam = gps_ManuSimDataParam;
 	}
+
 }
