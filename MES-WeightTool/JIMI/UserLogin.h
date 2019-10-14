@@ -27,6 +27,7 @@ public:
 	CString m_UserPswd;
 
 	CString sUSER;
+	CString sUSERRight;
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 };

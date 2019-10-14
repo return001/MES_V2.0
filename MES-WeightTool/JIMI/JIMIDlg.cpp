@@ -169,6 +169,7 @@ BEGIN_MESSAGE_MAP(CJIMIDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_OPENIMEI3EDIT_CHECK, &CJIMIDlg::OnBnClickedOpenimei3editCheck)
 	ON_BN_CLICKED(IDC_LOCK_BUTTON, &CJIMIDlg::OnBnClickedLockButton)
 	ON_BN_CLICKED(IDC_IMEI2SYLLABLE_CHECK, &CJIMIDlg::OnBnClickedImei2syllableCheck)
+	ON_BN_CLICKED(IDC_BUTTON_LOGIN, &CJIMIDlg::OnBnClickedButtonLogin)
 END_MESSAGE_MAP()
 
 
@@ -232,11 +233,22 @@ BOOL CJIMIDlg::OnInitDialog()
 	FontInit();
 	AddToRunList(_T("登录人员：")+ userDlg.sUSER);
 	m_UserName = userDlg.sUSER;
+	SetDlgItemText(IDC_USERNAME_EDIT, m_UserName);
+	m_UserRight = userDlg.sUSERRight;
+	SetDlgItemText(IDC_UserRight_EDIT, m_UserRight);
 
 	IniVoice();
 	AddToRunList(_T("初始化完成！！"));
 	bThreadEnd = true;
 	OnBnClickedButtonUpdataorder();
+	if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1001")) == -1))
+	{
+		WidgetStatue(FALSE);
+	}
+	else
+	{
+		//WidgetStatue(TRUE);
+	}	
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -534,7 +546,7 @@ void CJIMIDlg::GetWeightDEAL()
 	{
 		AddToErrorList(_T("获取重量值超时，请检查问题后,重新扫描此产品!"));
 		RecordResult(_T("error501、获取重量值超时，请检查问题后,重新扫描此产品!"));
-		SetDlgItemText(IDC_HINT_STATIC, L"获取重量值超时");
+		SetDlgItemText(IDC_HINT_STATIC, L"获取重量超时");
 //		SetEditEmpty();//清空编辑框    	
 	}
 	else
@@ -546,7 +558,7 @@ void CJIMIDlg::GetWeightDEAL()
 		}
 		AfxBeginThread(VoiceThread, this);//开启与语音读数据的线程																	//重量不正常则不需要上传数据，需求说明有提到
 		AddToRunList(_T("IMEI:") + m_IMEIValue + _T("重量值为:") + m_WeightValue + _T(";详情为：") + sResult);
-		//SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+	//	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 		SetDlgItemText(IDC_IMEI2_EDIT, m_WeightValue);
 	//	SetEditEmpty();//清空编辑框   
 	}
@@ -568,7 +580,7 @@ UINT CJIMIDlg::GetWeightThread(LPVOID pParam)
 	{
 		pThisThreadDlg->AddToErrorList(_T("获取重量值超时，请检查问题后,重新扫描此产品!"));
 		pThisThreadDlg->RecordResult(_T("error501、获取重量值超时，请检查问题后,重新扫描此产品!"));
-		pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"获取重量值超时");
+		pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"获取重量超时");
 		//pThisThreadDlg->GetDlgItem(IDC_IMEI3_EDIT)->EnableWindow(TRUE);
 		//::PostMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
 		::SendMessage(pThisThreadDlg->m_hWnd, WM_MySetFocus, 0, 0);
@@ -585,7 +597,7 @@ UINT CJIMIDlg::GetWeightThread(LPVOID pParam)
 		//AfxBeginThread(pThisThreadDlg->VoiceThread, pThisThreadDlg);//开启与语音读数据的线程
 		//重量不正常则不需要上传数据，需求说明有提到
 		pThisThreadDlg->AddToRunList(_T("IMEI:") + pThisThreadDlg->m_IMEIValue + _T("重量值为:") + pThisThreadDlg->m_WeightValue + _T(";详情为：") + pThisThreadDlg->sResult);		
-		//pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+	//	pThisThreadDlg->SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 		pThisThreadDlg->SetDlgItemText(IDC_IMEI2_EDIT, pThisThreadDlg->m_WeightValue);	
 		//pThisThreadDlg->SetEditEmpty();//清空编辑框   
 	
@@ -917,20 +929,27 @@ void CJIMIDlg::OnDropdownComboCom()
 
 void CJIMIDlg::OnSelchangeZhidanCombo()
 {
+	if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1001")) == -1))
+	{
+		AfxMessageBox(_T("您没有权限，如需更改，请切换账户"));
+		//SetDlgItemText(IDC_ZHIDAN_COMBO,L"");
+		m_zhidanCombo.SetCurSel(-1);
+		return;
+	}
 	if (!readimei())
 	{
 		return;
 	}
 	SetEditEmpty();//清空编辑框
 //	AddToRunList(_T("选择订单号:") + strzhidan);
-	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+	SetDlgItemText(IDC_HINT_STATIC, L"等待就绪");
 
 	RelationEnableWindow(TRUE);
 
 	//m_StateView.Blank();
 	ChImei3EnableWindow(TRUE);
 	GetDlgItem(IDC_LOCK_BUTTON)->EnableWindow(TRUE);
-	GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(FALSE);
+	//GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(FALSE);
 	CleanSyllableCheck();
 	CleanBindCheck();
 	CleanImei3Check();
@@ -985,11 +1004,12 @@ bool CJIMIDlg::readimei()
 
 void CJIMIDlg::OnBnClickedButtonUpdataorder()
 {
+
 	InitComboBox();//读取数据库文件
 	SetDlgItemText(IDC_IMEISTART_EDIT, L"");
 	SetDlgItemText(IDC_IMEIOVER_EDIT, L"");
 	//SetEditEmpty();//清空编辑框
-	SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+	SetDlgItemText(IDC_HINT_STATIC, L"等待就绪");
 	RelationEnableWindow(FALSE);
 	ChImei3EnableWindow(FALSE);
 	ImeiInputEnableWindow(FALSE);
@@ -997,7 +1017,7 @@ void CJIMIDlg::OnBnClickedButtonUpdataorder()
 	CleanSyllableCheck();
 	CleanBindCheck();
 	CleanImei3Check();
-	AddToRunList(_T("刷新订单号"));
+	AddToRunList(_T("读取订单号"));
 }
 
 //给combox添加数据库中的订单号，更新按钮和开启后自动初始化都用这个函数
@@ -1378,6 +1398,13 @@ void CJIMIDlg::OnBnClickedRfidsyllableCheck()
 void CJIMIDlg::OnBnClickedSavesyllableButton()
 {
 	// TODO: 在此添加控件通知处理程序代码
+
+	if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1001")) == -1))
+	{
+		AfxMessageBox(_T("您没有权限，如需更改，请切换账户"));
+		OnBnClickedReadsyllableButton();
+		return;
+	}
 	if (false == CheckParam())
 	{
 		AddToRunList(_T("保存参数失败"));
@@ -1608,6 +1635,11 @@ void CJIMIDlg::OtherEnableWindow(BOOL chose)
 
 void CJIMIDlg::OnBnClickedLockButton()
 {
+	if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1002")) == -1))
+	{
+		AfxMessageBox(_T("您没有权限，如需更改，请切换账户"));
+		return;
+	}
 	if (LockFlag == TRUE)
 	{
 		INT_PTR nRes;
@@ -1633,14 +1665,20 @@ void CJIMIDlg::OnBnClickedLockButton()
 			GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_UpdataOrder)->EnableWindow(TRUE);
 			SetDlgItemText(IDC_LOCK_BUTTON, L"开始");
-			//m_StateView.Blank();
+		//	m_StateView.Blank();
 			AddToRunList(m_UserName + _T(",停止称重!!!!!!!!"));
-
+			GetDlgItem(IDC_BUTTON_LOGIN)->EnableWindow(TRUE);
 			LockFlag = FALSE;
-		}
-		
-		
-		SetDlgItemText(IDC_HINT_STATIC, L"就绪");
+			if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1001")) == -1))
+			{
+				WidgetStatue(FALSE);
+			}
+			else
+			{
+				WidgetStatue(TRUE);
+			}
+		}		
+		SetDlgItemText(IDC_HINT_STATIC, L"等待就绪");
 	}
 	else if (LockFlag == FALSE)
 	{
@@ -1661,8 +1699,9 @@ void CJIMIDlg::OnBnClickedLockButton()
 	//	ImeiInputEnableWindow(TRUE);
 		GetDlgItem(IDC_BUTTON_UpdataOrder)->EnableWindow(FALSE);
 		SetDlgItemText(IDC_LOCK_BUTTON, L"停止");
+		SetDlgItemText(IDC_HINT_STATIC, L"就绪");
 		AddToRunList(m_UserName + _T(",开始称重!!!!!!!!"));
-
+		GetDlgItem(IDC_BUTTON_LOGIN)->EnableWindow(FALSE);
 		//将查询字段的后半段sql语句提前生成出来，提高效率
 		//这里是查字段的
 		map<int, CString>::iterator SyllableIter;
@@ -1772,7 +1811,7 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 				mm = IsNumber(str3);
 				if (mm == FALSE)
 				{			
-					SetDlgItemText(IDC_HINT_STATIC, L"输入格式不合法");
+					SetDlgItemText(IDC_HINT_STATIC, L"输入格式错误");
 					
 					AddToErrorList(_T("输入内容格式不合法"));
 					PlayVoice(_T("格式错误"));
@@ -1806,7 +1845,7 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 					}
 					else
 					{
-						SetDlgItemText(IDC_HINT_STATIC, L"没匹配到相应的IMEI号");
+						SetDlgItemText(IDC_HINT_STATIC, L"没匹配到IMEI号");
 						AddToErrorList(_T("此订单没匹配到相应的IMEI号码！"));
 						PlayVoice(_T("订单无此号"));
 						SetEditEmpty();//清空编辑框
@@ -1844,7 +1883,7 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 				if (resultflag2 != 1)
 				{					
 					RecordResult(L"error302、对比标志位不正常");
-					SetDlgItemText(IDC_HINT_STATIC, L"对比标志位不正常");
+					SetDlgItemText(IDC_HINT_STATIC, L"对比位异常");
 					AddToErrorList(L"对比工位标志位不正常：" + m_IMEIValue);
 					PlayVoice(_T("对比位异常"));
 					SetDlgItemText(IDC_IMEI1_EDIT, _T(""));
@@ -1863,7 +1902,7 @@ BOOL CJIMIDlg::PreTranslateMessage(MSG* pMsg)
 					}
 					if (false == adomanage.CheckCHRESULT(str3))
 					{
-						SetDlgItemText(IDC_HINT_STATIC, L"查询彩盒判断标志位不正常");
+						SetDlgItemText(IDC_HINT_STATIC, L"彩盒判断位异常");
 						AddToErrorList(L"查询彩盒判断标志位不正常：" + str3);
 						PlayVoice(_T("彩盒检异常"));
 						SetDlgItemText(IDC_IMEI1_EDIT, _T(""));
@@ -1989,7 +2028,7 @@ void CJIMIDlg::ToResultSheet()
 //获取当前的串口返回的有效的重量值
 bool CJIMIDlg::GetWeightValue()
 {
-	int num = 40;//获取串口返回值的最大次数，次数*sleep（）时间即为超时时间40*60 =2400,即300s没获取到值，则获取稳定值超时
+	int num = 40;//获取串口返回值的最大次数，次数*sleep（）时间即为超时时间200*130 =30000,即300s没获取到值，则获取稳定值超时
 	int isafe = 0;//稳定值，共秤4次
 	double dbnewVAL, dboldVALdb,dbUplimit,dbDownlimit;//最新重量值，上次重量值，上下限值
 	dboldVALdb = 0;//初始化为0
@@ -2017,7 +2056,7 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("偏重:")+ str +_T("g");				
 					m_OKValue = _T("0");
 					iValResult = 2;
-					//m_StateView.Red();
+				//	m_StateView.Red();
 					SetDlgItemText(IDC_HINT_STATIC, L"偏重");
 					strText = _T("偏重");
 					PlayVoice(strText);
@@ -2029,7 +2068,7 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("偏轻:") + str + _T("g");					
 					m_OKValue = _T("0");
 					iValResult = 1;
-					//m_StateView.Yellow();
+				//	m_StateView.Yellow();
 					SetDlgItemText(IDC_HINT_STATIC, L"偏轻");
 					strText = _T("偏轻");
 					PlayVoice(strText);
@@ -2041,9 +2080,9 @@ bool CJIMIDlg::GetWeightValue()
 					sResult = _T("重量正常:") + str + _T("g");					
 					m_OKValue = _T("1");
 					iValResult = 0;
-					//m_StateView.Green();
-					strText = _T("正常");
+				//	m_StateView.Green();
 					SetDlgItemText(IDC_HINT_STATIC, L"正常");
+					strText = _T("正常");
 					PlayVoice(strText);
 				//	AfxBeginThread(VoiceThread, this);//开启读数据的线程
 				}
@@ -2148,6 +2187,7 @@ void CJIMIDlg::FontInit()
 	Font2.CreatePointFont(300, L"隶书");
 	Font3.CreatePointFont(200, L"隶书");
 	Font4.CreatePointFont(200, L"宋体");
+	Font5.CreatePointFont(600, L"黑体");
 
 	GetDlgItem(IDC_WeightView)->SetFont(&Font1);
 
@@ -2160,7 +2200,7 @@ void CJIMIDlg::FontInit()
 	GetDlgItem(IDC_LOCK_BUTTON)->SetFont(&Font1);
 	GetDlgItem(IDC_BUTTON_COMOK2)->SetFont(&Font4);
 	GetDlgItem(IDC_BUTTON_UpdataOrder)->SetFont(&Font4);
-	GetDlgItem(IDC_HINT_STATIC)->SetFont(&Font1);
+	GetDlgItem(IDC_HINT_STATIC)->SetFont(&Font5);
 	
 }
 
@@ -2239,4 +2279,72 @@ bool CJIMIDlg::CheckParam()
 		return false;;
 	}
 	return true;
+}
+
+
+
+void CJIMIDlg::OnBnClickedButtonLogin()
+{
+	//CString str;
+	//GetDlgItemText(IDC_BUTTON_LOGIN, str);
+	//if (_T("注销") == str)
+	//{
+	//	AddToRunList(_T("登录人员注销：") + m_UserName);
+	//	m_UserName = _T("");
+	//	SetDlgItemText(IDC_USERNAME_EDIT, m_UserName);
+	//	m_UserRight = _T("");
+	//	SetDlgItemText(IDC_UserRight_EDIT, m_UserRight);
+	//	SetDlgItemText(IDC_BUTTON_LOGIN, _T("登录"));
+	//	return;
+	//}
+	//else if (_T("登录") == str)
+	{
+		UserLogin userDlg;
+		userDlg.DoModal();
+		if (userDlg.sUSER == _T(""))
+		{
+			return ;
+		}
+		AddToRunList(_T("登录人员：") + userDlg.sUSER);
+		m_UserName = userDlg.sUSER;
+		SetDlgItemText(IDC_USERNAME_EDIT, m_UserName);
+		m_UserRight = userDlg.sUSERRight;
+		SetDlgItemText(IDC_UserRight_EDIT, m_UserRight);
+		//SetDlgItemText(IDC_BUTTON_LOGIN, _T("注销"));
+		if ((m_UserRight.Find(_T("&0000")) == -1) && (m_UserRight.Find(_T("&1001")) == -1))
+		{
+			WidgetStatue(FALSE);
+		}
+		else
+		{
+			WidgetStatue(TRUE);
+		}
+		return;
+	}
+}
+
+void CJIMIDlg::WidgetStatue(BOOL Show)
+{
+	GetDlgItem(IDC_COMBO_COM)->EnableWindow(Show);
+	GetDlgItem(IDC_BUTTON_COMOK2)->EnableWindow(Show);
+	GetDlgItem(IDC_ZHIDAN_COMBO)->EnableWindow(Show);
+	GetDlgItem(IDC_BUTTON_UpdataOrder)->EnableWindow(Show);
+	GetDlgItem(IDC_IMEISYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_SNSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_SIMSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_VIPSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_ICCIDSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_BATSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_MACSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_EQUIPMENTSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_RFIDSYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_IMEI2SYLLABLE_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_EDIT_UpLimit)->EnableWindow(Show);
+	GetDlgItem(IDC_EDIT_disUpLmt)->EnableWindow(Show);
+	GetDlgItem(IDC_EDIT_DownLimit)->EnableWindow(Show);
+	GetDlgItem(IDC_EDIT_disDownLmt)->EnableWindow(Show);
+	GetDlgItem(IDC_OPENIMEI3EDIT_CHECK)->EnableWindow(Show);
+	GetDlgItem(IDC_SAVESYLLABLE_BUTTON)->EnableWindow(Show);
+	GetDlgItem(IDC_READSYLLABLE_BUTTON)->EnableWindow(Show);
+
 }

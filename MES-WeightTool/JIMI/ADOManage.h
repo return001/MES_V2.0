@@ -22,7 +22,7 @@ public:
 	bool ConndbSQL();//连接数据库函数2,数据库配置那里用来测试连接用
 	bool CloseAll();//关闭数据库函数
 
-	CString CheckUser(CString username, CString userpswd);//用户名确认
+	CString CheckUser(CString username, CString userpswd ,CString &userright);//用户名确认
 	int CpCaiheByImei(CString imei, CString ZhiDan);//根据IMEI判断对比工位标志位
 	bool CheckCHRESULT(CString imei);//检查对比工位彩盒判断
 

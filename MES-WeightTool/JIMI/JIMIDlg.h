@@ -79,6 +79,7 @@ public:
 	CFont Font2;
 	CFont Font3; 
 	CFont Font4;
+	CFont Font5;
 
 	//系统语音库;
 	ISpVoice * pVoice;
@@ -212,6 +213,7 @@ public:
 	CString m_PCIP;
 	CString m_PCName;
 	CString m_UserName;
+	CString m_UserRight;//用户权限
 
 	CString m_WeightValue;//最终称重的结果值
 	CString m_IMEIValue;//最终称重的IMEI结果值
@@ -237,8 +239,9 @@ public:
 	bool GetWeightValue();//计算处理有效的重量值，赋值相应的值结果给数据库
 	void DealtSerialData(CString sSerialData);//获取当前的串口返回的有效的重量值
 	bool CheckParam();//检查设置的参数
+	void WidgetStatue(BOOL Show);//根据权限问题的显示状态
 
 	afx_msg void OnBnClickedImei2syllableCheck();
-	
+	afx_msg void OnBnClickedButtonLogin();
 };
 

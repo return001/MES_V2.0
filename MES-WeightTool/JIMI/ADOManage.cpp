@@ -515,11 +515,12 @@ CString ADOManage::GetTime(){
 	return strTime;
 }
 
-CString ADOManage::CheckUser(CString username, CString userpswd)
+CString ADOManage::CheckUser(CString username, CString userpswd , CString &userright)
 {
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
 	//初始化Recordset指针
-	CString strSql = _T("SELECT UserDes From LUserAccount WHERE Name = '" )+ username + _T("' AND Password = '") + userpswd + _T("'");
+	//CString strSql = _T("SELECT UserDes From LUserAccount WHERE Name = '" )+ username + _T("' AND Password = '") + userpswd + _T("'");
+	CString strSql = _T("SELECT * From LUserAccount WHERE Name = '") + username + _T("' AND Password = '") + userpswd + _T("'");
 	try
 	{
 		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
@@ -529,12 +530,11 @@ CString ADOManage::CheckUser(CString username, CString userpswd)
 
 	}
 	
-
 	if (!m_pRecordSet->adoEOF)
 	{
+		userright = m_pRecordSet->GetCollect("UserType").bstrVal;
 		return m_pRecordSet->GetCollect("UserDes").bstrVal;	
-	}
- 
+	} 
 	return _T("");
 }
 //根据IMEI判断对比工位彩盒标志位判断
