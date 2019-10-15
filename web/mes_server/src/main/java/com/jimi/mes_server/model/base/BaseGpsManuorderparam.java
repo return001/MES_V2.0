@@ -513,4 +513,22 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getStr("IMEI2Prints");
 	}
 
+	public M setWeek(java.lang.Integer Week) {
+		set("Week", Week);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getWeek() {
+		return getInt("Week");
+	}
+
+	public M setIMEIRange(java.lang.String IMEIRange) {
+		set("IMEIRange", IMEIRange);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEIRange() {
+		return getStr("IMEIRange");
+	}
+
 }

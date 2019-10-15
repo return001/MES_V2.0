@@ -7,6 +7,7 @@ import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.exception.ParameterException;
 
 /**
@@ -185,7 +186,7 @@ public class SelectService {
 			throw new ParameterException("pageNo and pageSize must be provided at the same time");
 		}
 		if (pageNo == null && pageSize == null) {
-			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
+			return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
 		} else {
 			System.out.println(sql.toString());
 			return Db.paginate(pageNo, pageSize, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());

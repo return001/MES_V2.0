@@ -108,4 +108,13 @@ public abstract class BaseGpsManusimdataparam<M extends BaseGpsManusimdataparam<
 		return getInt("ReSDCount");
 	}
 
+	public M setTestTime(java.util.Date TestTime) {
+		set("TestTime", TestTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getTestTime() {
+		return get("TestTime");
+	}
+
 }

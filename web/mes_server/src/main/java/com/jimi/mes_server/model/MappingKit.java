@@ -16,6 +16,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 public class MappingKit {
 	
 	public static void mapping(ActiveRecordPlugin arp) {
+		arp.addMapping("action_log", "id", ActionLog.class);
 		arp.addMapping("dashboard", "id", Dashboard.class);
 		arp.addMapping("dashboard_for_customer", "id", DashboardForCustomer.class);
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
@@ -46,6 +47,17 @@ public class MappingKit {
 		arp.addMapping("process_group", "id", ProcessGroup.class);
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
 		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
+		arp.addMapping("sop_customer", "id", SopCustomer.class);
+		arp.addMapping("sop_factory", "id", SopFactory.class);
+		arp.addMapping("sop_file", "id", SopFile.class);
+		arp.addMapping("sop_file_picture", "id", SopFilePicture.class);
+		arp.addMapping("sop_history", "id", SopHistory.class);
+		arp.addMapping("sop_history_detail", "id", SopHistoryDetail.class);
+		arp.addMapping("sop_notice", "id", SopNotice.class);
+		arp.addMapping("sop_product_model", "id", SopProductModel.class);
+		arp.addMapping("sop_series_model", "id", SopSeriesModel.class);
+		arp.addMapping("sop_site", "id", SopSite.class);
+		arp.addMapping("sop_workshop", "id", SopWorkshop.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 	}
 }

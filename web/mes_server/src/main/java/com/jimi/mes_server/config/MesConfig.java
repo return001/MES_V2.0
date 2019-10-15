@@ -21,6 +21,7 @@ import com.jimi.mes_server.controller.ProductionController;
 import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
 import com.jimi.mes_server.controller.ReworkController;
+import com.jimi.mes_server.controller.SopController;
 import com.jimi.mes_server.controller.TestController;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
@@ -143,6 +144,7 @@ public class MesConfig extends JFinalConfig {
 		me.add("/history", DeleteHistoryController.class);
 		me.add("/rework", ReworkController.class);
 		me.add("/production", ProductionController.class);
+		me.add("/sop", SopController.class);
 	}
 
 

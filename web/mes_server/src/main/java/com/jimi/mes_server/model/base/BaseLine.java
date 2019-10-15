@@ -81,4 +81,22 @@ public abstract class BaseLine<M extends BaseLine<M>> extends Model<M> implement
 		return getInt("line_qc");
 	}
 
+	public M setWorkshopId(java.lang.Integer workshopId) {
+		set("workshop_id", workshopId);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getWorkshopId() {
+		return getInt("workshop_id");
+	}
+
+	public M setFactoryId(java.lang.Integer factoryId) {
+		set("factory_id", factoryId);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getFactoryId() {
+		return getInt("factory_id");
+	}
+
 }

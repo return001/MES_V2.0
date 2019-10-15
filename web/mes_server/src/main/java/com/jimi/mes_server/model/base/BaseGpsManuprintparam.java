@@ -270,4 +270,13 @@ public abstract class BaseGpsManuprintparam<M extends BaseGpsManuprintparam<M>> 
 		return getStr("RFID");
 	}
 
+	public M setTestTime(java.util.Date TestTime) {
+		set("TestTime", TestTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getTestTime() {
+		return get("TestTime");
+	}
+
 }

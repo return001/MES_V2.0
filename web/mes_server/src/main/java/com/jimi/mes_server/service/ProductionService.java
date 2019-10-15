@@ -38,6 +38,7 @@ import com.jimi.mes_server.entity.PlanDetail;
 import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
+import com.jimi.mes_server.entity.SopSQL;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
@@ -51,6 +52,9 @@ import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
 import com.jimi.mes_server.model.SchedulingPlan;
+import com.jimi.mes_server.model.SopFactory;
+import com.jimi.mes_server.model.SopSite;
+import com.jimi.mes_server.model.SopWorkshop;
 import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
@@ -165,7 +169,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup) {
+	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
 		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
 			throw new OperationException("产线线别已存在");
 		}
@@ -195,6 +199,18 @@ public class ProductionService {
 			}
 			line.setProcessGroup(processGroup);
 		}
+		if (workshopId!=null) {
+			if (SopWorkshop.dao.findById(workshopId)== null) {
+				throw new OperationException("车间不存在");
+			}
+			line.setWorkshopId(workshopId);
+		}
+		if (factoryId!=null) {
+			if (SopFactory.dao.findById(factoryId)== null) {
+				throw new OperationException("工厂不存在");
+			}
+			line.setFactoryId(factoryId);
+		}
 		return line.save();
 	}
 
@@ -204,11 +220,15 @@ public class ProductionService {
 		if (line == null) {
 			throw new OperationException("删除失败，产线不存在");
 		}
+		SopSite sopSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_LINE, id);
+		if (sopSite!=null) {
+			throw new OperationException("当前产线被站点所引用，请先删除站点，再进行操作");
+		}
 		return line.delete();
 	}
 
 
-	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup) {
+	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup, Integer workshopId,Integer factoryId,String lineDirector,String lineEngineer,String lineQc) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(lineNo)) {
 			filter.append(" and line_no like '%" + lineNo + "%'");
@@ -222,6 +242,21 @@ public class ProductionService {
 			}
 			filter.append(" and process_group = " + processGroup);
 		}
+		if (workshopId != null) {
+			filter.append(" and line.workshop_id = " + workshopId);
+		}
+		if (factoryId != null) {
+			filter.append(" and line.factory_id = " + factoryId);
+		}
+		if (!StrKit.isBlank(lineDirector)) {
+			filter.append(" and a.Name like '%" + lineDirector+"%'");
+		}
+		if (!StrKit.isBlank(lineEngineer)) {
+			filter.append(" and b.Name like '%" + lineEngineer+"%'");
+		}
+		if (!StrKit.isBlank(lineQc)) {
+			filter.append(" and c.Name like '%" + lineQc+"%'");
+		}
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " order by processGroup ";
 		sqlPara.setSql(SQL.SELECT_LINE_PROCESSGROUP + filter + orderBy);
@@ -229,7 +264,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup) {
+	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
 		Line line = Line.dao.findById(id);
 		if (line == null) {
 			throw new OperationException("修改失败，产线不存在");
@@ -268,6 +303,18 @@ public class ProductionService {
 				throw new OperationException("工序组不存在");
 			}
 			line.setProcessGroup(processGroup);
+		}
+		if (workshopId!=null) {
+			if (SopWorkshop.dao.findById(workshopId)==null) {
+				throw new OperationException("车间不存在");
+			}
+			line.setWorkshopId(workshopId);
+		}
+		if (factoryId!=null) {
+			if (SopFactory.dao.findById(factoryId)==null) {
+				throw new OperationException("工厂不存在");
+			}
+			line.setFactoryId(factoryId);
 		}
 		return line.update();
 	}

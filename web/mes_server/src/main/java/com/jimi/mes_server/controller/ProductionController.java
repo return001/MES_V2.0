@@ -187,11 +187,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:47:17
 	 */
 	@Access({ "engineer" })
-	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup) {
+	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
 		if (StringUtils.isAnyBlank(lineNo, lineName)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup)) {
+		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -225,8 +225,8 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:49:17
 	 */
 	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
-	public void selectLine(String lineNo, String lineName, Integer processGroup) {
-		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup)));
+	public void selectLine(String lineNo, String lineName, Integer processGroup,Integer workshopId,Integer factoryId,String lineDirector,String lineEngineer,String lineQc) {
+		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup, workshopId, factoryId, lineDirector, lineEngineer, lineQc)));
 	}
 
 
@@ -243,11 +243,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:49:46
 	 */
 	@Access({ "engineer" })
-	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup) {
+	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup)) {
+		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
