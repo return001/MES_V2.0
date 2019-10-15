@@ -1,6 +1,6 @@
 {
   "name": "mes_system_frontend",
-  "version": "2.0.1",
+  "version": "2.2.0",
   "description": "For MES front-end",
   "author": "DarkNin <darknin@outlook.com>",
   "private": true,
@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "crypto": "^1.0.1",
-    "element-ui": "^2.4.11",
+    "echarts": "^4.2.1",
+    "element-ui": "^2.11.1",
+    "file-saver": "^2.0.2",
     "lodash": "^4.17.10",
     "popper.js": "^1.14.3",
+    "v-charts": "^1.19.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",

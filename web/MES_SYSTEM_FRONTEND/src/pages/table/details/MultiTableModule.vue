@@ -43,7 +43,8 @@
         <div class="form-group-btn" v-if="isLocked">
           <el-button type="primary" @click="exportTable">导出报表</el-button>
         </div>
-        <div class="form-group-btn" v-if="isLocked && ($store.state.userType === '2' || $store.state.userType === '1')">
+        <div class="form-group-btn"
+             v-if="isLocked && ($store.state.userType === 'SuperAdmin' || $store.state.userType === 'engineer')">
           <el-button type="warning" @click="showValidateDialog">删除数据</el-button>
         </div>
       </div>
@@ -131,7 +132,7 @@
 
 <script>
   import {multiTableDeleteUrl, multiTableQueryUrl, validateUrl, multiTableDownloadUrl} from "../../../config/globalUrl";
-  import {axiosFetch, downloadFile} from "../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {MultiTableConfig} from "../../../config/multiTableConfig";
 
   export default {
@@ -154,6 +155,7 @@
         tableData: {
           "Gps_AutoTest_Result": [],
           "DataRelativeSheet": [],
+          "DataRelativeUpdate": [],
           "NetMarkIMEI": [],
           "Gps_TestResult": [],
           "Gps_CoupleTest_Result": [],
@@ -162,10 +164,10 @@
           "Gps_ManuPrintParam": [],
           "Gps_ManuCpParam": [],
           "Gps_CartonBoxTwenty_Result": [],
+          "Gps_AutoTest_Result2": [],
           "Gps_AutoTest_Result3": []
         },
 
-        isDownloading: false,
         isPending: false,
         isLocked: false,
         validateVisible: false,
@@ -174,19 +176,27 @@
           password: ''
         },
         deleteTableSubmitVisible: false,
-        deleteTableGroup: [0, 0, 1, 1, 0, 1, 0, 1, 0, 0],
+        deleteTableGroup: [0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0],
         deleteTableList: [
           {
             name: 'DataRelativeSheet',
-            remark: '关联表'
+            remark: 'AMS数据关联表'
           },
           {
             name: 'DataRelativeUnique',
-            remark: '绑定数据表'
+            remark: '数据关联表(工厂)'
+          },
+          {
+            name: 'DataRelativeUpdate',
+            remark: '数据关联表(关联更新)'
           },
           {
             name: 'Gps_AutoTest_Result',
-            remark: '前段功能表'
+            remark: '组装功能表'
+          },
+          {
+            name: 'Gps_AutoTest_Result2',
+            remark: 'SMT功能表'
           },
           {
             name: 'Gps_AutoTest_Result3',
@@ -277,7 +287,8 @@
             let options = {
               url: multiTableQueryUrl,
               data: {
-                type: this.queryMode
+                type: this.queryMode,
+                isIMEIHex: this.imeiIsHex
               }
             };
             switch (this.queryMode) {
@@ -289,7 +300,6 @@
                 break;
               case 2:
                 options.data[this.queryWord] = this.continuousValue.toString();
-                options.data.isIMEIHex = this.imeiIsHex;
                 break;
             }
             axiosFetch(options).then(response => {
@@ -324,13 +334,13 @@
         });
       },
       exportTable: function () {
-
-        if (this.isDownloading === false) {
-          this.isDownloading = true;
+        if (!this.isPending) {
+          this.isPending = true;
+          this.$openLoading();
           let url = multiTableDownloadUrl,
             data = {
               type: this.queryMode,
-              '#TOKEN#': this.$store.state.token
+              isIMEIHex: this.imeiIsHex
             };
           switch (this.queryMode) {
             case 0:
@@ -341,23 +351,30 @@
               break;
             case 2:
               data[this.queryWord] = this.continuousValue.toString();
-              options.data.isIMEIHex = this.imeiIsHex;
               break;
           }
 
-          downloadFile(url, data);
-          let count = 0;
-          let mark = setInterval(() => {
-            count++;
-            if (count > 9) {
-              count = 0;
-              clearInterval(mark);
-              this.isDownloading = false
+          axiosDownload({
+            url: url,
+            data: data
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, decodeURIComponent(name))
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
             }
-          }, 1000);
-          this.$alertSuccess('请求成功，请等待下载');
-        } else {
-          this.$alertInfo('请稍后再试')
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
         }
       },
 

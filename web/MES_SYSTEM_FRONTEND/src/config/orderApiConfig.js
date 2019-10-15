@@ -110,6 +110,13 @@ const ROUTER_CONFIG = {
       {field: 'MAC_digits', title: 'MAC位数', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'Equipment_prefix', title: 'Equipment前缀', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'Equipment_digits', title: 'Equipment位数', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'RFID_Start', title: '起始RFID', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'RFID_End', title: '终止RFID', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'RFID_prefix', title: 'RFID前缀', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'RFID_digits', title: 'RFID位数', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'IMEI2Start', title: 'IMEI2起始位', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'IMEI2End', title: 'IMEI2终止位', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'IMEI2Prints', title: 'IMEI2打印', colStyle: {'width': '100px'}, value: '', "notNull": false},
     ]
   },
 
@@ -204,5 +211,12 @@ export const getOrderEditOptions = () => {
     {field: 'MAC_digits', title: 'MAC位数', value: '', type: 'text', notNull: false},
     {field: 'Equipment_prefix', title: 'Equipment前缀', value: '', type: 'text', notNull: false},
     {field: 'Equipment_digits', title: 'Equipment位数', value: '', type: 'text', notNull: false},
+    {field: 'RFID_Start', title: '起始RFID', value: '', type: 'text', notNull: false},
+    {field: 'RFID_End', title: '终止RFID', value: '', type: 'text', notNull: false},
+    {field: 'RFID_prefix', title: 'RFID前缀', value: '', type: 'text', notNull: false},
+    {field: 'RFID_digits', title: 'RFID位数', value: '', type: 'text', notNull: false},
+    {field: 'IMEI2Start', title: 'IMEI2起始位', value: '', type: 'text', notNull: false},
+    {field: 'IMEI2End', title: 'IMEI2终止位', value: '', type: 'text', notNull: false},
+    {field: 'IMEI2Prints', title: 'IMEI2打印', value: '', type: 'text', notNull: false},
   ]
 };

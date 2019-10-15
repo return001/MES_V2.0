@@ -13,7 +13,7 @@ export const userUpdateUrl = url + '/user/update';
 export const userAddUrl = url + '/user/add';
 export const userQueryUrl = url + '/user/select';
 export const getUserTypeUrl = url + '/user/getUserType';
-
+export const getUserUrl = url + '/user/getUserIdAndName';
 export const redTeaUrl = url + '/redTea/findCId';
 
 export const tableDownloadUrl = url + '/report/download';
@@ -53,3 +53,66 @@ export const cleanupRelUrl = url + '/report/cleanupInRel';
 export const multiTableQueryUrl = url + '/report/multiTableQuery';
 export const multiTableDeleteUrl = url + '/report/multiTableDelete';
 export const multiTableDownloadUrl = url + '/report/downloadMultiTable';
+
+
+/*排产计划*/
+/*订单管理*/
+export const planOrderSelectUrl = url + '/production/selectOrder'; //查询
+export const planOrderDeleteUrl = url + '/production/deleteOrder'; //删除
+export const planOrderEditUrl = url + '/production/editOrder'; //修改
+export const planOrderAddUrl = url + '/production/addOrder'; //新增
+export const planOrderImportUrl = url + '/production/importOrder'; //导入订单
+export const planOrderDetailsSelectUrl = url + '/production/selectOrderDetail'; //查询xx表
+export const planOrderTableImportUrl = url + '/production/importOrderTable'; //导入xx表
+export const planOrderTableDownloadUrl = url + '/production/downloadOrderTable'; //下载xx表
+export const planOrderTableDeleteUrl = url + '/production/deleteOrderTable'; //删除xx表
+
+/*工序组管理*/
+export const planProcessGroupSelectUrl = url + '/production/selectProcessGroup';//查询
+export const planProcessGroupDeleteUrl = url + '/production/deleteProcessGroup';//删除
+export const planProcessGroupEditUrl = url + '/production/editProcessGroup';//修改
+export const planProcessGroupAddUrl = url + '/production/addProcessGroup';//新增
+export const planProcessGroupGetUrl = url + '/production/getProcessGroup'; //获取工序组信息 用于页面加载时异步读取
+/*工序管理*/
+export const planProcessSelectUrl = url + '/production/selectProcess'; //查询
+export const planProcessDeleteUrl = url + '/production/deleteProcess'; //删除
+export const planProcessEditUrl = url + '/production/editProcess'; //修改
+export const planProcessAddUrl = url + '/production/addProcess'; //新增
+export const planProcessGetUrl = url + '/production/getProcess'; //获取 (select)
+
+/*产线管理*/
+export const planLineSelectUrl = url + '/production/selectLine'; //查询
+export const planLineDeleteUrl = url + '/production/deleteLine'; //删除
+export const planLineEditUrl = url + '/production/editLine'; //修改
+export const planLineAddUrl = url + '/production/addLine'; //新增
+export const planLineGetUrl = url + '/production/getLine'; //获取线号信息，加载页面时异步加载
+/*产线PC管理*/
+export const planLinePCSelectUrl = url + '/production/selectComputer'; //查询
+export const planLinePCDeleteUrl = url + '/production/deleteComputer'; //删除
+export const planLinePCEditUrl = url + '/production/editComputer'; //修改
+export const planLinePCAddUrl = url + '/production/addComputer'; //新增
+/*产能管理*/
+export const planCapacitySelectUrl = url + '/production/selectCapacity';//查询
+export const planCapacityDeleteUrl = url + '/production/deleteCapacity';//删除
+export const planCapacityEditUrl = url + '/production/editCapacity';//修改
+export const planCapacityAddUrl = url + '/production/addCapacity';//新增
+
+/*计划管理*/
+export const planDetailsSelectUrl = url + '/production/selectPlan'; //查询
+export const planDetailsDeleteUrl = url + '/production/deletePlan'; //删除
+export const planDetailsEditUrl = url + '/production/editPlan'; //修改
+export const planDetailsAddUrl = url + '/production/addPlan'; //新增
+export const planDetailsStatusEditUrl = url + '/production/editPlanStatus'; //修改状态
+export const planDetailsExportUrl = url + '/production/exportPlan'; //导出计划
+export const planDetailsGanttGetUrl = url + '/production/getPlanGantt'; //获取甘特图数据
+export const planDetailsUnscheduledSelectUrl = url + '/production/selectUnscheduledPlan'; //获取未排产订单
+export const planExtraDetailsSelectUrl = url + '/production/selectPlanDetail'; //查询计划详情
+export const planDetailsReworkSelectUrl = url + '/production/selectReworkPlan'; //获取未排产订单(返工
+export const planProducedQuantitySelectUrl = url + '/production/selectPlanProducedQuantity'; //获取订单已生产数量
+export const planCheckCompleteTimeSelectUrl = url + '/production/checkCompleteTime'; //检测是否可以完成
+
+/*看板*/
+export const dashboardSelectUrl = url + '/report/selectDashboardTable';
+export const dashboardErrMsgSelectUrl = url + '/report/selectErrorMsg';
+export const dashboardSelectUrlCS = url + '/report/selectDashboardTableForCustomer';
+export const dashboardErrMsgSelectUrlCS = url + '/report/selectErrorMsgForCustomer';

@@ -40,7 +40,7 @@
           <!--<option value="3">3</option>-->
           <!--</select>-->
           <!--</div>-->
-          <div class="form-group" v-if="userData.webUserType === 'engineer'">
+          <div class="form-group" v-if="userData.webUserType === 1">
             <label class="col-form-label">权限设置:</label>
             <el-button @click="isEditingPermission = true" style="width: 200px;">查看详细权限</el-button>
           </div>
@@ -108,19 +108,27 @@
           webUserType: '',
           inService: ''
         },
-        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0],
         permissionList: [
           {
             name: 'DataRelativeSheet',
-            remark: '关联表'
+            remark: 'AMS数据关联表'
           },
           {
             name: 'DataRelativeUnique',
-            remark: '绑定数据表'
+            remark: '数据关联表(工厂)'
+          },
+          {
+            name: 'DataRelativeUpdate',
+            remark: '数据关联表(关联更新)'
           },
           {
             name: 'Gps_AutoTest_Result',
-            remark: '前段功能表'
+            remark: '组装功能表'
+          },
+          {
+            name: 'Gps_AutoTest_Result2',
+            remark: 'SMT功能表'
           },
           {
             name: 'Gps_AutoTest_Result3',
@@ -198,7 +206,7 @@
             url: userUpdateUrl,
             data: this.userData
           };
-          if (this.userData.webUserType === 'engineer') {
+          if (this.userData.webUserType === 1) {
             options.data.deletePermission = this.tempPermission.toString();
           }
           if (!!!options.data.password) {

@@ -1,40 +1,50 @@
-<!--配置页面总组件-->
 <template>
   <div>
     <div class="" style="margin-left: 52px;">
       <div class="row main-style">
-          <div class="side-bar">
-            <side-bar/>
-          </div>
-        <div class="router-style" style="margin-left: 217px;" v-if="$store.state.testType !== -1">
-          <router-view/>
+        <div class="side-bar">
+          <side-bar/>
+        </div>
+        <div class="router-style" style="margin-left: 217px;">
+          <router-view v-if="isRouterAlive"/>
         </div>
       </div>
     </div>
 
   </div>
 </template>
+
 <script>
   import SideBar from './details/comp/SideBar'
-  import SideSetting from '../../components/SideSetting'
 
   export default {
-    name: "Main",
+    name: "PlanMain",
     components: {
-      SideBar,
-      SideSetting
+      SideBar
+    },
+    provide() {
+      return {
+        reload: this.reload
+      }
     },
     data() {
       return {
+        isRouterAlive: true
       }
     },
-    mounted: function () {
-    },
-    methods: {}
+    methods: {
+      reload: function () {
+        this.isRouterAlive = false;
+        this.$nextTick(function () {
+          this.isRouterAlive = true;
+        })
+      }
+    }
   }
 </script>
 
 <style scoped>
+
   @media (min-width: 640px) {
     .side-bar {
       width: 160px;
@@ -58,4 +68,7 @@
     height: 100%;
   }
 
+  .router-style {
+    padding: 20px 20px 10px 0;
+  }
 </style>

@@ -28,7 +28,7 @@
         label="操作"
         width="110"
         fixed="left"
-        v-if="$store.state.userType === '2'"
+        v-if="$store.state.userType === 'SuperAdmin'"
       >
         <template slot-scope="scope">
           <el-button type="text" class="el-icon-t-edit" @click="editOrder('edit', scope.row)">
@@ -187,6 +187,7 @@
             }
           })
             .catch(err => {
+              this.$closeLoading();
               this.isPending = false;
               console.log(JSON.stringify(err));
               this.$alertDanger('请求超时，清刷新重试')

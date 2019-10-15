@@ -10,18 +10,35 @@ import TableModuleOld from '../pages/table_old/details/TableModule'
 import SettingMain from '../pages/setting/SettingMain'
 import OrderManage from '../pages/setting/details/OrderManage'
 import UserConfig from '../pages/user/UserConfig'
+/*红茶*/
 import RedTea from '../pages/redtea/RedTeaMain'
+/*测试配置*/
 import TestMain from '../pages/test/TestMain'
 import TestManage from '../pages/test/details/TestManage'
+/*表单查询*/
 import TableMain from '../pages/table/TableMain'
 import TableModule from '../pages/table/details/TableModule'
 import TableModuleSP from '../pages/table/details/TableModuleSP'
 import TableBackups from '../pages/table/details/Backups'
 import MultiTableModule from '../pages/table/details/MultiTableModule'
+/*功能集合*/
 import FuncMain from '../pages/func/FuncMain'
 import MacMain from '../pages/func/mac/MacMain'
 import IMEIMain from '../pages/func/imei/IMEIMain'
+/*排产计划*/
+import PlanMain from '../pages/plan/PlanMain'
+import OrderSetting from '../pages/plan/details/OrderSetting'
+import ProcessSetting from '../pages/plan/details/ProcessSetting'
+import ProcessGroupSetting from '../pages/plan/details/ProcessGroupSetting'
+import LineSetting from '../pages/plan/details/LineSetting'
+import CapacitySetting from '../pages/plan/details/CapacitySetting'
+import PlanSetting from '../pages/plan/details/PlanSetting'
 
+/*看板*/
+import Dashboard from '../pages/dashboard/Dashboard'
+
+/*函数*/
+import {permissionList} from "../utils/utils";
 
 Vue.use(Router);
 
@@ -112,6 +129,37 @@ const router = new Router({
           ]
         },
         {
+          path: '/plan',
+          name: 'Plan',
+          component: PlanMain,
+          children: [
+            {
+              path: 'order',
+              component: OrderSetting
+            },
+            {
+              path: 'process',
+              component: ProcessSetting
+            },
+            {
+              path: 'process_group',
+              component: ProcessGroupSetting
+            },
+            {
+              path: 'line',
+              component: LineSetting
+            },
+            {
+              path: 'capacity',
+              component: CapacitySetting
+            },
+            {
+              path: 'detail',
+              component: PlanSetting
+            }
+          ]
+        },
+        {
           path: '/users',
           name: 'Users',
           component: UserConfig
@@ -123,7 +171,11 @@ const router = new Router({
         }
       ]
     },
-
+    {
+      path: '/dashboard',
+      name: Dashboard,
+      component: Dashboard
+    },
     {
       path: '/login',
       name: 'Login',
@@ -153,21 +205,16 @@ router.beforeEach((to, from, next) => {
   }
   if (to.matched.some(r => r.meta.requireAuth)) {
     if (store.state.token) {
-      if (store.state.userType === 'administration' && to.path !== '/users') {
+      if (permissionList().indexOf(to.path.split('/')[1]) === -1) {
         next({
-          path: '/users'
-        })
-      } else if (store.state.userType !== 'administration' && store.state.userType !== 'SuperAdmin' && to.path === '/users') {
-        next({
-          path: '/table'
+          path: '/' + permissionList()[0]
         })
       } else {
         next();
       }
     } else {
       next({
-        path: '/login',
-        query: {redirect: to.fullPath}
+        path: '/login'
       })
     }
   } else {

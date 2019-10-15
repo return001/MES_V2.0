@@ -22,6 +22,7 @@
       </el-table-column>
 
       <el-table-column
+        v-if="$store.state.userType === 'SuperAdmin' || $store.state.userType === 'engineer'"
         label="操作"
         width="120"
         fixed="left"

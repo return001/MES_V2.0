@@ -30,10 +30,19 @@
             <el-input type="text" id="edit-software" clearable autocomplete="off"
                       v-model.trim="formData.MachineName.imeiTo"></el-input>
           </el-col>
-          <el-col :span="2" style="align-self: flex-end; margin-left: auto" v-if="deleteHistory.length > 0">
-            <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
+          <el-col :span="4" style="margin-left: auto">
+            <el-row :gutter="10" type="flex">
+              <el-col :span="11" style="margin-left: auto" v-if="deleteHistory.length > 0">
+                <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
 " @click="restoreOneSetting">撤销删除
-            </el-button>
+                </el-button>
+              </el-col>
+              <el-col :span="11" style="margin-left: auto" v-if="copySrcIndex !== null">
+                <el-button style="width: 100%" type="primary" size="mini" @click="cancelCopySetting">取消复制
+                </el-button>
+              </el-col>
+            </el-row>
+
           </el-col>
         </el-row>
         <el-row style="margin-top: 20px" class="setting-title">
@@ -41,11 +50,11 @@
           <el-col :span="3">*工位</el-col>
           <el-col :span="6">*项目</el-col>
           <el-col :span="7">AT指令</el-col>
-          <el-col :span="5">返回值</el-col>
-          <el-col :span="1">操作</el-col>
+          <el-col :span="4">返回值</el-col>
+          <el-col :span="2">操作</el-col>
 
         </el-row>
-        <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index">
+        <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index" :class="setCopyStyle(index)">
           <el-col :span="2">
             <el-input v-model.trim="index" disabled></el-input>
           </el-col>
@@ -62,20 +71,30 @@
           <el-col :span="7">
             <el-input v-model.trim="item['3']"></el-input>
           </el-col>
-          <el-col :span="5">
+          <el-col :span="4">
             <el-input v-model.trim="item['4']"></el-input>
           </el-col>
-          <el-col :span="1">
-            <div @click="deleteOneSetting(index)">
-              <i class="el-icon-minus"></i>
-            </div>
+          <el-col :span="2">
+            <el-tooltip content="添加记录" placement="top">
+              <el-button type="primary" circle icon="el-icon-plus" @click="addOneSetting(index)"></el-button>
+            </el-tooltip>
+            <el-tooltip content="删除记录" placement="top">
+              <el-button type="primary" circle class="el-icon-minus" @click="deleteOneSetting(index)"></el-button>
+            </el-tooltip>
+            <el-tooltip content="复制" placement="top" v-if="copySrcIndex === null">
+              <el-button type="primary" circle icon="el-icon-copy-document" @click="copyOneSetting(index)"></el-button>
+            </el-tooltip>
+            <el-tooltip content="在下方插入" placement="top" v-if="copySrcIndex !== null">
+              <el-button circle icon="el-icon-full-screen
+" @click="parseOneSetting(index)"></el-button>
+            </el-tooltip>
           </el-col>
         </el-row>
-        <el-row type="flex" justify="center" style="margin-top: 30px">
+        <!--<el-row type="flex" justify="center" style="margin-top: 30px">
           <el-tooltip content="添加一条记录" placement="top">
             <el-button type="primary" circle icon="el-icon-plus" @click="addSetting"></el-button>
           </el-tooltip>
-        </el-row>
+        </el-row>-->
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="closePanel">取消</el-button>
@@ -141,7 +160,8 @@
         editType: '',
         pageType: '',
         sourceData: [],
-        deleteHistory: []
+        deleteHistory: [],
+        copySrcIndex: null
       }
     },
     computed: {
@@ -380,7 +400,8 @@
       addSetting: function () {
         let latestData = this.formData.SettingList[this.formData.SettingList.length - 1];
         if (this.formData.SettingList.length >= 68) {
-          this.$alertInfo('已达配置数上限')
+          this.$alertInfo('已达配置数上限');
+          return;
         }
         if (this.formData.SettingList.length > 0 && latestData['2'] === '') {
           this.$alertInfo('前一记录尚未填写完整');
@@ -397,12 +418,62 @@
         )
       },
 
+
+      addOneSetting: function (index) {
+        if (this.copySrcIndex !== null) {
+          this.$alertInfo('请完成或取消复制');
+          return;
+        }
+        if (this.formData.SettingList.length >= 68) {
+          this.$alertInfo('已达配置数上限');
+          return;
+        }
+        this.formData.SettingList.splice(index + 1, 0,
+          {
+            '0': index + 1,
+            '1': '共有指令',
+            '2': '',
+            '3': '',
+            '4': ''
+          }
+        )
+      },
+
       deleteOneSetting: function (index) {
+        if (this.copySrcIndex !== null) {
+          this.$alertInfo('请完成或取消复制');
+          return;
+        }
         this.deleteHistory.push({
           index: index,
           data: this.formData.SettingList[index]
         });
         this.formData.SettingList.splice(index, 1)
+      },
+
+      copyOneSetting: function (index) {
+        this.copySrcIndex = index;
+      },
+
+      parseOneSetting: function (index) {
+        if (this.formData.SettingList.length >= 68) {
+          this.$alertInfo('已达配置数上限');
+          return;
+        }
+        this.formData.SettingList.splice(index + 1, 0,
+          this.formData.SettingList[this.copySrcIndex]
+        );
+        this.cancelCopySetting();
+      },
+
+      cancelCopySetting: function () {
+        this.copySrcIndex = null
+      },
+
+      setCopyStyle(index) {
+        if (index === this.copySrcIndex) {
+          return "copy-row-style"
+        }
       },
 
       restoreOneSetting: function () {
@@ -437,6 +508,7 @@
   }
 
   .setting-row /deep/ .el-input__inner {
+    background: unset;
     border: 1px solid #dddddd;
     border-top: none;
     height: 32px;
@@ -454,30 +526,23 @@
     border-radius: 0;
     display: flex;
     justify-content: center;
-  }
-
-  .setting-row .el-col:last-child div {
-    display: flex;
-    margin: 6px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: #66b1ff;
-    justify-content: center;
     align-items: center;
   }
 
-  .setting-row .el-col:last-child div i {
-    color: #ffffff;
-  }
-
-  .setting-row .el-col:last-child div:hover {
-    background-color: #409EFF;
-    cursor: pointer;
+  .setting-row .el-col:last-child .el-button {
+    height: 24px;
+    line-height: 24px;
+    width: 24px;
+    padding: 0;
+    font-size: 12px;
   }
 
   .setting-row .el-col + .el-col /deep/ .el-input__inner {
     border-left: none;
+  }
+
+  .copy-row-style {
+    box-shadow: #409eff 0 0 5px inset;
   }
 
   .edit-panel {

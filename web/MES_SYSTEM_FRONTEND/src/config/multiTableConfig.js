@@ -24,6 +24,30 @@ export const MultiTableConfig = [
     ]
   },
   {
+    title: 'Gps_AutoTest_Result2',
+    columns: [
+      {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
+      {field: 'IMEI', title: 'IMEI号', colStyle: {'width': '135px'}},
+      {field: 'SN', title: 'SN号', colStyle: {'width': '260px'}},
+      {field: 'ZhiDan', title: '制单号', colStyle: {'width': '135px'}},
+      {field: 'TestTime', title: '测试时间', colStyle: {'width': '175px'}},
+      {field: 'SoftModel', title: '机型', colStyle: {'width': '120px'}},
+      {field: 'Version', title: '软件版本', colStyle: {'width': '200px'}},
+      {field: 'Result', title: '结果', colStyle: {'width': '50px'}, formatter(row, column, cellValue, index) {
+          switch (cellValue) {
+            case 0:
+              return '失败';
+            case 1:
+              return '成功';
+          }
+        }},
+      {field: 'TesterId', title: '测试员', colStyle: {'width': '70px'}},
+      {field: 'Computer', title: '地址', colStyle: {'width': '160px'}},
+      // {field: 'TestSetting', title: '测试配置', colStyle: {'width': '400px'}},
+      {field: 'Remark', title: '备注', colStyle: {'width': '50px'}}
+    ]
+  },
+  {
     title: 'Gps_AutoTest_Result3',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
@@ -65,6 +89,49 @@ export const MultiTableConfig = [
       // {field: 'IMEI11', title: 'IMEI11', colStyle: {'width': '120px'}, visible: false},
       // {field: 'IMEI12', title: 'IMEI12', colStyle: {'width': '120px'}, visible: false},
       {field: 'TestTime', title: '测试时间', colStyle: {'width': '180px'}},
+    ]
+  },
+  {
+    title: 'DataRelativeUpdate',
+    columns: [
+      {field: 'RelativeNum', title: '关联码', colStyle: {'width': '120px'}},
+      {field: 'ZhiDan', title: '制单号', colStyle: {'width': '120px'}},
+      // {field: 'SN', title: 'SN', colStyle: {'width': '120px'}},
+      {field: 'IMEI1', title: 'IMEI卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI2', title: 'SN号', colStyle: {'width': '120px'}},
+      {field: 'IMEI3', title: 'SIM卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI4', title: 'ICCID', colStyle: {'width': '120px'}},
+      {field: 'IMEI5', title: '密码:智能锁ID', colStyle: {'width': '120px'}},
+      {field: 'IMEI6', title: '蓝牙MAC', colStyle: {'width': '120px'}},
+      {field: 'IMEI7', title: '设备号', colStyle: {'width': '120px'}},
+      {field: 'IMEI8', title: '服务卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI9', title: '电池序列号', colStyle: {'width': '120px'}},
+      {field: 'IMEI10', title: '第二个锁ID', colStyle: {'width': '120px'}},
+      {field: 'IMEI11', title: '机器代码', colStyle: {'width': '120px'}},
+      {field: 'IMEI12', title: 'IMSI', colStyle: {'width': '120px'}},
+      {field: 'IMEI13', title: 'RFID', colStyle: {'width': '120px'}},
+      {field: 'SimEffectiveDate', title: 'SIM卡激活时间', colStyle: {'width': '120px'}},
+      {field: 'NetMark', title: '网标', colStyle: {'width': '120px'}},
+      {field: 'TestTime', title: '测试时间', colStyle: {'width': '180px'}},
+    ]
+  },
+  {
+    title: 'DataRelativeUnique',
+    columns: [
+      {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
+      {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'}},
+      {field: 'DATA1', title: '绑定数据1', colStyle: {'width': '100px'}},
+      {field: 'DATA2', title: '绑定数据2', colStyle: {'width': '100px'}},
+      {field: 'DATA3', title: '绑定数据3', colStyle: {'width': '100px'}},
+      {field: 'DATA4', title: '绑定数据4', colStyle: {'width': '100px'}},
+      {field: 'DATA5', title: '绑定数据5', colStyle: {'width': '100px'}},
+      {field: 'DATA6', title: '绑定数据6', colStyle: {'width': '100px'}},
+      {field: 'DATA7', title: '绑定数据7', colStyle: {'width': '100px'}},
+      {field: 'DATA8', title: '绑定数据8', colStyle: {'width': '100px'}},
+      {field: 'DATA9', title: '绑定数据9', colStyle: {'width': '100px'}},
+      {field: 'DATA10', title: '绑定数据10', colStyle: {'width': '100px'}},
+      {field: 'DATA11', title: '绑定数据11', colStyle: {'width': '100px'}},
+      {field: 'DATA12', title: '绑定数据12', colStyle: {'width': '100px'}}
     ]
   },
   {
@@ -127,25 +194,6 @@ export const MultiTableConfig = [
       {field: 'Computer', title: '地址', colStyle: {'width': '160px'}},
       // {field: 'TestSetting', title: '测试配置', colStyle: {'width': '400px'}},
       {field: 'Remark', title: '备注', colStyle: {'width': '50px'}}
-    ]
-  },
-  {
-    title: 'DataRelativeUnique',
-    columns: [
-      {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
-      {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'}},
-      {field: 'DATA1', title: '绑定数据1', colStyle: {'width': '100px'}},
-      {field: 'DATA2', title: '绑定数据2', colStyle: {'width': '100px'}},
-      {field: 'DATA3', title: '绑定数据3', colStyle: {'width': '100px'}},
-      {field: 'DATA4', title: '绑定数据4', colStyle: {'width': '100px'}},
-      {field: 'DATA5', title: '绑定数据5', colStyle: {'width': '100px'}},
-      {field: 'DATA6', title: '绑定数据6', colStyle: {'width': '100px'}},
-      {field: 'DATA7', title: '绑定数据7', colStyle: {'width': '100px'}},
-      {field: 'DATA8', title: '绑定数据8', colStyle: {'width': '100px'}},
-      {field: 'DATA9', title: '绑定数据9', colStyle: {'width': '100px'}},
-      {field: 'DATA10', title: '绑定数据10', colStyle: {'width': '100px'}},
-      {field: 'DATA11', title: '绑定数据11', colStyle: {'width': '100px'}},
-      {field: 'DATA12', title: '绑定数据12', colStyle: {'width': '100px'}}
     ]
   },
   {

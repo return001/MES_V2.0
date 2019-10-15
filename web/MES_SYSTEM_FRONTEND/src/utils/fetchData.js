@@ -14,6 +14,15 @@ export const axiosFetch = (opt) =>{
   })
 };
 
+export const axiosDownload = (opt) => {
+  return axios({
+    method: 'post',
+    url: opt.url,
+    timeout: 90000,
+    responseType: 'blob',
+    data: Qs.stringify(opt.data)
+  })
+};
 
 
 

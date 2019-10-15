@@ -112,7 +112,7 @@
 
 <script>
   import {mapGetters, mapActions} from 'vuex'
-  import {axiosFetch, downloadFile} from "../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {imeiDownloadUrl, imeiQueryUrl, imeiZhidanQueryUrl} from "../../../config/globalUrl";
 
   export default {
@@ -234,27 +234,37 @@
       },
       exportResult: function () {
 
-        if (this.isDownloading === false) {
-          this.isDownloading = true;
+        if (!this.isPending) {
+          this.isPending = true;
+          this.$openLoading();
           let data = {
             startIMEI: this.IMEIBegin,
             endIMEI: this.IMEIEnd,
             zhiDan: this.ZhiDanInIMEI,
             '#TOKEN#': this.$store.state.token
           };
-          downloadFile(imeiDownloadUrl, data);
-          let count = 0;
-          let mark = setInterval(() => {
-            count++;
-            if (count > 9) {
-              count = 0;
-              clearInterval(mark);
-              this.isDownloading = false
+
+          axiosDownload({
+            url: imeiDownloadUrl,
+            data: data
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, decodeURIComponent(name))
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
             }
-          }, 1000);
-          this.$alertSuccess('请求成功，请等待下载');
-        } else {
-          this.$alertInfo('请稍后再试')
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
         }
       },
       unlockQueryOptions: function () {
@@ -317,7 +327,7 @@
   }
 
   .imei-query-result-item {
-    width: 120px;
+    width: 140px;
     margin: 5px 10px;
   }
   .imei-query-result-remark {

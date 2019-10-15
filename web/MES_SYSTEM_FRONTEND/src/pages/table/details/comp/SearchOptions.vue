@@ -7,7 +7,8 @@
         <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"
                    :pickerOptions="pickerOptions"></component>
       </div>
-      <div style="width: 140px; margin-right: 10px" v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
+      <div style="width: 140px; margin-right: 10px"
+           v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
         <el-checkbox id="rel-checkbox" v-model="isReferred">{{relTable}}</el-checkbox>
       </div>
       <div class="form-group-btn">
@@ -16,11 +17,14 @@
       <div class="form-group-btn">
         <el-button type="primary" @click="thisFetch">查询</el-button>
       </div>
-      <div class="form-group-btn">
+      <div class="form-group-btn" v-if="isDataExist">
         <el-button type="primary" @click="downloadData" v-if="!isReferred">下载报表</el-button>
-        <el-button type="primary" @click="downloadData" v-if="isReferred && $route.query.type === 'Gps_CartonBoxTwenty_Result'">下载报表</el-button>
+        <el-button type="primary" @click="downloadData"
+                   v-if="isReferred && $route.query.type === 'Gps_CartonBoxTwenty_Result'">下载报表
+        </el-button>
       </div>
-      <div class="form-group-btn" v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission">
+      <div class="form-group-btn"
+           v-if="$route.query.type !== 'LTestLogMessage' && $route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission && isDataExist">
         <el-button type="warning" @click="validateVisible = true">删除所有</el-button>
         <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
       </div>
@@ -58,12 +62,14 @@
   import {mapGetters, mapActions} from 'vuex';
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {tableDownloadUrl, tableDeleteUrl, validateUrl, tableCartonDownloadUrl} from "../../../../config/globalUrl";
-  import {axiosFetch, downloadFile} from "../../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../../utils/fetchData";
   import {checkDelPermission} from "../../../../utils/utils";
   import {Settings} from 'luxon'
   import {Datetime} from 'vue-datetime'
   import 'vue-datetime/dist/vue-datetime.css'
   import _ from 'lodash'
+  import {saveAs} from 'file-saver'
+
 
   export default {
     name: "Options",
@@ -133,7 +139,7 @@
         copyQueryOptions: [],
         isReferred: false,
         queryString: "",
-        isDownloading: false,
+        isPending: false,
         timeRange: [],
         pickerOptions: {
           shortcuts: [{
@@ -168,6 +174,7 @@
           user: '',
           password: ''
         },
+        dataCount: 0
       }
     },
     mounted() {
@@ -178,6 +185,10 @@
       eventBus.$off('setIsReferred');
       eventBus.$on('setIsReferred', data => {
         this.isReferred = data;
+      });
+      eventBus.$off('setTableDataCount');
+      eventBus.$on('setTableDataCount', data => {
+        this.dataCount = data;
       })
     },
     computed: {
@@ -193,6 +204,9 @@
       },
       checkDelPermission: function () {
         return checkDelPermission(this.$route.query.type)
+      },
+      isDataExist: function () {
+        return this.dataCount > 0;
       }
     },
     watch: {
@@ -291,15 +305,19 @@
       },
 
       downloadData: function () {
-        if (this.isDownloading === false) {
+        if (!this.isPending) {
+          if (this.dataCount > 2000) {
+            this.$alertWarning("所选数据过多(>2000)，无法生成报表");
+            return;
+          }
+          this.isPending = true;
+          this.$openLoading();
           this.createQueryString();
-          this.isDownloading = true;
           let thisTable = this.$route.query.type;
 
           let url = tableDownloadUrl,
             data = {
-              table: thisTable,
-              '#TOKEN#': this.$store.state.token
+              table: thisTable
             };
           if (this.setDatabase() === 0) {
             data.type = this.setDatabase()
@@ -326,19 +344,28 @@
               data.descBy = 'LDTime';
               break;
           }
-          downloadFile(url, data);
-          let count = 0;
-          let mark = setInterval(() => {
-            count++;
-            if (count > 9) {
-              count = 0;
-              clearInterval(mark);
-              this.isDownloading = false
+
+          axiosDownload({
+            url: url,
+            data: data
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, name)
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
             }
-          }, 1000);
-          this.$alertSuccess('请求成功，请等待下载');
-        } else {
-          this.$alertInfo('请稍后再试')
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
         }
 
       },
@@ -418,7 +445,6 @@
           })
         })
       },
-
 
 
       pageReload: function () {

@@ -4,7 +4,7 @@
     <div class="setting-container">
       <!--<div class="w-100">-->
         <!--<div class="icon-container" :class="activeItem === 'table_old' ? 'icon-active' : '' "-->
-             <!--@click="initData('table_old')">-->
+             <!--@click="initData('table_old')"  v-if="accessPermission('table_old')">-->
           <!--<div class="setting-icon" style="background-color: #ccc;">-->
             <!--<i class="el-icon-t-table" style="color: #fff;"></i>-->
           <!--</div>-->
@@ -34,6 +34,14 @@
             <i class="el-icon-t-test" style="color: #fff;"></i>
           </div>
           <span>测试</span>
+        </div>
+      </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'plan' ? 'icon-active' : ''" @click="initData('plan')"  v-if="accessPermission('plan')">
+          <div class="setting-icon">
+            <i class="el-icon-t-schedule" style="color: #fff;"></i>
+          </div>
+          <span>排产</span>
         </div>
       </div>
       <div class="w-100">
@@ -129,8 +137,7 @@
       },
       /*路由导航*/
       linkTo: function (val) {
-        this.setTableRouter('default');
-        this.$router.replace({
+        this.$router.push({
           path: '/' + val,
         })
       },

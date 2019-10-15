@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view/>
-    <copyright/>
+    <copyright v-if="$route.path !== '/dashboard'"/>
   </div>
 
 </template>
@@ -27,6 +27,7 @@
 
 <style>
   #app {
+    height: 100%;
   }
 
   body {

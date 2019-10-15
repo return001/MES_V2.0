@@ -11,14 +11,16 @@ import {alertDanger, alertWarning} from "../utils/modal";
 axios.interceptors.request.use(
   config => {
     //console.log(store.state.token)
-    if (store.state.token !== '' && config.url != redTeaUrl) {
-      if (config.data === "") {
-        config.data += ("#TOKEN#=" + store.state.token);
-      } else {
-        config.data += ("&#TOKEN#=" + store.state.token);
+    if (!config.header ) {
+      if (store.state.token !== '') {
+        if (config.data === "") {
+          config.data += ("#TOKEN#=" + store.state.token);
+        } else {
+          config.data += ("&#TOKEN#=" + store.state.token);
+        }
+        //config.withCredentials = true;
+        //console.log(config)
       }
-      //config.withCredentials = true;
-      //console.log(config)
     }
     return config;
   },

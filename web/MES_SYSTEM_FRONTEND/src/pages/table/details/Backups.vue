@@ -50,7 +50,7 @@
 <script>
   import {Datetime} from 'vue-datetime';
   import {tableHistoryDownloadUrl, tableHistoryQueryUrl} from "../../../config/globalUrl";
-  import {axiosFetch} from "../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {mapActions} from 'vuex'
 
   export default {
@@ -236,17 +236,34 @@
         return (compTo - compFrom);
       },
       downloadData: function (val) {
-        if (this.isDownloading === false) {
-          this.isDownloading = true;
+        if (!this.isPending) {
+          this.isPending = true;
+          this.$openLoading();
           let data = {
             id: val.ID,
-            '#TOKEN#': this.$store.state.token
           };
 
-          this.downloadFile(tableHistoryDownloadUrl, data, val.FileName);
-
-        } else {
-          this.$alertInfo('请稍后再试')
+          axiosDownload({
+            url: tableHistoryDownloadUrl,
+            data: data
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, name)
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
+            }
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
         }
 
       },

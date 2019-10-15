@@ -2,7 +2,20 @@
 // Template version: 1.3.1
 // see http://vuejs-templates.github.io/webpack for documentation.
 
-const path = require('path')
+const path = require('path');
+const getIPAddress = () => {
+  const interfaces = require('os').networkInterfaces();
+  for(let devName in interfaces){
+    let iface = interfaces[devName];
+    for(let i=0;i<iface.length;i++){
+      let alias = iface[i];
+      if(alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){
+        return alias.address;
+      }
+    }
+  }
+};
+
 
 module.exports = {
   dev: {
@@ -10,17 +23,19 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/mes_system',
-    // proxyTable: [
-    //   {
-    //     context: ['/api'],
-    //     target: 'http://10.10.11.90:10000/mock/5c1a00070a62aa1c2dde4ce4',
-    //     changeOrigin: true,
-    //     secure: false
-    //   }
-    // ],
+    proxyTable: {
+      '/api': {
+        target: 'http://10.10.11.90:10000/mock/5c1a00070a62aa1c2dde4ce4',
+        changeOrigin: true,
+        secure: false,
+        pathRewrite: {
+          '^/api': ''
+        }
+      }
+    },
 
     // Various Dev Server settings
-    host: '0.0.0.0', // can be overwritten by process.env.HOST
+    host: getIPAddress(), // can be overwritten by process.env.HOST
     port: 5050, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
@@ -56,7 +71,7 @@ module.exports = {
      * Source Maps
      */
 
-    productionSourceMap: true,
+    productionSourceMap: false,
     // https://webpack.js.org/configuration/devtool/#production
     devtool: '#source-map',
 

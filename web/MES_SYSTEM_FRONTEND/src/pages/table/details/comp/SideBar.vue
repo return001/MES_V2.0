@@ -51,15 +51,23 @@
         database: [
           {
             type: "DataRelativeSheet",
-            name: "关联表"
+            name: "AMS数据关联表"
           },
           {
             type: "DataRelativeUnique",
-            name: "绑定数据表"
+            name: "数据关联表(工厂)"
+          },
+          {
+            type: "DataRelativeUpdate",
+            name: "数据关联表(关联更新)"
           },
           {
             type: "Gps_AutoTest_Result",
-            name: "前段功能表"
+            name: "组装功能表"
+          },
+          {
+            type: "Gps_AutoTest_Result2",
+            name: "SMT功能表"
           },
           {
             type: "Gps_AutoTest_Result3",
@@ -90,6 +98,10 @@
             type: "Gps_ManuSimDataParam",
             name: "种子物联网卡表",
             path: '/details_sp'
+          },
+          {
+            type: "LTestLogMessage",
+            name: "错误日志"
           },
           {
             type: "Gps_TestResult",

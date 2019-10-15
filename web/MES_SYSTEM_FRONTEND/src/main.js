@@ -12,7 +12,7 @@ import store from './store'
 //自定义注册图标
 import './assets/icons/iconfont.css'
 
-import {Table, TableColumn, Pagination, Button, MessageBox, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio} from 'element-ui'
+import {Table, TableColumn, Pagination, Button, MessageBox, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag} from 'element-ui'
 
 import Datatable from '../static/js/datatable.min.js'
 import locale from './locale/zh-cn'
@@ -50,6 +50,13 @@ Vue.use(Submenu)
 Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Radio)
+Vue.use(Form)
+Vue.use(FormItem)
+Vue.use(Upload)
+Vue.use(Carousel)
+Vue.use(CarouselItem)
+Vue.use(Autocomplete)
+Vue.use(Tag)
 
 Vue.use(Datatable, {locale})
 Vue.prototype.$axios = axios

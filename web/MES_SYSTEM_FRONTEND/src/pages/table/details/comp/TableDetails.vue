@@ -10,7 +10,7 @@
       <el-table-column
         type="selection"
         width="30"
-        v-if="$route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission"
+        v-if="$route.query.type !== 'Gps_ManuCpParam' && $route.query.type !== 'LTestLogMessage' && !isReferred && checkDelPermission"
       >
       </el-table-column>
       <!--<el-table-column-->
@@ -159,6 +159,7 @@
       $route: function (route) {
         this.init();
         eventBus.$emit('setIsReferred', false);
+        eventBus.$emit('setTableDataCount', 0);
         this.isReferred = false;
         /*this.$openLoading();
         if (route.query.type) {
@@ -250,6 +251,7 @@
           case 'Gps_AutoTest_Result2':
           case 'Gps_AutoTest_Result3':
           case 'Gps_CoupleTest_Result':
+          case 'LTestLogMessage':
             options.data.descBy = 'TestTime';
             break;
           case 'Gps_OperRecord':
@@ -276,7 +278,8 @@
                 currentPage: response.data.data.pageNumber,
                 pageSize: response.data.data.pageSize,
                 total: response.data.data.totalRow
-              }
+              };
+              eventBus.$emit('setTableDataCount', response.data.data.totalRow)
             } else {
               errHandler(response.data.result)
             }

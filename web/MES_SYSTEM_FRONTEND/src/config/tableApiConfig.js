@@ -40,9 +40,14 @@ export const setRouterConfig = (name, params) => {
       return {
         data: ROUTER_CONFIG.DataRelativeUnique
       };
+    case 'DataRelativeUpdate':
+      return {
+        data: ROUTER_CONFIG.DataRelativeUpdate
+      };
     case 'Gps_CoupleTest_Result':
     case 'Gps_AutoTest_Result':
     case 'Gps_AutoTest_Result3':
+    case 'Gps_AutoTest_Result2':
       return {
         data: ROUTER_CONFIG.Gps_AutoTest_Result
       };
@@ -82,6 +87,10 @@ export const setRouterConfig = (name, params) => {
       return {
         data: ROUTER_CONFIG.Gps_TestResult
       };
+    case 'LTestLogMessage':
+      return {
+        data: ROUTER_CONFIG.LTestLogMessage
+      }
   }
 };
 
@@ -134,14 +143,16 @@ const ROUTER_CONFIG = {
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '135px'}},
       {field: 'SoftModel', title: '机型', colStyle: {'width': '120px'}},
       {field: 'Version', title: '软件版本', colStyle: {'width': '200px'}},
-      {field: 'Result', title: '结果', colStyle: {'width': '50px'}, formatter(row, column, cellValue, index) {
+      {
+        field: 'Result', title: '结果', colStyle: {'width': '50px'}, formatter(row, column, cellValue, index) {
           switch (cellValue) {
             case 0:
               return '失败';
             case 1:
               return '成功';
           }
-        }},
+        }
+      },
       {field: 'TesterId', title: '测试员', colStyle: {'width': '70px'}},
       {field: 'Computer', title: '地址', colStyle: {'width': '160px'}},
       {field: 'TestSetting', title: '测试配置', colStyle: {'width': '400px'}},
@@ -439,7 +450,7 @@ const ROUTER_CONFIG = {
       {field: 'GpsManuprintparam_SIM', title: '(打印)SIM卡号', colStyle: {'width': '100px'}},
       {field: 'GpsManuprintparam_VIP', title: '(打印)服务卡号', colStyle: {'width': '100px'}},
       {field: 'GpsManuprintparam_BAT', title: '(打印)电池号', colStyle: {'width': '100px'}},
-      {field: 'GpsManuprintparam_SoftModel', title: '(打印)软件型号', colStyle: {'width': '100px'}},
+      {field: 'GpsManuprintparam_SoftModel', title: '(打印)机型', colStyle: {'width': '100px'}},
       {field: 'GpsManuprintparam_Version', title: '(打印)软件版本', colStyle: {'width': '100px'}},
       {field: 'GpsManuprintparam_Remark', title: '(打印)备注', colStyle: {'width': '100px'}},
       {field: 'GpsManuprintparam_JS_PrintTime', title: '(打印)机身贴打印时间', colStyle: {'width': '100px'}},
@@ -535,22 +546,24 @@ const ROUTER_CONFIG = {
       {field: 'IMEI', title: 'IMEI', colStyle: {'width': '100px'}},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
       {field: 'RecordTime', title: '记录时间', colStyle: {'width': '100px'}},
-      {field: 'SoftModel', title: '软件型号', colStyle: {'width': '80px'}},
+      {field: 'SoftModel', title: '机型', colStyle: {'width': '80px'}},
       {field: 'Version', title: '版本号', colStyle: {'width': '80px'}},
-      {field: 'FunctionResult', title: '功能测试', colStyle: {'width': '80px'}},
-      {field: 'GPSResult', title: 'GPS测试', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
+      {field: 'FunctionResult', title: '组装测试', colStyle: {'width': '80px'}},
+      {
+        field: 'GPSResult', title: '老化后测试', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
           switch (cellValue) {
             case 0:
               return '失败';
             case 1:
               return '成功';
           }
-        }},
+        }
+      },
       {field: 'CoupleResult', title: '耦合测试', colStyle: {'width': '80px'}},
       {field: 'WriteIMEIResult', title: 'IMEI写入', colStyle: {'width': '80px'}},
       {field: 'ParamDownloadResult', title: '参数下载', colStyle: {'width': '80px'}},
-      {field: 'AutoTestResult', title: '自动测试', colStyle: {'width': '80px'}},
-      {field: 'AutoTestSMTResult', title: 'SMT自动测试', colStyle: {'width': '80px'}},
+      {field: 'AutoTestResult', title: 'SMT测试', colStyle: {'width': '80px'}},
+      {field: 'AutoTestSMTResult', title: '预备字段1', colStyle: {'width': '80px'}},
       {field: 'SMTIQCResult', title: 'SMT IQC', colStyle: {'width': '90px'}},
       // {field: 'OtherTestSign', title: '???', colStyle: {'width': '100px'}, visible: false},
       {
@@ -708,7 +721,113 @@ const ROUTER_CONFIG = {
       {field: 'RePrintEndTime', title: '末次重打时间', colStyle: {'width': '100px'}}
 
     ]
-  }
+  },
+
+  LTestLogMessage: {
+    queryOptions: [
+      {
+        id: 'SN',
+        name: 'SN号',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'ZhiDan',
+        name: '制单号',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'SoftModel',
+        name: '机型',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'TestTime',
+        name: '时间',
+        timeRange: '',
+        type: 'date'
+      }
+    ],
+    dataColumns: [
+      {field: 'SN', title: 'SN号', colStyle: {'width': '100px'},},
+      {field: 'IMEI', title: 'IMEI', colStyle: {'width': '100px'},},
+      {field: 'SoftModel', title: '机型', colStyle: {'width': '100px'},},
+      {field: 'Version', title: '版本号', colStyle: {'width': '100px'},},
+      {field: 'ZhiDan', title: '订单号', colStyle: {'width': '100px'},},
+      {field: 'ErrorMessage1', title: '组装错误信息', colStyle: {'width': '100px'},},
+      {field: 'CategoryNum1', title: '组装错误类型', colStyle: {'width': '100px'},},
+      {field: 'Computer', title: '错误主机(组装)', colStyle: {'width': '100px'},},
+      {field: 'ErrorMessage2', title: '耦合错误信息', colStyle: {'width': '100px'},},
+      {field: 'CategoryNum2', title: '耦合错误类型', colStyle: {'width': '100px'},},
+      {field: 'Computer2', title: '错误主机(耦合)', colStyle: {'width': '100px'},},
+      {field: 'ErrorMessage3', title: 'SMT错误信息', colStyle: {'width': '100px'},},
+      {field: 'CategoryNum3', title: 'SMT错误类型', colStyle: {'width': '100px'},},
+      {field: 'Computer3', title: '错误主机(SMT)', colStyle: {'width': '100px'},},
+      {field: 'ErrorMessage4', title: '站位错误信息', colStyle: {'width': '100px'},},
+      {field: 'CategoryNum4', title: '站位错误类型', colStyle: {'width': '100px'},},
+      {field: 'Computer4', title: '错误主机(站位)', colStyle: {'width': '100px'},},
+      {field: 'ErrorMessage5', title: '老化后错误信息', colStyle: {'width': '100px'},},
+      {field: 'CategoryNum5', title: '老化后错误类型', colStyle: {'width': '100px'},},
+      {field: 'Computer5', title: '错误主机(老化后)', colStyle: {'width': '100px'},},
+      {field: 'TestTime', title: '时间', colStyle: {'width': '100px'},},
+
+
+    ]
+  },
+
+
+  DataRelativeUpdate: {
+    primaryKey: 'IMEI1',
+    type: 'string',
+    queryOptions: [
+      {
+        id: 'select-map',
+        selection: [
+          {id: 'IMEI1', name: 'IMEI卡号'},
+          {id: 'IMEI2', name: 'SN号'},
+          {id: 'IMEI3', name: 'SIM卡号'},
+          {id: 'IMEI4', name: 'ICCID'},
+          {id: 'IMEI5', name: '密码:智能锁ID'},
+          {id: 'IMEI6', name: '蓝牙MAC'},
+          {id: 'IMEI7', name: '设备号'},
+          {id: 'IMEI8', name: '服务卡号'},
+          {id: 'IMEI9', name: '电池序列号'},
+          {id: 'IMEI10', name: '第二个锁ID'},
+          {id: 'IMEI11', name: '机器代码'},
+          {id: 'IMEI12', name: 'IMSI'},
+          {id: 'IMEI13', name: 'RFID'},
+          {id: 'ZhiDan', name: '制单号'}],
+        name: '根据以下标识查看绑定关系',
+        selectModel: '',
+        textModel: '',
+        type: 'map'
+      }
+    ],
+    dataColumns: [
+      {field: 'RelativeNum', title: '关联码', colStyle: {'width': '120px'}},
+      {field: 'ZhiDan', title: '制单号', colStyle: {'width': '120px'}},
+      // {field: 'SN', title: 'SN', colStyle: {'width': '120px'}},
+      {field: 'IMEI1', title: 'IMEI卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI2', title: 'SN号', colStyle: {'width': '120px'}},
+      {field: 'IMEI3', title: 'SIM卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI4', title: 'ICCID', colStyle: {'width': '120px'}},
+      {field: 'IMEI5', title: '密码:智能锁ID', colStyle: {'width': '120px'}},
+      {field: 'IMEI6', title: '蓝牙MAC', colStyle: {'width': '120px'}},
+      {field: 'IMEI7', title: '设备号', colStyle: {'width': '120px'}},
+      {field: 'IMEI8', title: '服务卡号', colStyle: {'width': '120px'}},
+      {field: 'IMEI9', title: '电池序列号', colStyle: {'width': '120px'}},
+      {field: 'IMEI10', title: '第二个锁ID', colStyle: {'width': '120px'}},
+      {field: 'IMEI11', title: '机器代码', colStyle: {'width': '120px'}},
+      {field: 'IMEI12', title: 'IMSI', colStyle: {'width': '120px'}},
+      {field: 'IMEI13', title: 'RFID', colStyle: {'width': '120px'}},
+      {field: 'SimEffectiveDate', title: 'SIM卡激活时间', colStyle: {'width': '120px'}},
+      {field: 'NetMark', title: '网标', colStyle: {'width': '120px'}},
+      {field: 'TestTime', title: '测试时间', colStyle: {'width': '180px'}},
+    ]
+  },
+
 };
 const ROUTER_CONFIG_SP = {
   Gps_ManuSimDataParam: {
@@ -783,7 +902,7 @@ const ROUTER_CONFIG_SP = {
       {field: 'SIM', title: 'SIM卡号', colStyle: {'width': '100px'}},
       {field: 'VIP', title: '服务卡号', colStyle: {'width': '100px'}},
       {field: 'BAT', title: '电池号', colStyle: {'width': '100px'}},
-      {field: 'SoftModel', title: '软件型号', colStyle: {'width': '100px'}},
+      {field: 'SoftModel', title: '机型', colStyle: {'width': '100px'}},
       {field: 'Version', title: '软件版本', colStyle: {'width': '100px'}},
       {field: 'Remark', title: '备注', colStyle: {'width': '100px'}},
       {field: 'JS_PrintTime', title: '机身贴打印时间', colStyle: {'width': '100px'}},

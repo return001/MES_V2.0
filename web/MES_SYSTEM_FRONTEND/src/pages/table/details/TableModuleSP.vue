@@ -69,10 +69,10 @@
         <div class="form-group-btn">
           <el-button type="primary" @click="thisFetch('query')">查询</el-button>
         </div>
-        <div class="form-group-btn">
+        <div class="form-group-btn"  v-if="paginationOptions.total > 0">
           <el-button type="primary" @click="downloadData">下载报表</el-button>
         </div>
-        <div class="form-group-btn" v-if="checkDelPermission">
+        <div class="form-group-btn" v-if="checkDelPermission && paginationOptions.total > 0">
           <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
           <el-button type="warning" @click="callValidate('all')">删除所有</el-button>
         </div>
@@ -160,9 +160,10 @@
     validateUrl
   } from "../../../config/globalUrl";
   import {getRequestUrl, setRouterConfigSP} from "../../../config/tableApiConfig";
-  import {axiosFetch, downloadFile} from "../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {checkDelPermission} from "../../../utils/utils";
   import {mapActions} from 'vuex'
+  import {saveAs} from 'file-saver'
 
   export default {
     name: "SimTableModule",
@@ -180,7 +181,6 @@
         },
         tableData: [],
         isPending: false,
-        isDownloading: false,
         timeRange: '',
         deleteIdGroup: [],
         pickerOptions: {
@@ -337,12 +337,16 @@
         return (compTo - compFrom);
       },
       downloadData: function () {
-        if (this.isDownloading === false) {
-          this.isDownloading = true;
+        if (!this.isPending) {
+          if (this.paginationOptions.total > 2000) {
+            this.$alertWarning("所选数据过多(>2000)，无法生成报表");
+            return;
+          }
+          this.isPending = true;
+          this.$openLoading();
           let thisTable = this.$route.query.type;
           let data = JSON.parse(JSON.stringify(this.queryOptions));
           data.table = thisTable;
-          data['#TOKEN#'] = this.$store.state.token;
           data.isIMEIHex = this.imeiIsHex;
           if (!!this.timeRange) {
             data.startTime = this.timeRange[0];
@@ -355,19 +359,27 @@
             url = tablePrintDownloadUrl;
             data.printType = this.radioChecked;
           }
-          downloadFile(url, data);
-          let count = 0;
-          let mark = setInterval(() => {
-            count++;
-            if (count > 9) {
-              count = 0;
-              clearInterval(mark);
-              this.isDownloading = false
+          axiosDownload({
+            url: url,
+            data: data
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, name)
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
             }
-          }, 1000);
-          this.$alertSuccess('请求成功，请等待下载');
-        } else {
-          this.$alertInfo('请稍后再试')
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
         }
 
       },
