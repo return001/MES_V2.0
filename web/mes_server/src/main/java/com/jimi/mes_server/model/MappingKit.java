@@ -43,6 +43,7 @@ public class MappingKit {
 		arp.addMapping("order_file", "id", OrderFile.class);
 		arp.addMapping("order_status", "id", OrderStatus.class);
 		arp.addMapping("orders", "id", Orders.class);
+		arp.addMapping("package_log", "id", PackageLog.class);
 		arp.addMapping("process", "id", Process.class);
 		arp.addMapping("process_group", "id", ProcessGroup.class);
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);

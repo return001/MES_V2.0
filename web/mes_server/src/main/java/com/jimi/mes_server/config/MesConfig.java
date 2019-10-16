@@ -34,6 +34,10 @@ import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
+import com.jimi.mes_server.websocket.handler.WebSocketHandler;
+import com.jimi.mes_server.websocket.logger.PackageLogger;
+
+import cc.darhao.pasta.Pasta;
 
 /**
  * 全局配置 <br>
@@ -60,6 +64,7 @@ public class MesConfig extends JFinalConfig {
 
 	@Override
 	public void configHandler(Handlers me) {
+		/*me.add(new WebSocketHandler("^/sopserver"));*/
 	}
 
 
@@ -152,6 +157,7 @@ public class MesConfig extends JFinalConfig {
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
 		System.out.println("Mes Server is Running now...");
+		/*Pasta.setLogCatcher(new PackageLogger());*/
 	}
 
 

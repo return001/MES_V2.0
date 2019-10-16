@@ -18,13 +18,13 @@ public abstract class BaseSopCustomer<M extends BaseSopCustomer<M>> extends Mode
 		return getInt("id");
 	}
 
-	public M setSopCustomer(java.lang.String sopCustomer) {
-		set("sop_customer", sopCustomer);
+	public M setCustomerNumber(java.lang.String customerNumber) {
+		set("customer_number", customerNumber);
 		return (M)this;
 	}
 	
-	public java.lang.String getSopCustomer() {
-		return getStr("sop_customer");
+	public java.lang.String getCustomerNumber() {
+		return getStr("customer_number");
 	}
 
 	public M setCustomerName(java.lang.String customerName) {
