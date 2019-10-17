@@ -14,8 +14,6 @@ import './assets/icons/iconfont.css'
 
 import {Table, TableColumn, Pagination, Button, MessageBox, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag} from 'element-ui'
 
-import Datatable from '../static/js/datatable.min.js'
-import locale from './locale/zh-cn'
 import {alertDanger, alertInfo, alertSuccess,alertWarning} from "./utils/modal";
 import {openLoading, closeLoading} from "./utils/loading";
 
@@ -58,7 +56,6 @@ Vue.use(CarouselItem)
 Vue.use(Autocomplete)
 Vue.use(Tag)
 
-Vue.use(Datatable, {locale})
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(Vuex)
