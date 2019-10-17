@@ -100,5 +100,7 @@ public class Constant {
 	
 	public static final String SOPFILE_PLAYING_STATE = "播放中";
 	
-	public static final String SOPFILE_CANCEL_STATE = "已作废";
+	public static final String SOPFILE_STOP_PLAY_STATE = "停止播放";
+	
+	public static final String SOPFILE_INVALID_STATE = "已作废";
 }

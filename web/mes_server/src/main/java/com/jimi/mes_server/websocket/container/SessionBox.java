@@ -15,6 +15,7 @@ import javax.websocket.Session;
  */
 public class SessionBox {
 	
+	// 将site的ID与session绑定起来
 	private static final Map<Integer, Session> sessionMap = new HashMap<>();
 
 	

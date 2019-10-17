@@ -38,8 +38,8 @@ public class SopSQL {
 	
 	public static final String SELECT_PRODUCTMODEL_JOIN_SERIESMODEL = "SELECT p.id,p.product_model_name as productModelName,s.series_model_name as seriesModelName FROM sop_product_model p, sop_series_model s WHERE p.series_model_id = s.id ";
 	
+	public static final String SELECT_SOPFILE = "SELECT id,file_name as fileName,file_number as fileNumber,version,customer,series_model as seriesModel,product_model as productModel,reviewer,review_time as reviewTime,state FROM sop_file ";
 	
-	
-	
+	public static final String SELECT_SOPNOTICE = "SELECT id,content,start_time as startTime,end_time as endTime,is_all_site as isAllSite FROM sop_notice ";
 	
 }
