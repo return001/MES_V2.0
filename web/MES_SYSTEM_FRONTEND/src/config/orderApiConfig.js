@@ -117,6 +117,7 @@ const ROUTER_CONFIG = {
       {field: 'IMEI2Start', title: 'IMEI2起始位', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'IMEI2End', title: 'IMEI2终止位', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'IMEI2Prints', title: 'IMEI2打印', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'IMEIMutiRange', title: 'IMEI多号段', colStyle: {'width': '100px'}, value: '', "notNull": false},
     ]
   },
 
@@ -218,5 +219,6 @@ export const getOrderEditOptions = () => {
     {field: 'IMEI2Start', title: 'IMEI2起始位', value: '', type: 'text', notNull: false},
     {field: 'IMEI2End', title: 'IMEI2终止位', value: '', type: 'text', notNull: false},
     {field: 'IMEI2Prints', title: 'IMEI2打印', value: '', type: 'text', notNull: false},
+    {field: 'IMEIMutiRange', title: 'IMEI多号段', value: '', type: 'text', notNull: false},
   ]
 };
