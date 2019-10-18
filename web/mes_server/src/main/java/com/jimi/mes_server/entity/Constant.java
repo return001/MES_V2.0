@@ -93,14 +93,4 @@ public class Constant {
 	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;
 
 	public static final Integer HOUR_TO_SECOND = 3600;
-	
-	public static final String SOPFILE_WAITREVIEW_STATE = "待审核";
-	
-	public static final String SOPFILE_REVIEWED_STATE = "已审核";
-	
-	public static final String SOPFILE_PLAYING_STATE = "播放中";
-	
-	public static final String SOPFILE_STOP_PLAY_STATE = "停止播放";
-	
-	public static final String SOPFILE_INVALID_STATE = "已作废";
 }

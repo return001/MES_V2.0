@@ -108,4 +108,13 @@ public abstract class BaseSopHistoryDetail<M extends BaseSopHistoryDetail<M>> ex
 		return getInt("history_id");
 	}
 
+	public M setPictureName(java.lang.String pictureName) {
+		set("picture_name", pictureName);
+		return (M)this;
+	}
+	
+	public java.lang.String getPictureName() {
+		return getStr("picture_name");
+	}
+
 }

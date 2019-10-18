@@ -207,4 +207,22 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 		return getInt("OQCResult02");
 	}
 
+	public M setNBCalResult(java.lang.Integer NBCalResult) {
+		set("NBCalResult", NBCalResult);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getNBCalResult() {
+		return getInt("NBCalResult");
+	}
+
+	public M setNBCouResult(java.lang.Integer NBCouResult) {
+		set("NBCouResult", NBCouResult);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getNBCouResult() {
+		return getInt("NBCouResult");
+	}
+
 }

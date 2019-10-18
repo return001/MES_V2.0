@@ -522,4 +522,13 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getInt("Week");
 	}
 
+	public M setIMEIMutiRange(java.lang.String IMEIMutiRange) {
+		set("IMEIMutiRange", IMEIMutiRange);
+		return (M)this;
+	}
+	
+	public java.lang.String getIMEIMutiRange() {
+		return getStr("IMEIMutiRange");
+	}
+
 }

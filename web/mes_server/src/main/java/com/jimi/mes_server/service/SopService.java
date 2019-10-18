@@ -1,6 +1,7 @@
 package com.jimi.mes_server.service;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -13,12 +14,15 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
+import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopSQL;
 import com.jimi.mes_server.exception.OperationException;
+import com.jimi.mes_server.model.FaceInformation;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.SopCustomer;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopFile;
+import com.jimi.mes_server.model.SopLoginLog;
 import com.jimi.mes_server.model.SopNotice;
 import com.jimi.mes_server.model.SopProductModel;
 import com.jimi.mes_server.model.SopSeriesModel;
@@ -61,8 +65,24 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectFactory(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		return select(SopSQL.SELECT_FACTORY, pageNo, pageSize, ascBy, descBy, filter);
+	public Page<Record> selectFactory(Integer pageNo, Integer pageSize, String factoryAlias, String abbreviation, String fullName) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_FACTORY);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(factoryAlias)) {
+			sql.append(" AND factory_alias like '%").append(factoryAlias).append("%'");
+		}
+		if (!StrKit.isBlank(abbreviation)) {
+			sql.append(" AND abbreviation like '%").append(abbreviation).append("%'");
+		}
+		if (!StrKit.isBlank(fullName)) {
+			sql.append(" AND full_name like '%").append(fullName).append("%'");
+		}
+		if (StringUtils.endsWith(sql, "1 = 1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
+		}
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 
@@ -195,7 +215,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectWorkshop(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId) {
+	public Page<Record> selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_SITE_JOIN_LINE);
 		if (!StrKit.isBlank(siteName)) {
@@ -424,7 +444,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean importFile(List<UploadFile> uploadFiles) {
+	public boolean importFiles(List<UploadFile> uploadFiles) {
 		for (UploadFile uploadFile : uploadFiles) {
 			saveFile(uploadFile);
 		}
@@ -463,7 +483,7 @@ public class SopService extends SelectService {
 		String seriesModel = excelHelper.getString(2, 11);
 		SopFile sopFile = new SopFile();
 		sopFile.setCustomer(customer).setFileName(fileName).setFileNumber(fileNumber).setPath(file.getAbsolutePath());
-		sopFile.setProductModel(productModel).setSeriesModel(seriesModel).setVersion(version).setState(Constant.SOPFILE_WAITREVIEW_STATE);
+		sopFile.setProductModel(productModel).setSeriesModel(seriesModel).setVersion(version).setState(SopFileState.WAITREVIEW_STATE.getName());
 		sopFile.save();
 
 	}
@@ -478,25 +498,12 @@ public class SopService extends SelectService {
 		if (file.exists()) {
 			file.delete();
 		}
-		sopFile.setState(Constant.SOPFILE_INVALID_STATE);
+		sopFile.setState(SopFileState.INVALID_STATE.getName());
 		return sopFile.update();
 	}
 
 
-	public File downloadFile(Integer id) {
-		SopFile sopFile = SopFile.dao.findById(id);
-		if (sopFile == null) {
-			throw new OperationException("当前文件信息不存在");
-		}
-		File file = new File(sopFile.getPath());
-		if (!file.exists()) {
-			throw new OperationException("文件不存在,请重新上传");
-		}
-		return file;
-	}
-
-
-	public Page<Record> selectFile(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String startTime, String endTime) {
+	public Page<Record> selectFiles(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String startTime, String endTime) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_SOPFILE);
 		sql.append(" WHERE 1 = 1 ");
@@ -535,6 +542,39 @@ public class SopService extends SelectService {
 		}
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public Page<Record> selectFilePictures(Integer pageNo, Integer pageSize, Integer fileId) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SopSQL.SELECT_SOPPICTURE_BY_FILEID);
+		sqlPara.addPara(fileId);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public boolean editFileState(Integer id, String state) {
+		SopFile sopFile = SopFile.dao.findById(id);
+		if (sopFile == null) {
+			throw new OperationException("当前文件信息不存在");
+		}
+		if (!StrKit.isBlank(state)) {
+			sopFile.setState(state);
+		}
+		return sopFile.update();
+	}
+
+
+	public File downloadFile(Integer id) {
+		SopFile sopFile = SopFile.dao.findById(id);
+		if (sopFile == null) {
+			throw new OperationException("当前文件信息不存在");
+		}
+		File file = new File(sopFile.getPath());
+		if (!file.exists()) {
+			throw new OperationException("文件不存在,请重新上传");
+		}
+		return file;
 	}
 
 
@@ -608,6 +648,87 @@ public class SopService extends SelectService {
 			sopNotice.setIsAllSite(isAllSite);
 		}
 		return sopNotice.update();
+	}
+
+
+	public Page<Record> selectSopHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_FILE_JOIN_HISTORY);
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND h.push_time >= '").append(startTime).append("'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND h.push_time <= '").append(endTime).append("'");
+		}
+		if (!StrKit.isBlank(pushPerson)) {
+			sql.append(" AND h.push_person LIKE '%").append(pushPerson).append("%'");
+		}
+		sqlPara.setSql(sql.toString());
+		sqlPara.addPara(fileId);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public Page<Record> selectActionLog(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		return select(SopSQL.SELECT_ACTIONLOG, pageNo, pageSize, ascBy, descBy, filter);
+	}
+
+
+	public SopSite getSopSiteByMac(String mac) {
+		return SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
+	}
+
+
+	public boolean addFaceInformation(String userName, String feature) {
+		FaceInformation temp = FaceInformation.dao.findFirst(SopSQL.SELECT_FACEINFORMATION_BY_USERNAME, userName);
+		if (temp != null) {
+			throw new OperationException("用户名已存在");
+		}
+		FaceInformation faceInformation = new FaceInformation();
+		faceInformation.setFeature(feature).setUserName(userName);
+		return faceInformation.save();
+	}
+
+
+	public List<FaceInformation> getFaceInformation() {
+		return FaceInformation.dao.find(SopSQL.SELECT_FACEINFORMATION);
+	}
+
+
+	public void addLoginLog(String userName, String time, String siteNumber) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date loginTime;
+		try {
+			loginTime = dateFormat.parse(time);
+		} catch (Exception e) {
+			loginTime = new Date();
+		}
+		SopLoginLog sopLoginLog = new SopLoginLog();
+		sopLoginLog.setTime(loginTime).setUserName(userName).setLogSiteNumber(siteNumber).save();
+	}
+
+
+	public Page<Record> selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String logSiteNumber) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_LOGIN_LOG);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(userName)) {
+			sql.append(" AND user_name like '%").append(userName).append("%'");
+		}
+		if (!StrKit.isBlank(logSiteNumber)) {
+			sql.append(" AND log_site_number like '%").append(logSiteNumber).append("%'");
+		}
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND time >= '").append(startTime).append("'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND time <= '").append(endTime).append("'");
+		}
+		if (StringUtils.endsWith(sql, "1 = 1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
+		}
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 }

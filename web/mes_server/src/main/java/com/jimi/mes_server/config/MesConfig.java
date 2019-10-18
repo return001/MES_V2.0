@@ -25,6 +25,7 @@ import com.jimi.mes_server.controller.SopController;
 import com.jimi.mes_server.controller.TestController;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
+import com.jimi.mes_server.interceptor.ActionLogInterceptor;
 import com.jimi.mes_server.interceptor.CORSInterceptor;
 import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
 import com.jimi.mes_server.model.MappingKit;
@@ -34,9 +35,10 @@ import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
+import com.jimi.mes_server.websocket.entity.RequestTypeTimeoutTimeManager;
+import com.jimi.mes_server.websocket.handler.LoginHandler;
 import com.jimi.mes_server.websocket.handler.WebSocketHandler;
 import com.jimi.mes_server.websocket.logger.PackageLogger;
-
 import cc.darhao.pasta.Pasta;
 
 /**
@@ -73,6 +75,7 @@ public class MesConfig extends JFinalConfig {
 		me.addGlobalActionInterceptor(new ErrorLogInterceptor());
 		me.addGlobalActionInterceptor(new CORSInterceptor());
 		/*me.addGlobalActionInterceptor(new AccessInterceptor());*/
+		me.addGlobalActionInterceptor(new ActionLogInterceptor());
 		me.addGlobalServiceInterceptor(new Tx());
 	}
 
@@ -157,13 +160,16 @@ public class MesConfig extends JFinalConfig {
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
 		System.out.println("Mes Server is Running now...");
-		/*Pasta.setLogCatcher(new PackageLogger());*/
+		/*Pasta.bindRoute("login", LoginHandler.class);
+	    Pasta.setLogCatcher(new PackageLogger());
+	    Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());*/
 	}
 
 
 	@Override
 	public void beforeJFinalStop() {
 		TokenBox.stop();
+		/*Pasta.stopRequestTimeoutChecker();*/
 	}
 
 

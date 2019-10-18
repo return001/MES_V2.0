@@ -36,13 +36,13 @@ public abstract class BaseSopHistory<M extends BaseSopHistory<M>> extends Model<
 		return get("push_time");
 	}
 
-	public M setPushPersion(java.lang.String pushPersion) {
-		set("push_persion", pushPersion);
+	public M setPushPerson(java.lang.String pushPerson) {
+		set("push_person", pushPerson);
 		return (M)this;
 	}
 	
-	public java.lang.String getPushPersion() {
-		return getStr("push_persion");
+	public java.lang.String getPushPerson() {
+		return getStr("push_person");
 	}
 
 }

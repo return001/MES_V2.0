@@ -23,6 +23,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
+import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.service.SopService;
 import com.jimi.mes_server.util.ResultUtil;
@@ -56,8 +57,8 @@ public class SopController extends Controller {
 	}
 
 
-	public void selectFactory(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		renderJson(ResultUtil.succeed(sopService.selectFactory(pageNo, pageSize, ascBy, descBy, filter)));
+	public void selectFactory(Integer pageNo, Integer pageSize, String factoryAlias, String abbreviation, String fullName) {
+		renderJson(ResultUtil.succeed(sopService.selectFactory(pageNo, pageSize, factoryAlias, abbreviation, fullName)));
 	}
 
 
@@ -151,7 +152,7 @@ public class SopController extends Controller {
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectWorkshop(pageNo, pageSize, siteNumber, siteName, processOrder, lineId)));
+		renderJson(ResultUtil.succeed(sopService.selectSite(pageNo, pageSize, siteNumber, siteName, processOrder, lineId)));
 	}
 
 
@@ -308,7 +309,7 @@ public class SopController extends Controller {
 	}
 
 
-	public void importFile() {
+	public void importFiles() {
 		List<UploadFile> uploadFiles = getFiles();
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
 			throw new ParameterException("请添加文件");
@@ -318,7 +319,7 @@ public class SopController extends Controller {
 				throw new ParameterException("只能上传Excel文件");
 			}
 		}
-		if (sopService.importFile(uploadFiles)) {
+		if (sopService.importFiles(uploadFiles)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -338,14 +339,40 @@ public class SopController extends Controller {
 	}
 
 
-	public void selectFile(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String startTime, String endTime) {
+	public void selectFiles(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String startTime, String endTime) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectFile(pageNo, pageSize, fileNumber, fileName, version, customer, seriesModel, productModel, reviewer, state, startTime, endTime)));
+		renderJson(ResultUtil.succeed(sopService.selectFiles(pageNo, pageSize, fileNumber, fileName, version, customer, seriesModel, productModel, reviewer, state, startTime, endTime)));
+	}
+
+
+	public void selectFilePictures(Integer pageNo, Integer pageSize, Integer fileId) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		if (fileId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectFilePictures(pageNo, pageSize, fileId)));
+	}
+
+
+	public void editFileState(Integer id, String state) {
+		if (id == null || StrKit.isBlank(state)) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (sopService.editFileState(id, state)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
 	}
 
 
@@ -431,6 +458,40 @@ public class SopController extends Controller {
 	}
 
 
+	public void selectSopHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		if (fileId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectSopHistory(pageNo, pageSize, fileId, startTime, endTime, pushPerson)));
+	}
+
+
+	/**@author HCJ
+	 * 查询接口日志
+	 * @param currentPage 当前页
+	 * @param pageSize 页大小
+	 * @param ascBy 以哪个字段增序
+	 * @param descBy 以哪个字段降序
+	 * @param filter 查询条件
+	 * @date 2019年9月24日 下午3:26:34
+	 */
+	public void selectActionLog(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectActionLog(pageNo, pageSize, ascBy, descBy, filter)));
+	}
+
+
 	private Map<String, Date> getStartAndEndTime(String startTime, String endTime) {
 		Map<String, Date> map = Collections.synchronizedMap(new HashMap<String, Date>());
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -451,4 +512,33 @@ public class SopController extends Controller {
 		map.put("end", end);
 		return map;
 	}
+
+
+	public void addFaceInformation(String userName, String feature) {
+		if (StringUtils.isAnyBlank(userName, feature)) {
+			throw new OperationException("用户名和人脸特征不能为空");
+		}
+		if (sopService.addFaceInformation(userName, feature)) {
+			renderJson(ResultUtil.succeed("保存成功"));
+		} else {
+			renderJson(ResultUtil.failed(412, "保存失败"));
+		}
+	}
+
+
+	public void getFaceInformation() {
+		renderJson(ResultUtil.succeed(sopService.getFaceInformation()));
+	}
+
+
+	public void selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String logSiteNumber) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, logSiteNumber)));
+	}
+
 }
