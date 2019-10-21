@@ -6,16 +6,56 @@ import App from './App'
 import router from './router'
 import axios from './config/http'
 import store from './store'
-// import 'bootstrap/dist/css/bootstrap.min.css'
-// import 'bootstrap/dist/js/bootstrap.bundle.min'
+
 
 //自定义注册图标
 import './assets/icons/iconfont.css'
 
-import {Table, TableColumn, Pagination, Button, MessageBox, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag} from 'element-ui'
+import {
+  Table,
+  TableColumn,
+  Pagination,
+  Button,
+  MessageBox,
+  DatePicker,
+  Dialog,
+  Row,
+  Col,
+  Input,
+  Select,
+  Option,
+  Tooltip,
+  CheckboxGroup,
+  Checkbox,
+  MenuItem,
+  Menu,
+  MenuItemGroup,
+  Submenu,
+  Tabs,
+  TabPane,
+  Radio,
+  Form,
+  FormItem,
+  Upload,
+  Carousel,
+  CarouselItem,
+  Autocomplete,
+  Tag
+} from 'element-ui'
 
-import {alertDanger, alertInfo, alertSuccess,alertWarning} from "./utils/modal";
+import {RZSideBar, RZFormQueryBar, RZFormItem} from 'rz-el-comp';
+
+[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag,
+
+  RZSideBar, RZFormQueryBar, RZFormItem
+].forEach(item => {
+  Vue.use(item)
+});
+
+import {alertDanger, alertInfo, alertSuccess, alertWarning} from "./utils/modal";
 import {openLoading, closeLoading} from "./utils/loading";
+
+
 
 Vue.prototype.$confirm = MessageBox.confirm;
 Vue.prototype.$alertDanger = alertDanger;
@@ -27,35 +67,6 @@ Vue.prototype.$openLoading = openLoading;
 Vue.prototype.$closeLoading = closeLoading;
 
 
-Vue.use(Table)
-Vue.use(TableColumn)
-Vue.use(Pagination)
-Vue.use(Button)
-Vue.use(DatePicker)
-Vue.use(Dialog)
-Vue.use(Row)
-Vue.use(Col)
-Vue.use(Input)
-Vue.use(Select)
-Vue.use(Option)
-Vue.use(Tooltip)
-Vue.use(CheckboxGroup)
-Vue.use(Checkbox)
-Vue.use(MenuItemGroup)
-Vue.use(Menu)
-Vue.use(MenuItem)
-Vue.use(Submenu)
-Vue.use(Tabs)
-Vue.use(TabPane)
-Vue.use(Radio)
-Vue.use(Form)
-Vue.use(FormItem)
-Vue.use(Upload)
-Vue.use(Carousel)
-Vue.use(CarouselItem)
-Vue.use(Autocomplete)
-Vue.use(Tag)
-
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(Vuex)
@@ -64,7 +75,7 @@ new Vue({
   el: '#app',
   router,
   store,
-  components: { App },
+  components: {App},
   template: '<App/>'
 });
 

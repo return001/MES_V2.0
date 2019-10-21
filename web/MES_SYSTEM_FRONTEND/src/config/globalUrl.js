@@ -116,3 +116,41 @@ export const dashboardSelectUrl = url + '/report/selectDashboardTable';
 export const dashboardErrMsgSelectUrl = url + '/report/selectErrorMsg';
 export const dashboardSelectUrlCS = url + '/report/selectDashboardTableForCustomer';
 export const dashboardErrMsgSelectUrlCS = url + '/report/selectErrorMsgForCustomer';
+
+
+/*ESop*/
+/*厂区*/
+export const eSopFactorySelectUrl = url + '/sop/selectFactory';
+export const eSopFactoryDeleteUrl = url + '/sop/deleteFactory';
+export const eSopFactoryEditUrl = url + '/sop/editFactory';
+export const eSopFactoryAddUrl = url + '/sop/addFactory';
+
+/*车间*/
+export const eSopWorkshopSelectUrl = url + '/sop/selectWorkshop';
+export const eSopWorkshopEditUrl = url + '/sop/editWorkshop';
+export const eSopWorkshopDeleteUrl = url + '/sop/deleteWorkshop';
+export const eSopWorkshopAddUrl = url + '/sop/addWorkshop';
+
+/*站点*/
+export const eSopSiteSelectUrl = url + '/sop/selectSite';
+export const eSopSiteEditUrl = url + '/sop/editSite';
+export const eSopSiteDeleteUrl = url + '/sop/deleteSite';
+export const eSopSiteAddUrl = url + '/sop/addSite';
+
+/*客户*/
+export const eSopCustomerSelectUrl = url + '/sop/selectCustomer';
+export const eSopCustomerEditUrl = url + '/sop/editCustomer';
+export const eSopCustomerDeleteUrl = url + '/sop/deleteCustomer';
+export const eSopCustomerAddUrl = url + '/sop/addCustomer';
+
+/*系列机型*/
+export const eSopModelSelectUrl = url + '/sop/selectSeriesModel';
+export const eSopModelEditUrl = url + '/sop/editSeriesModel';
+export const eSopModelDeleteUrl = url + '/sop/deleteSeriesModel';
+export const eSopModelAddUrl = url + '/sop/addSeriesModel';
+
+/*产品型号*/
+export const eSopProductSelectUrl = url + '/sop/selectProductModel';
+export const eSopProductEditUrl = url + '/sop/editProductModel';
+export const eSopProductDeleteUrl = url + '/sop/deleteProductModel';
+export const eSopProductAddUrl = url + '/sop/addProductModel';

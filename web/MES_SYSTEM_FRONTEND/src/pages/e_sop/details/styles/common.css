@@ -1,0 +1,13 @@
+.content-comp {
+  box-sizing: border-box;
+  padding: 10px 20px;
+  background: #fff;
+  border: 1px solid #ededed;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.el-button /deep/ i{
+  font-size: 14px;
+  font-weight: bold;
+}

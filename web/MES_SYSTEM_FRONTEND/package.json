@@ -16,6 +16,7 @@
     "file-saver": "^2.0.2",
     "lodash": "^4.17.10",
     "popper.js": "^1.14.3",
+    "rz-el-comp": "^0.1.7",
     "v-charts": "^1.19.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",

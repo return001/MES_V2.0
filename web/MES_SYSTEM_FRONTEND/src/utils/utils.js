@@ -34,7 +34,7 @@ export const permissionList = function () {
   if (store.state.userType === 'administration') {
     list = ['users'];
   } else if (store.state.userType === 'SuperAdmin') {
-    list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea']
+    list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea', 'esop']
     // permissionList = ['order', 'users', 'test']
   } else if (store.state.userType === 'schedulingSZPC') {
     list = ['plan']

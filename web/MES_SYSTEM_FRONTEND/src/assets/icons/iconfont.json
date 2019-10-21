@@ -1,0 +1,107 @@
+{
+  "id": "1231838",
+  "name": "mes",
+  "font_family": "iconfont",
+  "css_prefix_text": "el-icon-t-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "203284",
+      "name": "user",
+      "font_class": "user",
+      "unicode": "e636",
+      "unicode_decimal": 58934
+    },
+    {
+      "icon_id": "380329",
+      "name": "copy",
+      "font_class": "copy",
+      "unicode": "e63d",
+      "unicode_decimal": 58941
+    },
+    {
+      "icon_id": "587102",
+      "name": "setting",
+      "font_class": "setting",
+      "unicode": "e7f6",
+      "unicode_decimal": 59382
+    },
+    {
+      "icon_id": "837249",
+      "name": "table",
+      "font_class": "table",
+      "unicode": "e823",
+      "unicode_decimal": 59427
+    },
+    {
+      "icon_id": "924344",
+      "name": "edit",
+      "font_class": "edit",
+      "unicode": "e8c7",
+      "unicode_decimal": 59591
+    },
+    {
+      "icon_id": "924446",
+      "name": "menu-circle-dots",
+      "font_class": "menu",
+      "unicode": "e906",
+      "unicode_decimal": 59654
+    },
+    {
+      "icon_id": "924558",
+      "name": "toggles",
+      "font_class": "toggles",
+      "unicode": "e960",
+      "unicode_decimal": 59744
+    },
+    {
+      "icon_id": "980409",
+      "name": "coffee",
+      "font_class": "tea",
+      "unicode": "e6ca",
+      "unicode_decimal": 59082
+    },
+    {
+      "icon_id": "1375626",
+      "name": "schedule",
+      "font_class": "schedule",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "3106464",
+      "name": "test",
+      "font_class": "test",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    },
+    {
+      "icon_id": "3669589",
+      "name": "SOP",
+      "font_class": "SOP",
+      "unicode": "e8cb",
+      "unicode_decimal": 59595
+    },
+    {
+      "icon_id": "5226602",
+      "name": "power",
+      "font_class": "power",
+      "unicode": "e63a",
+      "unicode_decimal": 58938
+    },
+    {
+      "icon_id": "6049373",
+      "name": "delete",
+      "font_class": "delete",
+      "unicode": "e688",
+      "unicode_decimal": 59016
+    },
+    {
+      "icon_id": "8555530",
+      "name": "function-fill",
+      "font_class": "func",
+      "unicode": "e752",
+      "unicode_decimal": 59218
+    }
+  ]
+}

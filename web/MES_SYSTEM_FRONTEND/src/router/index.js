@@ -33,6 +33,14 @@ import ProcessGroupSetting from '../pages/plan/details/ProcessGroupSetting'
 import LineSetting from '../pages/plan/details/LineSetting'
 import CapacitySetting from '../pages/plan/details/CapacitySetting'
 import PlanSetting from '../pages/plan/details/PlanSetting'
+/*ESOP*/
+import ESopMain from "../pages/e_sop/ESopMain";
+import FactorySetting from "../pages/e_sop/details/FactorySetting";
+import WorkshopSetting from "../pages/e_sop/details/WorkshopSetting";
+import SiteSetting from "../pages/e_sop/details/SiteSetting";
+import CustomerSetting from "../pages/e_sop/details/CustomerSetting";
+import ModelSetting from "../pages/e_sop/details/ModelSetting";
+import ProductSetting from "../pages/e_sop/details/ProductSetting";
 
 /*看板*/
 import Dashboard from '../pages/dashboard/Dashboard'
@@ -126,6 +134,37 @@ const router = new Router({
               path: 'imei',
               component: IMEIMain
             }
+          ]
+        },
+        {
+          path: '/esop',
+          name: 'ESop',
+          component: ESopMain,
+          children: [
+            {
+              path: 'factory',
+              component: FactorySetting
+            },
+            {
+              path: 'workshop',
+              component: WorkshopSetting
+            },
+            {
+              path: 'site',
+              component: SiteSetting
+            },
+            {
+              path: 'customer',
+              component: CustomerSetting
+            },
+            {
+              path: 'model',
+              component: ModelSetting
+            },
+            {
+              path: 'product',
+              component: ProductSetting
+            },
           ]
         },
         {

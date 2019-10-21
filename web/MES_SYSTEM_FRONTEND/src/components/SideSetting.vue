@@ -53,6 +53,14 @@
         </div>
       </div>
       <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'esop' ? 'icon-active' : ''" @click="initData('esop')" >
+          <div class="setting-icon">
+            <i class="el-icon-t-SOP" style="color: #fff;"></i>
+          </div>
+          <span>ESOP</span>
+        </div>
+      </div>
+      <div class="w-100">
         <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')"  v-if="accessPermission('redtea')">
           <div class="setting-icon">
             <i class="el-icon-t-tea" style="color: #fff;"></i>
