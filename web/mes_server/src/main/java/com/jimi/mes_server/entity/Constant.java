@@ -23,6 +23,10 @@ public class Constant {
 	public final static String FILE_BACKUP_PATH = "mes_document" + File.separator + "backups" + File.separator;
 
 	public final static String FILE_TABLE_PATH = "mes_document" + File.separator + "tables" + File.separator;
+	
+	public final static String SOP_FILE_PATH = "mes_document" + File.separator + "sop_files" + File.separator;
+	
+	public final static String SOP_PICTURE_PATH = "mes_document" + File.separator + "sop_pictures" + File.separator;
 
 	public static final Integer UNSCHEDULED_ORDERSTATUS = 1;
 

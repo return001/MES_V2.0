@@ -22,7 +22,6 @@ public class MappingKit {
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
 		arp.addMapping("DataRelativeUnique", "DATA1", DataRelativeUnique.class);
 		arp.addMapping("DataRelativeUpdate", "RelativeNum", DataRelativeUpdate.class);
-		arp.addMapping("face_information", "id", FaceInformation.class);
 		arp.addMapping("file_type", "id", FileType.class);
 		arp.addMapping("Gps_AutoTest_AntiDup", "SN", GpsAutotestAntidup.class);
 		arp.addMapping("Gps_AutoTest_Result", "Id", GpsAutotestResult.class);
@@ -50,6 +49,7 @@ public class MappingKit {
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
 		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
 		arp.addMapping("sop_customer", "id", SopCustomer.class);
+		arp.addMapping("sop_face_information", "id", SopFaceInformation.class);
 		arp.addMapping("sop_factory", "id", SopFactory.class);
 		arp.addMapping("sop_file", "id", SopFile.class);
 		arp.addMapping("sop_file_picture", "id", SopFilePicture.class);

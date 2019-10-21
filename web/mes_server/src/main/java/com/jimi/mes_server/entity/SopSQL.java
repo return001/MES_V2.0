@@ -56,10 +56,9 @@ public class SopSQL {
 
 	public static final String SELECT_LOGIN_LOG = "SELECT id,user_name as userName,log_site_number as logSiteNumber,[time] FROM sop_login_log";
 
+	public static final String SELECT_SOPFILEPICTURE_BY_FILEID = "SELECT * FROM sop_file_picture WHERE sop_file_id = ?";
 	
-	
-	
-	
+	public static final String DELETE_SOPFILEPICTURE_BY_FILEID = "DELETE FROM sop_file_picture WHERE sop_file_id = ?";
 	
 	
 	

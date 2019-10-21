@@ -3,11 +3,13 @@ package com.jimi.mes_server.util;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.aspose.cells.License;
 import com.jfinal.kit.PathKit;
 
 public class CommonUtil {
@@ -105,18 +107,33 @@ public class CommonUtil {
 	}
 
 
+	/**@author HCJ
+	 * 判断是否为正整数
+	 * @param input 输入字符串
+	 * @date 2019年10月21日 下午3:20:57
+	 */
 	public static boolean isPositiveInteger(String input) {
 		String regex = "^[1-9]\\d*|0$";
 		return match(regex, input);
 	}
 
 
+	/**@author HCJ
+	 * 判断邮箱地址是否正确
+	 * @param input 输入字符串
+	 * @date 2019年10月21日 下午3:21:19
+	 */
 	public static boolean isEmail(String input) {
 		String regex = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
 		return match(regex, input);
 	}
 
 
+	/**@author HCJ
+	 * 判断IP地址是否正确
+	 * @param input 输入字符串
+	 * @date 2019年10月21日 下午3:21:45
+	 */
 	public static boolean isIPAddress(String input) {
 		String regex = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
 		return match(regex, input);
@@ -129,6 +146,27 @@ public class CommonUtil {
 	 */
 	public static boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0;
+	}
+
+
+	/**@author HCJ
+	 * 获取apose-cells许可证
+	 * @date 2019年10月21日 下午12:00:14
+	 */
+	public static boolean getLicense() {
+		boolean result = false;
+		InputStream license;
+		try {
+			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			// 凭证文件
+			license = new FileInputStream(loader.getResource("license.xml").getPath());
+			License aposeLic = new License();
+			aposeLic.setLicense(license);
+			result = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 

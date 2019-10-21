@@ -18,15 +18,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
+import com.jimi.mes_server.entity.sendMessageInfo;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.service.SopService;
 import com.jimi.mes_server.util.ResultUtil;
+import com.jimi.mes_server.util.TokenBox;
 
 public class SopController extends Controller {
 
@@ -368,7 +372,9 @@ public class SopController extends Controller {
 		if (id == null || StrKit.isBlank(state)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (sopService.editFileState(id, state)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (sopService.editFileState(id, state,userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -539,6 +545,14 @@ public class SopController extends Controller {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
 		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, logSiteNumber)));
+	}
+	
+	
+	public void dispatchFile(String list) throws Exception {
+		if (StrKit.isBlank(list)) {
+			throw new OperationException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.dispatchFile(list)));
 	}
 
 }
