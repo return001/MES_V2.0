@@ -1,14 +1,10 @@
 package com.jimi.mes_server.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
-
 import javax.websocket.Session;
 
 import org.apache.commons.io.FileUtils;
@@ -30,12 +26,12 @@ import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.Notice;
 import com.jimi.mes_server.entity.Picture;
-import com.jimi.mes_server.entity.ShowPackageBody;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopSQL;
 import com.jimi.mes_server.entity.sendMessageInfo;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
+import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.FaceInformation;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.SopCustomer;
@@ -47,10 +43,12 @@ import com.jimi.mes_server.model.SopNotice;
 import com.jimi.mes_server.model.SopProductModel;
 import com.jimi.mes_server.model.SopSeriesModel;
 import com.jimi.mes_server.model.SopSite;
+import com.jimi.mes_server.model.SopSiteDisplay;
 import com.jimi.mes_server.model.SopWorkshop;
 import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
+import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
 import com.jimi.mes_server.websocket.entity.RequestType;
 
@@ -215,14 +213,16 @@ public class SopService extends SelectService {
 
 
 	public boolean addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
-		SopSite sopSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber);
-		if (sopSite != null) {
+		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber) != null) {
 			throw new OperationException("站点编号已存在,请重新输入");
+		}
+		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac) != null) {
+			throw new OperationException("MAC地址已存在,请重新输入");
 		}
 		if (Line.dao.findById(lineId) == null) {
 			throw new OperationException("当前产线不存在");
 		}
-		sopSite = new SopSite();
+		SopSite sopSite = new SopSite();
 		if (playTimes != null) {
 			sopSite.setPlayTimes(playTimes);
 		}
@@ -291,6 +291,13 @@ public class SopService extends SelectService {
 			sopSite.setSwitchInterval(switchInterval);
 		}
 		if (!StrKit.isBlank(mac)) {
+			if (!CommonUtil.isMac(mac)) {
+				throw new ParameterException("MAC地址无效");
+			}
+			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
+			if (temp != null && !temp.getId().equals(id)) {
+				throw new OperationException("MAC地址已存在,请重新输入");
+			}
 			sopSite.setMac(mac);
 		}
 		return sopSite.update();
@@ -483,13 +490,13 @@ public class SopService extends SelectService {
 			dir.mkdirs();
 		}
 		for (UploadFile uploadFile : uploadFiles) {
-			saveFile(uploadFile,path);
+			saveFile(uploadFile, path);
 		}
 		return true;
 	}
 
 
-	private void saveFile(UploadFile uploadFile,String path) {
+	private void saveFile(UploadFile uploadFile, String path) {
 		File previousFile = new File(path + uploadFile.getOriginalFileName());
 		if (previousFile.exists()) {
 			throw new OperationException("已存在文件名为：" + uploadFile.getOriginalFileName() + " 的文件");
@@ -531,12 +538,26 @@ public class SopService extends SelectService {
 		if (sopFile == null) {
 			throw new OperationException("当前文件信息不存在");
 		}
+		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
+		if (sopSiteDisplays!=null&&!sopSiteDisplays.isEmpty()) {
+			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
+				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
+					continue;
+				}
+				String[] fileIds = sopSiteDisplay.getFiles().split(",");
+				for (String fileId : fileIds) {
+					if (!StrKit.isBlank(fileId)&&id.equals(Integer.parseInt(fileId))) {
+						throw new OperationException("当前文件正在被播放中");
+					}
+				}
+			}
+		}
 		File file = new File(sopFile.getPath());
 		if (file.exists()) {
 			file.delete();
 		}
 		List<SopFilePicture> sopFilePictures = SopFilePicture.dao.find(SopSQL.SELECT_SOPFILEPICTURE_BY_FILEID, id);
-		if (sopFilePictures!=null&&!sopFilePictures.isEmpty()) {
+		if (sopFilePictures != null && !sopFilePictures.isEmpty()) {
 			for (SopFilePicture sopFilePicture : sopFilePictures) {
 				File picture = new File(sopFilePicture.getPicturePath());
 				if (picture.exists()) {
@@ -600,26 +621,26 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean editFileState(Integer id, String state,LUserAccountVO userVO) {
-		if (!state.equals(SopFileState.REVIEWED_STATE.getName())||!state.equals(SopFileState.INVALID_STATE.getName())) {
+	public boolean editFileState(Integer id, String state, LUserAccountVO userVO) {
+		if (!state.equals(SopFileState.REVIEWED_STATE.getName()) || !state.equals(SopFileState.INVALID_STATE.getName())) {
 			throw new OperationException("无效的状态修改操作");
 		}
 		SopFile sopFile = SopFile.dao.findById(id);
 		if (sopFile == null) {
 			throw new OperationException("当前文件信息不存在");
 		}
-		if (state.equals(SopFileState.REVIEWED_STATE.getName())&&!sopFile.getState().equals(SopFileState.WAITREVIEW_STATE.getName())) {
+		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && !sopFile.getState().equals(SopFileState.WAITREVIEW_STATE.getName())) {
 			throw new OperationException("未审核状态才可以修改为已审核状态");
 		}
-		if (state.equals(SopFileState.INVALID_STATE.getName())&&!sopFile.getState().equals(SopFileState.STOP_PLAY_STATE.getName())) {
+		if (state.equals(SopFileState.INVALID_STATE.getName()) && !sopFile.getState().equals(SopFileState.STOP_PLAY_STATE.getName())) {
 			throw new OperationException("停止播放状态才可以修改为作废状态");
 		}
 		if (SopFileState.REVIEWED_STATE.getName().equals(state)) {
 			saveFilePicture(sopFile);
 			sopFile.setReviewer(userVO.getName());
 			sopFile.setReviewTime(new Date());
-		}		
-			sopFile.setState(state);
+		}
+		sopFile.setState(state);
 		return sopFile.update();
 	}
 
@@ -632,7 +653,7 @@ public class SopService extends SelectService {
 		} else {
 			filePath = PropKit.get("linuxFlagPath");
 		}
-		String path = filePath + Constant.SOP_PICTURE_PATH+sopFile.getFileName()+File.separator;
+		String path = filePath + Constant.SOP_PICTURE_PATH + sopFile.getFileName() + File.separator;
 		File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
@@ -649,25 +670,26 @@ public class SopService extends SelectService {
 				for (int i = 0; i < book.getWorksheets().getCount(); i++) {
 					Worksheet worksheet = book.getWorksheets().get(i);
 					SheetRender sr = new SheetRender(worksheet, imgOptions);
-						String pictureNumber = worksheet.getName();
-						String pictureName = worksheet.getName();
-						String picturePath;
-						if (CommonUtil.isInteger(pictureNumber)) {
-							pictureName = worksheet.getCells().get(4, 4).getStringValue();
-							picturePath = path + pictureName + ".png";	
-						}else {
-							picturePath = path + pictureNumber + ".png";
-						}
-						sr.toImage(0, picturePath);
-						savePictureInfo(sopFile, pictureNumber, pictureName, picturePath);
+					String pictureNumber = worksheet.getName();
+					String pictureName = worksheet.getName();
+					String picturePath;
+					if (CommonUtil.isInteger(pictureNumber)) {
+						pictureName = worksheet.getCells().get(4, 4).getStringValue();
+						picturePath = path + pictureName + ".png";
+					} else {
+						picturePath = path + pictureNumber + ".png";
+					}
+					sr.toImage(0, picturePath);
+					savePictureInfo(sopFile, pictureNumber, pictureName, picturePath);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
-	private void savePictureInfo(SopFile sopFile,String pictureNumber,String pictureName,String picturePath) {
+
+
+	private void savePictureInfo(SopFile sopFile, String pictureNumber, String pictureName, String picturePath) {
 		SopFilePicture sopFilePicture = new SopFilePicture();
 		sopFilePicture.setPictureName(pictureName).setPictureNumber(pictureNumber).setPicturePath(picturePath).setSopFileId(sopFile.getId()).save();
 	}
@@ -686,6 +708,19 @@ public class SopService extends SelectService {
 	}
 
 
+	public File downloadPicture(Integer id) {
+		SopFilePicture sopFilePicture = SopFilePicture.dao.findById(id);
+		if (sopFilePicture == null) {
+			throw new OperationException("当前文件信息不存在");
+		}
+		File file = new File(sopFilePicture.getPicturePath());
+		if (!file.exists()) {
+			throw new OperationException("文件不存在,请重新上传");
+		}
+		return file;
+	}
+
+
 	public boolean addNotice(String title, String content, Date startTime, Date endTime, Boolean isAllSite) {
 		SopNotice sopNotice = new SopNotice();
 		sopNotice.setContent(content).setEndTime(endTime).setIsAllSite(isAllSite).setStartTime(startTime).setTitle(title);
@@ -697,6 +732,20 @@ public class SopService extends SelectService {
 		SopNotice sopNotice = SopNotice.dao.findById(id);
 		if (sopNotice == null) {
 			throw new OperationException("当前通知/注意事项不存在");
+		}
+		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
+		if (sopSiteDisplays!=null&&!sopSiteDisplays.isEmpty()) {
+			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
+				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
+					continue;
+				}
+				String[] noticeIds = sopSiteDisplay.getNotices().split(",");
+				for (String noticeId : noticeIds) {
+					if (!StrKit.isBlank(noticeId)&&id.equals(Integer.parseInt(noticeId))) {
+						throw new OperationException("当前通知正在被播放中");
+					}
+				}
+			}
 		}
 		return sopNotice.delete();
 	}
@@ -840,26 +889,30 @@ public class SopService extends SelectService {
 	}
 
 
-	public Object dispatchFile(String list) throws Exception {
+	public ResultUtil dispatchFile(String list,LUserAccountVO userVO) {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
+			StringBuilder noticeIdBuilder = new StringBuilder();
+			StringBuilder pictureIdBuilder = new StringBuilder();
+			StringBuilder fileIdBuilder = new StringBuilder();
 			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
-			if(session == null) {
+			if (session == null) {
 				throw new OperationException("客户端不在线或不存在");
 			}
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
-			if (sopSite==null) {
+			if (sopSite == null) {
 				throw new OperationException("当前站点记录不存在");
 			}
-			ShowPackageBody body = new ShowPackageBody();
-			if (sendMessageInfo.getNoticeList()!=null&&sendMessageInfo.getNoticeList().length>0) {
+			JSONObject requestBody = new JSONObject();
+			if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
 				List<Notice> notices = new ArrayList<Notice>();
 				for (Integer noticeId : sendMessageInfo.getNoticeList()) {
 					SopNotice sopNotice = SopNotice.dao.findById(noticeId);
-					if (sopNotice==null) {
+					if (sopNotice == null) {
 						continue;
 					}
+					noticeIdBuilder.append(noticeId+",");
 					Notice notice = new Notice();
 					notice.setTitle(sopNotice.getTitle());
 					notice.setContent(sopNotice.getContent());
@@ -867,29 +920,97 @@ public class SopService extends SelectService {
 					notice.setEndTime(dateFormat.format(sopNotice.getEndTime()));
 					notices.add(notice);
 				}
-				body.setNotice(notices);
+				requestBody.put("notice", notices);
 			}
-			if (sendMessageInfo.getPictureList()!=null&&sendMessageInfo.getPictureList().length>0) {
+			if (sendMessageInfo.getPictureList() != null && sendMessageInfo.getPictureList().length > 0) {
 				List<Picture> pictures = new ArrayList<Picture>();
 				for (Integer pictureId : sendMessageInfo.getPictureList()) {
 					SopFilePicture sopFilePicture = SopFilePicture.dao.findById(pictureId);
-					if (sopFilePicture==null) {
+					if (sopFilePicture == null) {
 						continue;
 					}
+					pictureIdBuilder.append(pictureId+",");
+					fileIdBuilder.append(sopFilePicture.getSopFileId()+",");
+					String picturePath = sopFilePicture.getPicturePath();
+					String filePath = picturePath.substring(picturePath.indexOf("mes_document"));
+					String urlPath = filePath.replace("\\", "/");
 					Picture picture = new Picture();
-					picture.setPath(sopFilePicture.getPicturePath());
+					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
 					pictures.add(picture);
 				}
-				body.setPicture(pictures);
+				requestBody.put("picture", pictures);
 			}
-			body.setSwitchInterval(sopSite.getSwitchInterval());
-			JSONObject result = Pasta.sendRequest(session, RequestType.SHOW, JSONObject.parseObject(body.toString()));
-			
-			
-			
+			requestBody.put("switchInterval", sopSite.getSwitchInterval());
+			JSONObject response = null;
+			Date date = new Date();
+			try {
+				response = Pasta.sendRequest(session, RequestType.SHOW, requestBody);
+			} catch (Exception e) {
+				throw new OperationException("发送播放指令到ID为 " + sopSite.getId() + " 的站点出错");
+			}
+			throwExceptionIfExistByResult(response);
+			saveSopSiteDisplay(sendMessageInfo.getId(), noticeIdBuilder, pictureIdBuilder, fileIdBuilder);
 			
 			
 		}
+		return ResultUtil.succeed();
+	}
+	
+
+	private void saveSopSiteDisplay(Integer siteId,StringBuilder noticeIdBuilder,StringBuilder pictureIdBuilder,StringBuilder fileIdBuilder ) {
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findById(siteId);
+		if (sopSiteDisplay==null) {
+			sopSiteDisplay = new SopSiteDisplay();
+			sopSiteDisplay.setSiteId(siteId).setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).save();
+		}else {
+			if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
+				sopSiteDisplay.setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).update();
+			}else {
+				sopSiteDisplay.setFiles(sopSiteDisplay.getFiles()+fileIdBuilder.toString());
+				sopSiteDisplay.setNotices(sopSiteDisplay.getNotices()+noticeIdBuilder.toString());
+				sopSiteDisplay.setPictures(sopSiteDisplay.getPictures()+pictureIdBuilder.toString()).update();
+			}
+		}
+	}
+	
+	private void saveSopHistory() {
+		
+	}
+
+
+	private void throwExceptionIfExistByResult(JSONObject response) {
+		if (response.getInteger("result").toString().equals("200")) {
+			return;
+		} else {
+			throw new OperationException(response.getString("data"));
+		}
+	}
+
+
+	public ResultUtil recycleFile(String id) {
+		for (String siteId : id.split(",")) {
+			SopSite sopSite = SopSite.dao.findById(siteId);
+			if (sopSite == null) {
+				throw new OperationException("ID为 " + siteId + " 的站点信息不存在");
+			}
+			Session session = SessionBox.getSessionById(Integer.parseInt(siteId));
+			if (session == null) {
+				throw new OperationException("ID为 " + siteId + " 的站点客户端不在线或不存在");
+			}
+			JSONObject response = null;
+			try {
+				response = Pasta.sendRequest(session, RequestType.CANCELSHOW, null);
+			} catch (Exception e) {
+				throw new OperationException("发送取消播放指令到ID为 " + siteId + " 的站点出错");
+			}
+			throwExceptionIfExistByResult(response);
+		}
+		return ResultUtil.succeed();
+	}
+
+
+	public Object previewSite(Integer id) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

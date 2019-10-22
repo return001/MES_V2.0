@@ -3,14 +3,21 @@ package com.jimi.mes_server.util;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import com.aspose.cells.License;
 import com.jfinal.kit.PathKit;
+import com.jimi.mes_server.exception.OperationException;
 
 public class CommonUtil {
 
@@ -150,6 +157,17 @@ public class CommonUtil {
 
 
 	/**@author HCJ
+	 * 判断MAC地址是否正确
+	 * @param input 输入字符串
+	 * @date 2019年10月22日 上午9:58:54
+	 */
+	public static boolean isMac(String input) {
+		String regex = "([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}";
+		return match(regex, input);
+	}
+
+
+	/**@author HCJ
 	 * 获取apose-cells许可证
 	 * @date 2019年10月21日 下午12:00:14
 	 */
@@ -167,6 +185,33 @@ public class CommonUtil {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+
+	public static void downloadFile(File file, HttpServletResponse response) {
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new OperationException("文件下载出错");
+		}
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+		if (file.getName().contains(".xlsx")) {
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		} else if (file.getName().contains(".xls")) {
+			response.setContentType("application/vnd.ms-excel");
+		} else if (file.getName().contains(".png")) {
+			response.setContentType("application/x-png");
+		}
+		try (ServletOutputStream os = response.getOutputStream(); FileInputStream input = new FileInputStream(file);) {
+			byte[] buffer = new byte[2048];
+			int i = 0;
+			while ((i = input.read(buffer, 0, 2048)) != -1) {
+				os.write(buffer, 0, i);
+			}
+			os.flush();
+		} catch (IOException e) {
+			throw new OperationException("文件下载出错");
+		}
 	}
 
 

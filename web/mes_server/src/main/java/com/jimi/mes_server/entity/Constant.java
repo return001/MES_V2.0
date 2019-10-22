@@ -97,4 +97,6 @@ public class Constant {
 	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;
 
 	public static final Integer HOUR_TO_SECOND = 3600;
+	
+	public static final String SOP_PICTURE_URL = "http://120.198.40.186:28881/";
 }

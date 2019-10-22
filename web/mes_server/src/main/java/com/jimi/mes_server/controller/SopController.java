@@ -1,10 +1,5 @@
 package com.jimi.mes_server.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -13,22 +8,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.entity.Constant;
-import com.jimi.mes_server.entity.sendMessageInfo;
+import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.service.SopService;
+import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.util.TokenBox;
 
@@ -37,6 +30,7 @@ public class SopController extends Controller {
 	private static SopService sopService = Enhancer.enhance(SopService.class);
 
 
+	@Access({ "SopManager" })
 	public void addFactory(String factoryAlias, String abbreviation, String fullName) {
 		if (StringUtils.isAnyBlank(factoryAlias, abbreviation, fullName)) {
 			throw new ParameterException("参数不能为空");
@@ -49,6 +43,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteFactory(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -61,11 +56,13 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectFactory(Integer pageNo, Integer pageSize, String factoryAlias, String abbreviation, String fullName) {
 		renderJson(ResultUtil.succeed(sopService.selectFactory(pageNo, pageSize, factoryAlias, abbreviation, fullName)));
 	}
 
 
+	@Access({ "SopManager" })
 	public void editFactory(Integer id, String factoryAlias, String abbreviation, String fullName) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -78,6 +75,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void addWorkshop(Integer factoryId, String workshopNumber, String workshopName) {
 		if (factoryId == null || StringUtils.isAnyBlank(workshopNumber, workshopName)) {
 			throw new ParameterException("参数不能为空");
@@ -90,6 +88,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteWorkshop(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -102,6 +101,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectWorkshop(Integer pageNo, Integer pageSize, Integer factoryId, String workshopNumber, String workshopName) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -113,6 +113,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editWorkshop(Integer id, Integer factoryId, String workshopNumber, String workshopName) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -125,9 +126,13 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
 		if (processOrder == null || lineId == null || switchInterval == null || StringUtils.isAnyBlank(siteNumber, siteName, mac)) {
 			throw new ParameterException("参数不能为空");
+		}
+		if (!CommonUtil.isMac(mac)) {
+			throw new ParameterException("MAC地址无效");
 		}
 		if (sopService.addSite(siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac)) {
 			renderJson(ResultUtil.succeed());
@@ -137,6 +142,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteSite(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -149,6 +155,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -160,6 +167,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editSite(Integer id, String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -172,6 +180,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void addCustomer(String customerNumber, String customerName, Integer factoryId) {
 		if (factoryId == null || StringUtils.isAnyBlank(customerNumber, customerName)) {
 			throw new ParameterException("参数不能为空");
@@ -184,6 +193,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteCustomer(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -196,6 +206,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectCustomer(Integer pageNo, Integer pageSize, String customerNumber, String customerName, Integer factoryId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -207,6 +218,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editCustomer(Integer id, String customerNumber, String customerName, Integer factoryId) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -219,6 +231,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void addSeriesModel(String seriesModelName) {
 		if (StrKit.isBlank(seriesModelName)) {
 			throw new ParameterException("参数不能为空");
@@ -231,6 +244,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteSeriesModel(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -243,6 +257,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectSeriesModel(Integer pageNo, Integer pageSize, String seriesModelName) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -254,6 +269,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editSeriesModel(Integer id, String seriesModelName) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -266,6 +282,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void addProductModel(String productModelName, Integer seriesModelId) {
 		if (StrKit.isBlank(productModelName) || seriesModelId == null) {
 			throw new ParameterException("参数不能为空");
@@ -278,6 +295,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteProductModel(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -290,6 +308,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectProductModel(Integer pageNo, Integer pageSize, String productModelName, Integer seriesModelId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -301,6 +320,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editProductModel(Integer id, String productModelName, Integer seriesModelId) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -313,6 +333,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void importFiles() {
 		List<UploadFile> uploadFiles = getFiles();
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
@@ -331,6 +352,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteFile(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -343,6 +365,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectFiles(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String startTime, String endTime) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -354,6 +377,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectFilePictures(Integer pageNo, Integer pageSize, Integer fileId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -368,13 +392,17 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void editFileState(Integer id, String state) {
 		if (id == null || StrKit.isBlank(state)) {
 			throw new ParameterException("参数不能为空");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (sopService.editFileState(id, state,userVO)) {
+		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && "SopManager".equals(userVO.getTypeName())) {
+			throw new ParameterException("当前角色无法审核文件");
+		}
+		if (sopService.editFileState(id, state, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -382,39 +410,27 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void downloadFile(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		File file = sopService.downloadFile(id);
-		HttpServletResponse response = getResponse();
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			renderJson(ResultUtil.failed("文件下载出错"));
-		}
-		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-		if (file.getName().contains(".xlsx")) {
-			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		} else if (file.getName().contains(".xls")) {
-			response.setContentType("application/vnd.ms-excel");
-		}
-		try (ServletOutputStream os = response.getOutputStream(); FileInputStream input = new FileInputStream(file);) {
-			byte[] buffer = new byte[1024];
-			int i = 0;
-			while ((i = input.read(buffer, 0, 1024)) != -1) {
-				os.write(buffer, 0, i);
-			}
-			os.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-			renderJson(ResultUtil.failed("文件下载出错"));
-		}
+		CommonUtil.downloadFile(sopService.downloadFile(id), getResponse());
 		renderNull();
 	}
 
 
+	@Access({ "SopManager" })
+	public void downloadPicture(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		CommonUtil.downloadFile(sopService.downloadPicture(id), getResponse());
+		renderNull();
+	}
+
+
+	@Access({ "SopManager" })
 	public void addNotice(String title, String content, String startTime, String endTime, Boolean isAllSite) {
 		if (StringUtils.isAnyBlank(title, content) || isAllSite == null) {
 			throw new ParameterException("参数不能为空");
@@ -428,6 +444,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void deleteNotice(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -440,6 +457,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectNotice(Integer pageNo, Integer pageSize, String title, String content, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Boolean isAllSite) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -451,6 +469,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopManager" })
 	public void editNotice(Integer id, String title, String content, String startTime, String endTime, Boolean isAllSite) {
 		if (id == null || StringUtils.isAnyBlank(title, content) || isAllSite == null) {
 			throw new ParameterException("参数不能为空");
@@ -464,6 +483,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectSopHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -487,6 +507,7 @@ public class SopController extends Controller {
 	 * @param filter 查询条件
 	 * @date 2019年9月24日 下午3:26:34
 	 */
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectActionLog(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -537,6 +558,7 @@ public class SopController extends Controller {
 	}
 
 
+	@Access({ "SopReviewer", "SopManager" })
 	public void selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String logSiteNumber) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -546,13 +568,32 @@ public class SopController extends Controller {
 		}
 		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, logSiteNumber)));
 	}
-	
-	
+
+
+	@Access({ "SopManager" })
 	public void dispatchFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
 			throw new OperationException("参数不能为空");
 		}
-		renderJson(ResultUtil.succeed(sopService.dispatchFile(list)));
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		renderJson(sopService.dispatchFile(list,userVO));
+	}
+	
+	@Access({ "SopManager" })
+	public void recycleFile(String id) throws Exception {
+		if (StrKit.isBlank(id)) {
+			throw new OperationException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.recycleFile(id)));
+	}
+	
+	@Access({ "SopManager" })
+	public void previewSite(Integer id) throws Exception {
+		if (id==null) {
+			throw new OperationException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.previewSite(id)));
 	}
 
 }

@@ -16,13 +16,13 @@ public class SopSQL {
 
 	public static final String SELECT_LINE_BY_WORKSHOP = "SELECT * FROM line WHERE workshop_id = ?";
 
-	public static final String SELECT_WORKSHOP_AND_FACTORY_ABBREVIATION = "SELECT w.id,w.workshop_name as workshopName,w.workshop_number as workshopNumber,f.abbreviation FROM sop_workshop w, sop_factory f WHERE w.factory_id = f.id ";
+	public static final String SELECT_WORKSHOP_AND_FACTORY_ABBREVIATION = "SELECT w.id,w.workshop_name as workshopName,w.workshop_number as workshopNumber,f.abbreviation,f.id as factoryId FROM sop_workshop w, sop_factory f WHERE w.factory_id = f.id ";
 
 	public static final String SELECT_SITE_BY_LINE = "SELECT * FROM sop_site WHERE line_id = ?";
 
 	public static final String SELECT_SITE_BY_SITENUMBER = "SELECT * FROM sop_site WHERE site_number = ?";
 
-	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,l.line_name as lineName FROM sop_site s, line l WHERE s.line_id = l.id ";
+	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,l.line_name as lineName,l.line_no as 'lineNo' FROM sop_site s, line l WHERE s.line_id = l.id ";
 
 	public static final String SELECT_CUSTOMER_ID_BY_COLUMN = "SELECT id FROM sop_customer WHERE customer_name = ? and factory_id = ? UNION ALL SELECT id FROM sop_customer WHERE customer_number = ? and factory_id = ?";
 
@@ -60,7 +60,7 @@ public class SopSQL {
 	
 	public static final String DELETE_SOPFILEPICTURE_BY_FILEID = "DELETE FROM sop_file_picture WHERE sop_file_id = ?";
 	
-	
+	public static final String SELECT_SOPSITEDISPLAY = "SELECT * FROM sop_site_display";
 	
 	
 	
