@@ -6,8 +6,7 @@ public enum SopFileState {
 	WAITREVIEW_STATE(0,"待审核"),
 	REVIEWED_STATE(1,"已审核"),
 	PLAYING_STATE(2,"播放中"),
-	STOP_PLAY_STATE(3,"停止播放"),
-	INVALID_STATE(4,"已作废");
+	INVALID_STATE(3,"已作废");
 	private Integer id;
 	private String name;
 	

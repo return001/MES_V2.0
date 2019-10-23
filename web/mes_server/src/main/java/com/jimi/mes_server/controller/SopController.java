@@ -397,6 +397,9 @@ public class SopController extends Controller {
 		if (id == null || StrKit.isBlank(state)) {
 			throw new ParameterException("参数不能为空");
 		}
+		if (!state.equals(SopFileState.REVIEWED_STATE.getName()) || !state.equals(SopFileState.INVALID_STATE.getName())) {
+			throw new OperationException("无效的状态修改操作");
+		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
 		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && "SopManager".equals(userVO.getTypeName())) {
@@ -431,12 +434,12 @@ public class SopController extends Controller {
 
 
 	@Access({ "SopManager" })
-	public void addNotice(String title, String content, String startTime, String endTime, Boolean isAllSite) {
-		if (StringUtils.isAnyBlank(title, content) || isAllSite == null) {
+	public void addNotice(String title, String content, String startTime, String endTime) {
+		if (StringUtils.isAnyBlank(title, content)) {
 			throw new ParameterException("参数不能为空");
 		}
 		Map<String, Date> timeMap = getStartAndEndTime(startTime, endTime);
-		if (sopService.addNotice(title, content, timeMap.get("start"), timeMap.get("end"), isAllSite)) {
+		if (sopService.addNotice(title, content, timeMap.get("start"), timeMap.get("end"))) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -470,31 +473,16 @@ public class SopController extends Controller {
 
 
 	@Access({ "SopManager" })
-	public void editNotice(Integer id, String title, String content, String startTime, String endTime, Boolean isAllSite) {
-		if (id == null || StringUtils.isAnyBlank(title, content) || isAllSite == null) {
+	public void editNotice(Integer id, String title, String content, String startTime, String endTime) {
+		if (id == null || StringUtils.isAnyBlank(title, content)) {
 			throw new ParameterException("参数不能为空");
 		}
 		Map<String, Date> timeMap = getStartAndEndTime(startTime, endTime);
-		if (sopService.editNotice(id, title, content, timeMap.get("start"), timeMap.get("end"), isAllSite)) {
+		if (sopService.editNotice(id, title, content, timeMap.get("start"), timeMap.get("end"))) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
-	}
-
-
-	@Access({ "SopReviewer", "SopManager" })
-	public void selectSopHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
-		if (pageNo == null || pageSize == null) {
-			throw new ParameterException("页码和页大小不能为空");
-		}
-		if (pageNo <= 0 || pageSize <= 0) {
-			throw new ParameterException("页码与页大小均需要大于0");
-		}
-		if (fileId == null) {
-			throw new ParameterException("参数不能为空");
-		}
-		renderJson(ResultUtil.succeed(sopService.selectSopHistory(pageNo, pageSize, fileId, startTime, endTime, pushPerson)));
 	}
 
 
@@ -559,14 +547,14 @@ public class SopController extends Controller {
 
 
 	@Access({ "SopReviewer", "SopManager" })
-	public void selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String logSiteNumber) {
+	public void selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String siteNumber, String type) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, logSiteNumber)));
+		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, siteNumber, type)));
 	}
 
 
@@ -577,9 +565,10 @@ public class SopController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		renderJson(sopService.dispatchFile(list,userVO));
+		renderJson(sopService.dispatchFile(list, userVO));
 	}
-	
+
+
 	@Access({ "SopManager" })
 	public void recycleFile(String id) throws Exception {
 		if (StrKit.isBlank(id)) {
@@ -587,13 +576,59 @@ public class SopController extends Controller {
 		}
 		renderJson(ResultUtil.succeed(sopService.recycleFile(id)));
 	}
-	
+
+
 	@Access({ "SopManager" })
 	public void previewSite(Integer id) throws Exception {
-		if (id==null) {
+		if (id == null) {
 			throw new OperationException("参数不能为空");
 		}
 		renderJson(ResultUtil.succeed(sopService.previewSite(id)));
+	}
+
+
+	@Access({ "SopManager" })
+	public void previewDispatchingFile(String list) throws Exception {
+		if (StrKit.isBlank(list)) {
+			throw new OperationException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.previewDispatchingFile(list)));
+	}
+
+
+	@Access({ "SopReviewer", "SopManager" })
+	public void selectFileHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		if (fileId == null) {
+			throw new ParameterException("文件ID不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectFileHistory(pageNo, pageSize, fileId, startTime, endTime, pushPerson)));
+	}
+
+
+	@Access({ "SopReviewer", "SopManager" })
+	public void selectFileHistoryDetail(Integer fileHistoryId) {
+		if (fileHistoryId == null) {
+			throw new ParameterException("文件历史ID不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectFileHistoryDetail(fileHistoryId)));
+	}
+
+
+	@Access({ "SopReviewer", "SopManager" })
+	public void selectNoticeHistory(Integer pageNo, Integer pageSize, String siteNumber, String siteName, String line, String workshop, String factory, String startTime, String endTime, String title, String content, String pushPerson) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectNoticeHistory(pageNo, pageSize, siteNumber, siteName, line, workshop, factory, startTime, endTime, title, content, pushPerson)));
 	}
 
 }

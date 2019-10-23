@@ -27,13 +27,13 @@ public abstract class BaseSopLoginLog<M extends BaseSopLoginLog<M>> extends Mode
 		return getStr("user_name");
 	}
 
-	public M setLogSiteNumber(java.lang.String logSiteNumber) {
-		set("log_site_number", logSiteNumber);
+	public M setSiteNumber(java.lang.String siteNumber) {
+		set("site_number", siteNumber);
 		return (M)this;
 	}
 	
-	public java.lang.String getLogSiteNumber() {
-		return getStr("log_site_number");
+	public java.lang.String getSiteNumber() {
+		return getStr("site_number");
 	}
 
 	public M setTime(java.util.Date time) {
@@ -43,6 +43,15 @@ public abstract class BaseSopLoginLog<M extends BaseSopLoginLog<M>> extends Mode
 	
 	public java.util.Date getTime() {
 		return get("time");
+	}
+
+	public M setType(java.lang.String type) {
+		set("type", type);
+		return (M)this;
+	}
+	
+	public java.lang.String getType() {
+		return getStr("type");
 	}
 
 }

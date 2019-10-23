@@ -4,7 +4,11 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.websocket.Session;
 
 import org.apache.commons.io.FileUtils;
@@ -24,22 +28,26 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
-import com.jimi.mes_server.entity.Notice;
-import com.jimi.mes_server.entity.Picture;
+import com.jimi.mes_server.entity.FileHistoryDetail;
+import com.jimi.mes_server.entity.PreviewInfo;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopSQL;
 import com.jimi.mes_server.entity.sendMessageInfo;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
+import com.jimi.mes_server.entity.vo.PictureVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
-import com.jimi.mes_server.model.FaceInformation;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.SopCustomer;
+import com.jimi.mes_server.model.SopFaceInformation;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopFile;
+import com.jimi.mes_server.model.SopFileHistory;
 import com.jimi.mes_server.model.SopFilePicture;
 import com.jimi.mes_server.model.SopLoginLog;
 import com.jimi.mes_server.model.SopNotice;
+import com.jimi.mes_server.model.SopNoticeHistory;
+import com.jimi.mes_server.model.SopPictureHistory;
 import com.jimi.mes_server.model.SopProductModel;
 import com.jimi.mes_server.model.SopSeriesModel;
 import com.jimi.mes_server.model.SopSite;
@@ -50,6 +58,8 @@ import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
+import com.jimi.mes_server.websocket.entity.Notice;
+import com.jimi.mes_server.websocket.entity.Picture;
 import com.jimi.mes_server.websocket.entity.RequestType;
 
 import cc.darhao.pasta.Pasta;
@@ -539,14 +549,14 @@ public class SopService extends SelectService {
 			throw new OperationException("当前文件信息不存在");
 		}
 		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
-		if (sopSiteDisplays!=null&&!sopSiteDisplays.isEmpty()) {
+		if (sopSiteDisplays != null && !sopSiteDisplays.isEmpty()) {
 			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
 				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
 					continue;
 				}
 				String[] fileIds = sopSiteDisplay.getFiles().split(",");
 				for (String fileId : fileIds) {
-					if (!StrKit.isBlank(fileId)&&id.equals(Integer.parseInt(fileId))) {
+					if (!StrKit.isBlank(fileId) && id.equals(Integer.parseInt(fileId))) {
 						throw new OperationException("当前文件正在被播放中");
 					}
 				}
@@ -609,7 +619,12 @@ public class SopService extends SelectService {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
 		}
 		sqlPara.setSql(sql.toString());
-		return Db.paginate(pageNo, pageSize, sqlPara);
+		Page<Record> records = Db.paginate(pageNo, pageSize, sqlPara);
+		for (Record record : records.getList()) {
+			Integer fileHistoryNumber = Db.queryInt(SopSQL.SELECT_FILEHISTORY_NUMBER, record.getInt("id"));
+			record.set("fileHistoryNumber", fileHistoryNumber);
+		}
+		return records;
 	}
 
 
@@ -622,20 +637,14 @@ public class SopService extends SelectService {
 
 
 	public boolean editFileState(Integer id, String state, LUserAccountVO userVO) {
-		if (!state.equals(SopFileState.REVIEWED_STATE.getName()) || !state.equals(SopFileState.INVALID_STATE.getName())) {
-			throw new OperationException("无效的状态修改操作");
-		}
 		SopFile sopFile = SopFile.dao.findById(id);
 		if (sopFile == null) {
 			throw new OperationException("当前文件信息不存在");
 		}
-		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && !sopFile.getState().equals(SopFileState.WAITREVIEW_STATE.getName())) {
-			throw new OperationException("未审核状态才可以修改为已审核状态");
+		if (state.equals(SopFileState.INVALID_STATE.getName()) && !sopFile.getState().equals(SopFileState.PLAYING_STATE.getName())) {
+			throw new OperationException("播放状态不能修改为作废状态");
 		}
-		if (state.equals(SopFileState.INVALID_STATE.getName()) && !sopFile.getState().equals(SopFileState.STOP_PLAY_STATE.getName())) {
-			throw new OperationException("停止播放状态才可以修改为作废状态");
-		}
-		if (SopFileState.REVIEWED_STATE.getName().equals(state)) {
+		if (SopFileState.REVIEWED_STATE.getName().equals(state) && sopFile.getState().equals(SopFileState.WAITREVIEW_STATE.getName())) {
 			saveFilePicture(sopFile);
 			sopFile.setReviewer(userVO.getName());
 			sopFile.setReviewTime(new Date());
@@ -653,7 +662,7 @@ public class SopService extends SelectService {
 		} else {
 			filePath = PropKit.get("linuxFlagPath");
 		}
-		String path = filePath + Constant.SOP_PICTURE_PATH + sopFile.getFileName() + File.separator;
+		String path = filePath + Constant.SOP_PICTURE_PATH + sopFile.getFileName().replace(" ", "") + File.separator;
 		File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
@@ -680,7 +689,7 @@ public class SopService extends SelectService {
 						picturePath = path + pictureNumber + ".png";
 					}
 					sr.toImage(0, picturePath);
-					savePictureInfo(sopFile, pictureNumber, pictureName, picturePath);
+					savePictureInfo(sopFile, pictureNumber, pictureName + ".png", picturePath);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -721,9 +730,9 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean addNotice(String title, String content, Date startTime, Date endTime, Boolean isAllSite) {
+	public boolean addNotice(String title, String content, Date startTime, Date endTime) {
 		SopNotice sopNotice = new SopNotice();
-		sopNotice.setContent(content).setEndTime(endTime).setIsAllSite(isAllSite).setStartTime(startTime).setTitle(title);
+		sopNotice.setContent(content).setEndTime(endTime).setStartTime(startTime).setTitle(title);
 		return sopNotice.save();
 	}
 
@@ -734,14 +743,14 @@ public class SopService extends SelectService {
 			throw new OperationException("当前通知/注意事项不存在");
 		}
 		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
-		if (sopSiteDisplays!=null&&!sopSiteDisplays.isEmpty()) {
+		if (sopSiteDisplays != null && !sopSiteDisplays.isEmpty()) {
 			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
 				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
 					continue;
 				}
 				String[] noticeIds = sopSiteDisplay.getNotices().split(",");
 				for (String noticeId : noticeIds) {
-					if (!StrKit.isBlank(noticeId)&&id.equals(Integer.parseInt(noticeId))) {
+					if (!StrKit.isBlank(noticeId) && id.equals(Integer.parseInt(noticeId))) {
 						throw new OperationException("当前通知正在被播放中");
 					}
 				}
@@ -784,7 +793,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean editNotice(Integer id, String title, String content, Date startTime, Date endTime, Boolean isAllSite) {
+	public boolean editNotice(Integer id, String title, String content, Date startTime, Date endTime) {
 		SopNotice sopNotice = SopNotice.dao.findById(id);
 		if (sopNotice == null) {
 			throw new OperationException("当前通知/注意事项不存在");
@@ -801,28 +810,7 @@ public class SopService extends SelectService {
 		if (endTime != null) {
 			sopNotice.setEndTime(endTime);
 		}
-		if (isAllSite != null) {
-			sopNotice.setIsAllSite(isAllSite);
-		}
 		return sopNotice.update();
-	}
-
-
-	public Page<Record> selectSopHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
-		SqlPara sqlPara = new SqlPara();
-		StringBuilder sql = new StringBuilder(SopSQL.SELECT_FILE_JOIN_HISTORY);
-		if (!StrKit.isBlank(startTime)) {
-			sql.append(" AND h.push_time >= '").append(startTime).append("'");
-		}
-		if (!StrKit.isBlank(endTime)) {
-			sql.append(" AND h.push_time <= '").append(endTime).append("'");
-		}
-		if (!StrKit.isBlank(pushPerson)) {
-			sql.append(" AND h.push_person LIKE '%").append(pushPerson).append("%'");
-		}
-		sqlPara.setSql(sql.toString());
-		sqlPara.addPara(fileId);
-		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 
@@ -837,22 +825,22 @@ public class SopService extends SelectService {
 
 
 	public boolean addFaceInformation(String userName, String feature) {
-		FaceInformation temp = FaceInformation.dao.findFirst(SopSQL.SELECT_FACEINFORMATION_BY_USERNAME, userName);
+		SopFaceInformation temp = SopFaceInformation.dao.findFirst(SopSQL.SELECT_FACEINFORMATION_BY_USERNAME, userName);
 		if (temp != null) {
 			throw new OperationException("用户名已存在");
 		}
-		FaceInformation faceInformation = new FaceInformation();
+		SopFaceInformation faceInformation = new SopFaceInformation();
 		faceInformation.setFeature(feature).setUserName(userName);
 		return faceInformation.save();
 	}
 
 
-	public List<FaceInformation> getFaceInformation() {
-		return FaceInformation.dao.find(SopSQL.SELECT_FACEINFORMATION);
+	public List<SopFaceInformation> getFaceInformation() {
+		return SopFaceInformation.dao.find(SopSQL.SELECT_FACEINFORMATION);
 	}
 
 
-	public void addLoginLog(String userName, String time, String siteNumber) {
+	public void addLoginLog(String userName, String time, String siteNumber, String type) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date loginTime;
 		try {
@@ -861,19 +849,22 @@ public class SopService extends SelectService {
 			loginTime = new Date();
 		}
 		SopLoginLog sopLoginLog = new SopLoginLog();
-		sopLoginLog.setTime(loginTime).setUserName(userName).setLogSiteNumber(siteNumber).save();
+		sopLoginLog.setTime(loginTime).setUserName(userName).setSiteNumber(siteNumber).setType(type).save();
 	}
 
 
-	public Page<Record> selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String logSiteNumber) {
+	public Page<Record> selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String siteNumber, String type) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_LOGIN_LOG);
 		sql.append(" WHERE 1 = 1 ");
 		if (!StrKit.isBlank(userName)) {
 			sql.append(" AND user_name like '%").append(userName).append("%'");
 		}
-		if (!StrKit.isBlank(logSiteNumber)) {
-			sql.append(" AND log_site_number like '%").append(logSiteNumber).append("%'");
+		if (!StrKit.isBlank(siteNumber)) {
+			sql.append(" AND site_number like '%").append(siteNumber).append("%'");
+		}
+		if (!StrKit.isBlank(type)) {
+			sql.append(" AND type like '%").append(type).append("%'");
 		}
 		if (!StrKit.isBlank(startTime)) {
 			sql.append(" AND time >= '").append(startTime).append("'");
@@ -889,7 +880,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public ResultUtil dispatchFile(String list,LUserAccountVO userVO) {
+	public ResultUtil dispatchFile(String list, LUserAccountVO userVO) {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
@@ -904,7 +895,10 @@ public class SopService extends SelectService {
 			if (sopSite == null) {
 				throw new OperationException("当前站点记录不存在");
 			}
+			Record siteRecord = Db.findFirst(SopSQL.SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY, sendMessageInfo.getId());
 			JSONObject requestBody = new JSONObject();
+			List<SopNoticeHistory> sopNoticeHistories = new ArrayList<SopNoticeHistory>();
+			List<SopPictureHistory> sopPictureHistories = new ArrayList<SopPictureHistory>();
 			if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
 				List<Notice> notices = new ArrayList<Notice>();
 				for (Integer noticeId : sendMessageInfo.getNoticeList()) {
@@ -912,7 +906,10 @@ public class SopService extends SelectService {
 					if (sopNotice == null) {
 						continue;
 					}
-					noticeIdBuilder.append(noticeId+",");
+					SopNoticeHistory sopNoticeHistory = new SopNoticeHistory();
+					sopNoticeHistory.setTitle(sopNotice.getTitle()).setContent(sopNotice.getContent());
+					sopNoticeHistories.add(sopNoticeHistory);
+					noticeIdBuilder.append(noticeId + ",");
 					Notice notice = new Notice();
 					notice.setTitle(sopNotice.getTitle());
 					notice.setContent(sopNotice.getContent());
@@ -929,52 +926,95 @@ public class SopService extends SelectService {
 					if (sopFilePicture == null) {
 						continue;
 					}
-					pictureIdBuilder.append(pictureId+",");
-					fileIdBuilder.append(sopFilePicture.getSopFileId()+",");
+					pictureIdBuilder.append(pictureId + ",");
+					fileIdBuilder.append(sopFilePicture.getSopFileId() + ",");
 					String picturePath = sopFilePicture.getPicturePath();
-					String filePath = picturePath.substring(picturePath.indexOf("mes_document"));
-					String urlPath = filePath.replace("\\", "/");
+					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
 					Picture picture = new Picture();
 					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
 					pictures.add(picture);
+					SopPictureHistory sopPictureHistory = new SopPictureHistory();
+					sopPictureHistory.setPictureName(sopFilePicture.getPictureName());
+					sopPictureHistory.setPictureNumber(sopFilePicture.getPictureNumber());
+					sopPictureHistory.setPicturePath(Constant.SOP_PICTURE_URL + urlPath);
+					sopPictureHistories.add(sopPictureHistory);
 				}
 				requestBody.put("picture", pictures);
 			}
 			requestBody.put("switchInterval", sopSite.getSwitchInterval());
 			JSONObject response = null;
-			Date date = new Date();
+			Date time = new Date();
 			try {
 				response = Pasta.sendRequest(session, RequestType.SHOW, requestBody);
 			} catch (Exception e) {
 				throw new OperationException("发送播放指令到ID为 " + sopSite.getId() + " 的站点出错");
 			}
 			throwExceptionIfExistByResult(response);
+			playingFile(fileIdBuilder);
 			saveSopSiteDisplay(sendMessageInfo.getId(), noticeIdBuilder, pictureIdBuilder, fileIdBuilder);
-			
-			
+			saveSopNoticeHistory(sopNoticeHistories, userVO, time, siteRecord);
+			saveSopFileHistory(sopPictureHistories, fileIdBuilder, userVO, time, siteRecord);
 		}
 		return ResultUtil.succeed();
 	}
-	
 
-	private void saveSopSiteDisplay(Integer siteId,StringBuilder noticeIdBuilder,StringBuilder pictureIdBuilder,StringBuilder fileIdBuilder ) {
-		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findById(siteId);
-		if (sopSiteDisplay==null) {
-			sopSiteDisplay = new SopSiteDisplay();
-			sopSiteDisplay.setSiteId(siteId).setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).save();
-		}else {
-			if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
-				sopSiteDisplay.setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).update();
-			}else {
-				sopSiteDisplay.setFiles(sopSiteDisplay.getFiles()+fileIdBuilder.toString());
-				sopSiteDisplay.setNotices(sopSiteDisplay.getNotices()+noticeIdBuilder.toString());
-				sopSiteDisplay.setPictures(sopSiteDisplay.getPictures()+pictureIdBuilder.toString()).update();
+
+	private void playingFile(StringBuilder fileIdBuilder) {
+		for (String fileId : fileIdBuilder.toString().split(",")) {
+			if (!StrKit.isBlank(fileId)) {
+				editFileState(Integer.parseInt(fileId), SopFileState.PLAYING_STATE.getName(), null);
 			}
 		}
 	}
-	
-	private void saveSopHistory() {
-		
+
+
+	private void saveSopSiteDisplay(Integer siteId, StringBuilder noticeIdBuilder, StringBuilder pictureIdBuilder, StringBuilder fileIdBuilder) {
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
+		if (sopSiteDisplay == null) {
+			sopSiteDisplay = new SopSiteDisplay();
+			sopSiteDisplay.setSiteId(siteId).setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).save();
+		} else {
+			if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
+				sopSiteDisplay.setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).update();
+			} else {
+				sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + fileIdBuilder.toString());
+				sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + noticeIdBuilder.toString());
+				sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + pictureIdBuilder.toString()).update();
+			}
+		}
+	}
+
+
+	private void saveSopNoticeHistory(List<SopNoticeHistory> sopNoticeHistories, LUserAccountVO userVO, Date time, Record siteRecord) {
+		for (SopNoticeHistory sopNoticeHistory : sopNoticeHistories) {
+			sopNoticeHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
+			sopNoticeHistory.setSiteNumber(siteRecord.getStr("site_number")).setWorkshop(siteRecord.getStr("workshop_name"));
+			sopNoticeHistory.setPushPerson(userVO.getName()).setPushTime(time);
+		}
+		Db.batchSave(sopNoticeHistories, sopNoticeHistories.size());
+	}
+
+
+	private void saveSopFileHistory(List<SopPictureHistory> sopPictureHistories, StringBuilder fileIdBuilder, LUserAccountVO userVO, Date time, Record siteRecord) {
+		String[] fileIds = fileIdBuilder.toString().split(",");
+		for (String fileId : fileIds) {
+			if (!StrKit.isBlank(fileId)) {
+				SopFileHistory sopFileHistory = new SopFileHistory();
+				sopFileHistory.setFileId(Integer.parseInt(fileId)).setPushPerson(userVO.getName()).setPushTime(time).save();
+				saveSopPictureHistory(sopPictureHistories, siteRecord, sopFileHistory.getId());
+
+			}
+		}
+	}
+
+
+	private void saveSopPictureHistory(List<SopPictureHistory> sopPictureHistories, Record siteRecord, Integer sopFileHistoryId) {
+		for (SopPictureHistory sopPictureHistory : sopPictureHistories) {
+			sopPictureHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
+			sopPictureHistory.setSiteNumber(siteRecord.getStr("site_number")).setWorkshop(siteRecord.getStr("workshop_name"));
+			sopPictureHistory.setFileHistoryId(sopFileHistoryId);
+		}
+		Db.batchSave(sopPictureHistories, sopPictureHistories.size());
 	}
 
 
@@ -989,7 +1029,7 @@ public class SopService extends SelectService {
 
 	public ResultUtil recycleFile(String id) {
 		for (String siteId : id.split(",")) {
-			SopSite sopSite = SopSite.dao.findById(siteId);
+			SopSite sopSite = SopSite.dao.findById(Integer.parseInt(siteId));
 			if (sopSite == null) {
 				throw new OperationException("ID为 " + siteId + " 的站点信息不存在");
 			}
@@ -1004,14 +1044,229 @@ public class SopService extends SelectService {
 				throw new OperationException("发送取消播放指令到ID为 " + siteId + " 的站点出错");
 			}
 			throwExceptionIfExistByResult(response);
+			stopPlayFile(Integer.parseInt(siteId));
+			removeSopSiteDisplay(sopSite);
 		}
 		return ResultUtil.succeed();
 	}
 
 
-	public Object previewSite(Integer id) {
-		// TODO Auto-generated method stub
+	private void stopPlayFile(Integer siteId) {
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
+		if (sopSiteDisplay != null) {
+			if (!StrKit.isBlank(sopSiteDisplay.getFiles())) {
+				List<SopFile> sopFiles = new ArrayList<>();
+				String[] fileIds = sopSiteDisplay.getFiles().split(",");
+				for (String fileId : fileIds) {
+					SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
+					if (sopFile != null) {
+						sopFile.setState(SopFileState.REVIEWED_STATE.getName());
+						sopFiles.add(sopFile);
+					}
+				}
+				Db.batchUpdate(sopFiles, sopFiles.size());
+			}
+		}
+	}
+
+
+	private void removeSopSiteDisplay(SopSite sopSite) {
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, sopSite.getId());
+		if (sopSiteDisplay != null) {
+			sopSiteDisplay.setFiles(null).setNotices(null).setPictures(null).update();
+		}
+	}
+
+
+	public PreviewInfo previewSite(Integer id) {
+		SopSite sopSite = SopSite.dao.findById(id);
+		if (sopSite == null) {
+			throw new OperationException("当前站点信息不存在");
+		}
+		Record record = Db.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, id);
+		if (record != null) {
+			PreviewInfo previewInfo = new PreviewInfo();
+			String pictureIds = record.getStr("pictures");
+			String noticeIds = record.getStr("notices");
+			if (StringUtils.isAllBlank(pictureIds, noticeIds, record.getStr("files"))) {
+				throw new OperationException("当前站点没有正在播放的内容");
+			}
+			if (!StrKit.isBlank(pictureIds)) {
+				List<Picture> pictures = new ArrayList<>();
+				for (String pictureId : pictureIds.split(",")) {
+					if (StrKit.isBlank(pictureId)) {
+						continue;
+					}
+					SopFilePicture sopFilePicture = SopFilePicture.dao.findById(Integer.parseInt(pictureId));
+					if (sopFilePicture == null) {
+						throw new OperationException("当前站点正在播放的图片不存在");
+					}
+					Picture picture = new Picture();
+					String picturePath = sopFilePicture.getPicturePath();
+					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
+					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
+					pictures.add(picture);
+				}
+				previewInfo.setPictures(pictures);
+			}
+			if (!StrKit.isBlank(noticeIds)) {
+				List<Notice> notices = new ArrayList<>();
+				for (String noticeId : noticeIds.split(",")) {
+					if (StrKit.isBlank(noticeId)) {
+						continue;
+					}
+					SopNotice sopNotice = SopNotice.dao.findById(Integer.parseInt(noticeId));
+					if (sopNotice == null) {
+						throw new OperationException("当前站点正在播放的通知不存在");
+					}
+					Notice notice = new Notice();
+					notice.setContent(sopNotice.getContent());
+					notice.setTitle(sopNotice.getTitle());
+					notices.add(notice);
+				}
+				previewInfo.setNotices(notices);
+			}
+			return previewInfo;
+		}
 		return null;
+	}
+
+
+	public List<PreviewInfo> previewDispatchingFile(String list) {
+		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
+		List<PreviewInfo> previewInfos = new ArrayList<>();
+		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
+			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
+			if (sopSite == null) {
+				throw new OperationException("当前站点记录不存在");
+			}
+			PreviewInfo previewInfo = new PreviewInfo();
+			if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
+				List<Notice> notices = new ArrayList<Notice>();
+				for (Integer noticeId : sendMessageInfo.getNoticeList()) {
+					SopNotice sopNotice = SopNotice.dao.findById(noticeId);
+					if (sopNotice == null) {
+						continue;
+					}
+					Notice notice = new Notice();
+					notice.setTitle(sopNotice.getTitle());
+					notice.setContent(sopNotice.getContent());
+					notices.add(notice);
+				}
+				previewInfo.setNotices(notices);
+			}
+			if (sendMessageInfo.getPictureList() != null && sendMessageInfo.getPictureList().length > 0) {
+				List<Picture> pictures = new ArrayList<Picture>();
+				for (Integer pictureId : sendMessageInfo.getPictureList()) {
+					SopFilePicture sopFilePicture = SopFilePicture.dao.findById(pictureId);
+					if (sopFilePicture == null) {
+						continue;
+					}
+					String picturePath = sopFilePicture.getPicturePath();
+					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
+					Picture picture = new Picture();
+					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
+					pictures.add(picture);
+				}
+				previewInfo.setPictures(pictures);
+			}
+			previewInfos.add(previewInfo);
+		}
+		return previewInfos;
+	}
+
+
+	public Page<Record> selectFileHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_FILEHISTORY_JOIN_FILE);
+		if (!StrKit.isBlank(pushPerson)) {
+			sql.append(" AND h.push_person like '%").append(pushPerson).append("%'");
+		}
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND h.push_time >= '").append(startTime).append("'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND h.push_time <= '").append(endTime).append("'");
+		}
+		sql.append(" ORDER BY h.id");
+		sqlPara.setSql(sql.toString());
+		sqlPara.addPara(fileId);
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public List<FileHistoryDetail> selectFileHistoryDetail(Integer fileHistoryId) {
+		List<SopPictureHistory> sopPictureHistories = SopPictureHistory.dao.find(SopSQL.SELECT_FILEPICTUREHISTORY_BY_FILEHISTORYID, fileHistoryId);
+		if (sopPictureHistories != null && !sopPictureHistories.isEmpty()) {
+			Map<String, FileHistoryDetail> detailMap = new HashMap<String, FileHistoryDetail>();
+			for (SopPictureHistory sopPictureHistory : sopPictureHistories) {
+				FileHistoryDetail detail = new FileHistoryDetail();
+				detail.setFactory(sopPictureHistory.getFactory());
+				detail.setLine(sopPictureHistory.getLine());
+				detail.setSiteName(sopPictureHistory.getSiteName());
+				detail.setSiteNumber(sopPictureHistory.getSiteNumber());
+				detail.setWorkshop(sopPictureHistory.getFactory());
+
+				PictureVO picture = new PictureVO();
+				picture.setPictureName(sopPictureHistory.getPictureName());
+				picture.setPictureNumber(sopPictureHistory.getPictureNumber());
+				picture.setPicturePath(sopPictureHistory.getPicturePath());
+				String key = detail.getSiteName() + detail.getSiteNumber() + detail.getLine() + detail.getWorkshop() + detail.getFactory();
+				if (sopPictureHistory.get(key) == null) {
+					List<PictureVO> pictures = new ArrayList<>();
+					pictures.add(picture);
+					detail.setPictures(pictures);
+					detailMap.put(key, detail);
+				} else {
+					detailMap.get(key).getPictures().add(picture);
+				}
+			}
+			List<FileHistoryDetail> details = new ArrayList<>();
+			for (Entry<String, FileHistoryDetail> detailEntry : detailMap.entrySet()) {
+				details.add(detailEntry.getValue());
+			}
+			return details;
+		}
+		return null;
+	}
+
+
+	public Page<Record> selectNoticeHistory(Integer pageNo, Integer pageSize, String siteNumber, String siteName, String line, String workshop, String factory, String startTime, String endTime, String title, String content, String pushPerson) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_NOTICEHISTORY);
+		if (!StrKit.isBlank(siteNumber)) {
+			sql.append(" AND site_number like '%").append(siteNumber).append("%'");
+		}
+		if (!StrKit.isBlank(siteName)) {
+			sql.append(" AND site_name like '%").append(siteName).append("%'");
+		}
+		if (!StrKit.isBlank(line)) {
+			sql.append(" AND line like '%").append(line).append("%'");
+		}
+		if (!StrKit.isBlank(workshop)) {
+			sql.append(" AND workshop like '%").append(workshop).append("%'");
+		}
+		if (!StrKit.isBlank(factory)) {
+			sql.append(" AND factory like '%").append(factory).append("%'");
+		}
+		if (!StrKit.isBlank(title)) {
+			sql.append(" AND title like '%").append(title).append("%'");
+		}
+		if (!StrKit.isBlank(content)) {
+			sql.append(" AND content like '%").append(content).append("%'");
+		}
+		if (!StrKit.isBlank(pushPerson)) {
+			sql.append(" AND push_person like '%").append(pushPerson).append("%'");
+		}
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND push_time >= '").append(startTime).append("'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND push_time <= '").append(endTime).append("'");
+		}
+		sql.append(" ORDER BY id desc");
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 }

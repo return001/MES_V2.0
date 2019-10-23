@@ -8,6 +8,7 @@ import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.service.SopService;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
+import com.jimi.mes_server.websocket.entity.RequestType;
 
 /**
  * 实例端登录控制器
@@ -38,7 +39,7 @@ public class LoginHandler {
 		}
 		//把ID与Session加入到SessionBox中
 		SessionBox.addSession(loginId, session);
-		sopService.addLoginLog( userName,time,sopSite.getSiteNumber());
+		sopService.addLoginLog( userName,time,sopSite.getSiteNumber(),RequestType.LOGIN);
 		return ResultUtil.succeed("登录成功");
 	}
 	

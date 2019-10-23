@@ -8,4 +8,5 @@ public class RequestType {
 
 	// 对方请求类型
 	public static final String LOGIN = "login";
+	public static final String LOGOUT = "logout";
 }

@@ -54,13 +54,4 @@ public abstract class BaseSopNotice<M extends BaseSopNotice<M>> extends Model<M>
 		return get("end_time");
 	}
 
-	public M setIsAllSite(java.lang.Boolean isAllSite) {
-		set("is_all_site", isAllSite);
-		return (M)this;
-	}
-	
-	public java.lang.Boolean getIsAllSite() {
-		return get("is_all_site");
-	}
-
 }

@@ -50,29 +50,28 @@ public class SopSQL {
 
 	public static final String SELECT_SOPPICTURE_BY_FILEID = "SELECT id,sop_file_id as sopFileId,picture_name as pictureName,picture_number as pictureNumber,picture_path as picturePath FROM sop_file_picture WHERE sop_file_id = ?";
 
-	public static final String SELECT_FACEINFORMATION_BY_USERNAME = "SELECT * FROM face_information WHERE user_name = ?";
+	public static final String SELECT_FACEINFORMATION_BY_USERNAME = "SELECT * FROM sop_face_information WHERE user_name = ?";
 
-	public static final String SELECT_FACEINFORMATION = "SELECT user_name as userName,feature FROM face_information";
+	public static final String SELECT_FACEINFORMATION = "SELECT user_name as userName,feature FROM sop_face_information";
 
 	public static final String SELECT_LOGIN_LOG = "SELECT id,user_name as userName,log_site_number as logSiteNumber,[time] FROM sop_login_log";
 
 	public static final String SELECT_SOPFILEPICTURE_BY_FILEID = "SELECT * FROM sop_file_picture WHERE sop_file_id = ?";
-	
+
 	public static final String DELETE_SOPFILEPICTURE_BY_FILEID = "DELETE FROM sop_file_picture WHERE sop_file_id = ?";
-	
+
 	public static final String SELECT_SOPSITEDISPLAY = "SELECT * FROM sop_site_display";
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	public static final String SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY = "SELECT s.site_name,s.site_number,l.line_name,w.workshop_name,f.abbreviation FROM sop_site s,line l,sop_workshop w,sop_factory f WHERE s.line_id = l.id AND l.factory_id = f.id AND l.workshop_id = w.id AND s.id = ?";
+
+	public static final String SELECT_FILEHISTORY_JOIN_FILE = "SELECT h.id,h.file_id as fileId,h.push_person as pushPerson,h.push_time as pushTime,f.file_number as fileNumber,f.file_name as fileName,f.version,f.product_model as productModel,f.series_model as seriesModel FROM sop_file_history h,sop_file f WHERE h.file_id = f.id AND h.file_id = ? ";
+
+	public static final String SELECT_FILEHISTORY_NUMBER = "SELECT count(*) FROM sop_file_history WHERE file_id = ?";
+
+	public static final String SELECT_FILEPICTUREHISTORY_BY_FILEHISTORYID = "SELECT * FROM sop_picture_history WHERE file_history_id = ?";
+
+	public static final String SELECT_SITEDISPLAY_BY_SITE = "SELECT * FROM sop_site_display WHERE site_id = ?";
+
+	public static final String SELECT_NOTICEHISTORY = "SELECT id,site_name as siteName,site_number as siteNumber,line,workshop,factory,push_time as pushTime,push_person as pushPerson,title,content FROM sop_notice_history";
+
 }
