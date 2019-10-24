@@ -506,10 +506,16 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存文件
+	 * @param uploadFile 上传的文件
+	 * @param path 路径
+	 * @date 2019年10月24日 下午2:42:58
+	 */
 	private void saveFile(UploadFile uploadFile, String path) {
 		File previousFile = new File(path + uploadFile.getOriginalFileName());
 		if (previousFile.exists()) {
-			throw new OperationException("已存在文件名为：" + uploadFile.getOriginalFileName() + " 的文件");
+			previousFile.delete();
 		}
 		File destFile = new File(path + uploadFile.getOriginalFileName());
 		try {
@@ -521,6 +527,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存文件信息
+	 * @param file 文件
+	 * @date 2019年10月24日 下午2:44:15
+	 */
 	private void saveFileInfo(File file) {
 		ExcelHelper excelHelper;
 		try {
@@ -632,7 +643,13 @@ public class SopService extends SelectService {
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SopSQL.SELECT_SOPPICTURE_BY_FILEID);
 		sqlPara.addPara(fileId);
-		return Db.paginate(pageNo, pageSize, sqlPara);
+		Page<Record> records = Db.paginate(pageNo, pageSize, sqlPara);
+		for (Record record : records.getList()) {
+			String picturePath = record.getStr("picturePath");
+			String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
+			record.set("picturePath", Constant.SOP_PICTURE_URL + urlPath);
+		}
+		return records;
 	}
 
 
@@ -641,7 +658,7 @@ public class SopService extends SelectService {
 		if (sopFile == null) {
 			throw new OperationException("当前文件信息不存在");
 		}
-		if (state.equals(SopFileState.INVALID_STATE.getName()) && !sopFile.getState().equals(SopFileState.PLAYING_STATE.getName())) {
+		if (state.equals(SopFileState.INVALID_STATE.getName()) && sopFile.getState().equals(SopFileState.PLAYING_STATE.getName())) {
 			throw new OperationException("播放状态不能修改为作废状态");
 		}
 		if (SopFileState.REVIEWED_STATE.getName().equals(state) && sopFile.getState().equals(SopFileState.WAITREVIEW_STATE.getName())) {
@@ -654,6 +671,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 根据Excel文件的表格生成图片
+	 * @param sopFile Excel文件
+	 * @date 2019年10月24日 下午3:17:43
+	 */
 	private void saveFilePicture(SopFile sopFile) {
 		PropKit.use("properties.ini");
 		String filePath = null;
@@ -698,6 +720,14 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存图片信息
+	 * @param sopFile 所属的文件
+	 * @param pictureNumber 图片编号
+	 * @param pictureName 图片名称
+	 * @param picturePath 图片路径
+	 * @date 2019年10月24日 下午3:18:38
+	 */
 	private void savePictureInfo(SopFile sopFile, String pictureNumber, String pictureName, String picturePath) {
 		SopFilePicture sopFilePicture = new SopFilePicture();
 		sopFilePicture.setPictureName(pictureName).setPictureNumber(pictureNumber).setPicturePath(picturePath).setSopFileId(sopFile.getId()).save();
@@ -720,11 +750,11 @@ public class SopService extends SelectService {
 	public File downloadPicture(Integer id) {
 		SopFilePicture sopFilePicture = SopFilePicture.dao.findById(id);
 		if (sopFilePicture == null) {
-			throw new OperationException("当前文件信息不存在");
+			throw new OperationException("当前图片信息不存在");
 		}
 		File file = new File(sopFilePicture.getPicturePath());
 		if (!file.exists()) {
-			throw new OperationException("文件不存在,请重新上传");
+			throw new OperationException("图片不存在,请重新上传");
 		}
 		return file;
 	}
@@ -760,7 +790,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectNotice(Integer pageNo, Integer pageSize, String title, String content, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Boolean isAllSite) {
+	public Page<Record> selectNotice(Integer pageNo, Integer pageSize, String title, String content, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_SOPNOTICE);
 		sql.append(" WHERE 1 = 1 ");
@@ -781,9 +811,6 @@ public class SopService extends SelectService {
 		}
 		if (!StrKit.isBlank(endTimeTo)) {
 			sql.append(" AND end_time <= '").append(endTimeTo).append("'");
-		}
-		if (isAllSite != null) {
-			sql.append(" AND is_all_site = ").append(isAllSite);
 		}
 		if (StringUtils.endsWith(sql, "1 = 1 ")) {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
@@ -814,8 +841,28 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectActionLog(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		return select(SopSQL.SELECT_ACTIONLOG, pageNo, pageSize, ascBy, descBy, filter);
+	public Page<Record> selectActionLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String uid, String resultCode) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_ACTIONLOG);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(uid)) {
+			sql.append(" AND uid like '%").append(uid).append("%'");
+		}
+		if (!StrKit.isBlank(resultCode)) {
+			sql.append(" AND result_code like '%").append(resultCode).append("%'");
+		}
+		if (!StrKit.isBlank(timeFrom)) {
+			sql.append(" AND consume_time >= '").append(timeFrom).append("'");
+		}
+		if (!StrKit.isBlank(timeTo)) {
+			sql.append(" AND consume_time <= '").append(timeTo).append("'");
+		}
+		if (StringUtils.endsWith(sql, "1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
+		}
+		sql.append(" ORDER BY id DESC");
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 
@@ -889,11 +936,11 @@ public class SopService extends SelectService {
 			StringBuilder fileIdBuilder = new StringBuilder();
 			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
 			if (session == null) {
-				throw new OperationException("客户端不在线或不存在");
+				throw new OperationException("站点ID为 " + sendMessageInfo.getId() + " 的客户端不在线或不存在");
 			}
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
 			if (sopSite == null) {
-				throw new OperationException("当前站点记录不存在");
+				throw new OperationException("ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
 			}
 			Record siteRecord = Db.findFirst(SopSQL.SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY, sendMessageInfo.getId());
 			JSONObject requestBody = new JSONObject();
@@ -959,6 +1006,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 设置文件状态为播放中
+	 * @param fileIdBuilder 文件ID拼成的字符串
+	 * @date 2019年10月24日 下午3:19:21
+	 */
 	private void playingFile(StringBuilder fileIdBuilder) {
 		for (String fileId : fileIdBuilder.toString().split(",")) {
 			if (!StrKit.isBlank(fileId)) {
@@ -968,6 +1020,14 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存站点正在播放的内容
+	 * @param siteId 站点ID
+	 * @param noticeIdBuilder 通知ID拼成的字符串
+	 * @param pictureIdBuilder 图片ID拼成的字符串
+	 * @param fileIdBuilder 文件ID拼成的字符串
+	 * @date 2019年10月24日 下午3:19:52
+	 */
 	private void saveSopSiteDisplay(Integer siteId, StringBuilder noticeIdBuilder, StringBuilder pictureIdBuilder, StringBuilder fileIdBuilder) {
 		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
 		if (sopSiteDisplay == null) {
@@ -985,6 +1045,14 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存通知发放历史
+	 * @param sopNoticeHistories 存储通知发放历史的集合
+	 * @param userVO 用户对象
+	 * @param time 时间
+	 * @param siteRecord 站点信息
+	 * @date 2019年10月24日 下午3:20:28
+	 */
 	private void saveSopNoticeHistory(List<SopNoticeHistory> sopNoticeHistories, LUserAccountVO userVO, Date time, Record siteRecord) {
 		for (SopNoticeHistory sopNoticeHistory : sopNoticeHistories) {
 			sopNoticeHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
@@ -995,6 +1063,15 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 保存文件发放历史
+	 * @param sopPictureHistories 存储图片发放历史的集合
+	 * @param fileIdBuilder 文件ID拼成的字符串
+	 * @param userVO 用户对象
+	 * @param time 时间
+	 * @param siteRecord 站点信息
+	 * @date 2019年10月24日 下午3:21:19
+	 */
 	private void saveSopFileHistory(List<SopPictureHistory> sopPictureHistories, StringBuilder fileIdBuilder, LUserAccountVO userVO, Date time, Record siteRecord) {
 		String[] fileIds = fileIdBuilder.toString().split(",");
 		for (String fileId : fileIds) {
@@ -1002,12 +1079,18 @@ public class SopService extends SelectService {
 				SopFileHistory sopFileHistory = new SopFileHistory();
 				sopFileHistory.setFileId(Integer.parseInt(fileId)).setPushPerson(userVO.getName()).setPushTime(time).save();
 				saveSopPictureHistory(sopPictureHistories, siteRecord, sopFileHistory.getId());
-
 			}
 		}
 	}
 
 
+	/**@author HCJ
+	 * 保存图片发放历史
+	 * @param sopPictureHistories 存储图片发放历史的集合
+	 * @param siteRecord
+	 * @param sopFileHistoryId
+	 * @date 2019年10月24日 下午3:22:19
+	 */
 	private void saveSopPictureHistory(List<SopPictureHistory> sopPictureHistories, Record siteRecord, Integer sopFileHistoryId) {
 		for (SopPictureHistory sopPictureHistory : sopPictureHistories) {
 			sopPictureHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
@@ -1018,6 +1101,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 根据响应内容判断是否抛出异常
+	 * @param response 响应内容
+	 * @date 2019年10月24日 下午3:23:04
+	 */
 	private void throwExceptionIfExistByResult(JSONObject response) {
 		if (response.getInteger("result").toString().equals("200")) {
 			return;
@@ -1051,6 +1139,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 停止站点的文件的播放，设置文件状态
+	 * @param siteId 站点ID
+	 * @date 2019年10月24日 下午3:23:44
+	 */
 	private void stopPlayFile(Integer siteId) {
 		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
 		if (sopSiteDisplay != null) {
@@ -1070,6 +1163,11 @@ public class SopService extends SelectService {
 	}
 
 
+	/**@author HCJ
+	 * 移除站点正在播放的内容
+	 * @param sopSite 站点对象
+	 * @date 2019年10月24日 下午3:25:01
+	 */
 	private void removeSopSiteDisplay(SopSite sopSite) {
 		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, sopSite.getId());
 		if (sopSiteDisplay != null) {
@@ -1127,8 +1225,9 @@ public class SopService extends SelectService {
 				previewInfo.setNotices(notices);
 			}
 			return previewInfo;
+		} else {
+			throw new OperationException("当前站点没有正在播放的内容");
 		}
-		return null;
 	}
 
 
@@ -1212,7 +1311,7 @@ public class SopService extends SelectService {
 				picture.setPictureNumber(sopPictureHistory.getPictureNumber());
 				picture.setPicturePath(sopPictureHistory.getPicturePath());
 				String key = detail.getSiteName() + detail.getSiteNumber() + detail.getLine() + detail.getWorkshop() + detail.getFactory();
-				if (sopPictureHistory.get(key) == null) {
+				if (detailMap.get(key) == null) {
 					List<PictureVO> pictures = new ArrayList<>();
 					pictures.add(picture);
 					detail.setPictures(pictures);

@@ -9,8 +9,10 @@ import com.jimi.mes_server.websocket.entity.Constant;
 import cc.darhao.pasta.PastaLogCatcher;
 import cc.darhao.pasta.RequestResponsePair;
 
-
-public class PackageLogger extends PastaLogCatcher{
+/**发送和接收信息包的日志记录
+ * @date     2019年10月24日 下午1:51:04
+ */
+public class PackageLogger extends PastaLogCatcher {
 
 	@Override
 	public void onRequestFinish(RequestResponsePair info) {
@@ -57,5 +59,5 @@ public class PackageLogger extends PastaLogCatcher{
 		}
 		return log;
 	}
-	
+
 }

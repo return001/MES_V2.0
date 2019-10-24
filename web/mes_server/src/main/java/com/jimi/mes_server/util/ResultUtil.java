@@ -1,5 +1,7 @@
 package com.jimi.mes_server.util;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * 返回一个带result字段和data字段的json，result为succeed时，data为正常数据；result为failed时，data为错误信息
  * <br>
@@ -66,6 +68,12 @@ public class ResultUtil {
 		resultUtil.result = result;
 		resultUtil.data = errorMsg;
 		return resultUtil;
+	}
+
+
+	@Override
+	public String toString() {
+		return JSONObject.toJSONString(this);
 	}
 
 }

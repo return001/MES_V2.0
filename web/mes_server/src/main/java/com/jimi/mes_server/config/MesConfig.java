@@ -37,6 +37,7 @@ import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
 import com.jimi.mes_server.websocket.entity.RequestTypeTimeoutTimeManager;
 import com.jimi.mes_server.websocket.handler.LoginHandler;
+import com.jimi.mes_server.websocket.handler.LogoutHandler;
 import com.jimi.mes_server.websocket.handler.WebSocketHandler;
 import com.jimi.mes_server.websocket.logger.PackageLogger;
 import cc.darhao.pasta.Pasta;
@@ -66,7 +67,7 @@ public class MesConfig extends JFinalConfig {
 
 	@Override
 	public void configHandler(Handlers me) {
-		/*me.add(new WebSocketHandler("^/sopserver"));*/
+		me.add(new WebSocketHandler("^/sopserver"));
 	}
 
 
@@ -160,16 +161,17 @@ public class MesConfig extends JFinalConfig {
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
 		System.out.println("Mes Server is Running now...");
-		/*Pasta.bindRoute("login", LoginHandler.class);
+		Pasta.bindRoute("login", LoginHandler.class);
+		Pasta.bindRoute("logout", LogoutHandler.class);
 	    Pasta.setLogCatcher(new PackageLogger());
-	    Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());*/
+	    Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());
 	}
 
 
 	@Override
 	public void beforeJFinalStop() {
 		TokenBox.stop();
-		/*Pasta.stopRequestTimeoutChecker();*/
+		Pasta.stopRequestTimeoutChecker();
 	}
 
 
