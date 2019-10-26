@@ -75,7 +75,7 @@ public class MesConfig extends JFinalConfig {
 	public void configInterceptor(Interceptors me) {
 		me.addGlobalActionInterceptor(new ErrorLogInterceptor());
 		me.addGlobalActionInterceptor(new CORSInterceptor());
-		/*me.addGlobalActionInterceptor(new AccessInterceptor());*/
+		me.addGlobalActionInterceptor(new AccessInterceptor());
 		me.addGlobalActionInterceptor(new ActionLogInterceptor());
 		me.addGlobalServiceInterceptor(new Tx());
 	}

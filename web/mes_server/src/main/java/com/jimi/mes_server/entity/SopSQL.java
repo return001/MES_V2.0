@@ -40,7 +40,7 @@ public class SopSQL {
 
 	public static final String SELECT_SOPFILE = "SELECT id,file_name as fileName,file_number as fileNumber,version,customer,series_model as seriesModel,product_model as productModel,reviewer,review_time as reviewTime,state FROM sop_file ";
 
-	public static final String SELECT_SOPNOTICE = "SELECT id,content,start_time as startTime,end_time as endTime FROM sop_notice ";
+	public static final String SELECT_SOPNOTICE = "SELECT id,title,content,start_time as startTime,end_time as endTime FROM sop_notice ";
 
 	public static final String SELECT_FILE_JOIN_HISTORY = "SELECT f.file_name as fileName,f.file_number as fileNumber,f.version,f.product_model as productModel,f.series_model as seriesModel,h.id,h.push_time as pushTime,h.push_person as pushPerson,d.detail_site_number as detailSiteNumber,d.detail_site_name as detailSiteName,d.detail_line as detailLine,d.detail_workshop as detailWorkshop,d.detail_factory as detailFactory,d.detail_title as detailTitle,d.detail_content as detailContent,d.picture_number as pictureNumber,d.picture_name as pictureName,d.picture_path as picturePath FROM sop_history h,sop_history_detail d,sop_file f WHERE h.id = d.history_id AND h.file_id = f.id AND h.file_id = ? ";
 

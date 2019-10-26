@@ -17,6 +17,7 @@ import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SopFileState;
+import com.jimi.mes_server.entity.WebUserType;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -240,14 +241,14 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:21:44
 	 */
 	@Access({ "SopReviewer", "SopManager" })
-	public void selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId) {
+	public void selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId, Boolean orderByProcessOrder) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectSite(pageNo, pageSize, siteNumber, siteName, processOrder, lineId)));
+		renderJson(ResultUtil.succeed(sopService.selectSite(pageNo, pageSize, siteNumber, siteName, processOrder, lineId, orderByProcessOrder)));
 	}
 
 
@@ -609,12 +610,12 @@ public class SopController extends Controller {
 		if (id == null || StrKit.isBlank(state)) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (!state.equals(SopFileState.REVIEWED_STATE.getName()) || !state.equals(SopFileState.INVALID_STATE.getName())) {
+		if (!state.equals(SopFileState.REVIEWED_STATE.getName()) && !state.equals(SopFileState.INVALID_STATE.getName())) {
 			throw new OperationException("无效的状态修改操作");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && "SopManager".equals(userVO.getTypeName())) {
+		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && WebUserType.SOPMANAGER.getName().equals(userVO.getTypeName())) {
 			throw new ParameterException("当前角色无法审核文件");
 		}
 		if (sopService.editFileState(id, state, userVO)) {
@@ -752,14 +753,14 @@ public class SopController extends Controller {
 	 * @date 2019年9月24日 下午3:26:34
 	 */
 	@Access({ "SopReviewer", "SopManager" })
-	public void selectActionLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String uid,String resultCode) {
+	public void selectActionLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String uid, String resultCode) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectActionLog(pageNo, pageSize,  timeFrom,  timeTo,  uid, resultCode)));
+		renderJson(ResultUtil.succeed(sopService.selectActionLog(pageNo, pageSize, timeFrom, timeTo, uid, resultCode)));
 	}
 
 

@@ -232,6 +232,14 @@ public class SopService extends SelectService {
 		if (Line.dao.findById(lineId) == null) {
 			throw new OperationException("当前产线不存在");
 		}
+		List<SopSite> sopSites = SopSite.dao.find(SopSQL.SELECT_SITE_BY_LINE, lineId);
+		if (sopSites != null && !sopSites.isEmpty()) {
+			for (SopSite sopSite : sopSites) {
+				if (sopSite.getProcessOrder().equals(processOrder)) {
+					throw new OperationException("ID为 " + lineId + " 的产线下已存在当前的工序顺序");
+				}
+			}
+		}
 		SopSite sopSite = new SopSite();
 		if (playTimes != null) {
 			sopSite.setPlayTimes(playTimes);
@@ -250,7 +258,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId) {
+	public Page<Record> selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId, Boolean orderByProcessOrder) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_SITE_JOIN_LINE);
 		if (!StrKit.isBlank(siteName)) {
@@ -264,6 +272,9 @@ public class SopService extends SelectService {
 		}
 		if (lineId != null) {
 			sql.append(" and s.line_id = ").append(lineId);
+		}
+		if (orderByProcessOrder != null && orderByProcessOrder) {
+			sql.append(" ORDER BY s.process_order ASC ");
 		}
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(pageNo, pageSize, sqlPara);
@@ -285,14 +296,22 @@ public class SopService extends SelectService {
 		if (!StrKit.isBlank(siteName)) {
 			sopSite.setSiteName(siteName);
 		}
-		if (processOrder != null) {
-			sopSite.setProcessOrder(processOrder);
-		}
 		if (lineId != null) {
 			if (Line.dao.findById(lineId) == null) {
 				throw new OperationException("当前产线不存在");
 			}
 			sopSite.setLineId(lineId);
+		}
+		if (processOrder != null) {
+			List<SopSite> sopSites = SopSite.dao.find(SopSQL.SELECT_SITE_BY_LINE, lineId);
+			if (sopSites != null && !sopSites.isEmpty()) {
+				for (SopSite temp : sopSites) {
+					if (temp.getProcessOrder().equals(processOrder) && !temp.getId().equals(id)) {
+						throw new OperationException("ID为 " + lineId + " 的产线下已存在当前的工序顺序");
+					}
+				}
+			}
+			sopSite.setProcessOrder(processOrder);
 		}
 		if (playTimes != null) {
 			sopSite.setPlayTimes(playTimes);
@@ -515,7 +534,7 @@ public class SopService extends SelectService {
 	private void saveFile(UploadFile uploadFile, String path) {
 		File previousFile = new File(path + uploadFile.getOriginalFileName());
 		if (previousFile.exists()) {
-			previousFile.delete();
+			throw new OperationException("已存在名为 " + uploadFile.getOriginalFileName() + " 的文件,请先删除此文件再进行上传操作");
 		}
 		File destFile = new File(path + uploadFile.getOriginalFileName());
 		try {
@@ -631,9 +650,11 @@ public class SopService extends SelectService {
 		}
 		sqlPara.setSql(sql.toString());
 		Page<Record> records = Db.paginate(pageNo, pageSize, sqlPara);
-		for (Record record : records.getList()) {
-			Integer fileHistoryNumber = Db.queryInt(SopSQL.SELECT_FILEHISTORY_NUMBER, record.getInt("id"));
-			record.set("fileHistoryNumber", fileHistoryNumber);
+		if (records.getList() != null && !records.getList().isEmpty()) {
+			for (Record record : records.getList()) {
+				Integer fileHistoryNumber = Db.queryInt(SopSQL.SELECT_FILEHISTORY_NUMBER, record.getInt("id"));
+				record.set("fileHistoryNumber", fileHistoryNumber);
+			}
 		}
 		return records;
 	}
@@ -644,10 +665,12 @@ public class SopService extends SelectService {
 		sqlPara.setSql(SopSQL.SELECT_SOPPICTURE_BY_FILEID);
 		sqlPara.addPara(fileId);
 		Page<Record> records = Db.paginate(pageNo, pageSize, sqlPara);
-		for (Record record : records.getList()) {
-			String picturePath = record.getStr("picturePath");
-			String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
-			record.set("picturePath", Constant.SOP_PICTURE_URL + urlPath);
+		if (records.getList() != null && !records.getList().isEmpty()) {
+			for (Record record : records.getList()) {
+				String picturePath = record.getStr("picturePath");
+				String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
+				record.set("picturePath", urlPath);
+			}
 		}
 		return records;
 	}
@@ -702,10 +725,10 @@ public class SopService extends SelectService {
 					Worksheet worksheet = book.getWorksheets().get(i);
 					SheetRender sr = new SheetRender(worksheet, imgOptions);
 					String pictureNumber = worksheet.getName();
-					String pictureName = worksheet.getName();
+					String pictureName = worksheet.getName().replace("/", "+");
 					String picturePath;
 					if (CommonUtil.isInteger(pictureNumber)) {
-						pictureName = worksheet.getCells().get(4, 4).getStringValue();
+						pictureName = worksheet.getCells().get(4, 4).getStringValue().replace("/", "+");
 						picturePath = path + pictureName + ".png";
 					} else {
 						picturePath = path + pictureNumber + ".png";
@@ -781,7 +804,7 @@ public class SopService extends SelectService {
 				String[] noticeIds = sopSiteDisplay.getNotices().split(",");
 				for (String noticeId : noticeIds) {
 					if (!StrKit.isBlank(noticeId) && id.equals(Integer.parseInt(noticeId))) {
-						throw new OperationException("当前通知正在被播放中");
+						throw new OperationException("当前通知/注意事项正在被播放中");
 					}
 				}
 			}
@@ -983,7 +1006,7 @@ public class SopService extends SelectService {
 					SopPictureHistory sopPictureHistory = new SopPictureHistory();
 					sopPictureHistory.setPictureName(sopFilePicture.getPictureName());
 					sopPictureHistory.setPictureNumber(sopFilePicture.getPictureNumber());
-					sopPictureHistory.setPicturePath(Constant.SOP_PICTURE_URL + urlPath);
+					sopPictureHistory.setPicturePath(urlPath);
 					sopPictureHistories.add(sopPictureHistory);
 				}
 				requestBody.put("picture", pictures);
@@ -1202,7 +1225,7 @@ public class SopService extends SelectService {
 					Picture picture = new Picture();
 					String picturePath = sopFilePicture.getPicturePath();
 					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
-					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
+					picture.setPath(urlPath);
 					pictures.add(picture);
 				}
 				previewInfo.setPictures(pictures);
@@ -1237,7 +1260,7 @@ public class SopService extends SelectService {
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
 			if (sopSite == null) {
-				throw new OperationException("当前站点记录不存在");
+				throw new OperationException("站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
 			}
 			PreviewInfo previewInfo = new PreviewInfo();
 			if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
@@ -1264,7 +1287,7 @@ public class SopService extends SelectService {
 					String picturePath = sopFilePicture.getPicturePath();
 					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
 					Picture picture = new Picture();
-					picture.setPath(Constant.SOP_PICTURE_URL + urlPath);
+					picture.setPath(urlPath);
 					pictures.add(picture);
 				}
 				previewInfo.setPictures(pictures);
@@ -1287,7 +1310,7 @@ public class SopService extends SelectService {
 		if (!StrKit.isBlank(endTime)) {
 			sql.append(" AND h.push_time <= '").append(endTime).append("'");
 		}
-		sql.append(" ORDER BY h.id");
+		sql.append(" ORDER BY h.id DESC");
 		sqlPara.setSql(sql.toString());
 		sqlPara.addPara(fileId);
 		return Db.paginate(pageNo, pageSize, sqlPara);
@@ -1295,6 +1318,10 @@ public class SopService extends SelectService {
 
 
 	public List<FileHistoryDetail> selectFileHistoryDetail(Integer fileHistoryId) {
+		SopFileHistory sopFileHistory = SopFileHistory.dao.findById(fileHistoryId);
+		if (sopFileHistory == null) {
+			throw new OperationException("当前文件历史记录不存在");
+		}
 		List<SopPictureHistory> sopPictureHistories = SopPictureHistory.dao.find(SopSQL.SELECT_FILEPICTUREHISTORY_BY_FILEHISTORYID, fileHistoryId);
 		if (sopPictureHistories != null && !sopPictureHistories.isEmpty()) {
 			Map<String, FileHistoryDetail> detailMap = new HashMap<String, FileHistoryDetail>();

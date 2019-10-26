@@ -188,6 +188,12 @@ public class CommonUtil {
 	}
 
 
+	/**@author HCJ
+	 * 下载文件
+	 * @param file 文件
+	 * @param response 响应
+	 * @date 2019年10月25日 上午11:52:06
+	 */
 	public static void downloadFile(File file, HttpServletResponse response) {
 		try {
 			response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(file.getName(), "utf-8"));
