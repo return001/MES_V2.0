@@ -953,17 +953,21 @@ public class SopService extends SelectService {
 	public ResultUtil dispatchFile(String list, LUserAccountVO userVO) {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		StringBuilder result = new StringBuilder("操作成功的站点编号为 ");
+		int resultLength = result.length();
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
 			StringBuilder noticeIdBuilder = new StringBuilder();
 			StringBuilder pictureIdBuilder = new StringBuilder();
 			StringBuilder fileIdBuilder = new StringBuilder();
-			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
-			if (session == null) {
-				throw new OperationException("站点ID为 " + sendMessageInfo.getId() + " 的客户端不在线或不存在");
-			}
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
 			if (sopSite == null) {
-				throw new OperationException("ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
+				result.append("; 站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
+				continue;
+			}
+			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
+			if (session == null) {
+				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在");
+				continue;
 			}
 			Record siteRecord = Db.findFirst(SopSQL.SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY, sendMessageInfo.getId());
 			JSONObject requestBody = new JSONObject();
@@ -975,6 +979,9 @@ public class SopService extends SelectService {
 					SopNotice sopNotice = SopNotice.dao.findById(noticeId);
 					if (sopNotice == null) {
 						continue;
+					}
+					if (sopNotice.getStartTime().before(new Date())) {
+						throw new OperationException("开始播放时间不能在当前时间之前");
 					}
 					SopNoticeHistory sopNoticeHistory = new SopNoticeHistory();
 					sopNoticeHistory.setTitle(sopNotice.getTitle()).setContent(sopNotice.getContent());
@@ -1017,15 +1024,22 @@ public class SopService extends SelectService {
 			try {
 				response = Pasta.sendRequest(session, RequestType.SHOW, requestBody);
 			} catch (Exception e) {
-				throw new OperationException("发送播放指令到ID为 " + sopSite.getId() + " 的站点出错");
+				result.append("; 发送指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错");
+				continue;
 			}
+			System.err.println("响应：" + response);
 			throwExceptionIfExistByResult(response);
 			playingFile(fileIdBuilder);
 			saveSopSiteDisplay(sendMessageInfo.getId(), noticeIdBuilder, pictureIdBuilder, fileIdBuilder);
 			saveSopNoticeHistory(sopNoticeHistories, userVO, time, siteRecord);
 			saveSopFileHistory(sopPictureHistories, fileIdBuilder, userVO, time, siteRecord);
+			result.append(sopSite.getSiteNumber() + " , ");
 		}
-		return ResultUtil.succeed();
+		if (result.length() > resultLength) {
+			return ResultUtil.failed(412, result.toString());
+		} else {
+			return ResultUtil.succeed();
+		}
 	}
 
 
@@ -1257,42 +1271,44 @@ public class SopService extends SelectService {
 	public List<PreviewInfo> previewDispatchingFile(String list) {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		List<PreviewInfo> previewInfos = new ArrayList<>();
-		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
-			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
-			if (sopSite == null) {
-				throw new OperationException("站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
-			}
-			PreviewInfo previewInfo = new PreviewInfo();
-			if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
-				List<Notice> notices = new ArrayList<Notice>();
-				for (Integer noticeId : sendMessageInfo.getNoticeList()) {
-					SopNotice sopNotice = SopNotice.dao.findById(noticeId);
-					if (sopNotice == null) {
-						continue;
-					}
-					Notice notice = new Notice();
-					notice.setTitle(sopNotice.getTitle());
-					notice.setContent(sopNotice.getContent());
-					notices.add(notice);
+		if (sendMessageInfos != null && !sendMessageInfos.isEmpty()) {
+			for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
+				SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
+				if (sopSite == null) {
+					throw new OperationException("站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
 				}
-				previewInfo.setNotices(notices);
-			}
-			if (sendMessageInfo.getPictureList() != null && sendMessageInfo.getPictureList().length > 0) {
-				List<Picture> pictures = new ArrayList<Picture>();
-				for (Integer pictureId : sendMessageInfo.getPictureList()) {
-					SopFilePicture sopFilePicture = SopFilePicture.dao.findById(pictureId);
-					if (sopFilePicture == null) {
-						continue;
+				PreviewInfo previewInfo = new PreviewInfo();
+				if (sendMessageInfo.getNoticeList() != null && sendMessageInfo.getNoticeList().length > 0) {
+					List<Notice> notices = new ArrayList<Notice>();
+					for (Integer noticeId : sendMessageInfo.getNoticeList()) {
+						SopNotice sopNotice = SopNotice.dao.findById(noticeId);
+						if (sopNotice == null) {
+							continue;
+						}
+						Notice notice = new Notice();
+						notice.setTitle(sopNotice.getTitle());
+						notice.setContent(sopNotice.getContent());
+						notices.add(notice);
 					}
-					String picturePath = sopFilePicture.getPicturePath();
-					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
-					Picture picture = new Picture();
-					picture.setPath(urlPath);
-					pictures.add(picture);
+					previewInfo.setNotices(notices);
 				}
-				previewInfo.setPictures(pictures);
+				if (sendMessageInfo.getPictureList() != null && sendMessageInfo.getPictureList().length > 0) {
+					List<Picture> pictures = new ArrayList<Picture>();
+					for (Integer pictureId : sendMessageInfo.getPictureList()) {
+						SopFilePicture sopFilePicture = SopFilePicture.dao.findById(pictureId);
+						if (sopFilePicture == null) {
+							continue;
+						}
+						String picturePath = sopFilePicture.getPicturePath();
+						String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
+						Picture picture = new Picture();
+						picture.setPath(urlPath);
+						pictures.add(picture);
+					}
+					previewInfo.setPictures(pictures);
+				}
+				previewInfos.add(previewInfo);
 			}
-			previewInfos.add(previewInfo);
 		}
 		return previewInfos;
 	}

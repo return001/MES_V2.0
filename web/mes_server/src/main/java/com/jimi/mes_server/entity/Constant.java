@@ -23,9 +23,9 @@ public class Constant {
 	public final static String FILE_BACKUP_PATH = "mes_document" + File.separator + "backups" + File.separator;
 
 	public final static String FILE_TABLE_PATH = "mes_document" + File.separator + "tables" + File.separator;
-	
+
 	public final static String SOP_FILE_PATH = "mes_document" + File.separator + "sop_files" + File.separator;
-	
+
 	public final static String SOP_PICTURE_PATH = "mes_document" + File.separator + "sop_pictures" + File.separator;
 
 	public static final Integer UNSCHEDULED_ORDERSTATUS = 1;
@@ -97,6 +97,6 @@ public class Constant {
 	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;
 
 	public static final Integer HOUR_TO_SECOND = 3600;
-	
-	public static final String SOP_PICTURE_URL = "http://120.198.40.186:28881/";
+
+	public static final String SOP_PICTURE_URL = "http://10.10.11.130:8080/";
 }

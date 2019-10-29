@@ -99,13 +99,13 @@ public abstract class BaseSopFile<M extends BaseSopFile<M>> extends Model<M> imp
 		return getStr("state");
 	}
 
-	public M setPath (java.lang.String path ) {
-		set("path ", path );
+	public M setPath(java.lang.String path) {
+		set("path", path);
 		return (M)this;
 	}
 	
-	public java.lang.String getPath () {
-		return getStr("path ");
+	public java.lang.String getPath() {
+		return getStr("path");
 	}
 
 }
