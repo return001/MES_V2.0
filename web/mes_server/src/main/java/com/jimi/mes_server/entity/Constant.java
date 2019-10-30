@@ -98,5 +98,5 @@ public class Constant {
 
 	public static final Integer HOUR_TO_SECOND = 3600;
 
-	public static final String SOP_PICTURE_URL = "http://10.10.11.130:8080/";
+	public static final String SOP_PICTURE_URL = "http://10.10.11.130:10080/";
 }

@@ -22,11 +22,11 @@ public class SopSQL {
 
 	public static final String SELECT_SITE_BY_SITENUMBER = "SELECT * FROM sop_site WHERE site_number = ?";
 
-	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,l.line_name as lineName,l.line_no as 'lineNo' FROM sop_site s, line l WHERE s.line_id = l.id ";
+	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,l.line_name as lineName,l.line_no as 'lineNo',l.id as lineId FROM sop_site s, line l WHERE s.line_id = l.id ";
 
 	public static final String SELECT_CUSTOMER_ID_BY_COLUMN = "SELECT id FROM sop_customer WHERE customer_name = ? and factory_id = ? UNION ALL SELECT id FROM sop_customer WHERE customer_number = ? and factory_id = ?";
 
-	public static final String SELECT_CUSTOMER_JOIN_FACTORY = "SELECT c.id,c.customer_name as customerName,c.customer_number as customerNumber,f.abbreviation FROM sop_customer c, sop_factory f WHERE c.factory_id = f.id ";
+	public static final String SELECT_CUSTOMER_JOIN_FACTORY = "SELECT c.id,c.customer_name as customerName,c.customer_number as customerNumber,f.abbreviation,f.id as factoryId FROM sop_customer c, sop_factory f WHERE c.factory_id = f.id ";
 
 	public static final String SELECT_SERIESMODEL_BY_SERIESMODELNAME = "SELECT * FROM sop_series_model WHERE series_model_name = ?";
 
@@ -36,7 +36,7 @@ public class SopSQL {
 
 	public static final String SELECT_PRODUCTMODEL_BY_NAME_ID = "SELECT * FROM sop_product_model WHERE product_model_name = ? AND series_model_id = ?";
 
-	public static final String SELECT_PRODUCTMODEL_JOIN_SERIESMODEL = "SELECT p.id,p.product_model_name as productModelName,s.series_model_name as seriesModelName FROM sop_product_model p, sop_series_model s WHERE p.series_model_id = s.id ";
+	public static final String SELECT_PRODUCTMODEL_JOIN_SERIESMODEL = "SELECT p.id,p.product_model_name as productModelName,s.series_model_name as seriesModelName,s.id AS seriesModelId FROM sop_product_model p, sop_series_model s WHERE p.series_model_id = s.id ";
 
 	public static final String SELECT_SOPFILE = "SELECT id,file_name as fileName,file_number as fileNumber,version,customer,series_model as seriesModel,product_model as productModel,reviewer,review_time as reviewTime,state FROM sop_file ";
 

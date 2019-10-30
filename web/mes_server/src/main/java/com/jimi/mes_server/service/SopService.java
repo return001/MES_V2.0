@@ -63,6 +63,7 @@ import com.jimi.mes_server.websocket.entity.Picture;
 import com.jimi.mes_server.websocket.entity.RequestType;
 
 import cc.darhao.pasta.Pasta;
+import net.coobird.thumbnailator.Thumbnails;
 
 public class SopService extends SelectService {
 
@@ -719,7 +720,7 @@ public class SopService extends SelectService {
 				book = new Workbook(sopFile.getPath());
 				ImageOrPrintOptions imgOptions = new ImageOrPrintOptions();
 				imgOptions.setImageType(ImageType.PNG);
-				imgOptions.setDesiredSize(1920, 1080);
+				imgOptions.setDesiredSize(1024, 768);
 
 				for (int i = 0; i < book.getWorksheets().getCount(); i++) {
 					Worksheet worksheet = book.getWorksheets().get(i);
@@ -734,6 +735,7 @@ public class SopService extends SelectService {
 						picturePath = path + pictureNumber + ".png";
 					}
 					sr.toImage(0, picturePath);
+					/*Thumbnails.of(picturePath).scale(1f).outputQuality(0.5f).outputFormat("jpg").toFile(picturePath);*/
 					savePictureInfo(sopFile, pictureNumber, pictureName + ".png", picturePath);
 				}
 			} catch (Exception e) {
@@ -875,10 +877,10 @@ public class SopService extends SelectService {
 			sql.append(" AND result_code like '%").append(resultCode).append("%'");
 		}
 		if (!StrKit.isBlank(timeFrom)) {
-			sql.append(" AND consume_time >= '").append(timeFrom).append("'");
+			sql.append(" AND time >= '").append(timeFrom).append("'");
 		}
 		if (!StrKit.isBlank(timeTo)) {
-			sql.append(" AND consume_time <= '").append(timeTo).append("'");
+			sql.append(" AND time <= '").append(timeTo).append("'");
 		}
 		if (StringUtils.endsWith(sql, "1 ")) {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
@@ -945,6 +947,7 @@ public class SopService extends SelectService {
 		if (StringUtils.endsWith(sql, "1 = 1 ")) {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
 		}
+		sql.append(" order by id desc");
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
