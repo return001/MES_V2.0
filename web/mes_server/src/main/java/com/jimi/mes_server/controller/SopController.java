@@ -15,6 +15,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.annotation.Access;
+import com.jimi.mes_server.annotation.Log;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.WebUserType;
@@ -536,6 +537,7 @@ public class SopController extends Controller {
 	 * @param id 文件ID
 	 * @date 2019年10月24日 下午2:27:27
 	 */
+	@Log("删除文件，文件的ID是：{id}")
 	@Access({ "SopManager" })
 	public void deleteFile(Integer id) {
 		if (id == null) {
@@ -605,6 +607,7 @@ public class SopController extends Controller {
 	 * @param state 状态
 	 * @date 2019年10月24日 下午2:29:07
 	 */
+	@Log("修改文件状态，文件的ID是：{id}，修改的状态：{state}")
 	@Access({ "SopReviewer", "SopManager" })
 	public void editFileState(Integer id, String state) {
 		if (id == null || StrKit.isBlank(state)) {
@@ -785,6 +788,9 @@ public class SopController extends Controller {
 			if (start.compareTo(end) >= Constant.INTEGER_ZERO) {
 				throw new ParameterException("开始时间不能晚于或者等于结束时间");
 			}
+			if (((end.getTime() - start.getTime()) / (1000 * 3600 * 24)) > 20) {
+				throw new ParameterException("开始时间和结束时间的间隔不能超过20天");
+			}
 		}
 		map.put("start", start);
 		map.put("end", end);
@@ -847,6 +853,7 @@ public class SopController extends Controller {
 	 * @param list 存储需要进行播放内容的json串
 	 * @date 2019年10月24日 下午2:37:11
 	 */
+	@Log("发放文件，JSON信息是：{list}")
 	@Access({ "SopManager" })
 	public void dispatchFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
@@ -863,6 +870,7 @@ public class SopController extends Controller {
 	 * @param id 站点ID
 	 * @date 2019年10月24日 下午2:37:50
 	 */
+	@Log("取消文件的播放，站点ID是：{id}")
 	@Access({ "SopManager" })
 	public void recycleFile(String id) throws Exception {
 		if (StrKit.isBlank(id)) {

@@ -63,7 +63,6 @@ import com.jimi.mes_server.websocket.entity.Picture;
 import com.jimi.mes_server.websocket.entity.RequestType;
 
 import cc.darhao.pasta.Pasta;
-import net.coobird.thumbnailator.Thumbnails;
 
 public class SopService extends SelectService {
 
@@ -557,6 +556,11 @@ public class SopService extends SelectService {
 		try {
 			excelHelper = ExcelHelper.from(file);
 		} catch (Exception e) {
+			file.delete();
+			throw new OperationException("读取文件：" + file.getName() + " 出错，请确认文件内容");
+		}
+		if (!"工艺文件".equals(excelHelper.getString(5, 0))) {
+			file.delete();
 			throw new OperationException("读取文件：" + file.getName() + " 出错，请确认文件内容");
 		}
 		String fileName = excelHelper.getString(10, 2);
@@ -638,7 +642,7 @@ public class SopService extends SelectService {
 			sql.append(" AND reviewer like '%").append(reviewer).append("%'");
 		}
 		if (!StrKit.isBlank(state)) {
-			sql.append(" AND state = ").append(state);
+			sql.append(" AND state = '").append(state).append("'");
 		}
 		if (!StrKit.isBlank(startTime)) {
 			sql.append(" AND review_time >= '").append(startTime).append("'");
@@ -1074,12 +1078,25 @@ public class SopService extends SelectService {
 			sopSiteDisplay = new SopSiteDisplay();
 			sopSiteDisplay.setSiteId(siteId).setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).save();
 		} else {
-			if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
+			if (StringUtils.isAllBlank(sopSiteDisplay.getFiles(),sopSiteDisplay.getPictures(),sopSiteDisplay.getNotices())) {
 				sopSiteDisplay.setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).update();
 			} else {
-				sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + fileIdBuilder.toString());
-				sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + noticeIdBuilder.toString());
-				sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + pictureIdBuilder.toString()).update();
+				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
+					sopSiteDisplay.setFiles(fileIdBuilder.toString());
+				}else {
+					sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + fileIdBuilder.toString());
+				}
+				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
+					sopSiteDisplay.setNotices(noticeIdBuilder.toString());
+				}else {
+					sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + noticeIdBuilder.toString());
+				}
+				if (StrKit.isBlank(sopSiteDisplay.getPictures())) {
+					sopSiteDisplay.setPictures(pictureIdBuilder.toString());
+				}else {
+					sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + pictureIdBuilder.toString());
+				}
+				sopSiteDisplay.update();
 			}
 		}
 	}
