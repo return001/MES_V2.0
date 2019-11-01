@@ -32,12 +32,14 @@ import com.jimi.mes_server.entity.FileHistoryDetail;
 import com.jimi.mes_server.entity.PreviewInfo;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopSQL;
+import com.jimi.mes_server.entity.SopSiteState;
 import com.jimi.mes_server.entity.sendMessageInfo;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.PictureVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.Line;
+import com.jimi.mes_server.model.SopConfirmLog;
 import com.jimi.mes_server.model.SopCustomer;
 import com.jimi.mes_server.model.SopFaceInformation;
 import com.jimi.mes_server.model.SopFactory;
@@ -222,7 +224,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
+	public boolean addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac, String secondMac) {
 		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber) != null) {
 			throw new OperationException("站点编号已存在,请重新输入");
 		}
@@ -245,6 +247,10 @@ public class SopService extends SelectService {
 			sopSite.setPlayTimes(playTimes);
 		}
 		sopSite.setLineId(lineId).setMac(mac).setProcessOrder(processOrder).setSiteName(siteName).setSiteNumber(siteNumber).setSwitchInterval(switchInterval);
+		if (!StrKit.isBlank(secondMac)) {
+			sopSite.setSecondMac(secondMac);
+		}
+		sopSite.setState(SopSiteState.UNCONFIRMED.getName());
 		return sopSite.save();
 	}
 
@@ -281,7 +287,7 @@ public class SopService extends SelectService {
 	}
 
 
-	public boolean editSite(Integer id, String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
+	public boolean editSite(Integer id, String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac, String secondMac) {
 		SopSite sopSite = SopSite.dao.findById(id);
 		if (sopSite == null) {
 			throw new OperationException("当前站点不存在");
@@ -329,6 +335,26 @@ public class SopService extends SelectService {
 			}
 			sopSite.setMac(mac);
 		}
+		if (!StrKit.isBlank(secondMac)) {
+			if (!CommonUtil.isMac(secondMac)) {
+				throw new ParameterException("第二个MAC地址无效");
+			}
+			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, secondMac);
+			if (temp != null && !temp.getId().equals(id)) {
+				throw new OperationException("第二个MAC地址已存在,请重新输入");
+			}
+			sopSite.setSecondMac(secondMac);
+		}
+		return sopSite.update();
+	}
+
+
+	public boolean editSiteState(Integer id, String state, LUserAccountVO userVO) {
+		SopSite sopSite = SopSite.dao.findById(id);
+		if (sopSite == null) {
+			throw new OperationException("当前站点信息不存在");
+		}
+		sopSite.setState(state);
 		return sopSite.update();
 	}
 
@@ -1078,22 +1104,22 @@ public class SopService extends SelectService {
 			sopSiteDisplay = new SopSiteDisplay();
 			sopSiteDisplay.setSiteId(siteId).setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).save();
 		} else {
-			if (StringUtils.isAllBlank(sopSiteDisplay.getFiles(),sopSiteDisplay.getPictures(),sopSiteDisplay.getNotices())) {
+			if (StringUtils.isAllBlank(sopSiteDisplay.getFiles(), sopSiteDisplay.getPictures(), sopSiteDisplay.getNotices())) {
 				sopSiteDisplay.setFiles(fileIdBuilder.toString()).setNotices(noticeIdBuilder.toString()).setPictures(pictureIdBuilder.toString()).update();
 			} else {
 				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
 					sopSiteDisplay.setFiles(fileIdBuilder.toString());
-				}else {
+				} else {
 					sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + fileIdBuilder.toString());
 				}
 				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
 					sopSiteDisplay.setNotices(noticeIdBuilder.toString());
-				}else {
+				} else {
 					sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + noticeIdBuilder.toString());
 				}
 				if (StrKit.isBlank(sopSiteDisplay.getPictures())) {
 					sopSiteDisplay.setPictures(pictureIdBuilder.toString());
-				}else {
+				} else {
 					sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + pictureIdBuilder.toString());
 				}
 				sopSiteDisplay.update();
@@ -1191,6 +1217,7 @@ public class SopService extends SelectService {
 			throwExceptionIfExistByResult(response);
 			stopPlayFile(Integer.parseInt(siteId));
 			removeSopSiteDisplay(sopSite);
+			updateSopSiteState(sopSite);
 		}
 		return ResultUtil.succeed();
 	}
@@ -1230,6 +1257,10 @@ public class SopService extends SelectService {
 		if (sopSiteDisplay != null) {
 			sopSiteDisplay.setFiles(null).setNotices(null).setPictures(null).update();
 		}
+	}
+	
+	private void updateSopSiteState(SopSite sopSite) {
+		sopSite.setState(SopSiteState.UNCONFIRMED.getName()).update();
 	}
 
 
@@ -1429,6 +1460,19 @@ public class SopService extends SelectService {
 		sql.append(" ORDER BY id desc");
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public void addConfirmLog(String userName, String time, String siteNumber, String lineName, String content, String type) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date confirmTime;
+		try {
+			confirmTime = dateFormat.parse(time);
+		} catch (Exception e) {
+			confirmTime = new Date();
+		}
+		SopConfirmLog sopConfirmLog = new SopConfirmLog();
+		sopConfirmLog.setUserName(userName).setTime(confirmTime).setLineName(lineName).setSiteNumber(siteNumber).setContent(content).setType(type).save();
 	}
 
 }

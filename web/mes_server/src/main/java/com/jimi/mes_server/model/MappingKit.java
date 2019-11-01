@@ -48,6 +48,7 @@ public class MappingKit {
 		arp.addMapping("process_group", "id", ProcessGroup.class);
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
 		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
+		arp.addMapping("sop_confirm_log", "id", SopConfirmLog.class);
 		arp.addMapping("sop_customer", "id", SopCustomer.class);
 		arp.addMapping("sop_face_information", "id", SopFaceInformation.class);
 		arp.addMapping("sop_factory", "id", SopFactory.class);

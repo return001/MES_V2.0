@@ -22,7 +22,7 @@ public class SopSQL {
 
 	public static final String SELECT_SITE_BY_SITENUMBER = "SELECT * FROM sop_site WHERE site_number = ?";
 
-	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,l.line_name as lineName,l.line_no as 'lineNo',l.id as lineId FROM sop_site s, line l WHERE s.line_id = l.id ";
+	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,s.second_mac as secondMac,s.state,l.line_name as lineName,l.line_no as 'lineNo',l.id as lineId FROM sop_site s, line l WHERE s.line_id = l.id ";
 
 	public static final String SELECT_CUSTOMER_ID_BY_COLUMN = "SELECT id FROM sop_customer WHERE customer_name = ? and factory_id = ? UNION ALL SELECT id FROM sop_customer WHERE customer_number = ? and factory_id = ?";
 

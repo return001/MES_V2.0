@@ -18,6 +18,7 @@ import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.annotation.Log;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SopFileState;
+import com.jimi.mes_server.entity.SopSiteState;
 import com.jimi.mes_server.entity.WebUserType;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
@@ -198,14 +199,17 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:18:16
 	 */
 	@Access({ "SopManager" })
-	public void addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
+	public void addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac, String secondMac) {
 		if (processOrder == null || lineId == null || switchInterval == null || StringUtils.isAnyBlank(siteNumber, siteName, mac)) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (!CommonUtil.isMac(mac)) {
 			throw new ParameterException("MAC地址无效");
 		}
-		if (sopService.addSite(siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac)) {
+		if (!StrKit.isBlank(secondMac) && !CommonUtil.isMac(secondMac)) {
+			throw new ParameterException("第二个MAC地址无效");
+		}
+		if (sopService.addSite(siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac, secondMac)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -266,11 +270,30 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:22:27
 	 */
 	@Access({ "SopManager" })
-	public void editSite(Integer id, String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac) {
+	public void editSite(Integer id, String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac, String secondMac) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (sopService.editSite(id, siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac)) {
+		if (sopService.editSite(id, siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac, secondMac)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
+
+	@Log("品质检查站点播放信息，站点的ID是：{id}，结果：{state}")
+	@Access({ "SopQcConfirmer" })
+	public void editSiteState(Integer id, String state) {
+		if (id == null || StrKit.isBlank(state)) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (!state.equals(SopSiteState.PASS.getName()) && !state.equals(SopSiteState.FAIL.getName())) {
+			throw new OperationException("无效的状态修改操作");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (sopService.editSiteState(id, state, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

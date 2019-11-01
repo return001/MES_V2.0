@@ -14,7 +14,9 @@ public enum WebUserType {
 	SCHEDULINGSZPC(7, "schedulingSZPC"), 
 	SCHEDULINGJMPMC(8, "schedulingJMPMC"), 
 	SOPMANAGER(9, "SopManager"), 
-	SOPREVIEWER(11, "SopReviewer");
+	SOPREVIEWER(11, "SopReviewer"),
+	SOPQCCONFIRMER(12, "SopQcConfirmer"), 
+	CASUALWORKER(13, "casualWorker");
 
 	private Integer id;
 

@@ -169,7 +169,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
+	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId, Date confirmTimeFrom, Date confirmTimeTo) {
 		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
 			throw new OperationException("产线线别已存在");
 		}
@@ -211,6 +211,7 @@ public class ProductionService {
 			}
 			line.setFactoryId(factoryId);
 		}
+		line.setConfirmTimeFrom(confirmTimeFrom).setConfirmTimeTo(confirmTimeTo);
 		return line.save();
 	}
 
@@ -264,7 +265,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId) {
+	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId, Date confirmTimeFrom, Date confirmTimeTo) {
 		Line line = Line.dao.findById(id);
 		if (line == null) {
 			throw new OperationException("修改失败，产线不存在");
@@ -316,6 +317,7 @@ public class ProductionService {
 			}
 			line.setFactoryId(factoryId);
 		}
+		line.setConfirmTimeFrom(confirmTimeFrom).setConfirmTimeTo(confirmTimeTo);
 		return line.update();
 	}
 

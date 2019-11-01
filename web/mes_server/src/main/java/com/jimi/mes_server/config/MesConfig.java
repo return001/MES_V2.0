@@ -36,6 +36,7 @@ import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
 import com.jimi.mes_server.websocket.entity.RequestTypeTimeoutTimeManager;
+import com.jimi.mes_server.websocket.handler.ConfirmHandler;
 import com.jimi.mes_server.websocket.handler.LoginHandler;
 import com.jimi.mes_server.websocket.handler.LogoutHandler;
 import com.jimi.mes_server.websocket.handler.WebSocketHandler;
@@ -163,6 +164,7 @@ public class MesConfig extends JFinalConfig {
 		System.out.println("Mes Server is Running now...");
 		Pasta.bindRoute("login", LoginHandler.class);
 		Pasta.bindRoute("logout", LogoutHandler.class);
+		Pasta.bindRoute("confirm", ConfirmHandler.class);
 	    Pasta.setLogCatcher(new PackageLogger());
 	    Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());
 	}

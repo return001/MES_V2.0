@@ -4,6 +4,7 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jimi.mes_server.annotation.Access;
+import com.jimi.mes_server.entity.WebUserType;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -35,6 +36,9 @@ public class UserController extends Controller {
 	public void login(String name, String password) {
 		System.out.println("a" + name + password);
 		LUserAccountVO userVO = userService.login(name, password, true);
+		if (WebUserType.CASUALWORKER.getName().equals(userVO.getTypeName())) {
+			throw new ParameterException("当前角色无法登陆");
+		}
 		// 判断重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if (tokenId != null) {

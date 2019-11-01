@@ -81,4 +81,22 @@ public abstract class BaseSopSite<M extends BaseSopSite<M>> extends Model<M> imp
 		return getStr("mac");
 	}
 
+	public M setSecondMac(java.lang.String secondMac) {
+		set("second_mac", secondMac);
+		return (M)this;
+	}
+	
+	public java.lang.String getSecondMac() {
+		return getStr("second_mac");
+	}
+
+	public M setState(java.lang.String state) {
+		set("state", state);
+		return (M)this;
+	}
+	
+	public java.lang.String getState() {
+		return getStr("state");
+	}
+
 }

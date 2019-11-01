@@ -99,4 +99,22 @@ public abstract class BaseLine<M extends BaseLine<M>> extends Model<M> implement
 		return getInt("factory_id");
 	}
 
+	public M setConfirmTimeFrom(java.util.Date confirmTimeFrom) {
+		set("confirm_time_from", confirmTimeFrom);
+		return (M)this;
+	}
+	
+	public java.util.Date getConfirmTimeFrom() {
+		return get("confirm_time_from");
+	}
+
+	public M setConfirmTimeTo(java.util.Date confirmTimeTo) {
+		set("confirm_time_to", confirmTimeTo);
+		return (M)this;
+	}
+	
+	public java.util.Date getConfirmTimeTo() {
+		return get("confirm_time_to");
+	}
+
 }
