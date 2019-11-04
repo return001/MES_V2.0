@@ -248,6 +248,9 @@ public class SopService extends SelectService {
 		}
 		sopSite.setLineId(lineId).setMac(mac).setProcessOrder(processOrder).setSiteName(siteName).setSiteNumber(siteNumber).setSwitchInterval(switchInterval);
 		if (!StrKit.isBlank(secondMac)) {
+			if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, secondMac) != null) {
+				throw new OperationException("第二个MAC地址已存在,请重新输入");
+			}
 			sopSite.setSecondMac(secondMac);
 		}
 		sopSite.setState(SopSiteState.UNCONFIRMED.getName());
@@ -339,11 +342,14 @@ public class SopService extends SelectService {
 			if (!CommonUtil.isMac(secondMac)) {
 				throw new ParameterException("第二个MAC地址无效");
 			}
-			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, secondMac);
+			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, secondMac);
 			if (temp != null && !temp.getId().equals(id)) {
 				throw new OperationException("第二个MAC地址已存在,请重新输入");
 			}
-			sopSite.setSecondMac(secondMac);
+		}
+		sopSite.setSecondMac(secondMac);
+		if (sopSite.getMac().equals(sopSite.getSecondMac())) {
+			throw new OperationException("两个MAC地址不能相同");
 		}
 		return sopSite.update();
 	}
@@ -354,6 +360,7 @@ public class SopService extends SelectService {
 		if (sopSite == null) {
 			throw new OperationException("当前站点信息不存在");
 		}
+		addConfirmLog(userVO.getName(), new Date(), sopSite, state, Constant.QC_CONFIRMATION);
 		sopSite.setState(state);
 		return sopSite.update();
 	}
@@ -987,19 +994,23 @@ public class SopService extends SelectService {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		StringBuilder result = new StringBuilder("操作成功的站点编号为 ");
-		int resultLength = result.length();
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
 			StringBuilder noticeIdBuilder = new StringBuilder();
 			StringBuilder pictureIdBuilder = new StringBuilder();
 			StringBuilder fileIdBuilder = new StringBuilder();
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
 			if (sopSite == null) {
-				result.append("; 站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在");
+				result.append("; 站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在 ");
+				continue;
+			}
+			Line line = Line.dao.findById(sopSite.getLineId());
+			if (line == null) {
+				result.append("; 产线ID为 " + sopSite.getLineId() + " 的产线记录不存在 ");
 				continue;
 			}
 			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
 			if (session == null) {
-				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在");
+				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ");
 				continue;
 			}
 			Record siteRecord = Db.findFirst(SopSQL.SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY, sendMessageInfo.getId());
@@ -1052,15 +1063,15 @@ public class SopService extends SelectService {
 				requestBody.put("picture", pictures);
 			}
 			requestBody.put("switchInterval", sopSite.getSwitchInterval());
+			requestBody.put("timeLength", line.getTimeLength());
 			JSONObject response = null;
 			Date time = new Date();
 			try {
 				response = Pasta.sendRequest(session, RequestType.SHOW, requestBody);
 			} catch (Exception e) {
-				result.append("; 发送指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错");
+				result.append("; 发送指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ");
 				continue;
 			}
-			System.err.println("响应：" + response);
 			throwExceptionIfExistByResult(response);
 			playingFile(fileIdBuilder);
 			saveSopSiteDisplay(sendMessageInfo.getId(), noticeIdBuilder, pictureIdBuilder, fileIdBuilder);
@@ -1068,8 +1079,9 @@ public class SopService extends SelectService {
 			saveSopFileHistory(sopPictureHistories, fileIdBuilder, userVO, time, siteRecord);
 			result.append(sopSite.getSiteNumber() + " , ");
 		}
-		if (result.length() > resultLength) {
-			return ResultUtil.failed(412, result.toString());
+		String resultString = result.toString();
+		if (resultString.contains(";")) {
+			return ResultUtil.failed(412, resultString);
 		} else {
 			return ResultUtil.succeed();
 		}
@@ -1199,27 +1211,37 @@ public class SopService extends SelectService {
 
 
 	public ResultUtil recycleFile(String id) {
+		StringBuilder result = new StringBuilder("操作成功的站点编号为 ");
 		for (String siteId : id.split(",")) {
 			SopSite sopSite = SopSite.dao.findById(Integer.parseInt(siteId));
 			if (sopSite == null) {
-				throw new OperationException("ID为 " + siteId + " 的站点信息不存在");
+				result.append("; 站点ID为 " + siteId + " 的站点记录不存在 ");
+				continue;
 			}
 			Session session = SessionBox.getSessionById(Integer.parseInt(siteId));
 			if (session == null) {
-				throw new OperationException("ID为 " + siteId + " 的站点客户端不在线或不存在");
+				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ");
+				continue;
 			}
 			JSONObject response = null;
 			try {
 				response = Pasta.sendRequest(session, RequestType.CANCELSHOW, null);
 			} catch (Exception e) {
-				throw new OperationException("发送取消播放指令到ID为 " + siteId + " 的站点出错");
+				result.append("; 发送取消播放指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ");
+				continue;
 			}
 			throwExceptionIfExistByResult(response);
 			stopPlayFile(Integer.parseInt(siteId));
 			removeSopSiteDisplay(sopSite);
 			updateSopSiteState(sopSite);
+			result.append(sopSite.getSiteNumber() + " , ");
 		}
-		return ResultUtil.succeed();
+		String resultString = result.toString();
+		if (resultString.contains(";")) {
+			return ResultUtil.failed(412, resultString);
+		} else {
+			return ResultUtil.succeed();
+		}
 	}
 
 
@@ -1258,7 +1280,8 @@ public class SopService extends SelectService {
 			sopSiteDisplay.setFiles(null).setNotices(null).setPictures(null).update();
 		}
 	}
-	
+
+
 	private void updateSopSiteState(SopSite sopSite) {
 		sopSite.setState(SopSiteState.UNCONFIRMED.getName()).update();
 	}
@@ -1463,16 +1486,73 @@ public class SopService extends SelectService {
 	}
 
 
-	public void addConfirmLog(String userName, String time, String siteNumber, String lineName, String content, String type) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date confirmTime;
-		try {
-			confirmTime = dateFormat.parse(time);
-		} catch (Exception e) {
-			confirmTime = new Date();
+	/**@author HCJ
+	 * 添加确认日志
+	 * @param userName 用户名
+	 * @param confirmTime 确认时间
+	 * @param sopSite 站点
+	 * @param state 状态
+	 * @param type 类型
+	 * @date 2019年11月4日 下午5:47:17
+	 */
+	public void addConfirmLog(String userName, Date confirmTime, SopSite sopSite, String state, String type) {
+		StringBuilder content = new StringBuilder();
+		Line line = Line.dao.findById(sopSite.getLineId());
+		String lineName = null;
+		if (line != null && !StrKit.isBlank(line.getLineName())) {
+			lineName = line.getLineName();
+		}
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, sopSite.getId());
+		if (sopSiteDisplay != null && !StrKit.isBlank(sopSiteDisplay.getPictures())) {
+			content.append("该站点播放的图片：");
+			for (String pictureId : sopSiteDisplay.getPictures().split(",")) {
+				if (StrKit.isBlank(pictureId)) {
+					continue;
+				}
+				SopFilePicture sopFilePicture = SopFilePicture.dao.findById(Integer.parseInt(pictureId));
+				if (sopFilePicture != null) {
+					content.append(sopFilePicture.getPictureName() + " , ");
+				}
+			}
+			if (Constant.QC_CONFIRMATION.equals(type)) {
+				content.append("品质").append(state);
+			} else {
+				content.append("操作员确认成功");
+			}
 		}
 		SopConfirmLog sopConfirmLog = new SopConfirmLog();
-		sopConfirmLog.setUserName(userName).setTime(confirmTime).setLineName(lineName).setSiteNumber(siteNumber).setContent(content).setType(type).save();
+		sopConfirmLog.setUserName(userName).setTime(confirmTime).setLineName(lineName).setSiteNumber(sopSite.getSiteNumber()).setContent(content.toString()).setType(type).save();
+	}
+
+
+	public Page<Record> selectConfirmLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String siteNumber, String lineName, String type) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_CONFIRM_LOG);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(userName)) {
+			sql.append(" AND user_name like '%").append(userName).append("%'");
+		}
+		if (!StrKit.isBlank(siteNumber)) {
+			sql.append(" AND site_number like '%").append(siteNumber).append("%'");
+		}
+		if (!StrKit.isBlank(lineName)) {
+			sql.append(" AND line_name like '%").append(lineName).append("%'");
+		}
+		if (!StrKit.isBlank(type)) {
+			sql.append(" AND type = '").append(type).append("'");
+		}
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND time >= '").append(startTime).append("'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND time <= '").append(endTime).append("'");
+		}
+		if (StringUtils.endsWith(sql, "1 = 1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
+		}
+		sql.append(" order by id desc");
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 }

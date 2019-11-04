@@ -3,11 +3,11 @@ package com.jimi.mes_server.websocket.handler;
 import javax.websocket.Session;
 
 import com.jfinal.aop.Enhancer;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.service.SopService;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
-import com.jimi.mes_server.websocket.entity.RequestType;
 
 /**客户端登录处理器
  * @author   HCJ
@@ -33,7 +33,7 @@ public class LoginHandler {
 		}
 		// 把ID与Session加入到SessionBox中
 		SessionBox.addSession(loginId, session);
-		sopService.addLoginLog(userName, time, sopSite.getSiteNumber(), RequestType.LOGIN);
+		sopService.addLoginLog(userName, time, sopSite.getSiteNumber(), Constant.CLIENT_LOGIN);
 		return ResultUtil.succeed("登录成功");
 	}
 

@@ -206,8 +206,13 @@ public class SopController extends Controller {
 		if (!CommonUtil.isMac(mac)) {
 			throw new ParameterException("MAC地址无效");
 		}
-		if (!StrKit.isBlank(secondMac) && !CommonUtil.isMac(secondMac)) {
-			throw new ParameterException("第二个MAC地址无效");
+		if (!StrKit.isBlank(secondMac)) {
+			if (!CommonUtil.isMac(secondMac)) {
+				throw new ParameterException("第二个MAC地址无效");
+			}
+			if (secondMac.equals(mac)) {
+				throw new ParameterException("两个MAC地址不能相同");
+			}
 		}
 		if (sopService.addSite(siteNumber, siteName, processOrder, lineId, playTimes, switchInterval, mac, secondMac)) {
 			renderJson(ResultUtil.succeed());
@@ -877,7 +882,7 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:37:11
 	 */
 	@Log("发放文件，JSON信息是：{list}")
-	@Access({ "SopManager" })
+	@Access({ "SopManager", "SopQcConfirmer" })
 	public void dispatchFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
 			throw new OperationException("参数不能为空");
@@ -894,12 +899,12 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:37:50
 	 */
 	@Log("取消文件的播放，站点ID是：{id}")
-	@Access({ "SopManager" })
+	@Access({ "SopManager", "SopQcConfirmer" })
 	public void recycleFile(String id) throws Exception {
 		if (StrKit.isBlank(id)) {
 			throw new OperationException("参数不能为空");
 		}
-		renderJson(ResultUtil.succeed(sopService.recycleFile(id)));
+		renderJson(sopService.recycleFile(id));
 	}
 
 
@@ -908,7 +913,7 @@ public class SopController extends Controller {
 	 * @param id 站点ID
 	 * @date 2019年10月24日 下午2:38:13
 	 */
-	@Access({ "SopManager" })
+	@Access({ "SopManager", "SopQcConfirmer" })
 	public void previewSite(Integer id) throws Exception {
 		if (id == null) {
 			throw new OperationException("参数不能为空");
@@ -922,7 +927,7 @@ public class SopController extends Controller {
 	 * @param list 存储需要进行预览内容的json串
 	 * @date 2019年10月24日 下午2:38:42
 	 */
-	@Access({ "SopManager" })
+	@Access({ "SopManager", "SopQcConfirmer" })
 	public void previewDispatchingFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
 			throw new OperationException("参数不能为空");
@@ -995,6 +1000,30 @@ public class SopController extends Controller {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
 		renderJson(ResultUtil.succeed(sopService.selectNoticeHistory(pageNo, pageSize, siteNumber, siteName, line, workshop, factory, startTime, endTime, title, content, pushPerson)));
+	}
+
+
+	/**@author HCJ
+	 * 查询确认日志
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param timeFrom 起始时间
+	 * @param timeTo 结束时间
+	 * @param userName 用户名
+	 * @param siteNumber 站点编号
+	 * @param lineName 产线名称
+	 * @param type 类型
+	 * @date 2019年11月4日 下午5:46:18
+	 */
+	@Access({ "SopReviewer", "SopManager" })
+	public void selectConfirmLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String userName, String siteNumber, String lineName, String type) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectConfirmLog(pageNo, pageSize, timeFrom, timeTo, userName, siteNumber, lineName, type)));
 	}
 
 }

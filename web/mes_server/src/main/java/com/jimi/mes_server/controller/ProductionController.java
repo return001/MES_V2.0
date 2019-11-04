@@ -8,12 +8,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -190,12 +186,14 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:47:17
 	 */
 	@Access({ "engineer", "SopManager" })
-	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId,String confirmTimeFrom,String confirmTimeTo ) {
-		if (StringUtils.isAnyBlank(lineNo, lineName,confirmTimeFrom,confirmTimeTo)) {
+	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId, Integer timeLength) {
+		if (StringUtils.isAnyBlank(lineNo, lineName) || timeLength == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		Map<String, Date> timeMap = getStartAndEndTime(confirmTimeFrom, confirmTimeTo);
-		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId,timeMap.get("start"),timeMap.get("end"))) {
+		if (timeLength > Constant.MINUTE_OF_TWENTY_ONE_DAYS) {
+			throw new ParameterException("确认时间的长度超过限制");
+		}
+		if (productionService.addLine(lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId, timeLength)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -247,12 +245,14 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:49:46
 	 */
 	@Access({ "engineer", "SopManager" })
-	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId,String confirmTimeFrom,String confirmTimeTo) {
-		if (id == null||StringUtils.isAnyBlank(confirmTimeFrom,confirmTimeTo)) {
+	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId, Integer timeLength) {
+		if (id == null || timeLength == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		Map<String, Date> timeMap = getStartAndEndTime(confirmTimeFrom, confirmTimeTo);
-		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId,timeMap.get("start"),timeMap.get("end"))) {
+		if (timeLength > Constant.MINUTE_OF_TWENTY_ONE_DAYS) {
+			throw new ParameterException("确认时间的长度超过限制");
+		}
+		if (productionService.editLine(id, lineNo, lineName, lineRemark, lineDirector, lineEngineer, lineQc, processGroup, workshopId, factoryId, timeLength)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -1033,29 +1033,5 @@ public class ProductionController extends Controller {
 		}
 		renderJson(ResultUtil.succeed(productionService.checkCompleteTime(schedulingQuantity, start, end, lineChangeTime, capacity)));
 	}
-	
-	/**@author HCJ
-	 * 将字符串类型的开始和结束时间转换为date类型，存储到map
-	 * @param startTime 开始时间
-	 * @param endTime 结束时间
-	 * @date 2019年10月24日 下午2:33:58
-	 */
-	private Map<String, Date> getStartAndEndTime(String startTime, String endTime) {
-		Map<String, Date> map = Collections.synchronizedMap(new HashMap<String, Date>());
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date start = null;
-		Date end = null;
-			try {
-				start = dateFormat.parse(startTime);
-				end = dateFormat.parse(endTime);
-			} catch (ParseException e) {
-				throw new ParameterException("时间格式出错");
-			}
-			if (start.compareTo(end) >= Constant.INTEGER_ZERO) {
-				throw new ParameterException("开始时间不能晚于或者等于结束时间");
-			}
-		map.put("start", start);
-		map.put("end", end);
-		return map;
-	}
+
 }

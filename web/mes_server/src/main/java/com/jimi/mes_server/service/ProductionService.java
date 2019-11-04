@@ -162,14 +162,12 @@ public class ProductionService {
 			}
 			processGroup.setGroupName(groupName);
 		}
-		if (groupRemark != null) {
-			processGroup.setGroupRemark(groupRemark);
-		}
+		processGroup.setGroupRemark(groupRemark);
 		return processGroup.update();
 	}
 
 
-	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId, Date confirmTimeFrom, Date confirmTimeTo) {
+	public boolean addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId, Integer timeLength) {
 		if (Line.dao.findFirst(SQL.SELECT_LINE_BY_LINENO, lineNo) != null) {
 			throw new OperationException("产线线别已存在");
 		}
@@ -199,19 +197,19 @@ public class ProductionService {
 			}
 			line.setProcessGroup(processGroup);
 		}
-		if (workshopId!=null) {
-			if (SopWorkshop.dao.findById(workshopId)== null) {
+		if (workshopId != null) {
+			if (SopWorkshop.dao.findById(workshopId) == null) {
 				throw new OperationException("车间不存在");
 			}
 			line.setWorkshopId(workshopId);
 		}
-		if (factoryId!=null) {
-			if (SopFactory.dao.findById(factoryId)== null) {
+		if (factoryId != null) {
+			if (SopFactory.dao.findById(factoryId) == null) {
 				throw new OperationException("工厂不存在");
 			}
 			line.setFactoryId(factoryId);
 		}
-		line.setConfirmTimeFrom(confirmTimeFrom).setConfirmTimeTo(confirmTimeTo);
+		line.setTimeLength(timeLength);
 		return line.save();
 	}
 
@@ -222,14 +220,14 @@ public class ProductionService {
 			throw new OperationException("删除失败，产线不存在");
 		}
 		SopSite sopSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_LINE, id);
-		if (sopSite!=null) {
+		if (sopSite != null) {
 			throw new OperationException("当前产线被站点所引用，请先删除站点，再进行操作");
 		}
 		return line.delete();
 	}
 
 
-	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup, Integer workshopId,Integer factoryId,String lineDirector,String lineEngineer,String lineQc) {
+	public Page<Record> selectLine(String lineNo, String lineName, Integer processGroup, Integer workshopId, Integer factoryId, String lineDirector, String lineEngineer, String lineQc) {
 		StringBuilder filter = new StringBuilder();
 		if (!StrKit.isBlank(lineNo)) {
 			filter.append(" and line_no like '%" + lineNo + "%'");
@@ -250,13 +248,13 @@ public class ProductionService {
 			filter.append(" and line.factory_id = " + factoryId);
 		}
 		if (!StrKit.isBlank(lineDirector)) {
-			filter.append(" and a.Name like '%" + lineDirector+"%'");
+			filter.append(" and a.Name like '%" + lineDirector + "%'");
 		}
 		if (!StrKit.isBlank(lineEngineer)) {
-			filter.append(" and b.Name like '%" + lineEngineer+"%'");
+			filter.append(" and b.Name like '%" + lineEngineer + "%'");
 		}
 		if (!StrKit.isBlank(lineQc)) {
-			filter.append(" and c.Name like '%" + lineQc+"%'");
+			filter.append(" and c.Name like '%" + lineQc + "%'");
 		}
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " order by processGroup ";
@@ -265,7 +263,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup,Integer workshopId,Integer factoryId, Date confirmTimeFrom, Date confirmTimeTo) {
+	public boolean editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId, Integer timeLength) {
 		Line line = Line.dao.findById(id);
 		if (line == null) {
 			throw new OperationException("修改失败，产线不存在");
@@ -283,9 +281,6 @@ public class ProductionService {
 				throw new OperationException("产线名称已存在");
 			}
 			line.setLineName(lineName);
-		}
-		if (lineRemark != null) {
-			line.setLineRemark(lineRemark);
 		}
 		if (lineDirector != null) {
 			checkUserById(lineDirector);
@@ -305,19 +300,20 @@ public class ProductionService {
 			}
 			line.setProcessGroup(processGroup);
 		}
-		if (workshopId!=null) {
-			if (SopWorkshop.dao.findById(workshopId)==null) {
+		if (workshopId != null) {
+			if (SopWorkshop.dao.findById(workshopId) == null) {
 				throw new OperationException("车间不存在");
 			}
 			line.setWorkshopId(workshopId);
 		}
-		if (factoryId!=null) {
-			if (SopFactory.dao.findById(factoryId)==null) {
+		if (factoryId != null) {
+			if (SopFactory.dao.findById(factoryId) == null) {
 				throw new OperationException("工厂不存在");
 			}
 			line.setFactoryId(factoryId);
 		}
-		line.setConfirmTimeFrom(confirmTimeFrom).setConfirmTimeTo(confirmTimeTo);
+		line.setLineRemark(lineRemark);
+		line.setTimeLength(timeLength);
 		return line.update();
 	}
 
@@ -403,15 +399,13 @@ public class ProductionService {
 			}
 			process.setProcessName(processName);
 		}
-		if (processRemark != null) {
-			process.setProcessRemark(processRemark);
-		}
 		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
 				throw new OperationException("工序组不存在");
 			}
 			process.setProcessGroup(processGroup);
 		}
+		process.setProcessRemark(processRemark);
 		return process.update();
 	}
 
@@ -479,9 +473,7 @@ public class ProductionService {
 		if (!StrKit.isBlank(computerName)) {
 			lineComputer.setComputerName(computerName);
 		}
-		if (remark != null) {
-			lineComputer.setRemark(remark);
-		}
+		lineComputer.setRemark(remark);
 		return lineComputer.update();
 	}
 
@@ -589,9 +581,7 @@ public class ProductionService {
 			}
 			firstModelCapacity.setCapacity(capacity);
 		}
-		if (remark != null) {
-			firstModelCapacity.setRemark(remark);
-		}
+		firstModelCapacity.setRemark(remark);
 		firstModelCapacity.update();
 		if (rhythm != null && processGroup != null && softModel != null) {
 			Db.update(SQL.UPDATE_MODELCAPACITY_BY_MODEL_PROCESS, rhythm, processGroup, softModel);
@@ -1155,9 +1145,7 @@ public class ProductionService {
 		if (capacity != null) {
 			schedulingPlan.setCapacity(capacity);
 		}
-		if (remark != null) {
-			schedulingPlan.setRemark(remark);
-		}
+		schedulingPlan.setRemark(remark);
 		if (schedulingQuantity != null) {
 			schedulingPlan.setSchedulingQuantity(schedulingQuantity);
 		}
