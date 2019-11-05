@@ -1042,13 +1042,17 @@ public class SopService extends SelectService {
 			}
 			if (sendMessageInfo.getPictureList() != null && sendMessageInfo.getPictureList().length > 0) {
 				List<Picture> pictures = new ArrayList<Picture>();
+				boolean isFileAdd = false;
 				for (Integer pictureId : sendMessageInfo.getPictureList()) {
 					SopFilePicture sopFilePicture = SopFilePicture.dao.findById(pictureId);
 					if (sopFilePicture == null) {
 						continue;
 					}
 					pictureIdBuilder.append(pictureId + ",");
-					fileIdBuilder.append(sopFilePicture.getSopFileId() + ",");
+					if (!isFileAdd) {
+						fileIdBuilder.append(sopFilePicture.getSopFileId() + ",");
+						isFileAdd = true;
+					}
 					String picturePath = sopFilePicture.getPicturePath();
 					String urlPath = picturePath.substring(picturePath.indexOf("mes_document")).replace("\\", "/");
 					Picture picture = new Picture();
@@ -1096,7 +1100,10 @@ public class SopService extends SelectService {
 	private void playingFile(StringBuilder fileIdBuilder) {
 		for (String fileId : fileIdBuilder.toString().split(",")) {
 			if (!StrKit.isBlank(fileId)) {
-				editFileState(Integer.parseInt(fileId), SopFileState.PLAYING_STATE.getName(), null);
+				SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
+				if (sopFile != null && !SopFileState.PLAYING_STATE.getName().equals(sopFile.getState())) {
+					sopFile.setState(SopFileState.PLAYING_STATE.getName()).update();
+				}
 			}
 		}
 	}
@@ -1122,17 +1129,35 @@ public class SopService extends SelectService {
 				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
 					sopSiteDisplay.setFiles(fileIdBuilder.toString());
 				} else {
-					sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + fileIdBuilder.toString());
+					StringBuilder newFileId = new StringBuilder();
+					for (String fileId : fileIdBuilder.toString().split(",")) {
+						if (!StrKit.isBlank(fileId) && !sopSiteDisplay.getFiles().contains(fileId)) {
+							newFileId.append(fileId + ",");
+						}
+					}
+					sopSiteDisplay.setFiles(sopSiteDisplay.getFiles() + newFileId.toString());
 				}
 				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
 					sopSiteDisplay.setNotices(noticeIdBuilder.toString());
 				} else {
-					sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + noticeIdBuilder.toString());
+					StringBuilder newNoticeId = new StringBuilder();
+					for (String noticeId : noticeIdBuilder.toString().split(",")) {
+						if (!StrKit.isBlank(noticeId) && !sopSiteDisplay.getNotices().contains(noticeId)) {
+							newNoticeId.append(noticeId + ",");
+						}
+					}
+					sopSiteDisplay.setNotices(sopSiteDisplay.getNotices() + newNoticeId.toString());
 				}
 				if (StrKit.isBlank(sopSiteDisplay.getPictures())) {
 					sopSiteDisplay.setPictures(pictureIdBuilder.toString());
 				} else {
-					sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + pictureIdBuilder.toString());
+					StringBuilder newPictureId = new StringBuilder();
+					for (String pictureId : pictureIdBuilder.toString().split(",")) {
+						if (!StrKit.isBlank(pictureId) && !sopSiteDisplay.getPictures().contains(pictureId)) {
+							newPictureId.append(pictureId + ",");
+						}
+					}
+					sopSiteDisplay.setPictures(sopSiteDisplay.getPictures() + newPictureId.toString());
 				}
 				sopSiteDisplay.update();
 			}
@@ -1149,12 +1174,18 @@ public class SopService extends SelectService {
 	 * @date 2019年10月24日 下午3:20:28
 	 */
 	private void saveSopNoticeHistory(List<SopNoticeHistory> sopNoticeHistories, LUserAccountVO userVO, Date time, Record siteRecord) {
-		for (SopNoticeHistory sopNoticeHistory : sopNoticeHistories) {
-			sopNoticeHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
-			sopNoticeHistory.setSiteNumber(siteRecord.getStr("site_number")).setWorkshop(siteRecord.getStr("workshop_name"));
+		/*for (SopNoticeHistory sopNoticeHistory : sopNoticeHistories) {
+			sopNoticeHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name"));
+			sopNoticeHistory.setWorkshop(siteRecord.getStr("workshop_name"));
 			sopNoticeHistory.setPushPerson(userVO.getName()).setPushTime(time);
 		}
-		Db.batchSave(sopNoticeHistories, sopNoticeHistories.size());
+		Db.batchSave(sopNoticeHistories, sopNoticeHistories.size());*/
+		if (sopNoticeHistories != null && !sopNoticeHistories.isEmpty()) {
+			SopNoticeHistory sopNoticeHistory = sopNoticeHistories.get(0);
+			sopNoticeHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name"));
+			sopNoticeHistory.setWorkshop(siteRecord.getStr("workshop_name"));
+			sopNoticeHistory.setPushPerson(userVO.getName()).setPushTime(time).save();
+		}
 	}
 
 
@@ -1188,7 +1219,7 @@ public class SopService extends SelectService {
 	 */
 	private void saveSopPictureHistory(List<SopPictureHistory> sopPictureHistories, Record siteRecord, Integer sopFileHistoryId) {
 		for (SopPictureHistory sopPictureHistory : sopPictureHistories) {
-			sopPictureHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName("site_name");
+			sopPictureHistory.setFactory(siteRecord.getStr("abbreviation")).setLine(siteRecord.getStr("line_name")).setSiteName(siteRecord.getStr("site_name"));
 			sopPictureHistory.setSiteNumber(siteRecord.getStr("site_number")).setWorkshop(siteRecord.getStr("workshop_name"));
 			sopPictureHistory.setFileHistoryId(sopFileHistoryId);
 		}
@@ -1257,10 +1288,12 @@ public class SopService extends SelectService {
 				List<SopFile> sopFiles = new ArrayList<>();
 				String[] fileIds = sopSiteDisplay.getFiles().split(",");
 				for (String fileId : fileIds) {
-					SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
-					if (sopFile != null) {
-						sopFile.setState(SopFileState.REVIEWED_STATE.getName());
-						sopFiles.add(sopFile);
+					if (!StrKit.isBlank(fileId)) {
+						SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
+						if (sopFile != null) {
+							sopFile.setState(SopFileState.REVIEWED_STATE.getName());
+							sopFiles.add(sopFile);
+						}
 					}
 				}
 				Db.batchUpdate(sopFiles, sopFiles.size());
@@ -1447,15 +1480,16 @@ public class SopService extends SelectService {
 	}
 
 
-	public Page<Record> selectNoticeHistory(Integer pageNo, Integer pageSize, String siteNumber, String siteName, String line, String workshop, String factory, String startTime, String endTime, String title, String content, String pushPerson) {
+	public Page<Record> selectNoticeHistory(Integer pageNo, Integer pageSize, /*String siteNumber, String siteName, */String line, String workshop, String factory, String timeFrom, String timeTo, String title, String content, String pushPerson) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SopSQL.SELECT_NOTICEHISTORY);
-		if (!StrKit.isBlank(siteNumber)) {
+		sql.append(" WHERE 1 = 1 ");
+		/*if (!StrKit.isBlank(siteNumber)) {
 			sql.append(" AND site_number like '%").append(siteNumber).append("%'");
 		}
 		if (!StrKit.isBlank(siteName)) {
 			sql.append(" AND site_name like '%").append(siteName).append("%'");
-		}
+		}*/
 		if (!StrKit.isBlank(line)) {
 			sql.append(" AND line like '%").append(line).append("%'");
 		}
@@ -1474,11 +1508,14 @@ public class SopService extends SelectService {
 		if (!StrKit.isBlank(pushPerson)) {
 			sql.append(" AND push_person like '%").append(pushPerson).append("%'");
 		}
-		if (!StrKit.isBlank(startTime)) {
-			sql.append(" AND push_time >= '").append(startTime).append("'");
+		if (!StrKit.isBlank(timeFrom)) {
+			sql.append(" AND push_time >= '").append(timeFrom).append("'");
 		}
-		if (!StrKit.isBlank(endTime)) {
-			sql.append(" AND push_time <= '").append(endTime).append("'");
+		if (!StrKit.isBlank(timeTo)) {
+			sql.append(" AND push_time <= '").append(timeTo).append("'");
+		}
+		if (StringUtils.endsWith(sql, "1 = 1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
 		}
 		sql.append(" ORDER BY id desc");
 		sqlPara.setSql(sql.toString());
@@ -1517,11 +1554,16 @@ public class SopService extends SelectService {
 			if (Constant.QC_CONFIRMATION.equals(type)) {
 				content.append("品质").append(state);
 			} else {
-				content.append("操作员确认成功");
+				content.append(type);
 			}
 		}
 		SopConfirmLog sopConfirmLog = new SopConfirmLog();
-		sopConfirmLog.setUserName(userName).setTime(confirmTime).setLineName(lineName).setSiteNumber(sopSite.getSiteNumber()).setContent(content.toString()).setType(type).save();
+		if (Constant.QC_CONFIRMATION.equals(type)) {
+			sopConfirmLog.setType("品质" + state);
+		} else {
+			sopConfirmLog.setType(type);
+		}
+		sopConfirmLog.setUserName(userName).setTime(confirmTime).setLineName(lineName).setSiteNumber(sopSite.getSiteNumber()).setContent(content.toString()).save();
 	}
 
 

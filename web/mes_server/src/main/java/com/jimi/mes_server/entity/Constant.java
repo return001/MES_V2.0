@@ -98,9 +98,11 @@ public class Constant {
 
 	public static final Integer HOUR_TO_SECOND = 3600;
 
-	public static final String SOP_PICTURE_URL = "http://10.10.11.130:10080/";
+	public static String SOP_PICTURE_URL;
 
-	public static final String OPERATOR_CONFIRMATION = "操作员确认";
+	public static final String OPERATOR_CONFIRMATION_SUCCEED = "操作员确认成功";
+
+	public static final String OPERATOR_CONFIRMATION_TIME_OUT = "操作员确认超时";
 
 	public static final String QC_CONFIRMATION = "品质确认";
 
@@ -109,4 +111,9 @@ public class Constant {
 	public static final String CLIENT_LOGIN = "登录";
 
 	public static final String CLIENT_LOGOUT = "退出登录";
+
+
+	public static void setSopPictureUrl(String value) {
+		SOP_PICTURE_URL = value;
+	}
 }

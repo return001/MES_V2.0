@@ -24,6 +24,7 @@ import com.jimi.mes_server.controller.ReworkController;
 import com.jimi.mes_server.controller.SopController;
 import com.jimi.mes_server.controller.TestController;
 import com.jimi.mes_server.controller.UserController;
+import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
 import com.jimi.mes_server.interceptor.ActionLogInterceptor;
 import com.jimi.mes_server.interceptor.CORSInterceptor;
@@ -141,6 +142,7 @@ public class MesConfig extends JFinalConfig {
 		me.add(arp3);
 		Cron4jPlugin cron = new Cron4jPlugin(PropKit.use("taskConfig.txt"), "cron4j");
 		me.add(cron);
+		Constant.setSopPictureUrl(PropKit.get("sopPictureUrl"));
 	}
 
 
@@ -165,8 +167,8 @@ public class MesConfig extends JFinalConfig {
 		Pasta.bindRoute("login", LoginHandler.class);
 		Pasta.bindRoute("logout", LogoutHandler.class);
 		Pasta.bindRoute("confirm", ConfirmHandler.class);
-	    Pasta.setLogCatcher(new PackageLogger());
-	    Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());
+		Pasta.setLogCatcher(new PackageLogger());
+		Pasta.startRequestTimeoutChecker(RequestTypeTimeoutTimeManager.getMap());
 	}
 
 

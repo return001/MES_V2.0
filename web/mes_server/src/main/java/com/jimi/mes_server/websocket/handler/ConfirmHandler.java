@@ -12,12 +12,16 @@ import com.jimi.mes_server.service.SopService;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
 
+/**客户端确认处理器
+ * @author   HCJ
+ * @date     2019年11月5日 下午4:47:30
+ */
 public class ConfirmHandler {
 
 	private SopService sopService = Enhancer.enhance(SopService.class);
 
 
-	public ResultUtil confirm(Session session, String userName, String time) {
+	public ResultUtil confirm(Session session, String userName, String time, String result) {
 		// 如果SessionBox中不存在该Session,则提示请先登录
 		Integer siteId = SessionBox.getIdBySession(session);
 		if (siteId == null) {
@@ -35,7 +39,13 @@ public class ConfirmHandler {
 		} catch (Exception e) {
 			confirmTime = new Date();
 		}
-		sopService.addConfirmLog(userName, confirmTime, sopSite, null, Constant.OPERATOR_CONFIRMATION);
+		String type = null;
+		if (result.equals("succeed")) {
+			type = Constant.OPERATOR_CONFIRMATION_SUCCEED;
+		} else if (result.equals("time_out")) {
+			type = Constant.OPERATOR_CONFIRMATION_TIME_OUT;
+		}
+		sopService.addConfirmLog(userName, confirmTime, sopSite, null, type);
 		return ResultUtil.succeed("接收确认成功");
 	}
 }

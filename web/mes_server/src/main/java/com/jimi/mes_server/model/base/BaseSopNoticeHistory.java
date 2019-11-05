@@ -18,24 +18,6 @@ public abstract class BaseSopNoticeHistory<M extends BaseSopNoticeHistory<M>> ex
 		return getInt("id");
 	}
 
-	public M setSiteNumber(java.lang.String siteNumber) {
-		set("site_number", siteNumber);
-		return (M)this;
-	}
-	
-	public java.lang.String getSiteNumber() {
-		return getStr("site_number");
-	}
-
-	public M setSiteName(java.lang.String siteName) {
-		set("site_name", siteName);
-		return (M)this;
-	}
-	
-	public java.lang.String getSiteName() {
-		return getStr("site_name");
-	}
-
 	public M setLine(java.lang.String line) {
 		set("line", line);
 		return (M)this;

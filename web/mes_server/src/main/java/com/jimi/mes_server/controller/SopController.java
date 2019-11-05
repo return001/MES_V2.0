@@ -865,14 +865,14 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:36:09
 	 */
 	@Access({ "SopReviewer", "SopManager" })
-	public void selectLoginLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String siteNumber, String type) {
+	public void selectLoginLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String userName, String siteNumber, String type) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, startTime, endTime, userName, siteNumber, type)));
+		renderJson(ResultUtil.succeed(sopService.selectLoginLog(pageNo, pageSize, timeFrom, timeTo, userName, siteNumber, type)));
 	}
 
 
@@ -984,22 +984,22 @@ public class SopController extends Controller {
 	 * @param line 产线
 	 * @param workshop 车间
 	 * @param factory 工厂
-	 * @param startTime 开始播放时间
-	 * @param endTime 结束播放时间
+	 * @param timeFrom 开始播放时间
+	 * @param timeTo 结束播放时间
 	 * @param title 标题
 	 * @param content 内容
 	 * @param pushPerson 推送人
 	 * @date 2019年10月24日 下午2:41:22
 	 */
 	@Access({ "SopReviewer", "SopManager" })
-	public void selectNoticeHistory(Integer pageNo, Integer pageSize, String siteNumber, String siteName, String line, String workshop, String factory, String startTime, String endTime, String title, String content, String pushPerson) {
+	public void selectNoticeHistory(Integer pageNo, Integer pageSize, /*String siteNumber, String siteName,*/ String line, String workshop, String factory, String timeFrom, String timeTo, String title, String content, String pushPerson) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(sopService.selectNoticeHistory(pageNo, pageSize, siteNumber, siteName, line, workshop, factory, startTime, endTime, title, content, pushPerson)));
+		renderJson(ResultUtil.succeed(sopService.selectNoticeHistory(pageNo, pageSize, /*siteNumber, siteName, */line, workshop, factory, timeFrom, timeTo, title, content, pushPerson)));
 	}
 
 
