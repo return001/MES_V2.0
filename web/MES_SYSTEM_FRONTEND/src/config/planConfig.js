@@ -307,6 +307,18 @@ export const orderDetailsTableColumns = [
 
 /*产线设置*/
 export const lineQueryOptions = [
+  // {
+  //   type: 'select',
+  //   async: true,
+  //   label: '所属工厂',
+  //   key: 'factoryId'
+  // },
+  {
+    type: 'select',
+    async: true,
+    label: '所属车间',
+    key: 'workshopId'
+  },
   {
     type: 'select',
     async: true,
@@ -356,6 +368,11 @@ export const lineEditOptions = [
   },
   {
     type: 'text',
+    label: '待确认超时时长(分钟)',
+    key: 'timeLength'
+  },
+  {
+    type: 'text',
     label: '产线备注',
     key: 'lineRemark'
   }
@@ -363,15 +380,31 @@ export const lineEditOptions = [
 
 export const lineEditOptionsRules = {
   'processGroup': [{required: true, message: '请选择工序组', trigger: 'change'}],
+  // 'factoryId': [{required: true, message: '请选择所属工厂', trigger: 'change'}],
+  'workshopId': [{required: true, message: '请选择所属车间', trigger: 'change'}],
   'lineNo': [{required: true, message: '请输入线别', trigger: 'blur'}],
   'lineName': [{required: true, message: '请输入产线名称', trigger: 'blur'}],
   'lineDirector': [{required: true, message: '请输入并选择负责人', trigger: 'blur'}],
   'lineEngineer': [{required: true, message: '请输入并选择产线工程', trigger: 'blur'}],
   'lineQc': [{required: true, message: '请输入并选择产线品质', trigger: 'blur'}],
+  'timeLength': [
+    {required: true, message: '请输入时长', trigger: 'blur'},
+    {pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur'},
+  ],
 };
 
 
 export const lineTableColumns = [
+  {
+    'label': '工厂',
+    'key': 'factoryName',
+    'min-width': '120px'
+  },
+  {
+    'label': '车间',
+    'key': 'workshopName',
+    'min-width': '100px'
+  },
   {
     'label': '工序组',
     'key': 'groupName',
@@ -401,6 +434,11 @@ export const lineTableColumns = [
     'label': '产线品质',
     'key': 'qcName',
     'min-width': '100px'
+  },
+  {
+    'label': '待确认超时时长(分钟)',
+    'key': 'timeLength',
+    'min-width': '110px'
   },
   {
     'label': '备注',

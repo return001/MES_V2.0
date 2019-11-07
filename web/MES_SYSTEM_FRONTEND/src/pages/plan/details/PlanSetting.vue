@@ -421,7 +421,7 @@
     },
     data() {
       return {
-        queryOptions: [],
+        queryOptions: planQueryOptions,
         thisQueryOptions: {},
         //预加载信息
         processSelectGroupSrc: [],
@@ -430,11 +430,11 @@
         lineSelectGroupSrc: [],
         lineSelectGroup: [],
         tableData: [],
-        tableColumns: [],
+        tableColumns: planTableColumns,
         tableDetailsOrderData: [],
         tableDetailsUserData: [],
-        tableDetailsOrderColumns: [],
-        tableDetailsUserColumns: [],
+        tableDetailsOrderColumns: planTableExtraOrderColumns,
+        tableDetailsUserColumns: planTableExtraUserColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 10,
@@ -476,7 +476,7 @@
         showingStashImportingSetting: {}, //显示暂存的订单详情
         importingOrderData: [],
         importingOrderDataTemp: [], //用于临时存放已配置的数据
-        importingOrderColumns: [],
+        importingOrderColumns: orderUnscheduledTableColumns,
         importingOrderSelection: null,
         importingOrderSettingGroup: [
           {
@@ -519,9 +519,8 @@
       }
     },
     async created() {
-      await this.dataPreload();
       this.initQueryOptions();
-      this.initTableColumns();
+      await this.dataPreload();
       //加载表格
       this.activeProcessGroup = this.processGroupSelectGroup[0].id;
       this.fetchData();
@@ -529,6 +528,11 @@
     mounted() {
       eventBus.$off('closeEditPanel'); //关闭编辑界面
       eventBus.$off('setTimeoutHighlight'); //设置超时项目高亮
+      eventBus.$off('partlyReload');
+
+      eventBus.$on('partlyReload', () => {
+        this.partlyReload();
+      });
 
       eventBus.$on('closeEditPanel', () => {
         this.totallyEditing = false;
@@ -548,6 +552,21 @@
       })
     },
     methods: {
+      partlyReload() {
+        this.isPending = false;
+        let _partlyReload = stashData => {
+          let obj = {};
+          stashData.forEach(item => {
+            obj[item] = this.$data[item]
+          });
+          this.$store.commit('setStashData', obj);
+          Object.assign(this.$data, this.$options.data());
+          Object.assign(this.$data, this.$store.state.stashData);
+          this.queryData();
+          this.$store.commit('setStashData', {});
+        };
+        _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc','lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup' ])
+      },
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -563,7 +582,6 @@
       },
 
       initQueryOptions: function () {
-        this.queryOptions = JSON.parse(JSON.stringify(planQueryOptions));
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {
             type: item.type,
@@ -575,15 +593,6 @@
           value: ''
         })
       },
-      initTableColumns: function () {
-        this.$set(this.$data, 'tableColumns', planTableColumns);
-        this.$set(this.$data, 'tableDetailsOrderColumns', planTableExtraOrderColumns);
-        this.$set(this.$data, 'tableDetailsUserColumns', planTableExtraUserColumns);
-        this.$set(this.$data, 'importingOrderColumns', orderUnscheduledTableColumns);
-        // this.tableColumns = JSON.parse(JSON.stringify(orderUnscheduledTableColumns));
-        // this.importingOrderColumns = JSON.parse(JSON.stringify(orderUnscheduledTableColumns));
-      },
-
       dataPreload: async function () {
         return new Promise(resolve => {
           Promise.all([this.fetchLine(), this.fetchProcessGroup(), this.fetchProcess()]).then(() => {
@@ -686,7 +695,7 @@
             }
           };
           Object.keys(this.thisQueryOptions).forEach(item => {
-            if (this.thisQueryOptions[item].value !== "") {
+            if (!!this.thisQueryOptions[item].value || this.thisQueryOptions[item].value === 0) {
               if (this.thisQueryOptions[item].type === 'timeRange') {
                 options.data[item + 'From'] = this.thisQueryOptions[item].value[0];
                 options.data[item + 'To'] = this.thisQueryOptions[item].value[1]
@@ -888,7 +897,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess("操作成功");
-              this.reload()
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -958,7 +968,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess("修改成功");
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -993,7 +1004,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('删除成功');
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -1139,7 +1151,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
   }

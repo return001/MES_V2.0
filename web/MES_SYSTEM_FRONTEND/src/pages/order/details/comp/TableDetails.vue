@@ -198,7 +198,7 @@
       },
 
 
-      /*编辑/复制条目 $on at @/pages/setting/details/comp/EditPanel*/
+      /*编辑/复制条目 $on at @/pages/order/details/comp/EditPanel*/
       editOrder: function (type, val) {
         eventBus.$emit('editOrder', [type, val])
       },

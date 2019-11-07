@@ -34,7 +34,7 @@
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
         <div class="query-comp-container"
-             v-if="permissionControl(['engineer'])">
+             v-if="permissionControl(['engineer', 'SopManager'])">
           <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
         </div>
       </div>
@@ -65,7 +65,7 @@
           label="操作"
           width="160"
           fixed="right"
-          v-if="permissionControl(['engineer'])"
+          v-if="permissionControl(['engineer', 'SopManager'])"
         >
           <template slot-scope="scope">
             <el-tooltip content="上移" placement="top">
@@ -155,11 +155,11 @@
     inject: ['reload'],
     data() {
       return {
-        queryOptions: [],
+        queryOptions: processQueryOptions,
         thisQueryOptions: {},
         processGroupSelectGroup: [],
         tableData: [],
-        tableColumns: [],
+        tableColumns: processTableColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 65535,
@@ -168,17 +168,12 @@
         /*编辑新增工序组*/
         isProcessEditing: false,
         processEditType: '',
-        processEditOptionsData: {}
+        processEditOptionsData: {},
+        processEditOptions: processEditOptions,
+        processEditOptionsRules: processEditOptionsRules,
       }
     },
     computed: {
-      processEditOptions: function () {
-        return processEditOptions
-      },
-
-      processEditOptionsRules: function () {
-        return processEditOptionsRules
-      },
       editPanelTitle: function () {
         if (this.processEditType === 'edit') {
           return '编辑'
@@ -188,15 +183,30 @@
       },
     },
     async created() {
-      await this.fetchProcessGroup();
       this.initQueryOptions();
-      this.initTableColumns();
+      await this.fetchProcessGroup();
       this.initEditOptions();
     },
     mounted() {
       this.fetchData()
     },
     methods: {
+      /*局部刷新*/
+      partlyReload() {
+        this.isPending = false;
+        let _partlyReload = stashData => {
+          let obj = {};
+          stashData.forEach(item => {
+            obj[item] = this.$data[item]
+          });
+          this.$store.commit('setStashData', obj);
+          Object.assign(this.$data, this.$options.data());
+          Object.assign(this.$data, this.$store.state.stashData);
+          this.queryData();
+          this.$store.commit('setStashData', {});
+        };
+        _partlyReload(['thisQueryOptions', 'processEditOptionsData',  'processGroupSelectGroup',  ])
+      },
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -212,7 +222,6 @@
       },
 
       initQueryOptions: function () {
-        this.queryOptions = JSON.parse(JSON.stringify(processQueryOptions));
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {
             type: item.type,
@@ -223,9 +232,6 @@
           type: 'select',
           value: ''
         })
-      },
-      initTableColumns: function () {
-        this.tableColumns = JSON.parse(JSON.stringify(processTableColumns))
       },
 
       initEditOptions: function () {
@@ -349,7 +355,8 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -378,7 +385,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('删除成功');
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -469,7 +477,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
     min-height: 60px;

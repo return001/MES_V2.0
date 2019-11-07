@@ -1,53 +1,51 @@
-<!--配置页面总组件-->
 <template>
-  <div>
-    <!--<Header/>-->
-    <loading v-if="$store.state.isLoading"/>
-    <div class="" style="margin-left: 60px;">
-      <div class="row main-style">
-          <div class="side-bar">
-            <side-bar/>
-          </div>
-        <div class="col router-style mt-3 mb-3" style="margin-left: 255px;">
-          <router-view/>
-        </div>
-      </div>
+  <div id="esop-main" style="margin-left: 52px;">
+    <div class="side-bar">
+      <side-bar/>
+    </div>
+    <div class="router-style">
+      <router-view v-if="isRouterAlive"/>
     </div>
 
   </div>
 </template>
-<script>
-  import Header from '../../components/PageHeader'
-  import SideBar from './details/comp/SideBar'
-  import Loading from '@/components/Loading'
-  import SideSetting from '../../components/SideSetting'
 
+<script>
+  import SideBar from './details/comp/SideBar'
   export default {
-    name: "Main",
-    components: {
-      Header,
-      SideBar,
-      Loading,
-      SideSetting
+    name: "SettingMain",
+    components: {SideBar},
+    provide() {
+      return {
+        reload: this.reload
+      }
     },
     data() {
       return {
+        isRouterAlive: true
       }
     },
-    mounted: function () {
-    },
-    methods: {}
+
+    methods: {
+      reload: function () {
+        this.isRouterAlive = false;
+        this.$nextTick(function () {
+          this.isRouterAlive = true;
+        })
+      }
+    }
   }
 </script>
 
 <style scoped>
+
   @media (min-width: 640px) {
     .side-bar {
-      width: 250px;
+      width: 160px;
     }
 
     .router-style {
-      min-width: 340px;
+      min-width: 290px;
     }
   }
 
@@ -64,4 +62,8 @@
     height: 100%;
   }
 
+  .router-style {
+    padding: 20px 20px 10px 0;
+    margin-left: 217px;
+  }
 </style>

@@ -7,8 +7,8 @@ import Main from '../pages/Main'
 import TableMainOld from '../pages/table_old/TableMain'
 import Login from '../pages/user/Login'
 import TableModuleOld from '../pages/table_old/details/TableModule'
-import SettingMain from '../pages/setting/SettingMain'
-import OrderManage from '../pages/setting/details/OrderManage'
+import OrderMain from '../pages/order/OrderMain'
+import OrderManage from '../pages/order/details/OrderManage'
 import UserConfig from '../pages/user/UserConfig'
 /*红茶*/
 import RedTea from '../pages/redtea/RedTeaMain'
@@ -33,15 +33,21 @@ import ProcessGroupSetting from '../pages/plan/details/ProcessGroupSetting'
 import LineSetting from '../pages/plan/details/LineSetting'
 import CapacitySetting from '../pages/plan/details/CapacitySetting'
 import PlanSetting from '../pages/plan/details/PlanSetting'
-/*ESOP*/
+/*基础配置*/
+import SettingMain from "../pages/setting/SettingMain";
+import FactorySetting from "../pages/setting/details/FactorySetting";
+import WorkshopSetting from "../pages/setting/details/WorkshopSetting";
+import SiteSetting from "../pages/setting/details/SiteSetting";
+import CustomerSetting from "../pages/setting/details/CustomerSetting";
+import ModelSetting from "../pages/setting/details/ModelSetting";
+import ProductSetting from "../pages/setting/details/ProductSetting";
+/*E_SOP*/
 import ESopMain from "../pages/e_sop/ESopMain";
-import FactorySetting from "../pages/e_sop/details/FactorySetting";
-import WorkshopSetting from "../pages/e_sop/details/WorkshopSetting";
-import SiteSetting from "../pages/e_sop/details/SiteSetting";
-import CustomerSetting from "../pages/e_sop/details/CustomerSetting";
-import ModelSetting from "../pages/e_sop/details/ModelSetting";
-import ProductSetting from "../pages/e_sop/details/ProductSetting";
-
+import FileManager from "../pages/e_sop/details/FileManager";
+import NoticeManager from "../pages/e_sop/details/NoticeManager";
+import ESopActionLog from "../pages/e_sop/details/ESopActionLog";
+import ESopLogs from "../pages/e_sop/details/ESopLogs";
+import SiteInfo from "../pages/e_sop/details/SiteInfo";
 /*看板*/
 import Dashboard from '../pages/dashboard/Dashboard'
 
@@ -142,12 +148,59 @@ const router = new Router({
           component: ESopMain,
           children: [
             {
+              path: 'file',
+              component: FileManager
+            },
+            {
+              path: 'notice',
+              component: NoticeManager
+            },
+            {
+              path: 'site',
+              component: SiteInfo
+            },
+            {
+              path: 'action_log',
+              component: ESopActionLog
+            },
+            {
+              path: 'confirm_log',
+              component: ESopLogs
+            },
+            {
+              path: 'login_log',
+              component: ESopLogs
+            },
+            {
+              path: 'notice_log',
+              component: ESopLogs
+            },
+          ]
+        },
+        {
+          path: '/setting',
+          name: 'Setting',
+          component: SettingMain,
+          children: [
+            {
               path: 'factory',
               component: FactorySetting
             },
             {
               path: 'workshop',
               component: WorkshopSetting
+            },
+            {
+              path: 'process',
+              component: ProcessSetting
+            },
+            {
+              path: 'process_group',
+              component: ProcessGroupSetting
+            },
+            {
+              path: 'line',
+              component: LineSetting
             },
             {
               path: 'site',
@@ -223,14 +276,14 @@ const router = new Router({
   ]
 });
 
-if (localStorage.getItem('UserType')) {
-  store.commit('setUserType', localStorage.getItem('UserType'))
+if (sessionStorage.getItem('UserType')) {
+  store.commit('setUserType', sessionStorage.getItem('UserType'))
 }
-if (localStorage.getItem('token')) {
-  store.commit('setLoginToken', localStorage.getItem('token'))
+if (sessionStorage.getItem('token')) {
+  store.commit('setLoginToken', sessionStorage.getItem('token'))
 }
-if (localStorage.getItem('delPermission')) {
-  store.commit('setDelPermission', localStorage.getItem('delPermission').split(','))
+if (sessionStorage.getItem('delPermission')) {
+  store.commit('setDelPermission', sessionStorage.getItem('delPermission').split(','))
 }
 
 

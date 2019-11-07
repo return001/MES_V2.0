@@ -1,16 +1,16 @@
-<!--配置功能统一导航-->
 <template>
-  <div class="mt-3 mb-3">
+  <div id="plan-sidebar">
     <nav>
       <div class="sidebar-items">
-        <!--订单配置-->
-        <div class="sidebar-title">
-          <a class="subtitle" draggable="false" data-toggle="collapse" href="#collapsePenetrate" aria-expanded="false"
-             aria-controls="collapsePenetrate">订单管理</a>
-        </div>
-        <div class="collapse show" id="collapsePenetrate">
-          <div @click="toggleState('orderManage')">
-            <div class="sidebar-link" @click="linkTo({link: '/setting/order_manage', type: 'order_manage'})" :class="activeItem === 'orderManage' ? 'active' : ''">订单管理</div>
+        <div v-for="item in linkList">
+          <div class="sidebar-title">
+            <span class="subtitle" draggable="false">{{item.title}}</span>
+          </div>
+          <div @click="toggleState(subItem.type)" v-for="subItem in item.subList">
+            <div class="sidebar-link" @click="linkTo(subItem.type)"
+                 :class="activeItem === subItem.type ? 'active' : ''">
+              {{subItem.name}}
+            </div>
           </div>
         </div>
       </div>
@@ -20,57 +20,97 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
 
   export default {
+    name: "SideBar",
     data() {
       return {
-
-        //控制列表active状态，当前已激活的项目
-        activeItem: ""
-
+        linkList: [
+          {
+            title: '基础设置',
+            subList: [
+              {
+                type: 'factory',
+                name: '厂区设置'
+              },
+              {
+                type: 'workshop',
+                name: '车间设置'
+              },
+              {
+                type: 'process_group',
+                name: '工序组设置'
+              },
+              {
+                type: 'process',
+                name: '工序设置'
+              },
+              {
+                type: 'line',
+                name: '产线设置'
+              },
+              {
+                type: 'site',
+                name: '站点设置'
+              },
+              {
+                type: 'customer',
+                name: '客户信息'
+              },
+              {
+                type: 'model',
+                name: '系列机型'
+              },
+              {
+                type: 'product',
+                name: '产品型号'
+              },
+            ]
+          }
+        ],
+        activeItem: '',
       }
     },
-    mounted: function () {
-
+    watch: {
+      $route: function (val) {
+        let routerState = val.path.split('/');
+        if (!!routerState[2]) {
+          this.toggleState(routerState[2])
+        } else {
+          this.toggleState('')
+        }
+      }
     },
-    computed: {
-      ...mapGetters([
-        'tableRouterApi',
-        'isLoading'
-      ]),
+    mounted() {
+      let routerState = this.$route.path.split('/');
+      if (!!routerState[2]) {
+        this.toggleState(routerState[2])
+      } else {
+        this.toggleState('')
+      }
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading']),
       toggleState: function (item) {
         this.activeItem = item;
-
       },
-      linkTo: function (obj) {
-        if (this.$route.fullPath !== (obj.link + '?type=' + obj.type)) {
-          //this.setTableRouter(obj.type);
-          this.$openLoading();
+      linkTo: function (val) {
+        let routerState = this.$route.path.split('/');
+        if (!!routerState[2] || val !== routerState[2]) {
+          //this.$openLoading();
           this.$router.push({
-            path: obj.link,
-            query: {
-              type: obj.type
-            }
+            path: '/setting/' + val
           })
         }
       }
     }
-
-
   }
 </script>
 
 <style scoped>
-  a {
-    text-decoration: none;
-    color: #000;
-  }
 
-  .sidebar {
+  #plan-sidebar {
+    margin: 20px 0;
+    width: 160px;
   }
 
   .sidebar-items {
@@ -83,11 +123,11 @@
   }
 
   .sidebar-title {
-    height: 2em;
-    line-height: 2em;
-    font-size: 1.2em;
+    height: 40px;
+    line-height: 40px;
+    font-size: 20px;
     font-weight: 500;
-    padding-left: 0.5em;
+    padding-left: 10px;
     border-bottom: 1px solid #eeeeee;
     background-color: #458aff;
     color: #fff;
@@ -101,10 +141,10 @@
   .sidebar-link {
     text-decoration: none;
     display: block;
-    height: 2em;
-    line-height: 2em;
-    padding-left: 1.4em;
-    font-size: 1em;
+    height: 30px;
+    line-height: 30px;
+    padding-left: 16px;
+    font-size: 16px;
     border-bottom: 1px solid #eeeeee;
     font-weight: normal;
     background: #fff;

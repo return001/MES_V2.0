@@ -14,11 +14,14 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        :placeholder="'请选择' + item.label" size="small">
-              <el-option value="" label="未选择"></el-option>
-              <el-option v-for="listItem in asyncSelectGroup"
-                         :key="listItem.id"
-                         :value="listItem.id"
-                         :label="listItem.groupName"></el-option>
+              <!--              <el-option value="" label="未选择"></el-option>-->
+              <el-option v-for="listItem in asyncSelectGroup[item.key].list"
+                         :key="listItem[asyncSelectGroup[item.key].alias.id]"
+                         :value="listItem[asyncSelectGroup[item.key].alias.id]"
+                         :label="listItem[asyncSelectGroup[item.key].alias.label]">
+                <span>{{ listItem[asyncSelectGroup[item.key].alias.label] }}</span>
+                <span class="select-options-extra-msg">{{ listItem[asyncSelectGroup[item.key].alias.extra] }}</span>
+              </el-option>
             </el-select>
           </div>
         </div>
@@ -29,7 +32,7 @@
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
         <div class="query-comp-container"
-             v-if="permissionControl(['engineer'])">
+             v-if="permissionControl(['engineer', 'SopManager'])">
           <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
         </div>
       </div>
@@ -58,7 +61,7 @@
             label="操作"
             width="120"
             fixed="right"
-            v-if="permissionControl(['engineer'])"
+            v-if="permissionControl(['engineer', 'SopManager'])"
           >
             <template slot-scope="scope">
               <el-tooltip content="产线PC配置" placement="top">
@@ -91,10 +94,29 @@
         label-position="top"
         @submit.native.prevent
         :rules="lineEditOptionsRules">
+        <!--<el-form-item class="line-edit-form-comp" label="所属工厂" prop="factoryId">
+          <el-select v-model="lineEditOptionsData.factoryId" class="line-edit-form-comp-text">
+            <el-option v-for="listItem in asyncSelectGroup.factoryId.list"
+                       :key="listItem.id"
+                       :value="listItem.id"
+                       :label="listItem.abbreviation"></el-option>
+          </el-select>
+        </el-form-item>-->
+        <el-form-item class="line-edit-form-comp" label="所属车间" prop="workshopId">
+          <el-select v-model="lineEditOptionsData.workshopId"
+                     class="line-edit-form-comp-text" @change="setLineFactoryId">
+            <el-option v-for="listItem in asyncSelectGroup.workshopId.list"
+                       :key="listItem.id"
+                       :value="listItem.id"
+                       :label="listItem.workshopName">
+              <span>{{ listItem.workshopName }}</span>
+              <span class="select-options-extra-msg">{{ listItem.abbreviation }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item class="line-edit-form-comp" label="工序组" prop="processGroup">
           <el-select v-model="lineEditOptionsData.processGroup" class="line-edit-form-comp-text">
-            <el-option value="" label="未选择" placeholder="请选择工序组" size="small"></el-option>
-            <el-option v-for="listItem in asyncSelectGroup"
+            <el-option v-for="listItem in asyncSelectGroup.processGroup.list"
                        :key="listItem.id"
                        :value="listItem.id"
                        :label="listItem.groupName"></el-option>
@@ -291,7 +313,9 @@
     planLinePCDeleteUrl,
     planLinePCEditUrl,
     planLinePCSelectUrl,
-    getUserUrl
+    getUserUrl,
+    eSopWorkshopSelectUrl,
+    eSopFactorySelectUrl,
   } from "../../../config/globalUrl";
   import {lineTableColumns, lineQueryOptions, lineEditOptions, lineEditOptionsRules} from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
@@ -302,11 +326,34 @@
     inject: ['reload'],
     data() {
       return {
-        queryOptions: [],
+        queryOptions: lineQueryOptions,
         thisQueryOptions: {},
-        asyncSelectGroup: [], //工序组信息
+        asyncSelectGroup: {
+          processGroup: {
+            list: [],
+            alias: {
+              id: 'id',
+              label: 'groupName'
+            }
+          },
+          factoryId: {
+            list: [],
+            alias: {
+              id: 'id',
+              label: 'abbreviation'
+            }
+          },
+          workshopId: {
+            list: [],
+            alias: {
+              id: 'id',
+              label: 'workshopName',
+              extra: 'abbreviation'
+            }
+          },
+        },
         tableData: [],
-        tableColumns: [],
+        tableColumns: lineTableColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 65535,
@@ -344,6 +391,8 @@
 
         /*编辑 新增产线配置*/
         isLineEditing: false,
+        lineEditOptions: lineEditOptions,
+        lineEditOptionsRules: lineEditOptionsRules,
         lineEditType: '',
         lineEditOptionsData: {
           'processGroup': ''
@@ -390,12 +439,6 @@
       }
     },
     computed: {
-      lineEditOptions: function () {
-        return lineEditOptions
-      },
-      lineEditOptionsRules: function () {
-        return lineEditOptionsRules
-      },
       editPanelTitle: function () {
         if (this.lineEditType === 'edit') {
           return '编辑'
@@ -405,14 +448,29 @@
       },
     },
     async created() {
-      await this.fetchProcessGroup();
       this.initQueryOptions();
-      this.initTableColumns();
+      await this.dataPreload();
     },
     mounted() {
       this.fetchData();
     },
     methods: {
+      /*局部刷新*/
+      partlyReload() {
+        this.isPending = false;
+        let _partlyReload = stashData => {
+          let obj = {};
+          stashData.forEach(item => {
+            obj[item] = this.$data[item]
+          });
+          this.$store.commit('setStashData', obj);
+          Object.assign(this.$data, this.$options.data());
+          Object.assign(this.$data, this.$store.state.stashData);
+          this.queryData();
+          this.$store.commit('setStashData', {});
+        };
+        _partlyReload(['thisQueryOptions', 'lineEditOptions', 'asyncSelectGroup'])
+      },
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -428,16 +486,12 @@
       },
 
       initQueryOptions: function () {
-        this.queryOptions = JSON.parse(JSON.stringify(lineQueryOptions));
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {
             type: item.type,
             value: ''
           })
         });
-      },
-      initTableColumns: function () {
-        this.tableColumns = JSON.parse(JSON.stringify(lineTableColumns))
       },
 
       initEditOptions: function () {
@@ -447,19 +501,71 @@
         this.$set(this.lineEditOptionsData, 'lineGroup', '');
       },
 
+      /*预载*/
+      dataPreload: async function () {
+        return new Promise(resolve => {
+          Promise.all([this.fetchFactory(), this.fetchProcessGroup(), this.fetchWorkshop()]).then(() => {
+            resolve();
+          })
+        })
+      },
       /*获取工序组信息*/
-      fetchProcessGroup: async function () {
+      fetchProcessGroup: function () {
         return new Promise(resolve => {
           axiosFetch({
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              this.asyncSelectGroup = response.data.data.list;
+              this.asyncSelectGroup.processGroup.list = response.data.data.list;
             } else {
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
             this.$alertDanger('获取工序组信息失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
+      /*获取工厂信息*/
+      fetchFactory: function () {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: eSopFactorySelectUrl,
+            data: {
+              pageNo: 1,
+              pageSize: 1000000
+            }
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.asyncSelectGroup.factoryId.list = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取工厂信息失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
+      /*获取车间信息*/
+      fetchWorkshop: function () {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: eSopWorkshopSelectUrl,
+            data: {
+              pageNo: 1,
+              pageSize: 1000000
+            }
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.asyncSelectGroup.workshopId.list = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取车间信息失败，请刷新重试');
           }).finally(() => {
             resolve();
           })
@@ -516,6 +622,18 @@
        **@method:
        **@params: mod
        */
+      setLineFactoryId(val) {
+        let factoryId;
+        let list = this.asyncSelectGroup.workshopId.list;
+        for (let i = 0; i < list.length; i++) {
+          if (list[i].id === val) {
+            factoryId = list[i].factoryId;
+            break;
+          }
+        }
+        this.lineEditOptionsData.factoryId = factoryId;
+      },
+
       editData: function (type, val) {
         if (!!this.$refs['lineEditForm']) {
           this.$refs['lineEditForm'].clearValidate();
@@ -535,6 +653,8 @@
           });
           //工序组、id
           this.$set(this.lineEditOptionsData, 'processGroup', val.processGroup);
+          this.$set(this.lineEditOptionsData, 'workshopId', val.workshopId);
+          this.$set(this.lineEditOptionsData, 'factoryId', val.factoryId);
           this.$set(this.lineEditOptionsData, 'id', val.id);
 
           this.isLineEditing = true;
@@ -567,7 +687,8 @@
                 this.$alertSuccess('操作成功');
                 this.resetEditLineForm();
                 this.closeEditLinePanel();
-                this.reload();
+                this.partlyReload();
+                // this.reload();
               } else {
                 this.$alertWarning(response.data.data)
               }
@@ -605,7 +726,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('删除成功');
-              this.reload();
+              this.partlyReload();
+              // this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -821,7 +943,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
     min-height: 60px;
@@ -889,5 +1011,10 @@
     width: 210px;
   }
 
+  .select-options-extra-msg {
+    font-size: 12px;
+    color: #858a92;
+    float: right;
+  }
 
 </style>

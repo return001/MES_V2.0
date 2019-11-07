@@ -53,7 +53,7 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'esop' ? 'icon-active' : ''" @click="initData('esop')" >
+        <div class="icon-container" :class="activeItem === 'esop' ? 'icon-active' : ''" @click="initData('esop')"  v-if="accessPermission('esop')">
           <div class="setting-icon">
             <i class="el-icon-t-SOP" style="color: #fff;"></i>
           </div>
@@ -66,6 +66,14 @@
             <i class="el-icon-t-tea" style="color: #fff;"></i>
           </div>
           <span>红茶</span>
+        </div>
+      </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')"  v-if="accessPermission('setting')">
+          <div class="setting-icon">
+            <i class="el-icon-t-setting" style="color: #fff;"></i>
+          </div>
+          <span>配置</span>
         </div>
       </div>
 
@@ -157,7 +165,7 @@
         axiosFetch(options).then(res => {
           if (res.data.result === 200 || res.data.result === 400) {
             this.setLoginToken('');
-            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
             window.location.href = '/mes_system/#/login';
             this.$alertSuccess("登出成功");
           } else {

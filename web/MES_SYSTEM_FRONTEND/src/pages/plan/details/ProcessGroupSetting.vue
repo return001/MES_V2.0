@@ -131,7 +131,7 @@
         queryOptions: [],
         thisQueryOptions: {},
         tableData: [],
-        tableColumns: [],
+        tableColumns: processGroupTableColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 65535,
@@ -140,17 +140,12 @@
         /*编辑新增工序组*/
         isProcessGroupEditing: false,
         processGroupEditType: '',
-        processGroupEditOptionsData: {}
+        processGroupEditOptionsData: {},
+        processGroupEditOptions: processGroupEditOptions,
+        processGroupEditOptionsRules:processGroupEditOptionsRules,
       }
     },
     computed: {
-      processGroupEditOptions: function () {
-        return processGroupEditOptions
-      },
-
-      processGroupEditOptionsRules: function () {
-        return processGroupEditOptionsRules
-      },
       editPanelTitle: function () {
         if (this.processGroupEditType === 'edit') {
           return '编辑'
@@ -161,7 +156,6 @@
     },
     created() {
       this.initQueryOptions();
-      this.initTableColumns();
     },
     mounted() {
       this.fetchData()
@@ -189,9 +183,6 @@
             value: ''
           })
         })
-      },
-      initTableColumns: function () {
-        this.tableColumns = JSON.parse(JSON.stringify(processGroupTableColumns))
       },
 
 
@@ -435,7 +426,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
     min-height: 60px;

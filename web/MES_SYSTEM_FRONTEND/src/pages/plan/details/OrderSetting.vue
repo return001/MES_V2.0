@@ -356,10 +356,10 @@
     inject: ['reload'],
     data() {
       return {
-        queryOptions: [],
+        queryOptions: orderQueryOptions,
         thisQueryOptions: {}, //将queryOptions中的键值对提取作为该对象元素
         tableData: [],
-        tableColumns: [],
+        tableColumns: orderTableColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 20,
@@ -397,6 +397,8 @@
 
         isRework: false, //是否返工单
         /*新增 编辑 复制订单*/
+        orderEditOptions: orderEditOptions,
+        orderEditOptionsRules: orderEditOptionsRules,
         isReworkEdit: false,
         isOrderEditing: false,
         orderEditType: '',
@@ -443,6 +445,7 @@
             key: 'deleteTime'
           },
         ],
+        detailsTableColumns: orderDetailsTableColumns,
         detailsTableData: [],
         mergeData: {},//合并行的记录
         mergePos: {},//mergeData中每项的索引
@@ -453,12 +456,6 @@
       }
     },
     computed: {
-      orderEditOptions: function () {
-        return orderEditOptions
-      },
-      orderEditOptionsRules: function () {
-        return orderEditOptionsRules
-      },
       editPanelTitle: function () {
         if (this.orderEditType === 'edit') {
           return '编辑订单'
@@ -472,18 +469,30 @@
       detailsTitle: function () {
         return '详情 (订单：' + this.showingItem.zhidan + ')'
       },
-      detailsTableColumns: function () {
-        return orderDetailsTableColumns
-      }
     },
     created() {
       this.initQueryOptions();
-      this.initTableColumns();
     },
     mounted() {
       this.fetchData()
     },
     methods: {
+      /*局部刷新*/
+      partlyReload() {
+        this.isPending = false;
+        let _partlyReload = stashData => {
+          let obj = {};
+          stashData.forEach(item => {
+            obj[item] = this.$data[item]
+          });
+          this.$store.commit('setStashData', obj);
+          Object.assign(this.$data, this.$options.data());
+          Object.assign(this.$data, this.$store.state.stashData);
+          this.queryData();
+          this.$store.commit('setStashData', {});
+        };
+        _partlyReload(['thisQueryOptions'])
+      },
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -499,7 +508,6 @@
       },
 
       initQueryOptions: function () {
-        this.queryOptions = JSON.parse(JSON.stringify(orderQueryOptions));
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {
             type: item.type,
@@ -507,10 +515,6 @@
           })
         })
       },
-      initTableColumns: function () {
-        this.tableColumns = JSON.parse(JSON.stringify(orderTableColumns))
-      },
-
 
       indexMethod: function (index) {
         return index + (this.paginationOptions.currentPage - 1) * this.paginationOptions.pageSize + 1
@@ -662,7 +666,8 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -698,7 +703,8 @@
             if (response.data.result === 200) {
               this.$alertSuccess('作废成功');
               this.closeDeleteOrderPanel();
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -738,7 +744,8 @@
         this.$axios.post(planOrderImportUrl, this.uploadFileData, config).then(response => {
           if (response.data.result === 200) {
             this.$alertSuccess(response.data.data);
-            this.reload();
+            this.partlyReload();
+            //this.reload();
           } else {
             this.$alertWarning(response.data.data);
           }
@@ -884,7 +891,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('删除成功');
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -965,7 +973,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
     min-height: 60px;

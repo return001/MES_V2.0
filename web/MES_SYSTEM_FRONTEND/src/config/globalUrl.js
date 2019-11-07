@@ -118,7 +118,7 @@ export const dashboardSelectUrlCS = url + '/report/selectDashboardTableForCustom
 export const dashboardErrMsgSelectUrlCS = url + '/report/selectErrorMsgForCustomer';
 
 
-/*ESop*/
+/*基础配置*/
 /*厂区*/
 export const eSopFactorySelectUrl = url + '/sop/selectFactory';
 export const eSopFactoryDeleteUrl = url + '/sop/deleteFactory';
@@ -136,6 +136,7 @@ export const eSopSiteSelectUrl = url + '/sop/selectSite';
 export const eSopSiteEditUrl = url + '/sop/editSite';
 export const eSopSiteDeleteUrl = url + '/sop/deleteSite';
 export const eSopSiteAddUrl = url + '/sop/addSite';
+export const eSopSiteStatusEditUrl = url + '/sop/editSiteState';
 
 /*客户*/
 export const eSopCustomerSelectUrl = url + '/sop/selectCustomer';
@@ -154,3 +155,31 @@ export const eSopProductSelectUrl = url + '/sop/selectProductModel';
 export const eSopProductEditUrl = url + '/sop/editProductModel';
 export const eSopProductDeleteUrl = url + '/sop/deleteProductModel';
 export const eSopProductAddUrl = url + '/sop/addProductModel';
+
+/*E-SOP*/
+/*文件管理*/
+export const eSopFileSelectUrl = url + '/sop/selectFiles';
+export const eSopFileEditUrl = url + '/sop/editFileState';
+export const eSopFileDeleteUrl = url + '/sop/deleteFile';
+export const eSopFileAddUrl = url + '/sop/addFile';
+export const eSopFileUploadUrl = url + '/sop/importFiles';
+export const eSopFileDispatchUrl = url + '/sop/dispatchFile';
+export const eSopFilePreviewUrl = url + '/sop/previewDispatchingFile';
+export const eSopSitePreviewUrl = url + '/sop/previewSite';
+export const eSopFileRecycleUrl = url + '/sop/recycleFile';
+export const eSopFilePictureSelectUrl = url + '/sop/selectFilePictures';
+export const eSopFileHistorySelectUrl = url + '/sop/selectFileHistory';
+export const eSopFileHistoryDetailsSelectUrl = url + '/sop/selectFileHistoryDetail';
+/*通知管理*/
+export const eSopNoticeSelectUrl = url + '/sop/selectNotice';
+export const eSopNoticeEditUrl = url + '/sop/editNotice';
+export const eSopNoticeDeleteUrl = url + '/sop/deleteNotice';
+export const eSopNoticeAddUrl = url + '/sop/addNotice';
+
+/*日志*/
+export const eSopActionLogSelectUrl = url + '/sop/selectActionLog';
+export const eSopConfirmLogSelectUrl = url + '/sop/selectConfirmLog';
+export const eSopNoticeLogSelectUrl = url + '/sop/selectNoticeHistory';
+
+/*客户端*/
+export const eSopLoginLogSelectUrl = url + '/sop/selectLoginLog';

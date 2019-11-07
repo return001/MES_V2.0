@@ -78,7 +78,7 @@
     },
     mounted: function () {
 
-      /*edit data $emit at src/pages/setting/details/comp/TableDetails*/
+      /*edit data $emit at src/pages/order/details/comp/TableDetails*/
       eventBus.$off('editOrder');
       eventBus.$on('editOrder', data => {
         //data: [editType, originData]

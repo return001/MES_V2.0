@@ -28,39 +28,6 @@
       return {
         linkList: [
           {
-            title: '基础设置',
-            subList: [
-              {
-                type: 'factory',
-                name: '厂区设置'
-              },
-              {
-                type: 'workshop',
-                name: '车间设置'
-              },
-              {
-                type: 'line',
-                name: '产线设置'
-              },
-              {
-                type: 'site',
-                name: '站点设置'
-              },
-              {
-                type: 'customer',
-                name: '客户信息'
-              },
-              {
-                type: 'model',
-                name: '系列机型'
-              },
-              {
-                type: 'product',
-                name: '产品型号'
-              },
-            ]
-          },
-          {
             title: '文件发放',
             subList: [
               {
@@ -72,8 +39,29 @@
                 name: '通知管理'
               },
               {
-                type: 'log',
-                name: '日志查询'
+                type: 'site',
+                name: '站点信息'
+              },
+              {
+                type: 'action_log',
+                name: '操作日志'
+              },
+              {
+                type: 'confirm_log',
+                name: '确认日志'
+              },
+              {
+                type: 'notice_log',
+                name: '通知日志'
+              },
+            ]
+          },
+          {
+            title: '客户端信息',
+            subList: [
+              {
+                type: 'login_log',
+                name: '日志'
               },
             ]
           }

@@ -56,8 +56,8 @@
       window.onresize = () => {
         this.pageHeightCalc();
       };
-      this.token = (localStorage.getItem('token'))
-        ? localStorage.getItem('token')
+      this.token = (sessionStorage.getItem('token'))
+        ? sessionStorage.getItem('token')
         : '';
     },
     methods: {
@@ -77,12 +77,12 @@
           axiosFetch(options).then(res => {
             this.isPending = false;
             if (res.data.result === 200) {
-              localStorage.setItem('token', res.data.data["#TOKEN#"]);
-              this.setLoginToken(localStorage.getItem('token'));
-              localStorage.setItem('UserType', res.data.data["typeName"]);
-              this.setUserType(localStorage.getItem('UserType'));
-              localStorage.setItem('delPermission', res.data.data['DeletePermission']);
-              this.setDelPermission(localStorage.getItem('delPermission').split(','));
+              sessionStorage.setItem('token', res.data.data["#TOKEN#"]);
+              this.setLoginToken(sessionStorage.getItem('token'));
+              sessionStorage.setItem('UserType', res.data.data["typeName"]);
+              this.setUserType(sessionStorage.getItem('UserType'));
+              sessionStorage.setItem('delPermission', res.data.data['DeletePermission']);
+              this.setDelPermission(sessionStorage.getItem('delPermission').split(','));
               this.$router.replace('/');
             } else if (res.data.result === 412) {
               this.$alertWarning("请检查用户名或密码")

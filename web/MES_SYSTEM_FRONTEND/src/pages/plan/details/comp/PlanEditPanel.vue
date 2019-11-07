@@ -391,7 +391,6 @@
                 options.data[item] = this.planEditOptionsData[item]
               }
             });
-            console.log(options)
             this.submitData(options)
           }
         })
@@ -433,7 +432,8 @@
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess("修改成功");
-              this.reload();
+              eventBus.$emit('partlyReload');
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }

@@ -29,7 +29,9 @@ const state = {
     'Gps_ManuSimDataParam': [],
     'Gps_TestResult': []
   },
-  delPermission: []
+  delPermission: [],
+
+  stashData: {},
 };
 
 const store = new Vuex.Store({

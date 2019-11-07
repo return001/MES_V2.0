@@ -1,7 +1,7 @@
 <template>
 
-  <div id="factory-setting">
-    <div class="factory-setting-main">
+  <div id="model-setting">
+    <div class="model-setting-main">
       <div class="query-comp">
         <rz-query-bar
           :list="queryConfig"
@@ -35,17 +35,30 @@
           label="操作"
           width="80"
           fixed="right"
+          v-if="_permissionControl(['SopManager'])"
         >
           <template slot-scope="scope">
             <el-tooltip content="编辑" placement="top">
-              <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
+              <el-button type="text" @click="_editData(scope.row)" icon="el-icon-edit-outline"></el-button>
             </el-tooltip>
             <el-tooltip content="删除" placement="top">
-              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
+              <el-button type="text" @click="_deleteData(scope.row)" icon="el-icon-delete"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
+      <!--分页控制-->
+      <el-pagination
+        background
+        :current-page.sync="paginationOptions.currentPage"
+        :page-sizes="[20, 40, 80]"
+        :page-size.sync="paginationOptions.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="paginationOptions.total"
+        @current-change="fetchData"
+        @size-change="_queryData"
+        class="page-pagination">
+      </el-pagination>
     </div>
     <!--dialog component-->
     <el-dialog
@@ -53,40 +66,43 @@
       :visible.sync="isEditing"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-      @close="resetEditForm"
-      width="500px">
+      @close="_resetEditForm"
+      width="270px">
       <rz-form-item
+        :ref="formConfig.refName"
+        v-if="isEditing"
         :config="formConfig"
         :list="formItemList"
         :rules="formRules"
-        :data.sync="formData" />
-       <span slot="footer" class="dialog-footer">
-         <el-button size="small" @click="closeEditPanel" type="info">取消</el-button>
-         <el-button size="small" @click="submitEdit" type="primary">保存</el-button>
+        :data.sync="formData"/>
+      <span slot="footer" class="dialog-footer">
+         <el-button size="small" @click="_closeEditPanel" type="info">取消</el-button>
+         <el-button size="small" @click="_submitFormEdit" type="primary">保存</el-button>
        </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import {FactoryQueryConfig, FactoryTableColumns, FactoryFormItems, FactoryFormRules} from "../../../config/esopConfig";
-  import {
-    eSopFactorySelectUrl,
-    eSopFactoryDeleteUrl,
-    eSopFactoryAddUrl,
-    eSopFactoryEditUrl
-  } from "../../../config/globalUrl";
+  import {ModelQueryConfig, ModelTableColumns, ModelFormItems, ModelFormRules} from "../../../config/settingConfig";
+  import {eSopModelSelectUrl, eSopModelAddUrl, eSopModelDeleteUrl, eSopModelEditUrl} from "../../../config/globalUrl";
   import common from "./mixins/common";
 
   export default {
-    name: "FactorySetting",
-    inject: ['reload'],
+    name: "ModelSetting",
     mixins: [common],
     data() {
       return {
         /*搜索框*/
-        queryConfig: FactoryQueryConfig,
+        queryConfig: ModelQueryConfig,
         buttonGroup: [
+          {
+            label: '重置条件',
+            size: 'small',
+            type: 'info',
+            callback() {
+            }
+          },
           {
             label: '查询',
             size: 'small',
@@ -94,53 +110,58 @@
             callback() {
             }
           },
-          {
-            label: '删除',
-            size: 'small',
-            callback() {
-            }
-          }
         ],
         queryCompData: {},
-        tableColumns: FactoryTableColumns,
+        tableColumns: ModelTableColumns,
         tableData: [],
 
-        paginationOptions: {
-          currentPage: 1,
-          pageSize: 65535,
-          total: 0
-        },
+
+
 
         editPanelTitle: '',
-        isEditing: true,
+        isEditing: false,
+        editType: 0, //0: add, 1: edit
 
         formConfig: {
-          refName: 'factoryFormComp',
+          refName: 'modelFormComp',
           size: 'small',
-          identity: 'factory-item-'
+          identity: 'model-item-'
         },
-        formItemList: FactoryFormItems,
-        formRules: FactoryFormRules,
-        formData: {
-          factoryAlias: 'sss'
-        },
+        formItemList: ModelFormItems,
+        formRules: ModelFormRules,
+        formData: {},
+
+        /*链接重定义*/
+        formAddUrl: eSopModelAddUrl,
+        formDeleteUrl: eSopModelDeleteUrl,
+        formUpdateUrl: eSopModelEditUrl,
+
       }
     },
     mounted() {
       /*注册按键*/
-      this.buttonGroup[0].callback = this.fetchData;
+      this.buttonGroup[0].callback = this._initQueryOptions;
+      this.buttonGroup[1].callback = this._queryData;
+      if (this._permissionControl(['SopManager'])) {
+        this.buttonGroup.push(
+          {
+            label: '新增',
+            size: 'small',
+            type: 'primary',
+            callback: this._addData
+          })
+      }
 
-      this.$openLoading();
-      this.fetchData();
+      this._queryData();
     },
     methods: {
-      /*查询、获取表格内容*/
       fetchData() {
+        this.$openLoading();
         let options = {
-          url: eSopFactorySelectUrl,
+          url: eSopModelSelectUrl,
           data: {
-            pageNo: 1,
-            pageSize: 65535
+            pageNo: this.paginationOptions.currentPage,
+            pageSize: this.paginationOptions.pageSize
           }
         };
         Object.keys(this.queryCompData).forEach(key => {
@@ -151,43 +172,18 @@
         this._fetchData(options).then(data => {
           this.tableData = data.list;
         })
-      },
-
-      /*编辑指定项目*/
-      editData() {
-
-      },
-
-      resetEditForm() {
-
-      },
-
-      closeEditPanel() {
-
-      },
-
-      submitEdit() {
-
-      },
-
-      /*删除指定项目*/
-      deleteData(val) {
-        this._deleteData(eSopFactoryDeleteUrl, val.id).then(() => {
-          this.reload();
-        })
       }
     }
   }
 </script>
+
 <style scoped>
   @import "styles/common.css";
 
-  #factory-setting {
+  #model-setting {
     position: relative;
     width: 100%;
     min-height: 600px;
     height: 100%;
   }
-
-
 </style>

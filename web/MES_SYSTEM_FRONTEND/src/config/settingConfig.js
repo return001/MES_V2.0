@@ -46,13 +46,13 @@ export const WorkshopQueryConfig = [
 export const SiteQueryConfig = [
   {
     type: 'text',
-    label: '车间编号',
+    label: '站点编号',
     size: 'small',
     prop: 'siteNumber',
   },
   {
     type: 'text',
-    label: '车间名称',
+    label: '站点名称',
     size: 'small',
     prop: 'siteName',
   },
@@ -151,7 +151,7 @@ export const WorkshopTableColumns = [
   },
   {
     'label': '所属工厂',
-    'key': 'factoryName',
+    'key': 'abbreviation',
     'min-width': '100px'
   },
 ];
@@ -174,7 +174,7 @@ export const SiteTableColumns = [
   },
   {
     'label': '线别',
-    'key': 'lineAlias',
+    'key': 'lineNo',
     'min-width': '100px'
   },
   {
@@ -190,6 +190,16 @@ export const SiteTableColumns = [
   {
     'label': '切换时间(s)',
     'key': 'switchInterval',
+    'min-width': '100px'
+  },
+  {
+    'label': 'MAC地址',
+    'key': 'mac',
+    'min-width': '100px'
+  },
+  {
+    'label': 'MAC地址2',
+    'key': 'secondMac',
     'min-width': '100px'
   },
 ];
@@ -228,7 +238,7 @@ export const CustomerTableColumns = [
   },
   {
     'label': '所属工厂',
-    'key': 'factoryName',
+    'key': 'abbreviation',
     'min-width': '100px'
   },
 ];
@@ -303,12 +313,22 @@ export const SiteFormItems = [
     'prop': 'switchInterval',
     'type': 'text',
   },
+  {
+    'label': 'MAC地址',
+    'prop': 'mac',
+    'type': 'text',
+  },
+  {
+    'label': 'MAC地址2',
+    'prop': 'secondMac',
+    'type': 'text',
+  },
 ];
 
 export const ModelFormItems = [
   {
     'label': '系列机型',
-    'key': 'seriesModelName',
+    'prop': 'seriesModelName',
     'type': 'text',
   },
 ];
@@ -316,12 +336,12 @@ export const ModelFormItems = [
 export const ProductFormItems = [
   {
     'label': '产品型号',
-    'key': 'productModelName',
+    'prop': 'productModelName',
     'type': 'text',
   },
   {
     'label': '系列机型',
-    'key': 'seriesModelId',
+    'prop': 'seriesModelId',
     'type': 'select',
     'selectList': []
   },
@@ -330,17 +350,17 @@ export const ProductFormItems = [
 export const CustomerFormItems = [
   {
     'label': '客户编号',
-    'key': 'customerNumber',
+    'prop': 'customerNumber',
     'type': 'text',
   },
   {
     'label': '客户名称',
-    'key': 'customerName',
+    'prop': 'customerName',
     'type': 'text',
   },
   {
     'label': '所属工厂',
-    'key': 'factoryId',
+    'prop': 'factoryId',
     'type': 'select',
     'selectList': []
   },
@@ -349,74 +369,82 @@ export const CustomerFormItems = [
 /*规则*/
 export const FactoryFormRules = {
   factoryAlias: [
-    { required: true, message: '请输入别名', trigger: 'blur' },
+    {required: true, message: '请输入别名', trigger: 'blur'},
   ],
   abbreviation: [
-    { required: true, message: '请输入简称', trigger: 'blur' },
+    {required: true, message: '请输入简称', trigger: 'blur'},
   ],
   fullName: [
-    { required: true, message: '请输入全名', trigger: 'blur' },
+    {required: true, message: '请输入全名', trigger: 'blur'},
   ],
 };
 
 export const WorkshopFormRules = {
   workshopNumber: [
-    { required: true, message: '请输入车间编号', trigger: 'blur' },
+    {required: true, message: '请输入车间编号', trigger: 'blur'},
   ],
   workshopName: [
-    { required: true, message: '请输入车间名称', trigger: 'blur' },
+    {required: true, message: '请输入车间名称', trigger: 'blur'},
   ],
   factoryId: [
-    { required: true, message: '请选择所属工厂', trigger: 'change' },
+    {required: true, message: '请选择所属工厂', trigger: 'change'},
   ],
 };
 
 
 export const SiteFormRules = {
   siteNumber: [
-    { required: true, message: '请输入站点编号', trigger: 'blur' },
+    {required: true, message: '请输入站点编号', trigger: 'blur'},
   ],
   siteName: [
-    { required: true, message: '请输入站点名称', trigger: 'blur' },
+    {required: true, message: '请输入站点名称', trigger: 'blur'},
   ],
   processOrder: [
-    { required: true, message: '请输入工序顺序', trigger: 'blur' },
+    {required: true, message: '请输入工序顺序', trigger: 'blur'},
+    {pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur'},
   ],
   lineId: [
-    { required: true, message: '请选择线别', trigger: 'change' },
+    {required: true, message: '请选择线别', trigger: 'change'},
   ],
   playTimes: [
     {pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur'},
   ],
   switchInterval: [
-    { required: true, message: '请输入切换时间', trigger: 'blur' },
+    {required: true, message: '请输入切换时间', trigger: 'blur'},
     {pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur'},
+  ],
+  mac: [
+    {required: true, message: '请输入MAC地址', trigger: 'blur'},
+    {pattern: /([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}/, message: '请输入正确的MAC地址(以:分隔)', trigger: 'blur'},
+  ],
+  secondMac: [
+    {pattern: /([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}/, message: '请输入正确的MAC地址(以:分隔)', trigger: 'blur'},
   ],
 };
 
 export const ModelFormRules = {
   seriesModelName: [
-    { required: true, message: '请输入系列机型', trigger: 'blur' },
+    {required: true, message: '请输入系列机型', trigger: 'blur'},
   ],
 };
 
 export const ProductFormRules = {
   productModelName: [
-    { required: true, message: '请输入产品型号', trigger: 'blur' },
+    {required: true, message: '请输入产品型号', trigger: 'blur'},
   ],
   seriesModelId: [
-    { required: true, message: '请选择系列机型', trigger: 'change' },
+    {required: true, message: '请选择系列机型', trigger: 'change'},
   ],
 };
 
 export const CustomerFormRules = {
   customerNumber: [
-    { required: true, message: '请输入客户编号', trigger: 'blur' },
+    {required: true, message: '请输入客户编号', trigger: 'blur'},
   ],
   customerName: [
-    { required: true, message: '请输入客户名称', trigger: 'blur' },
+    {required: true, message: '请输入客户名称', trigger: 'blur'},
   ],
   factoryId: [
-    { required: true, message: '请选择所属工厂', trigger: 'change' },
+    {required: true, message: '请选择所属工厂', trigger: 'change'},
   ],
 };

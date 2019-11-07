@@ -1,3 +1,5 @@
+import de from "element-ui/src/locale/lang/de";
+
 export const getTime = function () {
   let date = new Date();
   let yyyy = date.getFullYear();
@@ -10,6 +12,7 @@ export const getTime = function () {
 };
 
 import store from '../store'
+import ca from "element-ui/src/locale/lang/ca";
 
 export const checkDelPermission = function (queryType) {
   let tableList = ['DataRelativeSheet', 'DataRelativeUnique', 'DataRelativeUpdate', 'Gps_AutoTest_Result', 'Gps_AutoTest_Result2', 'Gps_AutoTest_Result3', 'Gps_CartonBoxTwenty_Result', 'Gps_CoupleTest_Result', 'Gps_ManuPrintParam', 'Gps_TestResult', 'NetMarkIMEI', 'Gps_ManuSimDataParam'];
@@ -31,18 +34,38 @@ export const checkAccessPermission = function (path) {
 
 export const permissionList = function () {
   let list;
-  if (store.state.userType === 'administration') {
-    list = ['users'];
-  } else if (store.state.userType === 'SuperAdmin') {
-    list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea', 'esop']
-    // permissionList = ['order', 'users', 'test']
-  } else if (store.state.userType === 'schedulingSZPC') {
-    list = ['plan']
-  } else if (store.state.userType === 'schedulingJMPMC') {
-    list = [ 'plan']
-  } else {
-    list = ['table', 'order', 'test', 'func', 'plan', 'redtea']
-    // permissionList = ['order', 'test']
+  switch (store.state.userType) {
+    case "administration":
+      list = ['users'];
+      break;
+
+    case "SuperAdmin":
+      list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea', 'esop', 'setting'];
+      break;
+
+    case "schedulingSZPC":
+    case "schedulingJMPMC":
+      list = ['plan'];
+      break;
+
+    case "SopManager":
+    case "SopReviewer":
+    case "SopQcConfirmer":
+      list = ['setting', 'esop'];
+      break;
+
+    default:
+      list = ['table', 'order', 'test', 'func', 'plan', 'redtea'];
+      break;
+
   }
   return list
+};
+
+export const deepCopy = obj => {
+  let copyObj = Array.isArray(obj) ? [] : {};
+  for (let key in obj) {
+    copyObj[key] = typeof (obj[key]) === "object" ? deepCopy(obj[key]) : obj[key];
+  }
+  return copyObj;
 };

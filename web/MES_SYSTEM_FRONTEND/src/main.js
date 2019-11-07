@@ -40,12 +40,14 @@ import {
   Carousel,
   CarouselItem,
   Autocomplete,
-  Tag
+  Tag,
+  Alert,
+  Divider
 } from 'element-ui'
 
-import {RZSideBar, RZFormQueryBar, RZFormItem} from 'rz-el-comp';
+import {RZSideBar, RZFormQueryBar, RZFormItem} from 'rz-el-comp'
 
-[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag,
+[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag, Alert, Divider,
 
   RZSideBar, RZFormQueryBar, RZFormItem
 ].forEach(item => {

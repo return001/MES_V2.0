@@ -1,3 +1,5 @@
+import {deepCopy} from "../utils/utils";
+
 export const setLoginToken = (state, token) => {
   state.token = token;
 };
@@ -36,4 +38,8 @@ export const setDelPermission = (state, list) => {
 
 export const setTableDeleteGroup = (state, obj) => {
   state.tableDeleteGroup[obj.key] = obj.val
+};
+
+export const setStashData = (state, obj) => {
+  state.stashData = deepCopy(obj);
 };

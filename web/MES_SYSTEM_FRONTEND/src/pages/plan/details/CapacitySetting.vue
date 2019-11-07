@@ -184,13 +184,13 @@
     inject: ['reload'],
     data() {
       return {
-        queryOptions: [],
+        queryOptions: capacityQueryOptions,
         thisQueryOptions: {},
         processSelectGroupSrc: [], //工序信息 源
         processSelectGroup: [], //工序信息
         processGroupSelectGroup: [], //工序组信息
         tableData: [],
-        tableColumns: [],
+        tableColumns: capacityTableColumns,
         paginationOptions: {
           currentPage: 1,
           pageSize: 65535,
@@ -198,6 +198,8 @@
         },
         /*编辑新增产能信息*/
         isCapacityEditing: false,
+        capacityEditOptions: capacityEditOptions,
+        capacityEditOptionsRules: capacityEditOptionsRules,
         capacityEditType: '',
         capacityEditOptionsData: {
           'process': ''
@@ -212,12 +214,6 @@
       }
     },
     computed: {
-      capacityEditOptions: function () {
-        return capacityEditOptions
-      },
-      capacityEditOptionsRules: function () {
-        return capacityEditOptionsRules
-      },
       editPanelTitle: function () {
         if (this.capacityEditType === 'edit') {
           return '编辑'
@@ -227,14 +223,29 @@
       },
     },
     async created() {
-      await this.dataPreload();
       this.initQueryOptions();
-      this.initTableColumns();
+      await this.dataPreload();
     },
     mounted() {
       this.fetchData();
     },
     methods: {
+      /*局部刷新*/
+      partlyReload() {
+        this.isPending = false;
+        let _partlyReload = stashData => {
+          let obj = {};
+          stashData.forEach(item => {
+            obj[item] = this.$data[item]
+          });
+          this.$store.commit('setStashData', obj);
+          Object.assign(this.$data, this.$options.data());
+          Object.assign(this.$data, this.$store.state.stashData);
+          this.queryData();
+          this.$store.commit('setStashData', {});
+        };
+        _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectGroupSrc', 'processGroupSelectGroup',  ])
+      },
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -250,7 +261,6 @@
       },
 
       initQueryOptions: function () {
-        this.queryOptions = JSON.parse(JSON.stringify(capacityQueryOptions));
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {
             type: item.type,
@@ -261,9 +271,6 @@
           type: 'select',
           value: ''
         })
-      },
-      initTableColumns: function () {
-        this.tableColumns = JSON.parse(JSON.stringify(capacityTableColumns))
       },
 
       initEditOptions: function () {
@@ -332,6 +339,7 @@
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
+          this.tableData = [];
           this.mergeData = {};
           this.mergePos = {};
           let options = {
@@ -424,7 +432,8 @@
                 this.$alertSuccess('操作成功');
                 this.resetEditCapacityForm();
                 this.closeEditCapacityPanel();
-                this.reload();
+                this.partlyReload();
+                //this.reload();
               } else {
                 this.$alertWarning(response.data.data)
               }
@@ -475,7 +484,8 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('删除成功');
-              this.reload();
+              this.partlyReload();
+              //this.reload();
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -601,7 +611,7 @@
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
     min-height: 60px;
