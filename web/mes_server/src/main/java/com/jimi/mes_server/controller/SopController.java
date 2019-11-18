@@ -18,8 +18,8 @@ import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.annotation.Log;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SopFileState;
+import com.jimi.mes_server.entity.SopRecycleFileType;
 import com.jimi.mes_server.entity.SopSiteState;
-import com.jimi.mes_server.entity.WebUserType;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -80,7 +80,7 @@ public class SopController extends Controller {
 	 * @param fullName 全称
 	 * @date 2019年10月24日 下午2:15:31
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFactory(Integer pageNo, Integer pageSize, String factoryAlias, String abbreviation, String fullName) {
 		renderJson(ResultUtil.succeed(sopService.selectFactory(pageNo, pageSize, factoryAlias, abbreviation, fullName)));
 	}
@@ -154,7 +154,7 @@ public class SopController extends Controller {
 	 * @param workshopName 车间名称
 	 * @date 2019年10月24日 下午2:17:26
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectWorkshop(Integer pageNo, Integer pageSize, Integer factoryId, String workshopNumber, String workshopName) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -250,7 +250,7 @@ public class SopController extends Controller {
 	 * @param lineId 产线ID
 	 * @date 2019年10月24日 下午2:21:44
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectSite(Integer pageNo, Integer pageSize, String siteNumber, String siteName, Integer processOrder, Integer lineId, Boolean orderByProcessOrder) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -353,7 +353,7 @@ public class SopController extends Controller {
 	 * @param factoryId 工厂ID
 	 * @date 2019年10月24日 下午2:23:48
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectCustomer(Integer pageNo, Integer pageSize, String customerNumber, String customerName, Integer factoryId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -429,7 +429,7 @@ public class SopController extends Controller {
 	 * @param seriesModelName 系列机型名称
 	 * @date 2019年10月24日 下午2:25:05
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectSeriesModel(Integer pageNo, Integer pageSize, String seriesModelName) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -505,7 +505,7 @@ public class SopController extends Controller {
 	 * @param seriesModelId 系列机型ID
 	 * @date 2019年10月24日 下午2:26:22
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectProductModel(Integer pageNo, Integer pageSize, String productModelName, Integer seriesModelId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -566,7 +566,7 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:27:27
 	 */
 	@Log("删除文件，文件的ID是：{id}")
-	@Access({ "SopManager" })
+	@Access({ "SopReviewer", "SopManager" })
 	public void deleteFile(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -595,7 +595,7 @@ public class SopController extends Controller {
 	 * @param reviewEndTime 结束审核时间
 	 * @date 2019年10月24日 下午2:27:41
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFiles(Integer pageNo, Integer pageSize, String fileNumber, String fileName, String version, String customer, String seriesModel, String productModel, String reviewer, String state, String reviewStartTime, String reviewEndTime) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -614,7 +614,7 @@ public class SopController extends Controller {
 	 * @param fileId 文件ID
 	 * @date 2019年10月24日 下午2:28:46
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFilePictures(Integer pageNo, Integer pageSize, Integer fileId) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -636,7 +636,7 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:29:07
 	 */
 	@Log("修改文件状态，文件的ID是：{id}，修改的状态：{state}")
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer" })
 	public void editFileState(Integer id, String state) {
 		if (id == null || StrKit.isBlank(state)) {
 			throw new ParameterException("参数不能为空");
@@ -646,9 +646,6 @@ public class SopController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (state.equals(SopFileState.REVIEWED_STATE.getName()) && WebUserType.SOPMANAGER.getName().equals(userVO.getTypeName())) {
-			throw new ParameterException("当前角色无法审核文件");
-		}
 		if (sopService.editFileState(id, state, userVO)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -662,7 +659,7 @@ public class SopController extends Controller {
 	 * @param id 文件ID
 	 * @date 2019年10月24日 下午2:29:24
 	 */
-	@Access({ "SopManager" })
+	@Access({ "SopManager", "SopReviewer" })
 	public void downloadFile(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -739,7 +736,7 @@ public class SopController extends Controller {
 	 * @param endTimeTo 结束播放时间终止
 	 * @date 2019年10月24日 下午2:30:32
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectNotice(Integer pageNo, Integer pageSize, String title, String content, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -783,7 +780,7 @@ public class SopController extends Controller {
 	 * @param filter 查询条件
 	 * @date 2019年9月24日 下午3:26:34
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectActionLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String uid, String resultCode) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -864,7 +861,7 @@ public class SopController extends Controller {
 	 * @param type 日志类型
 	 * @date 2019年10月24日 下午2:36:09
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectLoginLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String userName, String siteNumber, String type) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -882,10 +879,10 @@ public class SopController extends Controller {
 	 * @date 2019年10月24日 下午2:37:11
 	 */
 	@Log("发放文件，JSON信息是：{list}")
-	@Access({ "SopManager", "SopQcConfirmer" })
+	@Access({ "SopManager" })
 	public void dispatchFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
-			throw new OperationException("参数不能为空");
+			throw new ParameterException("参数不能为空");
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -896,15 +893,20 @@ public class SopController extends Controller {
 	/**@author HCJ
 	 * 停止站点的播放内容
 	 * @param id 站点ID
+	 * @param type 类型
 	 * @date 2019年10月24日 下午2:37:50
 	 */
-	@Log("取消文件的播放，站点ID是：{id}")
+	@Log("取消文件的播放，站点ID是：{id}，类型是：{type}")
 	@Access({ "SopManager", "SopQcConfirmer" })
-	public void recycleFile(String id) throws Exception {
-		if (StrKit.isBlank(id)) {
-			throw new OperationException("参数不能为空");
+	public void recycleFile(String id, Integer type) throws Exception {
+		if (StrKit.isBlank(id) || type == null) {
+			throw new ParameterException("参数不能为空");
 		}
-		renderJson(sopService.recycleFile(id));
+		String typeName = SopRecycleFileType.getNameById(type);
+		if (typeName == null) {
+			throw new ParameterException("当前类型不存在");
+		}
+		renderJson(sopService.recycleFile(id, typeName));
 	}
 
 
@@ -913,10 +915,10 @@ public class SopController extends Controller {
 	 * @param id 站点ID
 	 * @date 2019年10月24日 下午2:38:13
 	 */
-	@Access({ "SopManager", "SopQcConfirmer" })
+	@Access({ "SopManager", "SopQcConfirmer", "SopReviewer" })
 	public void previewSite(Integer id) throws Exception {
 		if (id == null) {
-			throw new OperationException("参数不能为空");
+			throw new ParameterException("参数不能为空");
 		}
 		renderJson(ResultUtil.succeed(sopService.previewSite(id)));
 	}
@@ -927,10 +929,10 @@ public class SopController extends Controller {
 	 * @param list 存储需要进行预览内容的json串
 	 * @date 2019年10月24日 下午2:38:42
 	 */
-	@Access({ "SopManager", "SopQcConfirmer" })
+	@Access({ "SopManager", "SopQcConfirmer", "SopReviewer" })
 	public void previewDispatchingFile(String list) throws Exception {
 		if (StrKit.isBlank(list)) {
-			throw new OperationException("参数不能为空");
+			throw new ParameterException("参数不能为空");
 		}
 		renderJson(ResultUtil.succeed(sopService.previewDispatchingFile(list)));
 	}
@@ -946,7 +948,7 @@ public class SopController extends Controller {
 	 * @param pushPerson 推送人
 	 * @date 2019年10月24日 下午2:39:37
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFileHistory(Integer pageNo, Integer pageSize, Integer fileId, String startTime, String endTime, String pushPerson) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -966,7 +968,7 @@ public class SopController extends Controller {
 	 * @param fileHistoryId 文件发放历史ID
 	 * @date 2019年10月24日 下午2:40:49
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFileHistoryDetail(Integer fileHistoryId) {
 		if (fileHistoryId == null) {
 			throw new ParameterException("文件历史ID不能为空");
@@ -991,7 +993,7 @@ public class SopController extends Controller {
 	 * @param pushPerson 推送人
 	 * @date 2019年10月24日 下午2:41:22
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectNoticeHistory(Integer pageNo, Integer pageSize, /*String siteNumber, String siteName,*/ String line, String workshop, String factory, String timeFrom, String timeTo, String title, String content, String pushPerson) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -1015,7 +1017,7 @@ public class SopController extends Controller {
 	 * @param type 类型
 	 * @date 2019年11月4日 下午5:46:18
 	 */
-	@Access({ "SopReviewer", "SopManager" })
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectConfirmLog(Integer pageNo, Integer pageSize, String timeFrom, String timeTo, String userName, String siteNumber, String lineName, String type) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
@@ -1024,6 +1026,30 @@ public class SopController extends Controller {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
 		renderJson(ResultUtil.succeed(sopService.selectConfirmLog(pageNo, pageSize, timeFrom, timeTo, userName, siteNumber, lineName, type)));
+	}
+
+
+	/**@author HCJ
+	 * 查询计数日志
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param startTimeFrom 起始的开始时间
+	 * @param startTimeTo 起始的终止时间
+	 * @param endTimeFrom 结束的开始时间
+	 * @param endTimeTo 结束的终止时间
+	 * @param userName 用户名
+	 * @param siteNumber 站点编号
+	 * @date 2019年11月7日 上午10:20:53
+	 */
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	public void selectCountLog(Integer pageNo, Integer pageSize, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, String userName, String siteNumber) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectCountLog(pageNo, pageSize, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, userName, siteNumber)));
 	}
 
 }

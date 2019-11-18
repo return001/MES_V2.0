@@ -31,6 +31,7 @@ import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.FileHistoryDetail;
 import com.jimi.mes_server.entity.PreviewInfo;
 import com.jimi.mes_server.entity.SopFileState;
+import com.jimi.mes_server.entity.SopRecycleFileType;
 import com.jimi.mes_server.entity.SopSQL;
 import com.jimi.mes_server.entity.SopSiteState;
 import com.jimi.mes_server.entity.sendMessageInfo;
@@ -40,6 +41,7 @@ import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.Line;
 import com.jimi.mes_server.model.SopConfirmLog;
+import com.jimi.mes_server.model.SopCountLog;
 import com.jimi.mes_server.model.SopCustomer;
 import com.jimi.mes_server.model.SopFaceInformation;
 import com.jimi.mes_server.model.SopFactory;
@@ -573,6 +575,12 @@ public class SopService extends SelectService {
 		try {
 			FileUtils.moveFile(uploadFile.getFile(), destFile);
 		} catch (Exception e) {
+			if (uploadFile.getFile().exists()) {
+				uploadFile.getFile().delete();
+			}
+			if (destFile.exists()) {
+				destFile.delete();
+			}
 			throw new OperationException("存储文件失败");
 		}
 		saveFileInfo(destFile);
@@ -596,18 +604,22 @@ public class SopService extends SelectService {
 			file.delete();
 			throw new OperationException("读取文件：" + file.getName() + " 出错，请确认文件内容");
 		}
-		String fileName = excelHelper.getString(10, 2);
-		String fileNumber = excelHelper.getString(11, 2);
-		String version = excelHelper.getString(12, 2);
-		excelHelper.switchSheet(2);
-		String customer = excelHelper.getString(2, 2);
-		String productModel = excelHelper.getString(2, 6);
-		String seriesModel = excelHelper.getString(2, 11);
-		SopFile sopFile = new SopFile();
-		sopFile.setCustomer(customer).setFileName(fileName).setFileNumber(fileNumber).setPath(file.getAbsolutePath());
-		sopFile.setProductModel(productModel).setSeriesModel(seriesModel).setVersion(version).setState(SopFileState.WAITREVIEW_STATE.getName());
-		sopFile.save();
-
+		try {
+			String fileName = excelHelper.getString(10, 2);
+			String fileNumber = excelHelper.getString(11, 2);
+			String version = excelHelper.getString(12, 2);
+			excelHelper.switchSheet(2);
+			String customer = excelHelper.getString(2, 2);
+			String productModel = excelHelper.getString(2, 6);
+			String seriesModel = excelHelper.getString(2, 11);
+			SopFile sopFile = new SopFile();
+			sopFile.setCustomer(customer).setFileName(fileName).setFileNumber(fileNumber).setPath(file.getAbsolutePath());
+			sopFile.setProductModel(productModel).setSeriesModel(seriesModel).setVersion(version).setState(SopFileState.WAITREVIEW_STATE.getName());
+			sopFile.save();
+		} catch (Exception e) {
+			file.delete();
+			throw new OperationException("读取文件：" + file.getName() + " 出错，请确认文件内容");
+		}
 	}
 
 
@@ -686,6 +698,7 @@ public class SopService extends SelectService {
 		if (StringUtils.endsWith(sql, "1 ")) {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
 		}
+		sql.append(" order by id desc ");
 		sqlPara.setSql(sql.toString());
 		Page<Record> records = Db.paginate(pageNo, pageSize, sqlPara);
 		if (records.getList() != null && !records.getList().isEmpty()) {
@@ -929,7 +942,12 @@ public class SopService extends SelectService {
 
 
 	public SopSite getSopSiteByMac(String mac) {
-		return SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
+		SopSite site = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
+		if (site == null) {
+			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, mac);
+			return temp;
+		}
+		return site;
 	}
 
 
@@ -993,24 +1011,24 @@ public class SopService extends SelectService {
 	public ResultUtil dispatchFile(String list, LUserAccountVO userVO) {
 		List<sendMessageInfo> sendMessageInfos = JSONObject.parseArray(list, sendMessageInfo.class);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		StringBuilder result = new StringBuilder("操作成功的站点编号为 ");
+		StringBuilder result = new StringBuilder();
 		for (sendMessageInfo sendMessageInfo : sendMessageInfos) {
 			StringBuilder noticeIdBuilder = new StringBuilder();
 			StringBuilder pictureIdBuilder = new StringBuilder();
 			StringBuilder fileIdBuilder = new StringBuilder();
 			SopSite sopSite = SopSite.dao.findById(sendMessageInfo.getId());
 			if (sopSite == null) {
-				result.append("; 站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在 ");
+				result.append(" 站点ID为 " + sendMessageInfo.getId() + " 的站点记录不存在 ; ");
 				continue;
 			}
 			Line line = Line.dao.findById(sopSite.getLineId());
 			if (line == null) {
-				result.append("; 产线ID为 " + sopSite.getLineId() + " 的产线记录不存在 ");
+				result.append(" 产线ID为 " + sopSite.getLineId() + " 的产线记录不存在 ; ");
 				continue;
 			}
 			Session session = SessionBox.getSessionById(sendMessageInfo.getId());
 			if (session == null) {
-				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ");
+				result.append(" 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ; ");
 				continue;
 			}
 			Record siteRecord = Db.findFirst(SopSQL.SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY, sendMessageInfo.getId());
@@ -1024,8 +1042,8 @@ public class SopService extends SelectService {
 					if (sopNotice == null) {
 						continue;
 					}
-					if (sopNotice.getStartTime().before(new Date())) {
-						throw new OperationException("开始播放时间不能在当前时间之前");
+					if (sopNotice.getEndTime().before(new Date())) {
+						throw new OperationException("结束播放时间不能在当前时间之前");
 					}
 					SopNoticeHistory sopNoticeHistory = new SopNoticeHistory();
 					sopNoticeHistory.setTitle(sopNotice.getTitle()).setContent(sopNotice.getContent());
@@ -1073,7 +1091,7 @@ public class SopService extends SelectService {
 			try {
 				response = Pasta.sendRequest(session, RequestType.SHOW, requestBody);
 			} catch (Exception e) {
-				result.append("; 发送指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ");
+				result.append(" 发送指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ; ");
 				continue;
 			}
 			throwExceptionIfExistByResult(response);
@@ -1081,7 +1099,7 @@ public class SopService extends SelectService {
 			saveSopSiteDisplay(sendMessageInfo.getId(), noticeIdBuilder, pictureIdBuilder, fileIdBuilder);
 			saveSopNoticeHistory(sopNoticeHistories, userVO, time, siteRecord);
 			saveSopFileHistory(sopPictureHistories, fileIdBuilder, userVO, time, siteRecord);
-			result.append(sopSite.getSiteNumber() + " , ");
+			result.append(" 编号为 " + sopSite.getSiteNumber() + " 的站点操作成功 , ");
 		}
 		String resultString = result.toString();
 		if (resultString.contains(";")) {
@@ -1241,31 +1259,47 @@ public class SopService extends SelectService {
 	}
 
 
-	public ResultUtil recycleFile(String id) {
-		StringBuilder result = new StringBuilder("操作成功的站点编号为 ");
+	public ResultUtil recycleFile(String id, String typeName) {
+		StringBuilder result = new StringBuilder();
 		for (String siteId : id.split(",")) {
 			SopSite sopSite = SopSite.dao.findById(Integer.parseInt(siteId));
 			if (sopSite == null) {
-				result.append("; 站点ID为 " + siteId + " 的站点记录不存在 ");
+				result.append(" 站点ID为 " + siteId + " 的站点记录不存在 ; ");
 				continue;
 			}
 			Session session = SessionBox.getSessionById(Integer.parseInt(siteId));
 			if (session == null) {
-				result.append("; 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ");
+				result.append(" 站点编号为 " + sopSite.getSiteNumber() + " 的客户端不在线或不存在 ; ");
 				continue;
 			}
 			JSONObject response = null;
-			try {
-				response = Pasta.sendRequest(session, RequestType.CANCELSHOW, null);
-			} catch (Exception e) {
-				result.append("; 发送取消播放指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ");
-				continue;
+			if (typeName.equals(SopRecycleFileType.FILE.getName())) {
+				try {
+					response = Pasta.sendRequest(session, RequestType.CANCELPICTURE, null);
+				} catch (Exception e) {
+					result.append(" 发送取消播放文件指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ; ");
+					continue;
+				}
+			} else if (typeName.equals(SopRecycleFileType.NOTICE.getName())) {
+				try {
+					response = Pasta.sendRequest(session, RequestType.CANCELNOTICE, null);
+				} catch (Exception e) {
+					result.append(" 发送取消播放通知指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ; ");
+					continue;
+				}
+			} else if (typeName.equals(SopRecycleFileType.FILE_AND_NOTICE.getName())) {
+				try {
+					response = Pasta.sendRequest(session, RequestType.CANCELSHOW, null);
+				} catch (Exception e) {
+					result.append(" 发送取消播放指令到站点编号为 " + sopSite.getSiteNumber() + " 的站点出错 ; ");
+					continue;
+				}
 			}
 			throwExceptionIfExistByResult(response);
-			stopPlayFile(Integer.parseInt(siteId));
-			removeSopSiteDisplay(sopSite);
+			stopPlayFile(Integer.parseInt(siteId), typeName);
+			removeSopSiteDisplay(sopSite, typeName);
 			updateSopSiteState(sopSite);
-			result.append(sopSite.getSiteNumber() + " , ");
+			result.append(" 编号为 " + sopSite.getSiteNumber() + " 的站点操作成功 , ");
 		}
 		String resultString = result.toString();
 		if (resultString.contains(";")) {
@@ -1279,24 +1313,27 @@ public class SopService extends SelectService {
 	/**@author HCJ
 	 * 停止站点的文件的播放，设置文件状态
 	 * @param siteId 站点ID
+	 * @param typeName 类型名称
 	 * @date 2019年10月24日 下午3:23:44
 	 */
-	private void stopPlayFile(Integer siteId) {
-		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
-		if (sopSiteDisplay != null) {
-			if (!StrKit.isBlank(sopSiteDisplay.getFiles())) {
-				List<SopFile> sopFiles = new ArrayList<>();
-				String[] fileIds = sopSiteDisplay.getFiles().split(",");
-				for (String fileId : fileIds) {
-					if (!StrKit.isBlank(fileId)) {
-						SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
-						if (sopFile != null) {
-							sopFile.setState(SopFileState.REVIEWED_STATE.getName());
-							sopFiles.add(sopFile);
+	private void stopPlayFile(Integer siteId, String typeName) {
+		if (typeName.equals(SopRecycleFileType.FILE.getName()) || typeName.equals(SopRecycleFileType.FILE_AND_NOTICE.getName())) {
+			SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, siteId);
+			if (sopSiteDisplay != null) {
+				if (!StrKit.isBlank(sopSiteDisplay.getFiles())) {
+					List<SopFile> sopFiles = new ArrayList<>();
+					String[] fileIds = sopSiteDisplay.getFiles().split(",");
+					for (String fileId : fileIds) {
+						if (!StrKit.isBlank(fileId)) {
+							SopFile sopFile = SopFile.dao.findById(Integer.parseInt(fileId));
+							if (sopFile != null) {
+								sopFile.setState(SopFileState.REVIEWED_STATE.getName());
+								sopFiles.add(sopFile);
+							}
 						}
 					}
+					Db.batchUpdate(sopFiles, sopFiles.size());
 				}
-				Db.batchUpdate(sopFiles, sopFiles.size());
 			}
 		}
 	}
@@ -1305,16 +1342,29 @@ public class SopService extends SelectService {
 	/**@author HCJ
 	 * 移除站点正在播放的内容
 	 * @param sopSite 站点对象
+	 * @param typeName 类型名称
 	 * @date 2019年10月24日 下午3:25:01
 	 */
-	private void removeSopSiteDisplay(SopSite sopSite) {
+	private void removeSopSiteDisplay(SopSite sopSite, String typeName) {
 		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, sopSite.getId());
 		if (sopSiteDisplay != null) {
-			sopSiteDisplay.setFiles(null).setNotices(null).setPictures(null).update();
+			if (typeName.equals(SopRecycleFileType.FILE.getName())) {
+				sopSiteDisplay.setFiles(null).setPictures(null).update();
+			} else if (typeName.equals(SopRecycleFileType.NOTICE.getName())) {
+				sopSiteDisplay.setNotices(null).update();
+			} else if (typeName.equals(SopRecycleFileType.FILE_AND_NOTICE.getName())) {
+				sopSiteDisplay.setFiles(null).setNotices(null).setPictures(null).update();
+			}
 		}
 	}
 
 
+	/**@author HCJ
+	 * 更新站点状态
+	 * @param sopSite 站点对象
+	 * @param typeName 类型名称
+	 * @date 2019年11月14日 下午4:36:57
+	 */
 	private void updateSopSiteState(SopSite sopSite) {
 		sopSite.setState(SopSiteState.UNCONFIRMED.getName()).update();
 	}
@@ -1588,6 +1638,49 @@ public class SopService extends SelectService {
 		}
 		if (!StrKit.isBlank(endTime)) {
 			sql.append(" AND time <= '").append(endTime).append("'");
+		}
+		if (StringUtils.endsWith(sql, "1 = 1 ")) {
+			sql.delete(sql.lastIndexOf("WHERE"), sql.length());
+		}
+		sql.append(" order by id desc");
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public void addCountLog(String userName, Date startTime, Date endTime, Integer number, SopSite sopSite) {
+		Line line = Line.dao.findById(sopSite.getLineId());
+		String lineName = null;
+		if (line != null && !StrKit.isBlank(line.getLineName())) {
+			lineName = line.getLineName();
+		}
+		SopCountLog sopCountLog = new SopCountLog();
+		sopCountLog.setLineName(lineName).setNumber(number).setSiteNumber(sopSite.getSiteNumber()).setUserName(userName);
+		sopCountLog.setStartTime(startTime).setEndTime(endTime).save();
+	}
+
+
+	public Page<Record> selectCountLog(Integer pageNo, Integer pageSize, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, String userName, String siteNumber) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_COUNT_LOG);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(userName)) {
+			sql.append(" AND user_name like '%").append(userName).append("%'");
+		}
+		if (!StrKit.isBlank(siteNumber)) {
+			sql.append(" AND site_number like '%").append(siteNumber).append("%'");
+		}
+		if (!StrKit.isBlank(startTimeFrom)) {
+			sql.append(" AND start_time >= '").append(startTimeFrom).append("'");
+		}
+		if (!StrKit.isBlank(startTimeTo)) {
+			sql.append(" AND start_time <= '").append(startTimeTo).append("'");
+		}
+		if (!StrKit.isBlank(endTimeFrom)) {
+			sql.append(" AND end_time >= '").append(endTimeFrom).append("'");
+		}
+		if (!StrKit.isBlank(endTimeTo)) {
+			sql.append(" AND end_time <= '").append(endTimeTo).append("'");
 		}
 		if (StringUtils.endsWith(sql, "1 = 1 ")) {
 			sql.delete(sql.lastIndexOf("WHERE"), sql.length());

@@ -77,4 +77,6 @@ public class SopSQL {
 	public static final String SELECT_NOTICEHISTORY = "SELECT id,line,workshop,factory,push_time as pushTime,push_person as pushPerson,title,content FROM sop_notice_history";
 
 	public static final String SELECT_CONFIRM_LOG = "SELECT id,user_name as userName,[time],site_number as siteNumber,line_name as lineName,content,type FROM sop_confirm_log";
+
+	public static final String SELECT_COUNT_LOG = "SELECT id,number,line_name as lineName,site_number as siteNumber,user_name as userName,start_time as startTime,end_time as endTime FROM sop_count_log";
 }

@@ -6,6 +6,7 @@ import com.jfinal.aop.Enhancer;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.service.SopService;
+import com.jimi.mes_server.thread.SendDisplayInfoThread;
 import com.jimi.mes_server.util.ResultUtil;
 import com.jimi.mes_server.websocket.container.SessionBox;
 
@@ -34,6 +35,8 @@ public class LoginHandler {
 		// 把ID与Session加入到SessionBox中
 		SessionBox.addSession(loginId, session);
 		sopService.addLoginLog(userName, time, sopSite.getSiteNumber(), Constant.CLIENT_LOGIN);
+		SendDisplayInfoThread sendDisplayInfoThread = new SendDisplayInfoThread(sopSite);
+		sendDisplayInfoThread.start();
 		return ResultUtil.succeed("登录成功");
 	}
 

@@ -16,6 +16,10 @@ public class RequestTypeTimeoutTimeManager {
 
 	private static final long LOGOUT = 10 * 1000;
 
+	private static final long CANCELPICTURE = 10 * 1000;
+
+	private static final long CANCELNOTICE = 10 * 1000;
+
 	private static final Map<String, Long> map = new HashMap<>();
 
 	static {
@@ -23,6 +27,8 @@ public class RequestTypeTimeoutTimeManager {
 		map.put(RequestType.CANCELSHOW, CANCELSHOW);
 		map.put(RequestType.LOGIN, LOGIN);
 		map.put(RequestType.LOGOUT, LOGOUT);
+		map.put(RequestType.CANCELPICTURE, CANCELPICTURE);
+		map.put(RequestType.CANCELNOTICE, CANCELNOTICE);
 	}
 
 

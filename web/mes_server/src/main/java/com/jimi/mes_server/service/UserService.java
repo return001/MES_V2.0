@@ -73,7 +73,7 @@ public class UserService extends SelectService {
 	}
 
 
-	public boolean update(LUserAccount user) {
+	public boolean update(LUserAccount user, LUserAccountVO tokenUser) {
 		checkUser(user);
 		if (user.getPassword() == null) {
 			user.remove("Password");
@@ -87,9 +87,10 @@ public class UserService extends SelectService {
 		if (user.getLoginTime() == null) {
 			user.remove("LoginTime");
 		}
-		LUserAccount originalUser = LUserAccount.dao.findById(user.getId());
-		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType()) && !Constant.SUPER_ADMIN_USERTYPE.equals(originalUser.getWebUserType())) {
-			throw new OperationException("权限不足以修改为超级管理员");
+		if (Constant.SUPER_ADMIN_USERTYPE.equals(user.getWebUserType())) {
+			if (tokenUser.getWebUserType() == null || !Constant.SUPER_ADMIN_USERTYPE.equals(tokenUser.getWebUserType())) {
+				throw new OperationException("权限不足以修改为超级管理员");
+			}
 		}
 		LUserAccount temp = LUserAccount.dao.findFirst(uniqueCheckSql, user.getName());
 		if (temp != null && !temp.getId().equals(user.getId())) {

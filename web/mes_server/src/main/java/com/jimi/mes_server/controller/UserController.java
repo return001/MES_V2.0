@@ -90,7 +90,9 @@ public class UserController extends Controller {
 
 	@Access({ "administration" })
 	public void update(@Para("") LUserAccount user) {
-		if (userService.update(user)) {
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO tokenUser = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (userService.update(user, tokenUser)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

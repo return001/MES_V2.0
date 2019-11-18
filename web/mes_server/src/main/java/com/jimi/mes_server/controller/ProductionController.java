@@ -49,7 +49,7 @@ public class ProductionController extends Controller {
 	 * 获取工序组ID和名称
 	 * @date 2019年8月8日 下午3:38:32
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcessGroup() {
 		renderJson(ResultUtil.succeed(productionService.getProcessGroup()));
 	}
@@ -59,7 +59,7 @@ public class ProductionController extends Controller {
 	 * 获取工序ID和名称
 	 * @date 2019年8月8日 下午3:39:02
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcess() {
 		renderJson(ResultUtil.succeed(productionService.getProcess()));
 	}
@@ -69,7 +69,7 @@ public class ProductionController extends Controller {
 	 * 获取产线ID和名称
 	 * @date 2019年8月8日 下午3:39:25
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getLine() {
 		renderJson(ResultUtil.succeed(productionService.getLine()));
 	}
@@ -102,7 +102,7 @@ public class ProductionController extends Controller {
 	 * @param groupRemark 备注
 	 * @date 2019年8月8日 下午3:41:13
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void addProcessGroup(String groupNo, String groupName, String groupRemark) {
 		if (StringUtils.isAnyBlank(groupNo, groupName)) {
 			throw new ParameterException("参数不能为空");
@@ -120,7 +120,7 @@ public class ProductionController extends Controller {
 	 * @param id 工序组ID
 	 * @date 2019年8月8日 下午3:41:54
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void deleteProcessGroup(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -142,7 +142,7 @@ public class ProductionController extends Controller {
 	 * @param filter 查询条件
 	 * @date 2019年8月8日 下午3:43:20
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectProcessGroup(String filter) {
 		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(filter));
 		renderJson(result);
@@ -157,7 +157,7 @@ public class ProductionController extends Controller {
 	 * @param groupRemark 备注
 	 * @date 2019年8月8日 下午3:43:47
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -226,7 +226,7 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2019年8月8日 下午3:49:17
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectLine(String lineNo, String lineName, Integer processGroup, Integer workshopId, Integer factoryId, String lineDirector, String lineEngineer, String lineQc) {
 		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup, workshopId, factoryId, lineDirector, lineEngineer, lineQc)));
 	}
@@ -268,7 +268,7 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组
 	 * @date 2019年8月8日 下午3:50:40
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void addProcess(String processNo, String processName, String processRemark, Integer processGroup) {
 		if (StringUtils.isAnyBlank(processNo, processName)) {
 			throw new ParameterException("参数不能为空");
@@ -286,7 +286,7 @@ public class ProductionController extends Controller {
 	 * @param id 工序ID
 	 * @date 2019年8月8日 下午3:51:08
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void deleteProcess(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -306,7 +306,7 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2019年8月8日 下午3:51:20
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectProcess(String processNo, String processName, Integer processGroup) {
 		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo, processName, processGroup)));
 	}
@@ -321,7 +321,7 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2019年8月8日 下午3:52:31
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");

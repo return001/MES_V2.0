@@ -1,6 +1,10 @@
 package com.jimi.mes_server.entity;
 
 
+/**SOP站点状态枚举类
+ * @author   HCJ
+ * @date     2019年11月14日 下午4:49:14
+ */
 public enum SopSiteState {
 
 	UNCONFIRMED(0, "未确认"), 
