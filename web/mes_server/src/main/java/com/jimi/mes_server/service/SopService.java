@@ -231,7 +231,10 @@ public class SopService extends SelectService {
 			throw new OperationException("站点编号已存在,请重新输入");
 		}
 		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac) != null) {
-			throw new OperationException("MAC地址已存在,请重新输入");
+			throw new OperationException("存在站点的MAC地址与输入的MAC重复,请重新输入");
+		}
+		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, mac) != null) {
+			throw new OperationException("存在站点的第二个MAC地址与输入的MAC重复,请重新输入");
 		}
 		if (Line.dao.findById(lineId) == null) {
 			throw new OperationException("当前产线不存在");
@@ -250,8 +253,14 @@ public class SopService extends SelectService {
 		}
 		sopSite.setLineId(lineId).setMac(mac).setProcessOrder(processOrder).setSiteName(siteName).setSiteNumber(siteNumber).setSwitchInterval(switchInterval);
 		if (!StrKit.isBlank(secondMac)) {
+			if (secondMac.equalsIgnoreCase(mac)) {
+				throw new OperationException("两个MAC地址不能相同");
+			}
+			if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, secondMac) != null) {
+				throw new OperationException("存在站点的MAC地址与输入的第二个MAC重复,请重新输入");
+			}
 			if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, secondMac) != null) {
-				throw new OperationException("第二个MAC地址已存在,请重新输入");
+				throw new OperationException("存在站点的第二个MAC地址与输入的第二个MAC重复,请重新输入");
 			}
 			sopSite.setSecondMac(secondMac);
 		}
@@ -334,9 +343,13 @@ public class SopService extends SelectService {
 			if (!CommonUtil.isMac(mac)) {
 				throw new ParameterException("MAC地址无效");
 			}
-			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
-			if (temp != null && !temp.getId().equals(id)) {
-				throw new OperationException("MAC地址已存在,请重新输入");
+			SopSite macSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac);
+			if (macSite != null && !macSite.getId().equals(id)) {
+				throw new OperationException("存在站点的MAC地址与输入的MAC重复,请重新输入");
+			}
+			SopSite secondMacSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, mac);
+			if (secondMacSite != null && !secondMacSite.getId().equals(id)) {
+				throw new OperationException("存在站点的第二个MAC地址与输入的MAC重复,请重新输入");
 			}
 			sopSite.setMac(mac);
 		}
@@ -344,13 +357,17 @@ public class SopService extends SelectService {
 			if (!CommonUtil.isMac(secondMac)) {
 				throw new ParameterException("第二个MAC地址无效");
 			}
-			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, secondMac);
-			if (temp != null && !temp.getId().equals(id)) {
-				throw new OperationException("第二个MAC地址已存在,请重新输入");
+			SopSite macSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, secondMac);
+			if (macSite != null && !macSite.getId().equals(id)) {
+				throw new OperationException("存在站点的MAC地址与输入的第二个MAC重复,请重新输入");
+			}
+			SopSite secondMacSite = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SENCONDMAC, secondMac);
+			if (secondMacSite != null && !secondMacSite.getId().equals(id)) {
+				throw new OperationException("存在站点的第二个MAC地址与输入的第二个MAC重复,请重新输入");
 			}
 		}
 		sopSite.setSecondMac(secondMac);
-		if (sopSite.getMac().equals(sopSite.getSecondMac())) {
+		if (sopSite.getMac().equalsIgnoreCase(sopSite.getSecondMac())) {
 			throw new OperationException("两个MAC地址不能相同");
 		}
 		return sopSite.update();
@@ -628,7 +645,7 @@ public class SopService extends SelectService {
 		if (sopFile == null) {
 			throw new OperationException("当前文件信息不存在");
 		}
-		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
+		/*List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
 		if (sopSiteDisplays != null && !sopSiteDisplays.isEmpty()) {
 			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
 				if (StrKit.isBlank(sopSiteDisplay.getFiles())) {
@@ -641,7 +658,7 @@ public class SopService extends SelectService {
 					}
 				}
 			}
-		}
+		}*/
 		File file = new File(sopFile.getPath());
 		if (file.exists()) {
 			file.delete();
@@ -847,7 +864,7 @@ public class SopService extends SelectService {
 		if (sopNotice == null) {
 			throw new OperationException("当前通知/注意事项不存在");
 		}
-		List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
+		/*List<SopSiteDisplay> sopSiteDisplays = SopSiteDisplay.dao.find(SopSQL.SELECT_SOPSITEDISPLAY);
 		if (sopSiteDisplays != null && !sopSiteDisplays.isEmpty()) {
 			for (SopSiteDisplay sopSiteDisplay : sopSiteDisplays) {
 				if (StrKit.isBlank(sopSiteDisplay.getNotices())) {
@@ -860,7 +877,7 @@ public class SopService extends SelectService {
 					}
 				}
 			}
-		}
+		}*/
 		return sopNotice.delete();
 	}
 
@@ -1044,6 +1061,20 @@ public class SopService extends SelectService {
 					}
 					if (sopNotice.getEndTime().before(new Date())) {
 						throw new OperationException("结束播放时间不能在当前时间之前");
+					}
+					SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, sopSite.getId());
+					if (sopSiteDisplay != null && !StrKit.isBlank(sopSiteDisplay.getNotices())) {
+						boolean isNoticeDisplay = false;
+						for (String displayNoticeId : sopSiteDisplay.getNotices().split(",")) {
+							if (!StrKit.isBlank(displayNoticeId) && displayNoticeId.equals(noticeId.toString())) {
+								result.append(" 站点编号为 " + sopSite.getSiteNumber() + " 的客户端已经存在当前通知，请先将站点停播 ; ");
+								isNoticeDisplay = true;
+								break;
+							}
+						}
+						if (isNoticeDisplay) {
+							continue;
+						}
 					}
 					SopNoticeHistory sopNoticeHistory = new SopNoticeHistory();
 					sopNoticeHistory.setTitle(sopNotice.getTitle()).setContent(sopNotice.getContent());

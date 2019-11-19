@@ -2,6 +2,7 @@ package com.jimi.mes_server.thread;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.websocket.Session;
 
@@ -74,6 +75,9 @@ public class SendDisplayInfoThread extends Thread {
 				for (String noticeId : sopSiteDisplay.getNotices().split(",")) {
 					SopNotice sopNotice = SopNotice.dao.findById(Integer.parseInt(noticeId));
 					if (sopNotice == null) {
+						continue;
+					}
+					if (sopNotice.getEndTime().before(new Date())) {
 						continue;
 					}
 					Notice notice = new Notice();
