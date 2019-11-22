@@ -42,12 +42,13 @@ import {
   Autocomplete,
   Tag,
   Alert,
-  Divider
+  Divider,
+  RadioGroup
 } from 'element-ui'
 
 import {RZSideBar, RZFormQueryBar, RZFormItem} from 'rz-el-comp'
 
-[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag, Alert, Divider,
+[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag, Alert, Divider, RadioGroup,
 
   RZSideBar, RZFormQueryBar, RZFormItem
 ].forEach(item => {

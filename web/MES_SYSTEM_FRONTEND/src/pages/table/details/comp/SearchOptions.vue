@@ -11,6 +11,16 @@
            v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
         <el-checkbox id="rel-checkbox" v-model="isReferred">{{relTable}}</el-checkbox>
       </div>
+      <div style="margin-right: 10px"
+           v-if="$route.query.type === 'Gps_ManuCpParam'"
+           class="form-group">
+        <label>对比失败次数</label>
+        <el-radio-group v-model="cpParamRadio" >
+          <el-radio :label="0">任意</el-radio>
+          <el-radio :label="1">无错误</el-radio>
+          <el-radio :label="2">有错误</el-radio>
+        </el-radio-group>
+      </div>
       <div class="form-group-btn">
         <el-button type="info" @click="initForm($route.query.type, {isReferred: isReferred})">清空条件</el-button>
       </div>
@@ -174,7 +184,8 @@
           user: '',
           password: ''
         },
-        dataCount: 0
+        dataCount: 0,
+        cpParamRadio: 0
       }
     },
     mounted() {
@@ -298,6 +309,15 @@
           let params = {
             isReferred: this.isReferred
           };
+          if (this.cpParamRadio !== 0) {
+            let radioQueryText = "";
+            if (this.cpParamRadio === 1) {
+              radioQueryText = "CPFalseCount#=#0"
+            } else {
+              radioQueryText = "CPFalseCount#>#0"
+            }
+            this.queryString === '' ? this.queryString += radioQueryText : this.queryString += ('#&#' + radioQueryText)
+          }
           eventBus.$emit('tableQueryData', [this.queryString, params])
         }).catch(err => {
           this.$alertInfo(err)
@@ -322,6 +342,17 @@
           if (this.setDatabase() === 0) {
             data.type = this.setDatabase()
           }
+
+          if (this.cpParamRadio !== 0) {
+            let radioQueryText = "";
+            if (this.cpParamRadio === 1) {
+              radioQueryText = "CPFalseCount#=#0"
+            } else {
+              radioQueryText = "CPFalseCount#>#0"
+            }
+            this.queryString === '' ? this.queryString += radioQueryText : this.queryString += ('#&#' + radioQueryText)
+          }
+
           if (this.queryString !== "") {
             data.filter = this.queryString
           }
@@ -495,6 +526,14 @@
   .form-group /deep/ label {
     line-height: 40px;
     display: block;
+  }
+
+  .form-group .el-radio-group {
+    display: flex;
+
+  }
+  .form-group .el-radio-group .el-radio {
+    margin-right: 10px;
   }
 
   .options-area /deep/ .form-group .el-input {
