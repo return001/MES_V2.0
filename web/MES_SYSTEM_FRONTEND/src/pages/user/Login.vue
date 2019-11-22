@@ -83,6 +83,7 @@
               this.setUserType(sessionStorage.getItem('UserType'));
               sessionStorage.setItem('delPermission', res.data.data['DeletePermission']);
               this.setDelPermission(sessionStorage.getItem('delPermission').split(','));
+              sessionStorage.setItem('UserName', res.data.data['Name']);
               this.$router.replace('/');
             } else if (res.data.result === 412) {
               this.$alertWarning("请检查用户名或密码")

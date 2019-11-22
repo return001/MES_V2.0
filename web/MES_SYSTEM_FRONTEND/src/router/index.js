@@ -175,6 +175,10 @@ const router = new Router({
               path: 'notice_log',
               component: ESopLogs
             },
+            {
+              path: 'count_log',
+              component: ESopLogs
+            },
           ]
         },
         {

@@ -60,9 +60,17 @@ export const FileQueryConfig = [
     size: 'small',
     pickerList: [
       {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
-      }
+      },
     ],
     prop: 'reviewTime',
   }
@@ -86,6 +94,14 @@ export const NoticeQueryConfig = [
     size: 'small',
     pickerList: [
       {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
       }
@@ -97,6 +113,14 @@ export const NoticeQueryConfig = [
     label: '结束播放时间',
     size: 'small',
     pickerList: [
+      {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
       {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
@@ -125,6 +149,14 @@ export const ActionLogQueryConfig = [
     size: 'small',
     pickerList: [
       {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
       }
@@ -136,7 +168,7 @@ export const ActionLogQueryConfig = [
 export const ClientLogQueryConfig = [
   {
     type: 'text',
-    label: '用户',
+    label: '员工',
     size: 'small',
     prop: 'userName',
   },
@@ -151,6 +183,14 @@ export const ClientLogQueryConfig = [
     label: '操作时间',
     size: 'small',
     pickerList: [
+      {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
       {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
@@ -192,6 +232,14 @@ export const FileHistoryQueryConfig = [
     label: '发放时间',
     size: 'mini',
     pickerList: [
+      {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
       {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
@@ -238,6 +286,14 @@ export const ConfirmLogQueryConfig = [
     size: 'small',
     pickerList: [
       {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
       }
@@ -270,12 +326,75 @@ export const NoticeLogQueryConfig = [
     size: 'small',
     pickerList: [
       {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
         label: '最近一个月',
         duringTime: 3600 * 24 * 1000 * 30,
       }
     ],
     prop: 'time',
   }
+];
+
+export const CountLogQueryConfig = [
+  {
+    type: 'text',
+    label: '员工',
+    size: 'small',
+    prop: 'userName',
+  },
+  {
+    type: 'text',
+    label: '站点编号',
+    size: 'small',
+    prop: 'siteNumber',
+  },
+  {
+    type: 'date-range',
+    label: '开始时间范围',
+    size: 'small',
+    pickerList: [
+      {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
+        label: '最近一个月',
+        duringTime: 3600 * 24 * 1000 * 30,
+      }
+    ],
+    prop: 'startTime',
+  },
+  {
+    type: 'date-range',
+    label: '结束时间范围',
+    size: 'small',
+    pickerList: [
+      {
+        label: '过去24小时',
+        duringTime: 3600 * 24 * 1000,
+      },
+      {
+        label: '最近七天',
+        duringTime: 3600 * 24 * 1000 * 7,
+      },
+      {
+        label: '最近一个月',
+        duringTime: 3600 * 24 * 1000 * 30,
+      }
+    ],
+    prop: 'endTime',
+  },
 ];
 
 
@@ -386,7 +505,7 @@ export const ActionLogTableColumns = [
 
 export const ClientLogTableColumns = [
   {
-    'label': '用户',
+    'label': '员工',
     'key': 'userName',
     'min-width': '100px'
   },
@@ -409,11 +528,11 @@ export const ClientLogTableColumns = [
 
 
 export const SiteTableColumns = [
- /* {
+  {
     'label': 'SOP状态',
     'key': 'state',
-    'min-width': '80px'
-  },*/
+    'min-width': '100px'
+  },
   {
     'label': '站点编号',
     'key': 'siteNumber',
@@ -518,7 +637,7 @@ export const FileHistoryDetailsTableColumns = [
 
 export const ConfirmLogTableColumns = [
   {
-    'label': '用户',
+    'label': '确认人',
     'key': 'userName',
     'min-width': '80px'
   },
@@ -587,6 +706,39 @@ export const NoticeLogTableColumns = [
   },
 ];
 
+export const CountLogTableColumns = [
+  {
+    'label': '员工',
+    'key': 'userName',
+    'min-width': '80px'
+  },
+  {
+    'label': '产线',
+    'key': 'lineName',
+    'min-width': '100px'
+  },
+  {
+    'label': '站点编号',
+    'key': 'siteNumber',
+    'min-width': '100px'
+  },
+  {
+    'label': '数目',
+    'key': 'number',
+    'min-width': '80px'
+  },
+  {
+    'label': '开始时间',
+    'key': 'startTime',
+    'min-width': '80px'
+  },
+  {
+    'label': '结束时间',
+    'key': 'endTime',
+    'min-width': '80px'
+  },
+];
+
 
 /*编辑表单*/
 export const FileFormItems = [];
@@ -595,13 +747,15 @@ export const NoticeFormItems = [
     'label': '标题',
     'prop': 'title',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '内容',
     'prop': 'content',
     'type': 'text',
     'inputType': 'textarea',
-    'rows': 5
+    'rows': 5,
+    'limit': [0, 256],
   },
   {
     'label': '开始播放时间',

@@ -18,7 +18,7 @@ export const axiosDownload = (opt) => {
   return axios({
     method: 'post',
     url: opt.url,
-    timeout: 90000,
+    timeout: 0,
     responseType: 'blob',
     data: Qs.stringify(opt.data)
   })

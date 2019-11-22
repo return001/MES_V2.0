@@ -156,7 +156,7 @@
     created() {
       this.$openLoading();
       this._getLineList().then(data => {
-        this.queryConfig[3].selectList = data.map(item => {
+        this.queryConfig[2].selectList = data.map(item => {
           return {
             key: item.id,
             label: item.lineName

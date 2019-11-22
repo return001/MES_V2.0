@@ -9,7 +9,7 @@ export const FactoryQueryConfig = [
   },
   {
     type: 'text',
-    label: '缩写',
+    label: '简称',
     size: 'small',
     prop: 'abbreviation',
   },
@@ -56,12 +56,12 @@ export const SiteQueryConfig = [
     size: 'small',
     prop: 'siteName',
   },
-  {
+/*  {
     type: 'text',
     label: '工序顺序',
     size: 'small',
     prop: 'processOrder',
-  },
+  },*/
   {
     type: 'select',
     label: '所属产线',
@@ -122,7 +122,7 @@ export const ProductQueryConfig = [
 /*表头配置*/
 export const FactoryTableColumns = [
   {
-    'label': '别名',
+    'label': '厂别',
     'key': 'factoryAlias',
     'min-width': '80px'
   },
@@ -132,7 +132,7 @@ export const FactoryTableColumns = [
     'min-width': '100px'
   },
   {
-    'label': '全名',
+    'label': '全称',
     'key': 'fullName',
     'min-width': '120px'
   },
@@ -248,17 +248,20 @@ export const FactoryFormItems = [
   {
     'type': 'text',
     'label': '别名',
-    'prop': 'factoryAlias'
+    'prop': 'factoryAlias',
+    'limit': [0, 8],
   },
   {
     'type': 'text',
     'label': '简称',
-    'prop': 'abbreviation'
+    'prop': 'abbreviation',
+    'limit': [0, 16],
   },
   {
     'type': 'text',
     'label': '全名',
-    'prop': 'fullName'
+    'prop': 'fullName',
+    'limit': [0, 32],
   },
 ];
 
@@ -267,11 +270,13 @@ export const WorkshopFormItems = [
     'label': '车间编号',
     'prop': 'workshopNumber',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '车间名称',
     'prop': 'workshopName',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '所属工厂',
@@ -286,11 +291,13 @@ export const SiteFormItems = [
     'label': '站点编号',
     'prop': 'siteNumber',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '站点名称',
     'prop': 'siteName',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '工序顺序',
@@ -330,6 +337,7 @@ export const ModelFormItems = [
     'label': '系列机型',
     'prop': 'seriesModelName',
     'type': 'text',
+    'limit': [0, 32],
   },
 ];
 
@@ -338,6 +346,7 @@ export const ProductFormItems = [
     'label': '产品型号',
     'prop': 'productModelName',
     'type': 'text',
+    'limit': [0, 32],
   },
   {
     'label': '系列机型',
@@ -352,11 +361,13 @@ export const CustomerFormItems = [
     'label': '客户编号',
     'prop': 'customerNumber',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '客户名称',
     'prop': 'customerName',
     'type': 'text',
+    'limit': [0, 16],
   },
   {
     'label': '所属工厂',

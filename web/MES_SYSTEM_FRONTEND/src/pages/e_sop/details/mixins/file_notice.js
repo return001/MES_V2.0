@@ -60,6 +60,13 @@ export default {
             label: item.workshopName,
           }
         });
+
+        /*重置下一层数据*/
+        this.lineQueryData.workshopId = null;
+        this.lineQueryData.lineId = null;
+        this.lineList = [];
+        this.siteList = [];
+
         this.isPending = false;
         this.$closeLoading();
       })
@@ -78,6 +85,11 @@ export default {
             label: item.lineName,
           }
         });
+
+        /*重置下一层数据*/
+        this.lineQueryData.lineId = null;
+        this.siteList = [];
+
         this.isPending = false;
         this.$closeLoading();
       })

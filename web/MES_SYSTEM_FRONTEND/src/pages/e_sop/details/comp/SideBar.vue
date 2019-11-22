@@ -63,6 +63,10 @@
                 type: 'login_log',
                 name: '日志'
               },
+              {
+                type: 'count_log',
+                name: '产能记录'
+              },
             ]
           }
         ],

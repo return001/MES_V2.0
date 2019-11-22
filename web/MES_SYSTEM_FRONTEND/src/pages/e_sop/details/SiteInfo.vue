@@ -48,10 +48,10 @@
             </el-tooltip>
             <el-tooltip content="停止播放" placement="top"
                         v-if="_permissionControl(['SopManager', 'SopQcConfirmer'])">
-              <el-button type="text" @click="stopPlaying(scope.row.id)" icon="el-icon-video-pause"></el-button>
+              <el-button type="text" @click="showStopPlayingPanel(scope.row.id)" icon="el-icon-video-pause"></el-button>
             </el-tooltip>
             <el-tooltip content="状态" placement="top"
-                        v-if="_permissionControl(['SopManager',  'SopQcConfirmer'])">
+                        v-if="_permissionControl(['SopQcConfirmer'])">
               <el-button type="text"
                          @click="editStatus(scope.row)"
                          icon="el-icon-more"></el-button>
@@ -126,12 +126,39 @@
           <el-button type="primary" @click="submitStatusEdit" size="small">保存</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog
+      title="暂停播放"
+      :visible.sync="isStoppingPlayingSite"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @close="resetStopping"
+      width="260px">
+      <div class="edit-status">
+        <el-select v-model="stoppingType"
+                   placeholder="请选择停播的内容"
+                   size="small">
+          <el-option :value="0" label="SOP文件内容"></el-option>
+          <el-option :value="1" label="通知"></el-option>
+          <el-option :value="2" label="SOP文件及通知"></el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button type="info" @click="isStoppingPlayingSite = false" size="small">取消</el-button>
+          <el-button type="primary" @click="stopPlaying" size="small">确认</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
   import {SiteQueryConfig, SiteTableColumns,} from "../../../config/ESopConfig";
-  import {eSopSiteSelectUrl, eSopSitePreviewUrl, eSopFileRecycleUrl, eSopSiteStatusEditUrl} from "../../../config/globalUrl";
+  import {
+    eSopSiteSelectUrl,
+    eSopSitePreviewUrl,
+    eSopFileRecycleUrl,
+    eSopSiteStatusEditUrl
+  } from "../../../config/globalUrl";
   import common from "./mixins/common";
   import {axiosFetch} from "../../../utils/fetchData";
   import 'element-ui/lib/theme-chalk/base.css'
@@ -175,11 +202,16 @@
 
         /*暂停相关*/
         selectionGroup: [],
+        isStoppingPlayingSite: false,
+        stoppingSingleSiteId: null,
+        stoppingType: 0,
 
         /*修改状态*/
         isStatusEditing: false,
         siteStatus: '',
-        statusEditingSiteId: null
+        statusEditingSiteId: null,
+
+
 
       }
     },
@@ -276,25 +308,41 @@
         this.selectionGroup = val;
       },
 
+      showStopPlayingPanel(id) {
+        if (this.selectionGroup.length !== 0) {
+          this.$alertInfo('请先清空所选站点');
+          return;
+        }
+        this.stoppingSingleSiteId = id;
+        this.isStoppingPlayingSite = true;
+      },
+
       stopGroupPlaying() {
         if (this.selectionGroup.length === 0) {
           this.$alertInfo('请选择站点')
         } else {
-          this.stopPlaying(this.selectionGroup.map(item => item.id).toString())
+          this.isStoppingPlayingSite = true;
         }
       },
 
-      stopPlaying(id) {
+      stopPlaying() {
         this.isPending = true;
         this.$openLoading();
+        let id;
+        if (this.selectionGroup.length !== 0) {
+          id = this.selectionGroup.map(item => item.id).toString()
+        } else {
+          id = this.stoppingSingleSiteId
+        }
         axiosFetch({
           url: eSopFileRecycleUrl,
           data: {
-            id: id
+            id: id,
+            type: this.stoppingType
           }
         }).then(response => {
           if (response.data.result === 200) {
-            this.$alertSuccess('停止成功')
+            this.$alertSuccess('停止成功');
             this.partlyReload();
           } else {
             this.$alertWarning(response.data.data)
@@ -306,6 +354,12 @@
           this.$closeLoading();
         })
 
+      },
+
+      resetStopping() {
+        this.$refs['tablecomponent'].clearSelection();
+        this.stoppingSingleSiteId = null;
+        this.stoppingType = 0;
       },
 
       /*编辑状态*/
@@ -368,6 +422,7 @@
     width: 100%;
     box-sizing: border-box;
   }
+
   .el-carousel img {
     width: 100%;
     height: 100%;

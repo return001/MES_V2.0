@@ -45,7 +45,7 @@
               <el-button type="text" @click="_deleteData(scope.row)" icon="el-icon-delete"></el-button>
             </el-tooltip>
             <el-tooltip content="发放" placement="top">
-              <el-button type="text" @click="dispatchNotice(scope.row.id)" icon="el-icon-upload2"></el-button>
+              <el-button type="text" @click="dispatchNotice(scope.row)" icon="el-icon-upload2"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -222,14 +222,15 @@
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
-      this.buttonGroup.push(
-        {
-          label: '新增',
-          size: 'small',
-          type: 'primary',
-          callback: this.addData
-        });
-
+      if (this._permissionControl(['SopManager'])) {
+        this.buttonGroup.push(
+          {
+            label: '新增',
+            size: 'small',
+            type: 'primary',
+            callback: this.addData
+          });
+      }
       this._queryData();
     },
     methods: {
@@ -327,7 +328,11 @@
         }
       },
 
-      dispatchNotice(noticeId) {
+      dispatchNotice(row) {
+        if (new Date().getTime() - new Date(row.endTime) > 0) {
+          this.$alertInfo('选择的通知播放时间已过期');
+          return;
+        }
         this.isPending = true;
         this.$openLoading();
         this.getDataList(eSopFactorySelectUrl, '厂区').then(data => {
@@ -338,7 +343,7 @@
             }
           })
         });
-        this.dispatchingNoticeId = noticeId;
+        this.dispatchingNoticeId = row.id;
         this.isDispatching = true;
         this.isPending = false;
         this.$closeLoading();

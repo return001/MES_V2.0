@@ -52,12 +52,15 @@
     ClientLogTableColumns,
     ClientLogQueryConfig,
     NoticeLogQueryConfig,
-    NoticeLogTableColumns
+    NoticeLogTableColumns,
+    CountLogQueryConfig,
+    CountLogTableColumns
   } from "../../../config/ESopConfig";
   import {
     eSopConfirmLogSelectUrl,
     eSopLoginLogSelectUrl,
-    eSopNoticeLogSelectUrl
+    eSopNoticeLogSelectUrl,
+    eSopCountLogSelectUrl,
   } from "../../../config/globalUrl";
   import common from "./mixins/common";
 
@@ -108,6 +111,11 @@
           this.tableColumns = NoticeLogTableColumns;
           this.dataQueryUrl = eSopNoticeLogSelectUrl;
           break;
+        case 'count_log':
+          this.queryConfig = CountLogQueryConfig;
+          this.tableColumns = CountLogTableColumns;
+          this.dataQueryUrl = eSopCountLogSelectUrl;
+          break;
       }
     },
     watch: {
@@ -138,6 +146,12 @@
             if (key === 'time') {
               options.data.timeFrom = this.queryCompData[key][0];
               options.data.timeTo = this.queryCompData[key][1];
+            } else if (key === 'startTime') {
+              options.data.startTimeFrom = this.queryCompData[key][0];
+              options.data.startTimeTo = this.queryCompData[key][1];
+            } else if (key === 'endTime') {
+              options.data.endTimeFrom = this.queryCompData[key][0];
+              options.data.endTimeTo = this.queryCompData[key][1];
             } else {
               options.data[key] = this.queryCompData[key];
             }

@@ -170,6 +170,8 @@ export const eSopFileRecycleUrl = url + '/sop/recycleFile';
 export const eSopFilePictureSelectUrl = url + '/sop/selectFilePictures';
 export const eSopFileHistorySelectUrl = url + '/sop/selectFileHistory';
 export const eSopFileHistoryDetailsSelectUrl = url + '/sop/selectFileHistoryDetail';
+export const eSopFileDownloadUrl = url + '/sop/downloadFile';
+
 /*通知管理*/
 export const eSopNoticeSelectUrl = url + '/sop/selectNotice';
 export const eSopNoticeEditUrl = url + '/sop/editNotice';
@@ -180,6 +182,7 @@ export const eSopNoticeAddUrl = url + '/sop/addNotice';
 export const eSopActionLogSelectUrl = url + '/sop/selectActionLog';
 export const eSopConfirmLogSelectUrl = url + '/sop/selectConfirmLog';
 export const eSopNoticeLogSelectUrl = url + '/sop/selectNoticeHistory';
+export const eSopCountLogSelectUrl = url + '/sop/selectCountLog';
 
 /*客户端*/
 export const eSopLoginLogSelectUrl = url + '/sop/selectLoginLog';

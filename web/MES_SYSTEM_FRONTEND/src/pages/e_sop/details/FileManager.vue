@@ -33,12 +33,12 @@
 
         <el-table-column
           label="操作"
-          width="130"
+          width="160"
           fixed="right"
         >
           <template slot-scope="scope">
             <el-tooltip content="状态" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopReviewer'])">
+                        v-if="_permissionControl(['SopReviewer'])">
               <el-button type="text"
                          @click="editStatus(scope.row)"
                          icon="el-icon-more"
@@ -57,8 +57,15 @@
                          @click="showDispatchingLog(scope.row.id)"
                          icon="el-icon-document"></el-button>
             </el-tooltip>
+            <el-tooltip content="下载" placement="top"
+                        v-if="_permissionControl(['SopManager', 'SopReviewer'])">
+              <el-button type="text"
+                         @click="downloadSop(scope.row.id)"
+                         icon="el-icon-download"
+                         :disabled="scope.row.state === '已作废'"></el-button>
+            </el-tooltip>
             <el-tooltip content="作废" placement="top"
-                        v-if="_permissionControl(['SopManager'])">
+                        v-if="_permissionControl(['SopManager', 'SopReviewer'])">
               <el-button type="text"
                          @click="_deleteData(scope.row)"
                          icon="el-icon-delete"
@@ -232,6 +239,9 @@
             </div>
           </div>
         </div>
+        <span slot="footer" class="dialog-footer">
+         <el-button size="small" @click="isImportingPage = false">确认</el-button>
+       </span>
       </el-dialog>
 
       <el-dialog
@@ -265,8 +275,8 @@
         action="#"
         :auto-upload="false"
         :http-request="uploadFile"
-        multiple
         :before-upload="beforeUpload"
+        :on-change="checkFile"
         accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       >
         <el-button slot="trigger" size="small" type="info">选取文件</el-button>
@@ -412,9 +422,10 @@
     eSopSiteSelectUrl,
     eSopFileDispatchUrl,
     eSopFileHistoryDetailsSelectUrl,
-    eSopFileHistorySelectUrl
+    eSopFileHistorySelectUrl,
+    eSopFileDownloadUrl
   } from "../../../config/globalUrl";
-  import {axiosFetch} from "../../../utils/fetchData";
+  import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import common from "./mixins/common";
   import file_notice from "./mixins/file_notice"
 
@@ -670,10 +681,45 @@
         this.isPending = true;
         this.$openLoading();
       },
-
+      checkFile(file, fileList) {
+        if (fileList.length > 1) {
+          this.$refs['fileUploadRef'].uploadFiles.splice(0, fileList.length - 1)
+        }
+      },
       resetUploadDialog() {
         this.isUploading = false;
         this.uploadFileData = null;
+      },
+
+      /*文件下载*/
+      downloadSop(fileId) {
+        if (!this.isPending) {
+          this.isPending = true;
+          this.$openLoading();
+          axiosDownload({
+            url: eSopFileDownloadUrl,
+            data: {
+              id: fileId
+            }
+          }).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, decodeURIComponent(name))
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
+            }
+          }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
+        }
       },
 
       /*文件分发*/
@@ -744,9 +790,9 @@
         let siteList = this.siteList;
         let pageList = this.pageList;
         for (let i = 0; i < siteList.length; i++) {
+          this.siteListWithPic[i].picList = [];
           for (let j = 0; j < pageList.length; j++) {
             if (parseInt(pageList[j].pictureNumber) === siteList[i].processOrder) {
-              this.siteListWithPic[i].picList = [];
               this.siteListWithPic[i].picList.push(pageList[j]);
               //待分配列表删除对应页面
               for (let k = 0; k < this.remainingPageList.length; k++) {
