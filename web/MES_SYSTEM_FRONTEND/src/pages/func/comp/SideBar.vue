@@ -1,20 +1,5 @@
 <!--配置功能统一导航-->
 <template>
-  <!--<div class="mt-3 mb-3">-->
-  <!--<nav>-->
-  <!--<div class="sidebar-items">-->
-  <!--&lt;!&ndash;订单配置&ndash;&gt;-->
-  <!--<div class="sidebar-title">-->
-  <!--<a class="subtitle" draggable="false" data-toggle="collapse" href="#collapsePenetrate" aria-expanded="false"-->
-  <!--aria-controls="collapsePenetrate">MAC返工</a>-->
-  <!--</div>-->
-  <!--<div class="collapse show" id="collapsePenetrate">-->
-  <!--<div @click="toggleState('mac')">-->
-  <!--<div class="sidebar-link" @click="linkTo({link: '/func/mac', type: 'mac'})" :class="activeItem === 'mac' ? 'active' : ''">MAC返工</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</nav>-->
 
   <el-menu
     class="sidebar-container"
@@ -41,7 +26,6 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
 
   export default {
     data() {
@@ -60,14 +44,7 @@
     mounted: function () {
       this.activeItem = this.$route.path
     },
-    computed: {
-      ...mapGetters([
-        'tableRouterApi',
-        'isLoading'
-      ]),
-    },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading']),
       toggleState: function (item) {
         this.activeItem = item;
 

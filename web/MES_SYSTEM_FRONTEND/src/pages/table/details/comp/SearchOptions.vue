@@ -4,12 +4,12 @@
   <div class="options-area">
     <div class="form-row">
       <div v-for="item in queryOptions" class="form-group">
-        <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"
+        <component :opt="item" :is="item.type + '-comp'"
                    :pickerOptions="pickerOptions"></component>
       </div>
       <div style="width: 140px; margin-right: 10px"
            v-if="$route.query.type === 'DataRelativeSheet' || $route.query.type === 'Gps_CartonBoxTwenty_Result'">
-        <el-checkbox id="rel-checkbox" v-model="isReferred">{{relTable}}</el-checkbox>
+        <el-checkbox size="small" id="rel-checkbox" v-model="isReferred">{{relTable}}</el-checkbox>
       </div>
       <div style="margin-right: 10px"
            v-if="$route.query.type === 'Gps_ManuCpParam'"
@@ -22,20 +22,20 @@
         </el-radio-group>
       </div>
       <div class="form-group-btn">
-        <el-button type="info" @click="initForm($route.query.type, {isReferred: isReferred})">清空条件</el-button>
+        <el-button size="small" type="info" @click="initForm($route.query.type, {isReferred: isReferred})">清空条件</el-button>
       </div>
       <div class="form-group-btn">
-        <el-button type="primary" @click="thisFetch">查询</el-button>
+        <el-button size="small" type="primary" @click="thisFetch">查询</el-button>
       </div>
       <div class="form-group-btn" v-if="isDataExist">
-        <el-button type="primary" @click="downloadData" v-if="!isReferred">下载报表</el-button>
-        <el-button type="primary" @click="downloadData"
+        <el-button size="small" type="primary" @click="downloadData" v-if="!isReferred">下载报表</el-button>
+        <el-button size="small" type="primary" @click="downloadData"
                    v-if="isReferred && $route.query.type === 'Gps_CartonBoxTwenty_Result'">下载报表
         </el-button>
       </div>
       <div class="form-group-btn"
            v-if="$route.query.type !== 'LTestLogMessage' && $route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission && isDataExist">
-        <el-button type="warning" @click="validateVisible = true">删除所有</el-button>
+        <el-button size="small" type="warning" @click="validateVisible = true">删除所有</el-button>
         <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
       </div>
     </div>
@@ -50,17 +50,17 @@
 
       <div class="">
         <label for="validate-user" style="line-height: 30px">用户名</label>
-        <el-input type="text" id="validate-user" v-model.trim="validateInfo.user" autocomplete="off" clearable
+        <el-input size="small" type="text" id="validate-user" v-model.trim="validateInfo.user" autocomplete="off" clearable
                   placeholder="请填写用户名"></el-input>
       </div>
       <div class="">
         <label for="validate-pwd" style="line-height: 30px">密码</label>
-        <el-input type="password" id="validate-pwd" v-model.trim="validateInfo.password" autocomplete="off" clearable
+        <el-input size="small" type="password" id="validate-pwd" v-model.trim="validateInfo.password" autocomplete="off" clearable
                   placeholder="请填写密码"></el-input>
       </div>
       <span slot="footer">
-        <el-button @click="validateVisible = false">取 消</el-button>
-        <el-button type="primary" @click="validateDelete">校 验</el-button>
+        <el-button size="small" @click="validateVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="validateDelete">校 验</el-button>
       </span>
     </el-dialog>
   </div>
@@ -69,15 +69,11 @@
 
 <script>
   import eventBus from '@/utils/eventBus'
-  import {mapGetters, mapActions} from 'vuex';
+  import {mapGetters} from 'vuex';
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {tableDownloadUrl, tableDeleteUrl, validateUrl, tableCartonDownloadUrl} from "../../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../../utils/fetchData";
   import {checkDelPermission} from "../../../../utils/utils";
-  import {Settings} from 'luxon'
-  import {Datetime} from 'vue-datetime'
-  import 'vue-datetime/dist/vue-datetime.css'
-  import _ from 'lodash'
   import {saveAs} from 'file-saver'
 
 
@@ -88,19 +84,18 @@
         props: ['opt', 'callback'],
         template: '<div class="query-comp-container">\n' +
         '           <label :for="opt.id">{{opt.name}}</label>\n' +
-        '           <el-input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback" autocomplete="off"></el-input>\n' +
+        '           <el-input size="small" type="text" class="form-control" :id="opt.id" v-model.trim="opt.model" autocomplete="off"></el-input>\n' +
         '          </div>'
       },
       'date-comp': {
         props: ['opt', 'pickerOptions'],
         components: {
-          Datetime
         },
         template: '<div class="row">\n' +
         '    <div class="form-group">\n' +
         '      <label>{{opt.name}}  从：</label>\n' +
         '      <el-date-picker\n' +
-        '                size="large"\n' +
+        '                size="small"\n' +
         '                v-model="opt.timeRange"\n' +
         '                type="datetimerange"\n' +
         '                :picker-options="pickerOptions"\n' +
@@ -119,12 +114,12 @@
         template: '<div>\n' +
         '    <div class="form-group">\n' +
         '      <label>{{opt.name}}</label>\n' +
-        '      <el-select :name="opt.id" v-model="opt.selectModel" class="custom-select" style="width: 100%;">\n' +
+        '      <el-select size="small" :name="opt.id" v-model="opt.selectModel" class="custom-select" style="width: 100%;">\n' +
         '        <el-option v-for="item in opt.selection" :value="item.id" :key="item.id" :label="item.name"></el-option>\n' +
         '      </el-select>\n' +
         '    </div>\n' +
         '    <div class="form-group" style="margin-top: 10px">\n' +
-        '      <el-input type="text" v-model="opt.textModel" class="form-control"></el-input>\n' +
+        '      <el-input size="small" type="text" v-model.trim="opt.textModel" class="form-control"></el-input>\n' +
         '    </div>\n' +
         '  </div>'
       },
@@ -133,11 +128,11 @@
         template: '<div style="display: flex;">\n' +
         '    <div class="form-group">\n' +
         '      <label :for="opt.id + \'From\'">{{opt.name}} 从：</label>\n' +
-        '      <el-input type="text" class="form-control" :id="opt.id + \'From\'" v-model="opt.modelFrom" autocomplete="off"></el-input>\n' +
+        '      <el-input size="small" type="text" class="form-control" :id="opt.id + \'From\'" v-model.trim="opt.modelFrom" autocomplete="off"></el-input>\n' +
         '    </div>\n' +
         '    <div class="form-group" style="margin-left: 10px">\n' +
         '      <label :for="opt.id + \'To\'">至：</label>\n' +
-        '      <el-input type="text" class="form-control" :id="opt.id + \'To\'" v-model="opt.modelTo" autocomplete="off"></el-input>\n' +
+        '      <el-input size="small" type="text" class="form-control" :id="opt.id + \'To\'" v-model.trim="opt.modelTo" autocomplete="off"></el-input>\n' +
         '    </div>\n' +
         '  </div>'
       }
@@ -189,7 +184,6 @@
       }
     },
     mounted() {
-      Settings.defaultLocale = 'zh-CN';
       if (this.$route.query.type) {
         this.initForm(this.$route.query.type, {isReferred: this.isReferred})
       }
@@ -230,7 +224,6 @@
       },
     },
     methods: {
-      ...mapActions(['setLoading']),
       initForm: function (opt, params) {
         let routerConfig = setRouterConfig(opt, params);
         this.queryOptions = JSON.parse(JSON.stringify(routerConfig.data.queryOptions));
@@ -253,14 +246,11 @@
           this.copyQueryOptions.map((item, index) => {
             switch (item.type) {
               case 'text':
-                if (_.trim(item.model) !== "") {
                   if (index === 0) {
-                    this.queryString += (item.id + "#=#" + _.trim(item.model))
+                    this.queryString += (item.id + "#like#" + item.model)
                   } else {
-                    this.queryString += ("#&#" + item.id + "#=#" + _.trim(item.model))
+                    this.queryString += ("#&#" + item.id + "#like#" + item.model)
                   }
-
-                }
                 break;
               case 'date':
                 if (!!item.timeRange) {
@@ -274,11 +264,11 @@
                 }
                 break;
               case 'map':
-                if (item.selectModel !== '' && _.trim(item.textModel) !== '') {
+                if (item.selectModel !== '' && item.textModel !== '') {
                   if (index === 0) {
-                    this.queryString += (item.selectModel + "#=#" + _.trim(item.textModel))
+                    this.queryString += (item.selectModel + "#=#" + item.textModel)
                   } else {
-                    this.queryString += ("#&#" + item.selectModel + "#=#" + _.trim(item.textModel))
+                    this.queryString += ("#&#" + item.selectModel + "#=#" + item.textModel)
                   }
                 }
                 break;
@@ -497,15 +487,8 @@
     background: #fff;
     border: 1px solid #eeeeee;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 20px;
     margin-bottom: 10px;
-  }
-
-  .options-area /deep/ .el-input__inner {
-    height: 38px;
-    line-height: 38px;
-    border: 1px solid #ced4da;
-    display: flex;
   }
 
   .form-row {
@@ -515,16 +498,12 @@
   }
 
   .form-group {
-    min-width: 220px;
+    min-width: 200px;
     margin-right: 20px;
   }
 
-  .form-group .el-input {
-    width: 220px;
-  }
-
   .form-group /deep/ label {
-    line-height: 40px;
+    line-height: 32px;
     display: block;
   }
 
@@ -537,11 +516,7 @@
   }
 
   .options-area /deep/ .form-group .el-input {
-    width: 220px;
-  }
-
-  .options-area /deep/ .form-group label {
-    line-height: 40px;
+    width: 200px;
   }
 
   .form-group-btn {

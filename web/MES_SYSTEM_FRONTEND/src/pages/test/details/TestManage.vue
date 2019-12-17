@@ -13,7 +13,6 @@
   import TableDetails from './comp/TableDetails'
   import EditFuncPanel from './comp/EditFuncPanel'
   import EditPanel from './comp/EditPanel'
-  import {mapGetters, mapActions} from 'vuex'
 
   export default {
     name: "TestManage",
@@ -21,7 +20,6 @@
       return {}
     },
     computed: {
-      ...mapGetters(['isEditing', 'editData'])
     },
     components: {
       Options,
@@ -36,12 +34,5 @@
   .test-manager {
     padding-top: 20px;
     padding-right: 20px;
-  }
-  .fade-enter-active, .fade-leave-active {
-    transition: opacity .5s;
-  }
-
-  .fade-enter, .fade-leave-to {
-    opacity: 0;
   }
 </style>

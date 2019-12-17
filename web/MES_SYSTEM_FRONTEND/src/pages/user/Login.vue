@@ -1,6 +1,7 @@
 <!--登录组件-->
 <template>
   <div>
+    <!--标题栏头部-->
     <page-header/>
 
     <div class="login-container" :style="{height: pageHeight + 'px'}">
@@ -8,8 +9,13 @@
         <form @submit.prevent="loginSubmit">
           <div class="form-item">
             <label for="login-username">用户名</label>
-            <el-input type="text" id="login-username" class="form-control" placeholder="用户名" v-model="loginInfos.name"
-                      @keyup.enter="loginSubmit"/>
+            <el-input type="text"
+                      id="login-username"
+                      class="form-control"
+                      placeholder="用户名"
+                      v-model="loginInfos.name"
+                      @keyup.enter="loginSubmit"
+                      autofocus/>
           </div>
           <div class="form-item">
             <label for="login-password">密 码</label>
@@ -63,19 +69,19 @@
     methods: {
       ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission']),
       pageHeightCalc: function () {
-        this.pageHeight = document.body.clientHeight - 200;
+        this.pageHeight = (document.body.clientHeight > 460) ? document.body.clientHeight - 200 : 260;
       },
       /*登录处理*/
 
       loginSubmit: function () {
         if (!this.isPending) {
+          this.$openLoading();
           this.isPending = true;
           let options = {
             url: loginUrl,
             data: this.loginInfos
           };
           axiosFetch(options).then(res => {
-            this.isPending = false;
             if (res.data.result === 200) {
               sessionStorage.setItem('token', res.data.data["#TOKEN#"]);
               this.setLoginToken(sessionStorage.getItem('token'));
@@ -97,6 +103,9 @@
             this.isPending = false;
             console.log(JSON.stringify(err));
             this.$alertDanger(err);
+          }).finally(() => {
+            this.$closeLoading();
+            this.isPending = false;
           })
         }
       }

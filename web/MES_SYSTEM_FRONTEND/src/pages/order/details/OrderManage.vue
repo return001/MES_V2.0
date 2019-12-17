@@ -1,7 +1,6 @@
 <!--订单配置页面根组件-->
 <template>
-  <div id="order-main">
-    <loading v-if="$store.state.isLoading"/>
+  <div id="order-main" v-if="isRouterAlive">
     <options/>
     <table-details/>
     <edit-panel/>
@@ -14,13 +13,19 @@
   import TableDetails from './comp/TableDetails'
   import EditPanel from './comp/EditPanel'
   import CreateRelation from './comp/CreateRelation'
-  import {mapGetters, mapActions} from 'vuex'
-  import Loading from '../../../components/Loading'
+  import {mapGetters} from 'vuex'
 
   export default {
     name: "OrderManage",
+    provide() {
+      return {
+        reload: this.reload
+      }
+    },
     data() {
-      return {}
+      return {
+        isRouterAlive: true
+      }
     },
     computed: {
       ...mapGetters(['isEditing', 'editData'])
@@ -29,8 +34,16 @@
       Options,
       TableDetails,
       EditPanel,
-      Loading,
       CreateRelation
+    },
+
+    methods: {
+      reload: function () {
+        this.isRouterAlive = false;
+        this.$nextTick(function () {
+          this.isRouterAlive = true;
+        })
+      }
     }
   }
 </script>

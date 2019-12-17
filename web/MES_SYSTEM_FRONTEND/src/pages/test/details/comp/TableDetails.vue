@@ -49,24 +49,15 @@
   </div>
 </template>
 <script>
-  import Qs from 'qs'
   import {axiosFetch} from "../../../../utils/fetchData";
-  import {mapGetters, mapActions} from 'vuex'
   import {getTestConfig, testSelectUrl} from "../../../../config/testApiConfig";
-  import EditOptions from './EditOptions';
-  import EditPanel from './EditFuncPanel';
-  import {errHandler} from "../../../../utils/errorHandler";
   import eventBus from "../../../../utils/eventBus";
   import {testOperUrl} from "../../../../config/testApiConfig";
   import {MessageBox} from 'element-ui'
 
   export default {
     name: "Details",
-    props: ['row'],
-    components: {
-      EditOptions,
-      EditPanel
-    },
+    inject: ['reload'],
     data() {
       return {
         tableData: [],
@@ -81,12 +72,7 @@
         queryString: '',
       }
     },
-    computed: {
-      ...mapGetters([
-        'testType'
-      ]),
-
-    },
+    computed: {},
     watch: {
       $route: function (route) {
         this.init();
@@ -115,7 +101,6 @@
       })
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -143,10 +128,9 @@
         let routerConfig = getTestConfig();
         this.tableColumns = routerConfig.data.dataColumns;
         if (!this.isPending) {
+          this.$openLoading();
           this.isPending = true;
           axiosFetch(options).then(response => {
-            this.$closeLoading();
-            this.isPending = false;
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
               this.paginationOptions = {
@@ -158,13 +142,13 @@
               this.$alertWarning(response.data.data)
             }
 
+          }).catch(err => {
+            console.log(err);
+            this.$alertDanger('请求超时，清刷新重试')
+          }).finally(() => {
+            this.$closeLoading();
+            this.isPending = false;
           })
-            .catch(err => {
-              this.$closeLoading();
-              this.isPending = false;
-              console.log(err);
-              this.$alertDanger('请求超时，清刷新重试')
-            })
         } else {
           this.$closeLoading()
         }
@@ -190,6 +174,7 @@
         }).then(() => {
 
           if (!this.isPending) {
+            this.$openLoading();
             this.isPending = true;
             let url = testOperUrl + '/cancel';
             let options = {
@@ -200,18 +185,18 @@
               }
             };
             axiosFetch(options).then((response) => {
-              this.isPending = false;
               if (response.data.result === 200) {
                 this.$alertSuccess('作废成功');
                 let tempUrl = this.$route.fullPath;
-                this.$router.push('/_empty');
-                this.$router.replace(tempUrl)
+                this.reload();
               } else {
                 this.$alertWarning(response.data.data)
               }
             }).catch(err => {
-              this.isPending = false;
               this.$alertDanger('请求超时，清刷新重试');
+            }).finally(() => {
+              this.$closeLoading();
+              this.isPending = false;
             })
           }
         }).catch(() => {

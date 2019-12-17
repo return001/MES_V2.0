@@ -3,10 +3,11 @@
     <div class="options-area">
       <div class="form-row">
         <div v-for="item in queryOptions" class="row no-gutters pl-3 pr-3">
-          <component :opt="item" :is="item.type + '-comp'"></component>
+          <component :opt="item" :is="item.type + '-comp'"
+                     :pickerOptions="pickerOptions"></component>
         </div>
         <div class="form-group-btn">
-          <el-button type="primary" @click="thisFetch('query')">查询</el-button>
+          <el-button size="small" type="primary" @click="thisFetch('query')">查询</el-button>
         </div>
       </div>
     </div>
@@ -48,10 +49,8 @@
 </template>
 
 <script>
-  import {Datetime} from 'vue-datetime';
   import {tableHistoryDownloadUrl, tableHistoryQueryUrl} from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
-  import {mapActions} from 'vuex'
 
   export default {
     name: "Backups",
@@ -60,22 +59,22 @@
         props: ['opt', 'callback'],
         template: '<div class="form-group">\n' +
         '           <label :for="opt.id">{{opt.name}}</label>\n' +
-        '           <el-input type="text" :id="opt.id" v-model="opt.model" @keyup.enter="callback" autocomplete="off"></el-input>\n' +
+        '           <el-input size="small" type="text" :id="opt.id" v-model="opt.model" @keyup.enter="callback" autocomplete="off"></el-input>\n' +
         '          </div>'
       },
       'date-comp': {
-        props: ['opt'],
+        props: ['opt', 'pickerOptions'],
         components: {
-          Datetime
         },
         template: '<div class="row" style="margin-right: 20px">\n' +
         '    <div class="form-group">\n' +
         '      <label>{{opt.name}}  从：</label>\n' +
         '      <el-date-picker\n' +
-        '                size="large"\n' +
+        '                size="small"\n' +
         '                v-model="opt.timeRange"\n' +
         '                clearable\n' +
         '                type="datetimerange"\n' +
+        '                :picker-options="pickerOptions"\n' +
         '                range-separator="-"\n' +
         '                prefix-icon="el-icon-date"\n' +
         '                start-placeholder="开始日期"\n' +
@@ -116,7 +115,34 @@
         tableData: [],
         queryString: '',
         isPending: false,
-        isDownloading: false
+        isDownloading: false,
+        pickerOptions: {
+          shortcuts: [{
+            text: '最近一天',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: '最近三天',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: '最近一周',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit('pick', [start, end]);
+            }
+          }]
+        },
       }
     },
     mounted() {
@@ -129,7 +155,6 @@
       }
     },
     methods: {
-      ...mapActions(['setLoading']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -147,18 +172,18 @@
             if (!(item.model === "" || item.modelFrom === "" || item.modelTo === "")) {
               return true;
             }
+            if (item.timeRange) {
+              return true;
+            }
           });
 
           this.copyQueryOptions.map((item, index) => {
             switch (item.type) {
               case 'text':
-                if (_.trim(item.model) !== "") {
-                  if (index === 0) {
-                    this.queryString += (item.id + "#like#" + _.trim(item.model))
-                  } else {
-                    this.queryString += ("#&#" + item.id + "#like#" + _.trim(item.model))
-                  }
-
+                if (index === 0) {
+                  this.queryString += (item.id + "#like#" + item.model)
+                } else {
+                  this.queryString += ("#&#" + item.id + "#like#" + item.model)
                 }
                 break;
               case 'date':
@@ -267,34 +292,6 @@
         }
 
       },
-      downloadFile: function (url, data, fileName) {
-
-        this.$axios(
-          {
-            method: 'get',
-            url: url,
-            params: data,
-            responseType: 'blob'
-          }).then(res => {
-          if (res.data.type !== "application/vnd.ms-excel") {
-            this.$alertWarning("获取文件失败")
-          } else {
-            this.$alertSuccess('请求成功，请等待下载');
-            let url = window.URL.createObjectURL(res.data);
-            let link = document.createElement('a');
-            link.style.display = 'none';
-            link.href = url;
-            link.setAttribute('download', fileName);
-            document.body.appendChild(link);
-            link.click();
-          }
-          this.isDownloading = false;
-        }).catch(err => {
-          this.isDownloading = false;
-          console.log(JSON.stringify(err));
-          this.$alertDanger('请求超时，请刷新重试');
-        })
-      }
     }
   }
 </script>
@@ -308,7 +305,7 @@
     background: #fff;
     border: 1px solid #eeeeee;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 20px;
     margin-bottom: 10px;
   }
 
@@ -327,13 +324,6 @@
     padding: 0 20px;
   }
 
-  .options-area /deep/ .el-input__inner {
-    height: 38px;
-    line-height: 38px;
-    border: 1px solid #ced4da;
-    display: flex;
-  }
-
   .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -341,25 +331,17 @@
   }
 
   .form-group {
-    min-width: 220px;
+    min-width: 200px;
     margin-right: 20px;
   }
 
-  .form-group .el-input {
-    width: 220px;
-  }
-
-  .form-group /deep/ label {
-    line-height: 40px;
+  .options-area /deep/ .form-group label {
+    line-height: 32px;
     display: block;
   }
 
   .options-area /deep/ .form-group .el-input {
     width: 220px;
-  }
-
-  .options-area /deep/ .form-group label {
-    line-height: 40px;
   }
 
   .form-group-btn {

@@ -1,9 +1,6 @@
 <!--订单配置页面表单-->
 <template>
   <div class="main-details mt-1 mb-3">
-    <!--<datatable
-      v-bind="$data"
-    ></datatable>-->
     <el-table
       :data="tableData"
       max-height="560"
@@ -55,44 +52,42 @@
       @size-change="thisFetch('sizeChange')"
       class="page-pagination">
     </el-pagination>
-      <el-dialog class="status-panel" v-if="isStatusPanel" title="更改状态" :visible.sync="isStatusPanel" width="360px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false">
-        <div class="status-panel-container">
-          <div class="status-select">
-            <el-select id="status-select"
-                    v-model="orderStatus">
-              <el-option label="未开始" :value='0' disabled></el-option>
-              <el-option label="进行中" :value='1' :disabled="thisRow.Status >= 1"></el-option>
-              <el-option label="已完成" :value='2'></el-option>
-              <el-option label="已作废" :value='3'></el-option>
-            </el-select>
-          </div>
-          <div class="divider"></div>
-          <div class="form-group-btn">
-            <el-button type="info" @click="isStatusPanel = !isStatusPanel">取消</el-button>
-            <el-button type="primary" @click="statusSubmit">提交</el-button>
-          </div>
+    <el-dialog class="status-panel" v-if="isStatusPanel" title="更改状态" :visible.sync="isStatusPanel" width="360px"
+               :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false">
+      <div class="status-panel-container">
+        <div class="status-select">
+          <el-select size="small" id="status-select"
+                     v-model="orderStatus">
+            <el-option label="未开始" :value='0' disabled></el-option>
+            <el-option label="进行中" :value='1' :disabled="thisRow.Status >= 1"></el-option>
+            <el-option label="已完成" :value='2'></el-option>
+            <el-option label="已作废" :value='3'></el-option>
+          </el-select>
         </div>
-      </el-dialog>
+        <div class="divider"></div>
+        <div class="form-group-btn">
+          <el-button size="small" type="info" @click="isStatusPanel = !isStatusPanel">取消</el-button>
+          <el-button size="small" type="primary" @click="statusSubmit">提交</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-  import Qs from 'qs'
   import {axiosFetch} from "../../../../utils/fetchData";
   import {mapGetters, mapActions} from 'vuex'
   import {getOrderConfig, orderSelectUrl, orderOperUrl} from "../../../../config/orderApiConfig";
-  import EditOptions from './EditOptions';
   import EditPanel from './EditPanel';
   import {errHandler} from "../../../../utils/errorHandler";
   import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "Details",
-    props: ['row'],
     components: {
-      EditOptions,
       EditPanel
     },
+    inject: ['reload'],
     data() {
       return {
         tableData: [],
@@ -144,7 +139,6 @@
       }
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -172,9 +166,8 @@
         this.tableColumns = routerConfig.data.dataColumns;
         if (!this.isPending) {
           this.isPending = true;
+          this.$openLoading();
           axiosFetch(options).then(response => {
-            this.$closeLoading();
-            this.isPending = false;
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
               this.paginationOptions = {
@@ -185,13 +178,13 @@
             } else {
               errHandler(response.data.result)
             }
+          }).catch(err => {
+            console.log(JSON.stringify(err));
+            this.$alertDanger('请求超时，清刷新重试')
+          }).finally(() => {
+            this.$closeLoading();
+            this.isPending = false;
           })
-            .catch(err => {
-              this.$closeLoading();
-              this.isPending = false;
-              console.log(JSON.stringify(err));
-              this.$alertDanger('请求超时，清刷新重试')
-            })
         } else {
           this.$closeLoading()
         }
@@ -237,24 +230,20 @@
             }
           };
           axiosFetch(options).then(res => {
-            this.isPending = false;
-            this.$closeLoading();
             if (res.data.result === 200) {
               this.$alertSuccess('更新成功');
               this.isStatusPanel = false;
               this.thisRow = {};
               this.orderStatus = 0;
-              let tempUrl = this.$route.path;
-              //console.log(this.$route.url)
-              this.$router.push('/_empty');
-              this.$router.replace(tempUrl)
+              this.reload();
             } else {
               this.$alertWarning(res.data.data)
             }
           }).catch(err => {
+            this.$alertDanger(err);
+          }).finally(() => {
             this.isPending = false;
             this.$closeLoading();
-            this.$alertDanger(err);
           })
 
         } else {

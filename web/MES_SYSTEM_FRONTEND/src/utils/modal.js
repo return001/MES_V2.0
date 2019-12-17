@@ -1,21 +1,5 @@
 import {Notification} from 'element-ui'
 
-
-/*
-import eventBus from './eventBus'
-function alertMsg (status, string, timeout, title) {
-  eventBus.$emit('notify-me', {
-    status: status,
-    timeout: timeout,
-    data: {
-      title: title,
-      text: string
-    }
-  })
-}
-*/
-
-
 function alertMsg(type, message, timeout, title) {
   Notification({
     title: title,

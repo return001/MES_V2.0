@@ -4,40 +4,32 @@
       <div class="form-row">
         <div class="form-group" v-if="$route.query.type === 'Gps_ManuPrintParam'">
           <label for="zhidan">制单号</label>
-          <el-input type="text" class="form-control" id="zhidan" v-model="queryOptions.zhiDan"
+          <el-input size="small" type="text" class="form-control" id="zhidan" v-model="queryOptions.zhiDan"
                     autocomplete="off"></el-input>
         </div>
         <div class="form-group" v-if="$route.query.type === 'Gps_ManuSimDataParam'">
           <label for="rID">基带ID</label>
-          <el-input type="text" class="form-control" id="rID" v-model="queryOptions.rID" autocomplete="off"></el-input>
+          <el-input size="small" type="text" class="form-control" id="rID" v-model="queryOptions.rID" autocomplete="off"></el-input>
         </div>
         <div class="form-group">
           <label for="startIMEI">IMEI号 从：</label>
-          <el-input type="text" class="form-control" id="startIMEI" v-model="queryOptions.startIMEI"
+          <el-input size="small" type="text" class="form-control" id="startIMEI" v-model="queryOptions.startIMEI"
                     autocomplete="off"></el-input>
         </div>
         <div class="form-group">
           <label for="endIMEI">至：</label>
-          <el-input type="text" class="form-control" id="endIMEI" v-model="queryOptions.endIMEI"
+          <el-input size="small" type="text" class="form-control" id="endIMEI" v-model="queryOptions.endIMEI"
                     autocomplete="off"></el-input>
         </div>
         <div style="width: 160px; margin-right: 10px">
-          <el-checkbox v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
+          <el-checkbox size="small" v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
         </div>
         <div class="row no-gutters">
           <div class="row">
-            <!--<div class="form-group col pr-1">-->
-            <!--<label>时间范围 从：</label>-->
-            <!--<datetime v-model="queryOptions.startTime" type="datetime"/>-->
-            <!--</div>-->
-            <!--<div class="form-group col pr-3">-->
-            <!--<label>至：</label>-->
-            <!--<datetime v-model="queryOptions.endTime" type="datetime"/>-->
-            <!--</div>-->
             <div class="form-group">
               <label>时间范围</label>
               <el-date-picker
-                size="large"
+                size="small"
                 v-model="timeRange"
                 type="datetimerange"
                 :picker-options="pickerOptions"
@@ -64,17 +56,17 @@
           </div>
         </div>
         <div class="form-group-btn">
-          <el-button type="info" @click="initOptions()">清空条件</el-button>
+          <el-button size="small" type="info" @click="initOptions()">清空条件</el-button>
         </div>
         <div class="form-group-btn">
-          <el-button type="primary" @click="thisFetch('query')">查询</el-button>
+          <el-button size="small" type="primary" @click="thisFetch('query')">查询</el-button>
         </div>
         <div class="form-group-btn"  v-if="paginationOptions.total > 0">
-          <el-button type="primary" @click="downloadData">下载报表</el-button>
+          <el-button size="small" type="primary" @click="downloadData">下载报表</el-button>
         </div>
         <div class="form-group-btn" v-if="checkDelPermission && paginationOptions.total > 0">
           <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
-          <el-button type="warning" @click="callValidate('all')">删除所有</el-button>
+          <el-button size="small" type="warning" @click="callValidate('all')">删除所有</el-button>
         </div>
       </div>
     </div>
@@ -148,9 +140,6 @@
 </template>
 
 <script>
-  import {Settings} from 'luxon'
-  import {Datetime} from 'vue-datetime'
-  import 'vue-datetime/dist/vue-datetime.css'
   import {
     tablePrintDeleteUrl,
     tableSimDeleteUrl,
@@ -162,13 +151,11 @@
   import {getRequestUrl, setRouterConfigSP} from "../../../config/tableApiConfig";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {checkDelPermission} from "../../../utils/utils";
-  import {mapActions} from 'vuex'
   import {saveAs} from 'file-saver'
 
   export default {
     name: "SimTableModule",
     components: {
-      datetime: Datetime
     },
     data() {
       return {
@@ -220,7 +207,6 @@
       }
     },
     mounted() {
-      Settings.defaultLocale = 'zh-CN';
       // this.fetchData();
     },
     watch: {
@@ -238,7 +224,6 @@
       }
     },
     methods: {
-      ...mapActions(['setLoading']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -547,7 +532,7 @@
     background: #fff;
     border: 1px solid #eeeeee;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 20px;
     margin-bottom: 10px;
   }
 
@@ -583,8 +568,6 @@
   }
 
   .options-area /deep/ .el-input__inner {
-    height: 38px;
-    line-height: 38px;
     border: 1px solid #ced4da;
     display: flex;
   }
@@ -629,12 +612,8 @@
     margin-right: 20px;
   }
 
-  .form-group .el-input {
-    width: 220px;
-  }
-
   .form-group /deep/ label {
-    line-height: 30px;
+    line-height: 32px;
     display: block;
   }
 

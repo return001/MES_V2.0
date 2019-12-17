@@ -11,7 +11,6 @@
               id="process-group-query-item"
               placeholder="请选择工序组"
               size="small">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in processGroupSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -99,9 +98,8 @@
         label-position="top"
         @submit.native.prevent
         :rules="processEditOptionsRules">
-        <el-form-item class="process-edit-form-comp" label="工序组" prop="processGroup">
+        <el-form-item size="small" class="process-edit-form-comp" label="工序组" prop="processGroup">
           <el-select v-model="processEditOptionsData.processGroup" class="process-edit-form-comp-text">
-            <el-option value="" label="未选择" placeholder="请选择工序组" size="small"></el-option>
             <el-option v-for="listItem in processGroupSelectGroup"
                        :key="listItem.id"
                        :value="listItem.id"
@@ -109,6 +107,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           class="process-edit-form-comp"
           v-for="(item, index) in processEditOptions"
           :key="index"
@@ -125,8 +124,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeEditProcessPanel" type="info">取消</el-button>
-        <el-button @click="submitEditProcess" type="primary">保存</el-button>
+        <el-button size="small" @click="closeEditProcessPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditProcess" type="primary">保存</el-button>
       </span>
     </el-dialog>
   </div>

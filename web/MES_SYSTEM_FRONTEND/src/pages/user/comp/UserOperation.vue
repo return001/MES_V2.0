@@ -1,52 +1,43 @@
 <template>
   <div class="user-options form-row">
-    <!--<div class="btn pl-1 pr-1" title="编辑" @click="editUser(row)">-->
-    <!--<icon name="edit" scale="1.8"></icon>-->
-    <!--</div>-->
     <el-dialog class="update-panel" v-if="isEditing" :visible.sync="isEditing" width="500px"
                :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" title="编辑信息">
       <div class="update-panel-container form-row">
         <div class="form-row">
           <div class="form-group">
             <label for="user-id" class="col-form-label">ID:</label>
-            <el-input type="text" id="user-id" class="form-control" v-model="userData.id" disabled></el-input>
+            <el-input size="small" type="text" id="user-id" class="form-control" v-model="userData.id" disabled></el-input>
           </div>
           <div class="form-group">
             <label for="user-des" class="col-form-label">*用户名:</label>
-            <el-input type="text" id="user-name" class="form-control" v-model.trim="userData.name"></el-input>
+            <el-input size="small" type="text" id="user-name" class="form-control" v-model.trim="userData.name"></el-input>
           </div>
           <div class="form-group">
             <label for="user-des" class="col-form-label">*用户描述:</label>
-            <el-input type="text" id="user-des" class="form-control" v-model.trim="userData.userDes"></el-input>
+            <el-input size="small" type="text" id="user-des" class="form-control" v-model.trim="userData.userDes"></el-input>
           </div>
           <div class="form-group">
             <label for="user-pwd" class="col-form-label">*密码:</label>
-            <el-input type="password" id="user-pwd" class="form-control" v-model.trim="userData.password"
+            <el-input size="small" type="password" id="user-pwd" class="form-control" v-model.trim="userData.password"
                       autocomplete="off" placeholder="(无更改)"></el-input>
           </div>
           <div class="form-group">
             <label for="type-select" class="col-form-label">*用户类型:</label>
-            <el-select id="type-select" class="custom-select" v-model="userData.webUserType">
+            <el-select size="small" id="type-select" class="custom-select" v-model="userData.webUserType">
               <el-option value="" disabled selected label="请选择"></el-option>
               <el-option v-for="item in $store.state.userTypeList.webTypeList" :value="item.TypeId" :key="item.TypeId"
                          :label="item.TypeDes"></el-option>
             </el-select>
           </div>
-          <!--<div class="form-row col-6 pl-2 pr-2">-->
-          <!--<label for="plan-select" class="col-form-label">测试计划:</label>-->
-          <!--<select id="plan-select" class="custom-select" v-model="userData.userTestPlan">-->
-          <!--<option value="" disabled>请选择</option>-->
-          <!--<option value="2">2</option>-->
-          <!--<option value="3">3</option>-->
-          <!--</select>-->
-          <!--</div>-->
+
+          <!--当所选用户为工程管理员时提供删除表权限编辑-->
           <div class="form-group" v-if="userData.webUserType === 1">
             <label class="col-form-label">权限设置:</label>
-            <el-button @click="isEditingPermission = true" style="width: 200px;">查看详细权限</el-button>
+            <el-button size="small" @click="isEditingPermission = true" style="width: 200px;">查看详细权限</el-button>
           </div>
           <div class="form-group">
             <label for="active-select" class="col-form-label">*是否启用:</label>
-            <el-select id="active-select" class="custom-select" v-model="userData.inService">
+            <el-select size="small" id="active-select" class="custom-select" v-model="userData.inService">
               <el-option label="请选择" value="" disabled></el-option>
               <el-option label="禁用" value="0"></el-option>
               <el-option label="启用" value="1"></el-option>
@@ -56,27 +47,28 @@
         <div class="divider"></div>
         <div class="user-operation-btn-group">
           <div class="form-group-btn">
-            <el-button type="info" @click="isEditing = !isEditing">取消</el-button>
+            <el-button size="small" type="info" @click="isEditing = !isEditing">取消</el-button>
           </div>
           <div class="form-group-btn">
-            <el-button type="primary" @click="updateSubmit">提交</el-button>
+            <el-button size="small" type="primary" @click="updateSubmit">提交</el-button>
           </div>
         </div>
       </div>
       <el-dialog title="编辑权限" v-if="isEditingPermission" :visible.sync="isEditingPermission"
-                 width="500px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" append-to-body>
+                 width="500px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
+                 append-to-body>
 
 
         <div class="checkbox-item-box">
           <div class="checkbox-item" v-for="(item, key) in permissionList">
-            <el-checkbox :true-label="1" :false-label="0" v-model="tempPermission[key]">
+            <el-checkbox size="small" :true-label="1" :false-label="0" v-model="tempPermission[key]">
               {{item.remark}}({{item.name}})
             </el-checkbox>
           </div>
         </div>
 
         <span slot="footer">
-          <el-button type="primary" @click="isEditingPermission = !isEditingPermission">确认</el-button>
+          <el-button size="small" type="primary" @click="isEditingPermission = !isEditingPermission">确认</el-button>
       </span>
       </el-dialog>
     </el-dialog>
@@ -84,18 +76,12 @@
 </template>
 
 <script>
-  import EditUser from './EditUser';
   import {userUpdateUrl} from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
-  import {errHandler} from "../../../utils/errorHandler";
   import eventBus from "../../../utils/eventBus";
 
   export default {
     name: "UserOperation",
-    components: {
-      EditUser
-    },
-    props: ['row'],
     data() {
       return {
         isEditing: false,
@@ -108,7 +94,7 @@
           webUserType: '',
           inService: ''
         },
-        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0],
+        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         permissionList: [
           {
             name: 'DataRelativeSheet',
@@ -189,6 +175,7 @@
       updateSubmit: function () {
         if (!this.isPending) {
           this.isPending = true;
+          this.$openLoading();
 
           //空值判断
           let mark = false;
@@ -199,6 +186,8 @@
             }
           });
           if (mark) {
+            this.isPending = false;
+            this.$closeLoading();
             return;
           }
 
@@ -217,7 +206,6 @@
           options.data.userType = "&00&10";
 
           axiosFetch(options).then(response => {
-            this.isPending = false;
             if (response.data.result === 200) {
               this.$alertSuccess(response.data.data);
               this.isEditing = false;
@@ -228,9 +216,12 @@
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
-            this.isPending = false;
             console.log(JSON.stringify(err));
             this.$alertDanger('请求超时，清刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+
           })
         }
 
@@ -323,6 +314,7 @@
   .permission-row label {
     display: block;
   }
+
   .checkbox-item-box {
     width: 100%;
     padding: 0 60px;

@@ -10,7 +10,6 @@
               id="process-query-item"
               placeholder="请选择产线"
               size="small">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in lineSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -32,7 +31,6 @@
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        :placeholder="'请选择' + item.label" size="small"
                        autocomplete="off">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in item.list"
                          :key="listItem.value"
                          :value="listItem.value"
@@ -245,9 +243,9 @@
         </el-tag>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="info" @click="isOrderImporting = false">取消</el-button>
-        <el-button type="primary" @click="setOrderImportOptions">配置</el-button>
-        <el-button type="primary" v-if="importingOrderSettingAll.length > 0" @click="submitOrderImport">导入</el-button>
+        <el-button size="small" type="info" @click="isOrderImporting = false">取消</el-button>
+        <el-button size="small" type="primary" @click="setOrderImportOptions">配置</el-button>
+        <el-button size="small" type="primary" v-if="importingOrderSettingAll.length > 0" @click="submitOrderImport">导入</el-button>
       </span>
 
       <el-dialog
@@ -279,7 +277,6 @@
             <el-input v-model.number="item.schedulingQuantity" placeholder="请填写排产数量" size="small"></el-input>
             <el-input v-model.number="item.capacity" placeholder="请填写产能" size="small"></el-input>
             <el-select v-model="item.line" placeholder="请选择产线" size="small">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in lineSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -305,6 +302,7 @@
                 id="order-setting-plan-start-time"
                 v-model="importingOrderSettingStartTime"
                 type="datetime"
+                size="small"
                 prefix-icon="el-icon-date"
                 default-time="08:00:00"
                 value-format="yyyy-MM-dd HH:mm:ss"
@@ -317,6 +315,7 @@
                 id="order-setting-plan-complete-time"
                 v-model="importingOrderSettingCompleteTime"
                 type="datetime"
+                size="small"
                 prefix-icon="el-icon-date"
                 default-time="08:00:00"
                 value-format="yyyy-MM-dd HH:mm:ss"
@@ -337,8 +336,8 @@
           </div>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button type="info" @click="isOrderImportingSetting = false">取消</el-button>
-          <el-button type="primary" @click="stashOrderSetting">保存</el-button>
+          <el-button size="small" type="info" @click="isOrderImportingSetting = false">取消</el-button>
+          <el-button size="small" type="primary" @click="stashOrderSetting">保存</el-button>
       </span>
 
       </el-dialog>
@@ -353,8 +352,7 @@
       @closed="resetStatusEdit"
       width="300px">
       <div class="edit-status">
-        <el-select v-model="orderEditStatus" placeholder="请选择状态">
-          <el-option value="" label="未选择" disabled></el-option>
+        <el-select size="small" v-model="orderEditStatus" placeholder="请选择状态">
           <el-option :value="1" label="进行"
                      v-if="planEditRow.schedulingPlanStatus === 4 || planEditRow.schedulingPlanStatus === 1"></el-option>
           <!--<el-option :value="2" label="完成"></el-option>-->

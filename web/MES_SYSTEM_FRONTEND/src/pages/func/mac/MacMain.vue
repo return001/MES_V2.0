@@ -5,62 +5,62 @@
         <div style="margin-right: 12px" v-if="!searchType">
           <div class="search-input">
             <label for="search-item-sn">SN号:</label>
-            <el-input type="text" id="search-item-sn" v-model.trim="searchSN" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-sn" v-model.trim="searchSN" autocomplete="off" clearable
                       placeholder="请填写SN号" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="!searchType">
           <div class="search-input">
             <label for="search-item-version">软件版本:</label>
-            <el-input type="text" id="search-item-version" v-model.trim="searchVersion" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-version" v-model.trim="searchVersion" autocomplete="off" clearable
                       placeholder="请填写版本号" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="!searchType">
           <div class="search-input">
             <label for="search-item-softmodel">机型:</label>
-            <el-input type="text" id="search-item-softmodel" v-model.trim="searchSoftModel" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-softmodel" v-model.trim="searchSoftModel" autocomplete="off" clearable
                       placeholder="请填写软件版本" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="searchType">
           <div class="search-input">
             <label for="search-item-mac">MAC地址:</label>
-            <el-input type="text" id="search-item-mac" v-model.trim="searchMac" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-mac" v-model.trim="searchMac" autocomplete="off" clearable
                       placeholder="请填写MAC地址" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button type="primary" @click="searchItem" :disabled="queryOptionsLock">
+            <el-button size="small" type="primary" @click="searchItem" :disabled="queryOptionsLock">
               查询
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button type="primary" @click="showImportDialog" :disabled="queryOptionsLock">
+            <el-button size="small" type="primary" @click="showImportDialog" :disabled="queryOptionsLock">
               批量查询
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="queryOptionsLock">
           <div class="search-btn">
-            <el-button type="primary" @click="unlockQueryOptions">
+            <el-button size="small" type="primary" @click="unlockQueryOptions">
               解锁
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button :disabled="queryOptionsLock" type="primary" @click="switchSearchType">
+            <el-button size="small" :disabled="queryOptionsLock" type="primary" @click="switchSearchType">
               切换条件
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button type="warning" @click="showReworkDialog">
+            <el-button size="small" type="warning" @click="showReworkDialog">
               执行返工
             </el-button>
           </div>
@@ -154,8 +154,8 @@
                   placeholder="请填写密码"></el-input>
       </div>
       <span slot="footer">
-        <el-button @click="validateVisible = false">取 消</el-button>
-        <el-button type="primary" @click="executeRework">校 验</el-button>
+        <el-button size="small" @click="validateVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="executeRework">校 验</el-button>
       </span>
     </el-dialog>
     <el-dialog
@@ -171,15 +171,14 @@ SN号,版本号,软件版本
 xxxxx,xxxxx,xxxxxx"
         v-model="importVal"></el-input>
       <span slot="footer">
-        <el-button @click="importVisible = false">取 消</el-button>
-        <el-button type="primary" @click="importSearch">查 询</el-button>
+        <el-button size="small" @click="importVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="importSearch">查 询</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
   import {axiosFetch} from "../../../utils/fetchData";
   import {macReworkQueryUrl, setMacRework, validateUrl} from "../../../config/globalUrl";
   import {AntiDupColumn, AutoTestResultColumn, TestResultColumn} from "../../../config/funcConfig";
@@ -231,7 +230,6 @@ xxxxx,xxxxx,xxxxxx"
 
     },
     methods: {
-      ...mapActions(['setLoading']),
       initData: function () {
         Object.assign(this.$data, this.$options.data())
       },

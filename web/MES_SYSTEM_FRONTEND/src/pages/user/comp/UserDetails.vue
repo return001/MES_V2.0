@@ -1,8 +1,5 @@
 <template>
   <div class="main-details mt-1 mb-3">
-    <!--<datatable
-      v-bind="$data"
-    ></datatable>-->
     <el-table
       :data="tableData"
       max-height="560"
@@ -41,10 +38,8 @@
 </template>
 
 <script>
-  import {userAddUrl, userUpdateUrl, userQueryUrl} from "../../../config/globalUrl";
-  import {mapGetters, mapActions} from 'vuex'
+  import {userQueryUrl} from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
-  import {errHandler} from "../../../utils/errorHandler";
   import UserOperation from "./UserOperation"
   import eventBus from "../../../utils/eventBus";
   import store from "../../../store"
@@ -125,7 +120,6 @@
     watch: {
       $route: function (route) {
         this.init();
-        //this.thisFetch(val.query)
         this.$openLoading();
         let options = {
           url: userQueryUrl,
@@ -139,7 +133,6 @@
       }
     },
     methods: {
-      ...mapActions(['setLoading']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -166,8 +159,6 @@
         if (!this.isPending) {
           this.isPending = true;
           axiosFetch(options).then(response => {
-            this.$closeLoading();
-            this.isPending = false;
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
               this.paginationOptions = {
@@ -176,16 +167,15 @@
                 total: response.data.data.totalRow
               }
             } else {
-              this.isPending = false;
               this.$alertWarning(response.data.data)
             }
+          }).catch(err => {
+            console.log(JSON.stringify(err));
+            this.$alertDanger('请求超时，清刷新重试')
+          }).finally(() => {
+            this.$closeLoading();
+            this.isPending = false;
           })
-            .catch(err => {
-              this.$closeLoading();
-              this.isPending = false;
-              console.log(JSON.stringify(err));
-              this.$alertDanger('请求超时，清刷新重试')
-            })
         } else {
           this.$closeLoading()
         }

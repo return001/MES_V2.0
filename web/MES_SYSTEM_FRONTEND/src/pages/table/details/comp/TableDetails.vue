@@ -13,14 +13,6 @@
         v-if="$route.query.type !== 'Gps_ManuCpParam' && $route.query.type !== 'LTestLogMessage' && !isReferred && checkDelPermission"
       >
       </el-table-column>
-      <!--<el-table-column-->
-      <!--fixed="left"-->
-      <!--label="操作"-->
-      <!--width="100">-->
-      <!--<template slot-scope="scope">-->
-      <!--<el-button @click="dataLog(scope.row)" type="text" size="small">查看</el-button>-->
-      <!--</template>-->
-      <!--</el-table-column>-->
       <el-table-column v-for="(item, index) in getTableConfig.dataColumns"
                        :key="index"
                        :prop=item.field
@@ -88,17 +80,17 @@
 
       <div class="">
         <label for="validate-user" style="line-height: 30px">用户名</label>
-        <el-input type="text" id="validate-user" v-model.trim="validateInfo.user" autocomplete="off" clearable
+        <el-input size="small" type="text" id="validate-user" v-model.trim="validateInfo.user" autocomplete="off" clearable
                   placeholder="请填写用户名"></el-input>
       </div>
       <div class="">
         <label for="validate-pwd" style="line-height: 30px">密码</label>
-        <el-input type="password" id="validate-pwd" v-model.trim="validateInfo.password" autocomplete="off" clearable
+        <el-input size="small" type="password" id="validate-pwd" v-model.trim="validateInfo.password" autocomplete="off" clearable
                   placeholder="请填写密码"></el-input>
       </div>
       <span slot="footer">
-        <el-button @click="validateVisible = false">取 消</el-button>
-        <el-button type="primary" @click="validateDelete">校 验</el-button>
+        <el-button size="small" @click="validateVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="validateDelete">校 验</el-button>
       </span>
     </el-dialog>
   </div>
@@ -203,7 +195,7 @@
 
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading', 'setTableDeleteGroup']),
+      ...mapActions(['setTableRouter', 'setTableDeleteGroup']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },

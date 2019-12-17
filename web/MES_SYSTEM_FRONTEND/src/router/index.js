@@ -4,10 +4,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store'
 import Main from '../pages/Main'
-import TableMainOld from '../pages/table_old/TableMain'
 import Login from '../pages/user/Login'
-import TableModuleOld from '../pages/table_old/details/TableModule'
-import OrderMain from '../pages/order/OrderMain'
 import OrderManage from '../pages/order/details/OrderManage'
 import UserConfig from '../pages/user/UserConfig'
 /*红茶*/
@@ -91,17 +88,6 @@ const router = new Router({
             {
               path: 'multi',
               component: MultiTableModule
-            }
-          ]
-        },
-        {
-          path: '/table_old',
-          name: 'TableOld',
-          component: TableMainOld,
-          children: [
-            {
-              path: 'details',
-              component: TableModuleOld
             }
           ]
         },

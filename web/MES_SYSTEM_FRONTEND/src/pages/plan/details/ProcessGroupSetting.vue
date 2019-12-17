@@ -68,7 +68,7 @@
       </el-table>
     </div>
     <!--dialog component-->
-    <el-dialog
+    <!--<el-dialog
       :title="editPanelTitle"
       :visible.sync="isProcessGroupEditing"
       :close-on-click-modal="false"
@@ -83,6 +83,7 @@
         @submit.native.prevent
         :rules="processGroupEditOptionsRules">
         <el-form-item
+          size="small"
           class="process-group-edit-form-comp"
           v-for="(item, index) in processGroupEditOptions"
           :key="index"
@@ -102,7 +103,7 @@
         <el-button @click="closeEditProcessGroupPanel" type="info">取消</el-button>
         <el-button @click="submitEditProcessGroup" type="primary">保存</el-button>
       </span>
-    </el-dialog>
+    </el-dialog>-->
   </div>
 
 </template>

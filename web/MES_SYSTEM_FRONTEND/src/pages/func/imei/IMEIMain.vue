@@ -6,13 +6,13 @@
         <div style="margin-right: 12px">
           <div class="search-input">
             <label for="search-item-zhidan">制单号:</label>
-            <el-input type="text" id="search-item-zhidan" v-model.trim="Zhidan" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-zhidan" v-model.trim="Zhidan" autocomplete="off" clearable
                       placeholder="请填写制单号"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button type="primary" @click="searchZhidanItem">
+            <el-button size="small" type="primary" @click="searchZhidanItem">
               查询
             </el-button>
           </div>
@@ -54,42 +54,42 @@
         <div style="margin-right: 12px">
           <div class="search-input">
             <label for="search-item-imei-begin">IMEI号 起始:</label>
-            <el-input type="text" id="search-item-imei-begin" v-model.trim="IMEIBegin" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-imei-begin" v-model.trim="IMEIBegin" autocomplete="off" clearable
                       placeholder="请填写起始IMEI号" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-input">
             <label for="search-item-imei-end">终止:</label>
-            <el-input type="text" id="search-item-imei-end" v-model.trim="IMEIEnd" autocomplete="off" clearable
+            <el-input size="small" type="text" id="search-item-imei-end" v-model.trim="IMEIEnd" autocomplete="off" clearable
                       placeholder="请填写终止IMEI号" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-input">
             <label for="search-item-imei-zhidan">制单号:</label>
-            <el-input type="text" id="search-item-imei-zhidan" v-model.trim="ZhiDanInIMEI" autocomplete="off"
+            <el-input size="small" type="text" id="search-item-imei-zhidan" v-model.trim="ZhiDanInIMEI" autocomplete="off"
                       clearable
                       placeholder="请填写制单号" :disabled="queryOptionsLock"></el-input>
           </div>
         </div>
         <div style="margin-right: 12px">
           <div class="search-btn">
-            <el-button type="primary" @click="searchIMEIItem" :disabled="queryOptionsLock">
+            <el-button size="small" type="primary" @click="searchIMEIItem" :disabled="queryOptionsLock">
               查询
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="queryOptionsLock">
           <div class="search-btn">
-            <el-button type="primary" @click="unlockQueryOptions">
+            <el-button size="small" type="primary" @click="unlockQueryOptions">
               解锁
             </el-button>
           </div>
         </div>
         <div style="margin-right: 12px" v-if="queryOptionsLock">
           <div class="search-btn">
-            <el-button type="warning" @click="exportResult">
+            <el-button size="small" type="warning" @click="exportResult">
               导出结果
             </el-button>
           </div>
@@ -111,7 +111,6 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {imeiDownloadUrl, imeiQueryUrl, imeiZhidanQueryUrl} from "../../../config/globalUrl";
 
@@ -144,7 +143,6 @@
 
     },
     methods: {
-      ...mapActions(['setLoading']),
       initData: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -176,17 +174,16 @@
             }
           };
           axiosFetch(options).then(response => {
-            this.isPending = false;
-            this.$closeLoading();
             if (response.data.result === 200) {
               this.zhidanListData = response.data.data.list
             } else {
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
+            this.$alertDanger('未知错误')
+          }).finally(() => {
             this.isPending = false;
             this.$closeLoading();
-            this.$alertDanger('未知错误')
           })
         }
       },

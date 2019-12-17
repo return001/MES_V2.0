@@ -4,57 +4,52 @@
   <div class="options-area">
     <div class="form-row">
       <div v-for="item in queryOptions">
-        <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
+        <component :opt="item" :is="item.type + '-comp'"></component>
       </div>
-      <!--<div class="form-group-btn">-->
-      <!--<el-button type="info" @click="initForm('order_manage')">清空条件</el-button>-->
-      <!--</div>-->
       <div class="form-group-btn">
-        <el-button type="primary" @click="thisFetch">查询</el-button>
+        <el-button size="small" type="primary" @click="thisFetch">查询</el-button>
       </div>
       <div class="form-group-btn" v-if="$store.state.userType === 'SuperAdmin'">
-        <el-button type="primary" @click="addOrder">新增</el-button>
+        <el-button size="small" type="primary" @click="addOrder">新增</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex';
   import {getOrderConfig, orderSelectUrl} from "../../../../config/orderApiConfig";
-  import {axiosFetch} from "../../../../utils/fetchData";
-  import {Datetime} from 'vue-datetime'
-  import 'vue-datetime/dist/vue-datetime.css'
-  import _ from 'lodash'
   import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "Options",
     components: {
       'text-comp': {
-        props: ['opt', 'callback'],
+        props: ['opt'],
         template: '<div class="form-group">\n' +
         '           <label class="form-label" :for="opt.id">{{opt.name}}</label>\n' +
-        '           <el-input type="text"  :id="opt.id" v-model="opt.model" @keyup.enter="callback" clearable></el-input>\n' +
+        '           <el-input size="small" type="text"  :id="opt.id" v-model.trim="opt.model" clearable></el-input>\n' +
         '          </div>'
       },
       'date-comp': {
-        props: ['opt'],
-        components: {
-          Datetime
-        },
+        props: ['opt', 'pickerOptions'],
         template: '<div class="row">\n' +
-        '    <div class="form-group">\n' +
-        '      <label class="form-label">测试时间  从：</label>\n' +
-        '      <datetime v-model="opt.modelFrom" type="datetime"/>\n' +
-        '    </div>\n' +
-        '    <div class="form-group">\n' +
-        '      <label class="form-label">至：</label>\n' +
-        '      <datetime v-model="opt.modelTo" type="datetime"/>\n' +
-        '    </div>\n' +
-        '  </div>'
+          '    <div class="form-group">\n' +
+          '      <label>{{opt.name}}  从：</label>\n' +
+          '      <el-date-picker\n' +
+          '                size="small"\n' +
+          '                v-model="opt.timeRange"\n' +
+          '                type="datetimerange"\n' +
+          '                :picker-options="pickerOptions"\n' +
+          '                range-separator="-"\n' +
+          '                prefix-icon="el-icon-date"\n' +
+          '                start-placeholder="开始日期"\n' +
+          '                end-placeholder="结束日期"\n' +
+          '                value-format="yyyy-MM-dd HH:mm:ss">' +
+          '</el-date-picker>\n' +
+          '    </div>\n' +
+          '  </div>'
 
-      }
+      },
     },
     data() {
       return {
@@ -68,18 +63,7 @@
       this.initForm('order_manage')
 
     },
-    computed: {
-      ...mapGetters([
-        'tableRouterApi'
-      ]),
-    },
-    watch: {
-      // tableRouterApi: function (val) {
-      //   this.initForm(val);
-      // }
-    },
     methods: {
-      ...mapActions(['setLoading', 'setEditing', 'setEditData']),
       initForm: function (opt) {
         let routerConfig = getOrderConfig(opt);
         this.queryOptions = JSON.parse(JSON.stringify(routerConfig.data.queryOptions));
@@ -88,41 +72,39 @@
         return new Promise((resolve, reject) => {
           this.queryString = "";
           this.copyQueryOptions = this.queryOptions.filter((item) => {
-            if (!(item.model === "" || item.modelFrom === "" || item.modelTo === "")) {
+            if (!(item.model === "")) {
+              return true;
+            }
+            if (item.timeRange) {
               return true;
             }
           });
 
           this.copyQueryOptions.map((item, index) => {
-            if (item.type === 'text') {
-              if (_.trim(item.model) !== "") {
-
+            switch (item.type) {
+              case 'text':
                 if (index === 0) {
-                  this.queryString += (item.id + "#like#" + _.trim(item.model))
+                  this.queryString += (item.id + "#like#" + item.model)
                 } else {
-                  this.queryString += ("#&#" + item.id + "#like#" + _.trim(item.model))
+                  this.queryString += ("#&#" + item.id + "#like#" + item.model)
                 }
-
-              }
-            } else if (item.type === 'date') {
-              if (item.modelFrom !== '' && item.modelTo !== '') {
-                let tempFrom = item.modelFrom.replace('T', ' ').replace('Z', '');
-                let tempTo = item.modelTo.replace('T', ' ').replace('Z', '');
-                if (this.compareDate(tempFrom, tempTo) >= 0) {
+                break;
+              case 'date':
+                if (!!item.timeRange) {
+                  let tempFrom = item.timeRange[0];
+                  let tempTo = item.timeRange[1];
                   if (index === 0) {
                     this.queryString += (item.id + "#>=#" + tempFrom + "#&#" + item.id + "#<=#" + tempTo)
                   } else {
                     this.queryString += ("#&#" + item.id + "#>=#" + tempFrom + "#&#" + item.id + "#<=#" + tempTo)
                   }
-                } else {
-                  reject('请检查输入范围')
                 }
-              }
+                break;
             }
 
           });
           resolve()
-        });
+        })
       },
       thisFetch: function () {
         this.createQueryString().then(() => {
@@ -130,11 +112,6 @@
         }).catch(err => {
           this.$alertInfo(err)
         });
-      },
-      compareDate: function (dateFrom, dateTo) {
-        let compFrom = new Date(dateFrom);
-        let compTo = new Date(dateTo);
-        return (compTo - compFrom);
       },
       addOrder: function () {
         eventBus.$emit('editOrder', ['add', []])

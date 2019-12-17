@@ -33,7 +33,13 @@ const ROUTER_CONFIG = {
         name: '机型名',
         model: '',
         type: 'text'
-      }
+      },
+      {
+        id: 'RecordTime',
+        name: '记录时间',
+        timeRange: '',
+        type: 'date'
+      },
     ],
     dataColumns: [
       {field: 'SoftWare', title: '版本号', colStyle: {'width': '120px'}, notNull: true},

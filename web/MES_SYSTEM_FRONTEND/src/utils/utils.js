@@ -1,5 +1,3 @@
-import de from "element-ui/src/locale/lang/de";
-
 export const getTime = function () {
   let date = new Date();
   let yyyy = date.getFullYear();
@@ -12,7 +10,6 @@ export const getTime = function () {
 };
 
 import store from '../store'
-import ca from "element-ui/src/locale/lang/ca";
 
 export const checkDelPermission = function (queryType) {
   let tableList = ['DataRelativeSheet', 'DataRelativeUnique', 'DataRelativeUpdate', 'Gps_AutoTest_Result', 'Gps_AutoTest_Result2', 'Gps_AutoTest_Result3', 'Gps_CartonBoxTwenty_Result', 'Gps_CoupleTest_Result', 'Gps_ManuPrintParam', 'Gps_TestResult', 'NetMarkIMEI', 'Gps_ManuSimDataParam'];

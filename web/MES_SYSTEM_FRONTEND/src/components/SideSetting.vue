@@ -141,7 +141,7 @@
       ...mapGetters(['routerIn', 'token', 'userType']),
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoading', 'setLoginToken']),
+      ...mapActions(['setTableRouter', 'setLoginToken']),
       /*点击切换项目、路由导航*/
       initData: function (item) {
         this.toggleState(item);

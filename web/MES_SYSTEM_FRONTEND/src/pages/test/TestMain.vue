@@ -3,11 +3,11 @@
   <div>
     <div class="" style="margin-left: 52px;">
       <div class="row main-style">
-          <div class="side-bar">
-            <side-bar/>
-          </div>
+        <div class="side-bar">
+          <side-bar/>
+        </div>
         <div class="router-style" style="margin-left: 217px;" v-if="$store.state.testType !== -1">
-          <router-view/>
+          <router-view v-if="isRouterAlive"/>
         </div>
       </div>
     </div>
@@ -24,13 +24,26 @@
       SideBar,
       SideSetting
     },
-    data() {
+    provide() {
       return {
+        reload: this.reload
       }
     },
-    mounted: function () {
+    data() {
+      return {
+        isRouterAlive: true
+      }
     },
-    methods: {}
+    mounted() {
+    },
+    methods: {
+      reload: function () {
+        this.isRouterAlive = false;
+        this.$nextTick(function () {
+          this.isRouterAlive = true;
+        })
+      }
+    }
   }
 </script>
 

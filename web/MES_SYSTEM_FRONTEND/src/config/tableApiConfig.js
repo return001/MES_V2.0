@@ -548,7 +548,7 @@ const ROUTER_CONFIG = {
       {field: 'RecordTime', title: '记录时间', colStyle: {'width': '100px'}},
       {field: 'SoftModel', title: '机型', colStyle: {'width': '80px'}},
       {field: 'Version', title: '版本号', colStyle: {'width': '80px'}},
-      {field: 'FunctionResult', title: '组装测试', colStyle: {'width': '80px'}},
+      {field: 'FunctionResult', title: 'SMT测试', colStyle: {'width': '80px'}},
       {
         field: 'GPSResult', title: '老化后测试', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
           switch (cellValue) {
@@ -562,7 +562,7 @@ const ROUTER_CONFIG = {
       {field: 'CoupleResult', title: '耦合测试', colStyle: {'width': '80px'}},
       {field: 'WriteIMEIResult', title: 'IMEI写入', colStyle: {'width': '80px'}},
       {field: 'ParamDownloadResult', title: '参数下载', colStyle: {'width': '80px'}},
-      {field: 'AutoTestResult', title: 'SMT测试', colStyle: {'width': '80px'}},
+      {field: 'AutoTestResult', title: 'SMT测试组装测试', colStyle: {'width': '80px'}},
       {field: 'AutoTestSMTResult', title: '预备字段1', colStyle: {'width': '80px'}},
       {field: 'SMTIQCResult', title: 'SMT IQC', colStyle: {'width': '90px'}},
       // {field: 'OtherTestSign', title: '???', colStyle: {'width': '100px'}, visible: false},

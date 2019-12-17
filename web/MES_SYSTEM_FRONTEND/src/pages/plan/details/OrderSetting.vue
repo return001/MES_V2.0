@@ -16,7 +16,6 @@
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
                        :placeholder="'请选择' + item.label" size="small">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in item.list"
                          :key="listItem.value"
                          :value="listItem.value"
@@ -135,6 +134,7 @@
         @submit.native.prevent
         :rules="orderEditOptionsRules">
         <el-form-item
+          size="small"
           class="order-edit-form-comp"
           v-for="(item, index) in orderEditOptions"
           :key="index"
@@ -165,13 +165,17 @@
                       v-model="orderEditOptionsData[item.key]"></el-input>
           </div>
         </el-form-item>
-        <el-form-item class="order-edit-form-comp" v-if="orderEditType === 'add'">
-          <el-checkbox v-model="isReworkEdit">返工订单</el-checkbox>
+        <el-form-item
+          size="small"
+          class="order-edit-form-comp"
+          v-if="orderEditType === 'add'"
+          style="margin-left: auto">
+          <el-checkbox v-model="isReworkEdit" >返工订单</el-checkbox>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeEditOrderPanel" type="info">取消</el-button>
-        <el-button @click="submitEditOrder" type="primary">保存</el-button>
+        <el-button size="small" @click="closeEditOrderPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditOrder" type="primary">保存</el-button>
       </span>
     </el-dialog>
 
@@ -194,8 +198,8 @@
         </el-input>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeDeleteOrderPanel" type="info">取消</el-button>
-        <el-button @click="submitDeleteOrder" type="warning">保存</el-button>
+        <el-button size="small" @click="closeDeleteOrderPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitDeleteOrder" type="warning">保存</el-button>
       </span>
     </el-dialog>
 
@@ -283,7 +287,7 @@
       </div>
       <span slot="footer" class="dialog-footer"
             v-if="permissionControl(['schedulingSZPC', 'engineer'])">
-        <el-button @click="isOrderDetailsUploading = true" type="primary">上传</el-button>
+        <el-button size="small" @click="isOrderDetailsUploading = true" type="primary">上传</el-button>
       </span>
 
 
@@ -297,7 +301,6 @@
         width="400px">
         <div style="width: 100%; margin-bottom: 20px">
           <el-select v-model="orderDetailsType" placeholder="请选择类型" autocomplete="off" size="small">
-            <el-option value="" label="未选择"></el-option>
             <el-option :value="0" label="信息表"
                        v-if="permissionControl(['schedulingSZPC'])"></el-option>
             <el-option :value="1" label="BOM表"

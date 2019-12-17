@@ -14,7 +14,6 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        :placeholder="'请选择' + item.label" size="small">
-              <!--              <el-option value="" label="未选择"></el-option>-->
               <el-option v-for="listItem in asyncSelectGroup[item.key].list"
                          :key="listItem[asyncSelectGroup[item.key].alias.id]"
                          :value="listItem[asyncSelectGroup[item.key].alias.id]"
@@ -94,7 +93,7 @@
         label-position="top"
         @submit.native.prevent
         :rules="lineEditOptionsRules">
-        <!--<el-form-item class="line-edit-form-comp" label="所属工厂" prop="factoryId">
+        <!--<el-form-item size="small" class="line-edit-form-comp" label="所属工厂" prop="factoryId">
           <el-select v-model="lineEditOptionsData.factoryId" class="line-edit-form-comp-text">
             <el-option v-for="listItem in asyncSelectGroup.factoryId.list"
                        :key="listItem.id"
@@ -102,7 +101,7 @@
                        :label="listItem.abbreviation"></el-option>
           </el-select>
         </el-form-item>-->
-        <el-form-item class="line-edit-form-comp" label="所属车间" prop="workshopId">
+        <el-form-item size="small" class="line-edit-form-comp" label="所属车间" prop="workshopId">
           <el-select v-model="lineEditOptionsData.workshopId"
                      class="line-edit-form-comp-text" @change="setLineFactoryId">
             <el-option v-for="listItem in asyncSelectGroup.workshopId.list"
@@ -114,7 +113,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="line-edit-form-comp" label="工序组" prop="processGroup">
+        <el-form-item size="small" class="line-edit-form-comp" label="工序组" prop="processGroup">
           <el-select v-model="lineEditOptionsData.processGroup" class="line-edit-form-comp-text">
             <el-option v-for="listItem in asyncSelectGroup.processGroup.list"
                        :key="listItem.id"
@@ -123,6 +122,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           class="line-edit-form-comp"
           v-for="(lineItem, index) in lineEditOptions"
           :key="index"
@@ -193,8 +193,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeEditLinePanel" type="info">取消</el-button>
-        <el-button @click="submitEditLine" type="primary">保存</el-button>
+        <el-button size="small" @click="closeEditLinePanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditLine" type="primary">保存</el-button>
       </span>
     </el-dialog>
 
@@ -234,8 +234,8 @@
         </el-table-column>
       </el-table>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closePCSettingDetailsPanel" type="info">关闭</el-button>
-        <el-button @click="addPCSetting" type="primary">新增</el-button>
+        <el-button size="small" @click="closePCSettingDetailsPanel" type="info">关闭</el-button>
+        <el-button size="small" @click="addPCSetting" type="primary">新增</el-button>
       </span>
       <el-dialog
         title="编辑"
@@ -253,6 +253,7 @@
           @submit.native.prevent
           :rules="editSettingRules">
           <el-form-item
+            size="small"
             class="line-edit-form-comp"
             label="IP："
             prop="ip">
@@ -266,6 +267,7 @@
             </div>
           </el-form-item>
           <el-form-item
+            size="small"
             class="line-edit-form-comp"
             label="电脑名称："
             prop="computerName">
@@ -279,6 +281,7 @@
             </div>
           </el-form-item>
           <el-form-item
+            size="small"
             class="line-edit-form-comp"
             label="备注："
             prop="remark">
@@ -293,8 +296,8 @@
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
-        <el-button @click="closeEditPCSettingPanel" type="info">取消</el-button>
-        <el-button @click="submitEditPCConfig" type="primary">保存</el-button>
+        <el-button size="small" @click="closeEditPCSettingPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditPCConfig" type="primary">保存</el-button>
       </span>
       </el-dialog>
     </el-dialog>

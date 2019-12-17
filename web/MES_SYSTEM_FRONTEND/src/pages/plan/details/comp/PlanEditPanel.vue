@@ -15,6 +15,7 @@
         @submit.native.prevent
         :rules="planEditOptionsRules">
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp"
           label="是否紧急"
@@ -28,6 +29,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp"
           label="产线"
@@ -36,7 +38,6 @@
             v-model="planEditOptionsData.line"
             class="plan-edit-form-comp-text"
             autocomplete="off">
-            <el-option value="" label="未选择" disabled></el-option>
             <el-option v-for="listItem in lineSelectGroup"
                        :key="listItem.id"
                        :value="listItem.id"
@@ -44,6 +45,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="排产数量"
@@ -56,6 +58,7 @@
             v-model.number="planEditOptionsData.schedulingQuantity"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="预计开始时间"
@@ -70,6 +73,7 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="预计完成时间"
@@ -84,6 +88,7 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="转线时间(H)"
@@ -96,6 +101,7 @@
             v-model="planEditOptionsData.lineChangeTime"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-textarea"
           label="备注"
@@ -107,6 +113,7 @@
                     v-model="planEditOptionsData.remark"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([false, true])"
           class="plan-edit-form-comp"
           label="是否完成"
@@ -120,6 +127,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([false, true])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="生产计划单号"
@@ -132,6 +140,7 @@
             v-model="planEditOptionsData.productionPlanningNumber"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([false, true])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="产能"
@@ -144,6 +153,7 @@
             v-model.number="planEditOptionsData.capacity"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([true, true])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="已完成数量"
@@ -157,6 +167,7 @@
             v-model.number="planEditOptionsData.producedQuantity"></el-input>
         </el-form-item>
         <el-form-item
+          size="small"
           v-if="permissionShow([false, true])"
           class="plan-edit-form-comp plan-edit-form-comp-textarea"
           label="未完成原因"
@@ -169,8 +180,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-         <el-button @click="isEditing = false" type="info">取消</el-button>
-         <el-button @click="submitEdit" type="primary">保存</el-button>
+         <el-button size="small" @click="isEditing = false" type="info">取消</el-button>
+         <el-button size="small" @click="submitEdit" type="primary">保存</el-button>
        </span>
     </el-dialog>
   </div>
@@ -483,12 +494,6 @@
 
   .plan-edit-form-comp {
     padding: 0 10px;
-  }
-
-  .plan-edit-form-comp label {
-    font-size: 15px;
-    line-height: 24px;
-    padding: 0;
   }
 
   .plan-edit-form-comp-text {

@@ -8,98 +8,91 @@
       :close-on-press-escape="false"
       @close="initData"
       width="90%">
-      <div class="header">
-        <el-row :gutter="20" type="flex">
-          <el-col :span="4">
-            <label for="edit-software">*软件版本:</label>
-            <el-input type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
-                      v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
-          </el-col>
-          <el-col :span="4">
-            <label for="edit-machinename">*机型名:</label>
-            <el-input type="text" id="edit-machinename" placeholder="请填写机型名" clearable autocomplete="off"
-                      v-model.trim="formData.MachineName.value"></el-input>
-          </el-col>
-          <el-col :span="4" v-if="$route.query.type === '2'">
-            <label for="edit-software">IMEI号段 从:</label>
-            <el-input type="text" id="edit-software" clearable autocomplete="off"
-                      v-model.trim="formData.MachineName.imeiFrom"></el-input>
-          </el-col>
-          <el-col :span="4" style="margin-left: -10px" v-if="$route.query.type === '2'">
-            <label for="edit-software">至:</label>
-            <el-input type="text" id="edit-software" clearable autocomplete="off"
-                      v-model.trim="formData.MachineName.imeiTo"></el-input>
-          </el-col>
-          <el-col :span="4" style="margin-left: auto">
-            <el-row :gutter="10" type="flex">
-              <el-col :span="11" style="margin-left: auto" v-if="deleteHistory.length > 0">
-                <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
+      <div class="setting-header">
+        <div class="form-group">
+          <label for="edit-software">软件版本:</label>
+          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
+                    v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
+        </div>
+        <div class="form-group">
+          <label for="edit-machinename">机型名:</label>
+          <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名" clearable autocomplete="off"
+                    v-model.trim="formData.MachineName.value"></el-input>
+        </div>
+        <div class="form-group" v-if="$route.query.type === '2'">
+          <label for="edit-software">IMEI号段 从:</label>
+          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+                    v-model.trim="formData.MachineName.imeiFrom"></el-input>
+        </div>
+        <div class="form-group" v-if="$route.query.type === '2'">
+          <label for="edit-software">至:</label>
+          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+                    v-model.trim="formData.MachineName.imeiTo"></el-input>
+        </div>
+        <div class="setting-operation" style="margin-left: auto">
+          <div v-if="deleteHistory.length > 0">
+            <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
 " @click="restoreOneSetting">撤销删除
-                </el-button>
-              </el-col>
-              <el-col :span="11" style="margin-left: auto" v-if="copySrcIndex !== null">
-                <el-button style="width: 100%" type="primary" size="mini" @click="cancelCopySetting">取消复制
-                </el-button>
-              </el-col>
-            </el-row>
+            </el-button>
+          </div>
+          <div style="margin-left: 10px" v-if="copySrcIndex !== null">
+            <el-button style="width: 100%" type="primary" size="mini" @click="cancelCopySetting">取消复制
+            </el-button>
+          </div>
 
-          </el-col>
-        </el-row>
-        <el-row style="margin-top: 20px" class="setting-title">
-          <el-col :span="2">序号</el-col>
-          <el-col :span="3">*工位</el-col>
-          <el-col :span="6">*项目</el-col>
-          <el-col :span="7">AT指令</el-col>
-          <el-col :span="4">返回值</el-col>
-          <el-col :span="2">操作</el-col>
+        </div>
 
-        </el-row>
-        <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index" :class="setCopyStyle(index)">
-          <el-col :span="2">
-            <el-input v-model.trim="index" disabled></el-input>
-          </el-col>
-          <el-col :span="3">
-            <el-select v-model="item['1']" placeholder="请选择" style="width: 100%">
-              <el-option value="共有指令"></el-option>
-              <el-option value="IMEI域名"></el-option>
-              <el-option value="白卡测试"></el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="6">
-            <el-input v-model.trim="item['2']"></el-input>
-          </el-col>
-          <el-col :span="7">
-            <el-input v-model.trim="item['3']"></el-input>
-          </el-col>
-          <el-col :span="4">
-            <el-input v-model.trim="item['4']"></el-input>
-          </el-col>
-          <el-col :span="2">
-            <el-tooltip content="添加记录" placement="top">
-              <el-button type="primary" circle icon="el-icon-plus" @click="addOneSetting(index)"></el-button>
-            </el-tooltip>
-            <el-tooltip content="删除记录" placement="top">
-              <el-button type="primary" circle class="el-icon-minus" @click="deleteOneSetting(index)"></el-button>
-            </el-tooltip>
-            <el-tooltip content="复制" placement="top" v-if="copySrcIndex === null">
-              <el-button type="primary" circle icon="el-icon-copy-document" @click="copyOneSetting(index)"></el-button>
-            </el-tooltip>
-            <el-tooltip content="在下方插入" placement="top" v-if="copySrcIndex !== null">
-              <el-button circle icon="el-icon-full-screen
-" @click="parseOneSetting(index)"></el-button>
-            </el-tooltip>
-          </el-col>
-        </el-row>
-        <!--<el-row type="flex" justify="center" style="margin-top: 30px">
-          <el-tooltip content="添加一条记录" placement="top">
-            <el-button type="primary" circle icon="el-icon-plus" @click="addSetting"></el-button>
-          </el-tooltip>
-        </el-row>-->
       </div>
+      <el-row style="margin-top: 20px" class="setting-title">
+        <el-col :span="2">序号</el-col>
+        <el-col :span="3">*工位</el-col>
+        <el-col :span="6">*项目</el-col>
+        <el-col :span="7">AT指令</el-col>
+        <el-col :span="4">返回值</el-col>
+        <el-col :span="2">操作</el-col>
+
+      </el-row>
+      <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index"
+              :class="setCopyStyle(index)">
+        <el-col :span="2">
+          <el-input v-model.trim="index" disabled></el-input>
+        </el-col>
+        <el-col :span="3">
+          <el-select v-model="item['1']" placeholder="请选择" style="width: 100%">
+            <el-option value="共有指令"></el-option>
+            <el-option value="IMEI域名"></el-option>
+            <el-option value="白卡测试"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-input v-model.trim="item['2']"></el-input>
+        </el-col>
+        <el-col :span="7">
+          <el-input v-model.trim="item['3']"></el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-input v-model.trim="item['4']"></el-input>
+        </el-col>
+        <el-col :span="2">
+          <el-tooltip content="添加记录" placement="top">
+            <el-button type="primary" circle icon="el-icon-plus" @click="addOneSetting(index)"></el-button>
+          </el-tooltip>
+          <el-tooltip content="删除记录" placement="top">
+            <el-button type="primary" circle class="el-icon-minus" @click="deleteOneSetting(index)"></el-button>
+          </el-tooltip>
+          <el-tooltip content="复制" placement="top" v-if="copySrcIndex === null">
+            <el-button type="primary" circle icon="el-icon-copy-document" @click="copyOneSetting(index)"></el-button>
+          </el-tooltip>
+          <el-tooltip content="在下方插入" placement="top" v-if="copySrcIndex !== null">
+            <el-button circle icon="el-icon-full-screen
+" @click="parseOneSetting(index)"></el-button>
+          </el-tooltip>
+        </el-col>
+      </el-row>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closePanel">取消</el-button>
-        <el-button @click="submitEdit" v-if="editType !== 'copy'">保存</el-button>
-        <el-button @click="isSaveAs = true" v-else>另存为</el-button>
+        <el-button size="small" @click="closePanel">取消</el-button>
+        <el-button size="small" @click="submitEdit" v-if="editType !== 'copy'">保存</el-button>
+        <el-button size="small" @click="isSaveAs = true" v-else>另存为</el-button>
       </span>
       <el-dialog
         width="300px"
@@ -107,7 +100,7 @@
         :visible.sync="isSaveAs"
         append-to-body
       >
-        <el-select v-model="pageType" placeholder="请选择" style="width: 100%">
+        <el-select size="small" v-model="pageType" placeholder="请选择" style="width: 100%">
           <el-option value="2" label="组装测试配置"></el-option>
           <el-option value="4" label="研发测试配置"></el-option>
           <el-option value="5" label="OQC"></el-option>
@@ -121,18 +114,14 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
   import {testOperUrl} from "../../../../config/testApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
-  import {errHandler} from "../../../../utils/errorHandler";
-  import {getTestConfig} from "../../../../config/testApiConfig";
-  import _ from 'lodash'
   import eventBus from "../../../../utils/eventBus";
   import {getTime} from "../../../../utils/utils";
 
   export default {
     name: "EditPanel",
-    //props: ['editData'],
+    inject: ['reload'],
     data() {
       return {
         isCreate: false,
@@ -258,8 +247,6 @@
 
     },
     methods: {
-      ...mapActions(['setLoading']),
-
       initData: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -382,17 +369,16 @@
               this.isSaveAs = false;
               this.closePanel();
               this.$alertSuccess(response.data.data);
-              let tempUrl = this.$route.fullPath;
-              this.$router.push('/_empty');
-              this.$router.replace(tempUrl);
+              this.reload();
             } else {
               this.$alertWarning(response.data.data);
             }
             this.pageType = '';
           }).catch(err => {
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(()=> {
             this.$closeLoading();
             this.isPending = false;
-            this.$alertDanger('请求超时，请刷新重试')
           })
         }
       },
@@ -492,6 +478,25 @@
   .edit-panel-container {
   }
 
+  .setting-header {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .setting-header label {
+    line-height: 24px;
+  }
+
+  .setting-header .form-group {
+    width: 200px;
+    margin-right: 10px;
+  }
+
+  .setting-header .setting-operation {
+    display: flex;
+  }
+
+
   .setting-title {
     background-color: #eeeeee;
   }
@@ -507,34 +512,58 @@
     border-left: none;
   }
 
+  @media screen and (max-width: 1024px) {
+    .setting-row {
+      height: 64px;
+    }
+  }
+
+  .setting-row .el-col {
+    height: 100%;
+  }
+
+  .setting-row /deep/ .el-input, .setting-row /deep/ .el-select {
+    height: 100%;
+  }
+
   .setting-row /deep/ .el-input__inner {
     background: unset;
     border: 1px solid #dddddd;
     border-top: none;
-    height: 32px;
+    height: 100%;
+    min-height: 32px;
     line-height: 32px;
     padding: 0 6px;
     border-radius: 0;
+  }
+
+  .setting-row .el-col .el-button {
+    margin: 0;
   }
 
   .setting-row .el-col:last-child {
     border: 1px solid #dddddd;
     border-top: none;
     border-left: none;
-    height: 32px;
+    height: 100%;
+    min-height: 32px;
     line-height: 32px;
     border-radius: 0;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
+    flex-wrap: wrap;
   }
 
   .setting-row .el-col:last-child .el-button {
     height: 24px;
     line-height: 24px;
     width: 24px;
+    min-width: 24px;
     padding: 0;
     font-size: 12px;
+    display: inline-block;
+    transform: scale(0.8);
   }
 
   .setting-row .el-col + .el-col /deep/ .el-input__inner {
@@ -545,32 +574,5 @@
     box-shadow: #409eff 0 0 5px inset;
   }
 
-  .edit-panel {
-    background: #ffffff;
-    height: 100%;
-    width: 100%;
-    z-index: 102;
-    border-radius: 10px;
-    box-shadow: 3px 3px 20px 1px #bbb;
-    padding: 30px 60px 10px 60px;
-    overflow: scroll;
-    scroll-snap-type: inline;
-  }
 
-  .edit-panel::-webkit-scrollbar {
-    width: 10px;
-    height: 1px;
-  }
-
-  .edit-panel::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
-    background: rgba(54, 54, 54, 0.14);
-  }
-
-  .edit-panel::-webkit-scrollbar-track {
-    /*-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);*/
-    border-radius: 10px;
-    background: #EDEDED;
-  }
 </style>

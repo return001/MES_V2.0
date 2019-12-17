@@ -52,7 +52,6 @@
 <script>
   import Bus from '@/utils/eventBus'
   import {relationUpdateUrl} from "../../../../config/globalUrl";
-  import {mapActions} from 'vuex'
   import {axiosFetch} from "../../../../utils/fetchData";
 
   export default {
@@ -107,7 +106,6 @@
     mounted() {
     },
     methods: {
-      ...mapActions(['setLoading']),
       closePanel: function () {
         Bus.$emit('closeRelPanel', false)
       },

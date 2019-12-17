@@ -19,7 +19,6 @@
               id="process-query-item"
               placeholder="请选择工序"
               size="small">
-              <el-option value="" label="未选择"></el-option>
               <el-option v-for="listItem in processSelectGroupSrc"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -101,20 +100,18 @@
         label-position="top"
         @submit.native.prevent
         :rules="capacityEditOptionsRules">
-        <el-form-item class="capacity-edit-form-comp" label="工序组" prop="processGroup">
+        <el-form-item size="small" class="capacity-edit-form-comp" label="工序组" prop="processGroup">
           <el-select v-model="capacityEditOptionsData.processGroup" class="capacity-edit-form-comp-text"
                      @change="processGroupEditChange" placeholder="请选择工序组">
-            <el-option value="" label="未选择"></el-option>
             <el-option v-for="listItem in processGroupSelectGroup"
                        :key="listItem.id"
                        :value="listItem.id"
                        :label="listItem.groupName"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="capacity-edit-form-comp" label="工序" prop="process">
+        <el-form-item size="small" class="capacity-edit-form-comp" label="工序" prop="process">
           <el-select v-model="capacityEditOptionsData.process" placeholder="请选择工序" class="capacity-edit-form-comp-text"
                      :disabled="processGroupSelectGroup.length === 0">
-            <el-option value="" label="未选择"></el-option>
             <el-option v-for="listItem in processSelectGroup"
                        :key="listItem.id"
                        :value="listItem.id"
@@ -122,6 +119,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          size="small"
           class="capacity-edit-form-comp"
           v-for="(item, index) in capacityEditOptions"
           :key="index"
@@ -154,8 +152,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeEditCapacityPanel" type="info">取消</el-button>
-        <el-button @click="submitEditCapacity" type="primary">保存</el-button>
+        <el-button size="small" @click="closeEditCapacityPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditCapacity" type="primary">保存</el-button>
       </span>
     </el-dialog>
   </div>

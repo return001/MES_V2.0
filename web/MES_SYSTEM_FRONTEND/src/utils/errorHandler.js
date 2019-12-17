@@ -1,23 +1,4 @@
-import router from '../router'
 import {alertDanger, alertWarning, alertSuccess, alertInfo} from "./modal";
-
-const resHandler = function (attr) {
-  return new Promise((resolve, reject) => {
-    if (attr.code === '200') {
-      resolve(attr.data)
-    } else {
-      let error = {};
-      switch (attr.code) {
-        default:
-          error.code = attr.code;
-          error.msg = '未知错误';
-          break;
-
-      }
-      reject(error)
-    }
-  })
-}
 
 export const errHandler = function (code) {
   switch (code) {

@@ -5,14 +5,15 @@
       <div class="form-row mb-3">
         <div class="form-group col-3">
           <label for="edit-ZhiDan" class="col-form-label">制单号:{{!!formData[0].notNull ? '*' : ''}}</label>
-          <el-input type="text" id="edit-ZhiDan"
+          <el-input size="small"
+                    type="text" id="edit-ZhiDan"
                     class="form-control"
-                    v-model="formData[0].value"
+                    v-model.trim="formData[0].value"
                     :disabled="!isCreate" clearable></el-input>
         </div>
         <div class="form-group col-3" v-if="isUpdate">
           <label for="edit-Status" class="col-form-label">状态:{{!!formData[1].notNull ? '*' : ''}}</label>
-          <el-select id="edit-Status" class="custom-select"
+          <el-select size="small"  id="edit-Status" class="custom-select"
                      v-model="formData[1].value" :disabled="!isCreate">
             <el-option v-for="item in formData[1].valueList" :value="item.key" :label="item.label" :key="item.key"></el-option>
           </el-select>
@@ -25,13 +26,13 @@
           <div v-if="item.type === 'text'">
             <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{!!item.notNull ? '*' :
               ''}}</label>
-            <el-input type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
+            <el-input size="small" type="text" :id="'edit-' + item.field" class="form-control" v-model.trim="item.value"
                       :disabled="(!isCreate) && (formData[1].value !== 0)" clearable></el-input>
           </div>
           <div v-if="item.type === 'select'">
             <label :for="'edit-' + item.field" class="col-form-label">{{item.title}}: {{!!item.notNull ? '*' :
               ''}}</label>
-            <el-select type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
+            <el-select size="small" type="text" :id="'edit-' + item.field" class="form-control" v-model="item.value"
                        :disabled="(!isCreate) && (formData[1].value !== 0)">
               <el-option value="" disabled>请选择</el-option>
               <el-option v-for="i in item.valueList" :key="i.key" :value="i.key" :label="i.label"></el-option>
@@ -43,8 +44,8 @@
       </div>
       <div class="divider"></div>
       <div class="edit-panel-btn-group">
-        <el-button type="info" @click="initData">取消</el-button>
-        <el-button type="primary" @click="editData"
+        <el-button size="small" type="info" @click="initData">取消</el-button>
+        <el-button size="small" type="primary" @click="editData"
                    :disabled="(!isCreate) && (formData[1].value !== 0)">提交
         </el-button>
       </div>
@@ -53,16 +54,13 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
   import {orderOperUrl, getOrderEditOptions} from "../../../../config/orderApiConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
-  import {errHandler} from "../../../../utils/errorHandler";
-  import _ from 'lodash'
   import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "EditPanel",
-    //props: ['editData'],
+    inject: ['reload'],
     data() {
       return {
         isEditing: false,
@@ -108,7 +106,6 @@
 
     },
     methods: {
-      ...mapActions(['setLoading']),
       initData: function () {
         Object.assign(this.$data, this.$options.data())
       },
@@ -123,8 +120,8 @@
         }
         for (let i = 2; i < this.formData.length; i++) {
           if (!!this.formData[i].notNull) {
-            if (_.trim(this.formData[i].value) !== "") {
-              tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
+            if (this.formData[i].value !== "") {
+              tempData[this.formatCase(this.formData[i].field)] = this.formData[i].value;
             } else {
               this.$alertWarning("存在不能为空数据");
               this.isPending = false;
@@ -132,7 +129,7 @@
               return
             }
           } else {
-            tempData[this.formatCase(this.formData[i].field)] = _.trim(this.formData[i].value);
+            tempData[this.formatCase(this.formData[i].field)] = this.formData[i].value;
           }
         }
         let options = {
@@ -146,9 +143,7 @@
         axiosFetch(options).then(res => {
           if (res.data.result === 200) {
             this.$alertSuccess(res.data.data);
-            let tempUrl = this.$route.path;
-            this.$router.replace('/_empty');
-            this.$router.replace(tempUrl);
+            this.reload();
             this.initData();
           } else {
             this.$alertWarning(res.data.data)

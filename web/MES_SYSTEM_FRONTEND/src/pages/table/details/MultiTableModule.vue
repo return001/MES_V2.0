@@ -3,7 +3,7 @@
     <div class="options-area">
       <div class="form-row">
         <div class="form-group word-selector">
-          <el-select name="选择所需查询字段" v-model="queryWord" @change="queryMode = 0" :disabled="isLocked">
+          <el-select size="small" name="选择所需查询字段" v-model="queryWord" @change="queryMode = 0" :disabled="isLocked">
             <el-option value="imei" label="IMEI号"></el-option>
             <el-option value="sn" label="SN号"></el-option>
             <el-option value="zhiDan" label="制单号"></el-option>
@@ -16,36 +16,36 @@
         </div>
         <div class="form-group" v-if="queryMode === 0">
           <label class="form-label" for="single-item">请填写{{searchingItem}}:</label>
-          <el-input id="single-item" v-model="singleItemValue" clearable :disabled="isLocked"></el-input>
+          <el-input size="small" id="single-item" v-model="singleItemValue" clearable :disabled="isLocked"></el-input>
         </div>
         <div class="form-group-btn" v-if="queryMode === 1">
-          <el-button type="primary" @click="hashImportShowing = true">导入查询</el-button>
+          <el-button size="small" type="primary" @click="hashImportShowing = true">导入查询</el-button>
         </div>
         <div class="form-group-continuous" v-if="queryMode === 2">
           <div class="form-group">
             <label class="form-label" for="continuous-items-1">请填写{{searchingItem}} 从:</label>
-            <el-input id="continuous-items-1" v-model="continuousValue[0]" clearable :disabled="isLocked"></el-input>
+            <el-input size="small" id="continuous-items-1" v-model="continuousValue[0]" clearable :disabled="isLocked"></el-input>
           </div>
           <div class="form-group">
             <label class="form-label" for="continuous-items-2">至:</label>
-            <el-input id="continuous-items-2" v-model="continuousValue[1]" clearable :disabled="isLocked"></el-input>
+            <el-input size="small" id="continuous-items-2" v-model="continuousValue[1]" clearable :disabled="isLocked"></el-input>
           </div>
         </div>
         <div style="width: 160px; margin-right: 10px" v-if="queryMode === 2">
-          <el-checkbox v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
+          <el-checkbox size="small" v-model="imeiIsHex">IMEI是否为16进制</el-checkbox>
         </div>
         <div class="form-group-btn" v-if="queryMode !== 1">
-          <el-button type="primary" @click="queryData" :disabled="isLocked">查 询</el-button>
+          <el-button size="small" type="primary" @click="queryData" :disabled="isLocked">查 询</el-button>
         </div>
         <div class="form-group-btn" v-if="isLocked">
-          <el-button type="primary" @click="initData">解 锁</el-button>
+          <el-button size="small" type="primary" @click="initData">解 锁</el-button>
         </div>
         <div class="form-group-btn" v-if="isLocked">
-          <el-button type="primary" @click="exportTable">导出报表</el-button>
+          <el-button size="small" type="primary" @click="exportTable">导出报表</el-button>
         </div>
         <div class="form-group-btn"
              v-if="isLocked && ($store.state.userType === 'SuperAdmin' || $store.state.userType === 'engineer')">
-          <el-button type="warning" @click="showValidateDialog">删除数据</el-button>
+          <el-button size="small" type="warning" @click="showValidateDialog">删除数据</el-button>
         </div>
       </div>
     </div>
@@ -481,13 +481,12 @@
     border-radius: 8px;
     padding: 10px;
     margin-bottom: 10px;
-    min-height: 100px;
   }
 
   .form-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
   }
 
   .form-group {
@@ -506,15 +505,13 @@
 
   .form-group-continuous {
     display: flex;
+    padding: 10px 10px 0;
   }
 
-  .el-radio + .el-radio {
-    margin-left: 20px;
-  }
 
   .word-selector {
     border-right: 1px solid #eee;
-    padding: 20px;
+    padding: 10px 10px 0;
   }
 
   .form-group-btn {

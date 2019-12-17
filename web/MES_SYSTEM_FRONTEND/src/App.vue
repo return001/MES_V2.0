@@ -7,21 +7,12 @@
 </template>
 
 <script>
-  import eventBus from './utils/eventBus'
   import Copyright from "./components/Copyright";
   export default {
     name: 'App',
     components: {
       Copyright
     },
-    data() {
-      return {
-      }
-    },
-    mounted: function () {
-      console.log(process.env.NODE_ENV)
-    }
-
   }
 </script>
 
