@@ -1033,6 +1033,10 @@
     min-height: 600px;
     height: 100%;
   }
+  #file-manager /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
 
   #dispatching-dialog /deep/ .el-dialog__body {
     padding: 10px 20px;

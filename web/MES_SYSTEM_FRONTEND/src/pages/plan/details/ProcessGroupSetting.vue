@@ -408,7 +408,7 @@
 </script>
 
 <style scoped>
-  .el-button /deep/ i{
+  #process-group-setting /deep/ .el-button i{
     font-size: 17px;
     font-weight: bold;
   }

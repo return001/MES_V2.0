@@ -418,6 +418,10 @@
     min-height: 600px;
     height: 100%;
   }
+  #notice-manager /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
 
   .notice-edit-form /deep/ .el-textarea {
     width: 450px;

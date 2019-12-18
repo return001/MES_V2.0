@@ -212,4 +212,8 @@
     min-height: 600px;
     height: 100%;
   }
+  #workshop-setting /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
 </style>

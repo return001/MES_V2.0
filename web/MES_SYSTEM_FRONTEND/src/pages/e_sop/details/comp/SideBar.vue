@@ -20,7 +20,7 @@
 </template>
 
 <script>
-  import router from "../../../../router";
+  import index from "../../../../router";
 
   export default {
     name: "SideBar",

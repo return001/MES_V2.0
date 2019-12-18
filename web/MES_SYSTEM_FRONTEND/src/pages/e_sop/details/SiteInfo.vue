@@ -410,6 +410,11 @@
     height: 100%;
   }
 
+  #site-info /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
+
   .preview-notice {
     height: 56px;
     overflow: hidden;

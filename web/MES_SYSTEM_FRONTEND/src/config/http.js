@@ -3,7 +3,7 @@ import Qs from 'qs';
 import {setLoginToken} from "../store/actions";
 import {redTeaUrl} from './globalUrl'
 import store from "../store";
-import router from '../router';
+import index from '../router';
 import {alertDanger, alertWarning} from "../utils/modal";
 // axios.defaults.timeout = 5000;
 // axios.defaults.baseURL = window.g.API_URL + '/mes_server/';
@@ -35,9 +35,9 @@ axios.interceptors.response.use(
     if (res.data.result === 401){
       store.commit('setLoginToken', '');
       sessionStorage.removeItem('token');
-      router.replace({
+      index.replace({
         path: '/login',
-        query: {redirect: router.currentRoute.fullPath}
+        query: {redirect: index.currentRoute.fullPath}
       });
     }
     return res

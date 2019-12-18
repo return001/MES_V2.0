@@ -53,7 +53,7 @@ import {permissionList} from "../utils/utils";
 
 Vue.use(Router);
 
-const router = new Router({
+const index = new Router({
   base: '/mes_system',
   routes: [
     {
@@ -277,7 +277,7 @@ if (sessionStorage.getItem('delPermission')) {
 }
 
 
-router.beforeEach((to, from, next) => {
+index.beforeEach((to, from, next) => {
   if (to.path !== '/test/test_manage') {
     store.commit('setTestType', -1)
   } else {
@@ -304,4 +304,4 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-export default router;
+export default index;

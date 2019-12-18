@@ -1130,7 +1130,7 @@
 </script>
 
 <style scoped>
-  .el-button /deep/ i {
+  #plan-setting /deep/ .el-button  i {
     font-size: 17px;
     font-weight: bold;
   }

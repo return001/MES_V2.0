@@ -148,6 +148,11 @@
     height: 100%;
   }
 
+  #esop-log /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
+
   .result-code-success {
     font-weight: bold;
     color: #00ed03;

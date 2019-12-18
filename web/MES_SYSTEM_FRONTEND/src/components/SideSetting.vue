@@ -2,15 +2,6 @@
 <template>
   <div class="side-setting">
     <div class="setting-container">
-      <!--<div class="w-100">-->
-        <!--<div class="icon-container" :class="activeItem === 'table_old' ? 'icon-active' : '' "-->
-             <!--@click="initData('table_old')"  v-if="accessPermission('table_old')">-->
-          <!--<div class="setting-icon" style="background-color: #ccc;">-->
-            <!--<i class="el-icon-t-table" style="color: #fff;"></i>-->
-          <!--</div>-->
-          <!--<span>报表(旧)</span>-->
-        <!--</div>-->
-      <!--</div>-->
       <div class="w-100">
         <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')"  v-if="accessPermission('table')">
           <div class="setting-icon">
@@ -144,8 +135,10 @@
       ...mapActions(['setTableRouter', 'setLoginToken']),
       /*点击切换项目、路由导航*/
       initData: function (item) {
-        this.toggleState(item);
-        this.linkTo(item);
+        if (item !== this.$route.path.split('/')[1]) {
+          this.toggleState(item);
+          this.linkTo(item);
+        }
       },
       /*切换当前活动项目*/
       toggleState: function (val) {

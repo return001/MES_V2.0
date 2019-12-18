@@ -3,7 +3,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import App from './App'
-import router from './router'
+import index from './router'
 import axios from './config/http'
 import store from './store'
 
@@ -76,14 +76,14 @@ Vue.use(Vuex)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-  router,
+  router: index,
   store,
   components: {App},
   template: '<App/>'
 });
 
 export default {
-  router,
+  router: index,
   store,
   Vue
 }

@@ -7,11 +7,6 @@
   margin-top: 10px;
 }
 
-.el-button /deep/ i{
-  font-size: 14px;
-  font-weight: bold;
-}
-
 .page-pagination {
   display: flex;
   flex-wrap: wrap;

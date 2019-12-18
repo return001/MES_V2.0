@@ -95,7 +95,7 @@
       },
       linkTo: function (val) {
         let routerState = this.$route.path.split('/');
-        if (!!routerState[2] || val !== routerState[2]) {
+        if (!routerState[2] || val !== routerState[2]) {
           //this.$openLoading();
           this.$router.push({
             path: '/setting/' + val

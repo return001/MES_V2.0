@@ -15,7 +15,7 @@
                       placeholder="用户名"
                       v-model="loginInfos.name"
                       @keyup.enter="loginSubmit"
-                      autofocus/>
+                      ref="login-input"/>
           </div>
           <div class="form-item">
             <label for="login-password">密 码</label>
@@ -65,6 +65,9 @@
       this.token = (sessionStorage.getItem('token'))
         ? sessionStorage.getItem('token')
         : '';
+      this.$nextTick(() => {
+        this.$refs['login-input'].focus();
+      })
     },
     methods: {
       ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission']),

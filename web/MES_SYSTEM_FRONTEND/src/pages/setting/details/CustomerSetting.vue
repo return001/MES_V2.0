@@ -210,4 +210,8 @@
     min-height: 600px;
     height: 100%;
   }
+  #customer-setting /deep/ .el-button i{
+    font-size: 14px;
+    font-weight: bold;
+  }
 </style>
