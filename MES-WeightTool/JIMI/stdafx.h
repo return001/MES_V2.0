@@ -68,3 +68,5 @@
 #define d_MacBindCheck                  8
 #define d_EquipmentBindCheck            9
 #define d_RfidBindCheck                 10
+
+void CStringSplit(CString &strSource, CString *strDes, CString strSplitChar);//split函数的应用

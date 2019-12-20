@@ -18,7 +18,6 @@ UserLogin::UserLogin(CWnd* pParent /*=NULL*/)
 	, m_UserName(_T(""))
 	, m_UserPswd(_T(""))
 	, sUSER(_T(""))
-	, sUSERRight(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_JIMI);
 }
@@ -60,7 +59,7 @@ void UserLogin::OnBnClickedOk()
 	{
 		return;
 	}	
-	sUSER = adoManage.CheckUser(m_UserName, m_UserPswd,sUSERRight);
+	sUSER = adoManage.CheckUser(m_UserName, m_UserPswd);
 	if (_T("") == sUSER)
 	{
 		AfxMessageBox(_T("’À∫≈√‹¬Î¥ÌŒÛ"));

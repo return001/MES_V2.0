@@ -125,9 +125,16 @@ _RecordsetPtr ADOManage::GetRst()
 	CString strSql;
 	strSql = "Truncate table [testLD].[dbo].[testld]";
 	//strSql = "select * from BLEStatus";//具体执行的SQL语句
+	try
+	{
+		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//将查询数据导入m_pRecordset数据容器
+	    return m_pRecordSet;
+	}
+	catch (const std::exception&)
+	{
 
-	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//将查询数据导入m_pRecordset数据容器
-	return m_pRecordSet;
+	}
+	
 }
 
 //根据其它号段寻找IMEI
@@ -181,14 +188,22 @@ int ADOManage::JudgeImei(CString imei)
 	CString strSql;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + imei + _T("'");
-	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+	try
+	{
+		strSql = _T("SELECT [IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] =") + _T("'") + imei + _T("'");
+		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
-	if (m_pRecordSet->adoEOF)
+		if (m_pRecordSet->adoEOF)
+		{
+			return 0;
+		}
+		return 1;
+
+	}
+	catch (const std::exception&)
 	{
 		return 0;
 	}
-
 	return 1;
 }
 
@@ -203,12 +218,20 @@ int ADOManage::JudgeZhidan(CString imei,CString Zhidan)
 	CString strSql;
 
 	//查找IMEI是否存在，不存在返回0代表未找到IMEI
-	strSql = _T("SELECT [ZhiDan],[IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] ='") + imei + _T("' AND [ZhiDan]='") + Zhidan+_T("'");
-	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+	try
+	{
+		strSql = _T("SELECT [ZhiDan],[IMEI] FROM [") + m_Seconddbname + _T("].[dbo].[") + m_Secondformname + _T("] WHERE [IMEI] ='") + imei + _T("' AND [ZhiDan]='") + Zhidan+_T("'");
+	    m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
 
 
-	//找不到那就返回1
-	if (m_pRecordSet->adoEOF)
+		//找不到那就返回1
+		if (m_pRecordSet->adoEOF)
+		{
+			return 1;
+		}
+		return 0;//返回0就代表对得上
+	}
+	catch (_com_error &e)
 	{
 		return 1;
 	}
@@ -311,9 +334,9 @@ _RecordsetPtr ADOManage::GetOrderNumber()
 _RecordsetPtr ADOManage::GetIMEIByOrderNumber(CString ordernumber)
 {
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
-	//初始化Recordset指针
-//	CString strSql = _T("SELECT * FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");
-	CString strSql = _T("SELECT [IMEIStart],[IMEIEnd] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");	
+	//初始化Recordset指针//新增3个字段，网页前缀pre，后缀suf，IMEI范围Range
+	CString strSql = _T("SELECT [IMEIStart],[IMEIEnd],[IMEIMutiRange] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");	
+	//CString strSql = _T("SELECT [IMEIStart],[IMEIEnd] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");
 	try
 	{
 		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
@@ -334,21 +357,29 @@ _RecordsetPtr ADOManage::JudgeOrderNumber(CString ordernumber)
 
 	CString strSql = _T("SELECT [ZhiDan] FROM [") + m_Seconddbname + _T("].[dbo].[Gps_ManuOrderParam] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");
 	//	CString strSql = _T("SELECT * FROM [") + m_Seconddbname + _T("].[dbo].[orderld] WHERE [ZhiDan] =") + _T("'") + ordernumber + _T("'");
+	try
+	{
+		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
+	}
+	catch (_com_error &e)
+	{
 
-	m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
-
+	}
+	
 	return m_pRecordSet;
 
 }
 
 
 //保存订单所选择的字段和限位设置
-void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID, int IMEI2, CString uplimit, CString downlimit, CString disuplimit,CString disdownlimit)
+void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID, int IMEI2, CString uplimit, CString downlimit, CString disuplimit,CString disdownlimit,CString imeipre, CString imeisuf, CString comimeilen)
 {
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
 	//初始化Recordset指针
 	//CString a;
 
+	imeipre = _T("'") + imeipre + _T("'");
+	imeisuf = _T("'") + imeisuf + _T("'");
 	_variant_t Affectline;
 //	CString strSql;
 
@@ -357,8 +388,8 @@ void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, 
 	if (m_pRecordSet->adoEOF)//如果没有该项就插入，有就刷新
 	{
 	  //将数据插入表中
-		strSql.Format(_T("insert into[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam]([ZhiDan],[IMEISyllable], [SNSyllable], [SIMSyllable], [VIPSyllable], [ICCIDSyllable], [BATSyllable], [MACSyllable], [EquipmentSyllable],[RFIDSyllable],[IMEI2Syllable],[UpperLimit],[DownLimit],[DisUpperLimit],[DisDownLimit])values('")
-			+ order + _T("', %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s)"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID,IMEI2,uplimit,downlimit,disuplimit,disdownlimit);
+		strSql.Format(_T("insert into[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam]([ZhiDan],[IMEISyllable], [SNSyllable], [SIMSyllable], [VIPSyllable], [ICCIDSyllable], [BATSyllable], [MACSyllable], [EquipmentSyllable],[RFIDSyllable],[IMEI2Syllable],[UpperLimit],[DownLimit],[DisUpperLimit],[DisDownLimit],[IMEIPre],[IMEISuf],[ComIMEILen])values('")
+			+ order + _T("', %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s)"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID,IMEI2,uplimit,downlimit,disuplimit,disdownlimit,imeipre,imeisuf,comimeilen);
 		try{
 			m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 		}
@@ -372,7 +403,7 @@ void ADOManage::Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, 
 	    //	if (Affectline.vt == 0)
 		try
 		{
-			strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam] SET [IMEISyllable]=%d, [SNSyllable]=%d, [SIMSyllable]=%d, [VIPSyllable]=%d, [ICCIDSyllable]=%d, [BATSyllable]=%d, [MACSyllable]=%d, [EquipmentSyllable]=%d,[RFIDSyllable]=%d,[IMEI2Syllable]=%d,[UpperLimit]=%s,[DownLimit]=%s,[DisUpperLimit]=%s,[DisDownLimit]=%s WHERE [ZhiDan]='") + order + _T("'"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID, IMEI2, uplimit, downlimit, disuplimit, disdownlimit);
+			strSql.Format(_T("UPDATE[" + m_Firstdbname + "].[dbo].[Gps_WeightNetOrderRelationParam] SET [IMEISyllable]=%d, [SNSyllable]=%d, [SIMSyllable]=%d, [VIPSyllable]=%d, [ICCIDSyllable]=%d, [BATSyllable]=%d, [MACSyllable]=%d, [EquipmentSyllable]=%d,[RFIDSyllable]=%d,[IMEI2Syllable]=%d,[UpperLimit]=%s,[DownLimit]=%s,[DisUpperLimit]=%s,[DisDownLimit]=%s,[IMEIPre]=%s,[IMEISuf]=%s,[ComIMEILen]=%s WHERE [ZhiDan]='") + order + _T("'"), IMEI, SN, SIM, VIP, ICCID, BAT, MAC, Equipment,RFID, IMEI2, uplimit, downlimit, disuplimit, disdownlimit, imeipre, imeisuf,comimeilen);
 			m_pConnection->Execute(_bstr_t(strSql), &Affectline, adCmdText);//直接执行语句
 		}
 		catch (_com_error &e)
@@ -515,12 +546,11 @@ CString ADOManage::GetTime(){
 	return strTime;
 }
 
-CString ADOManage::CheckUser(CString username, CString userpswd , CString &userright)
+CString ADOManage::CheckUser(CString username, CString userpswd)
 {
 	m_pRecordSet.CreateInstance(__uuidof(Recordset));
 	//初始化Recordset指针
-	//CString strSql = _T("SELECT UserDes From LUserAccount WHERE Name = '" )+ username + _T("' AND Password = '") + userpswd + _T("'");
-	CString strSql = _T("SELECT * From LUserAccount WHERE Name = '") + username + _T("' AND Password = '") + userpswd + _T("'");
+	CString strSql = _T("SELECT UserDes From LUserAccount WHERE Name = '" )+ username + _T("' AND Password = '") + userpswd + _T("'");
 	try
 	{
 		m_pRecordSet = m_pConnection->Execute(_bstr_t(strSql), NULL, adCmdText);//直接执行语句
@@ -530,11 +560,12 @@ CString ADOManage::CheckUser(CString username, CString userpswd , CString &userr
 
 	}
 	
+
 	if (!m_pRecordSet->adoEOF)
 	{
-		userright = m_pRecordSet->GetCollect("UserType").bstrVal;
 		return m_pRecordSet->GetCollect("UserDes").bstrVal;	
-	} 
+	}
+ 
 	return _T("");
 }
 //根据IMEI判断对比工位彩盒标志位判断

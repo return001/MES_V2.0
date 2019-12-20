@@ -149,6 +149,7 @@ public:
 	CString strzhidan;//存放当前选中的制单号
 
 	CString strimeistart, strimeiend;//IMEI起始和结束
+	CString sComplexIMEILen,sIMEIPre, sIMEISuf, sIMEIRange;//,长度，www.123456789012345.com网页的前缀，后缀，以及多范围，多个IMEI断号
 
 	afx_msg void OnBnClickedButtonUpdataorder();
 	void InitComboBox();//给combox添加数据库中的订单号，更新按钮和开启后自动初始化都用这个函数
@@ -213,7 +214,6 @@ public:
 	CString m_PCIP;
 	CString m_PCName;
 	CString m_UserName;
-	CString m_UserRight;//用户权限
 
 	CString m_WeightValue;//最终称重的结果值
 	CString m_IMEIValue;//最终称重的IMEI结果值
@@ -234,14 +234,16 @@ public:
 	BOOL IsNumber(const CString& strTest);//判断数字和字母
 	BOOL IsNumber2(const CString& strTest);//只判断数字
 	BOOL judgeimeirang(CString str, CString strimeistart, CString strimeiend);
+	BOOL judgeimeiMuiltiRang(CString str, CString sRangestr);
 	void RecordResult(CString sRemark);//记录结果进数据库
 	void ToResultSheet();
 	bool GetWeightValue();//计算处理有效的重量值，赋值相应的值结果给数据库
 	void DealtSerialData(CString sSerialData);//获取当前的串口返回的有效的重量值
 	bool CheckParam();//检查设置的参数
-	void WidgetStatue(BOOL Show);//根据权限问题的显示状态
 
 	afx_msg void OnBnClickedImei2syllableCheck();
-	afx_msg void OnBnClickedButtonLogin();
+	
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+
 };
 

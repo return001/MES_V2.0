@@ -22,7 +22,7 @@ public:
 	bool ConndbSQL();//连接数据库函数2,数据库配置那里用来测试连接用
 	bool CloseAll();//关闭数据库函数
 
-	CString CheckUser(CString username, CString userpswd ,CString &userright);//用户名确认
+	CString CheckUser(CString username, CString userpswd);//用户名确认
 	int CpCaiheByImei(CString imei, CString ZhiDan);//根据IMEI判断对比工位标志位
 	bool CheckCHRESULT(CString imei);//检查对比工位彩盒判断
 
@@ -35,7 +35,7 @@ public:
 	int InsertResultLog(CString zhidan, CString imei, CString weight, CString uplimit, CString downlimit, CString result, CString ip, CString username, CString remarkerror);//插入正确数据到表中
 	int JudgeImei(CString imei);//判断IMEI号是否存在
 	int JudgeZhidan(CString imei,CString Zhidan);//判断制单号是否对得上
-	void Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment,int RFID, int IMEI2, CString uplimit, CString downlimit, CString disuplimit, CString disdownlimit);//保存订单所选择的字段
+	void Savesyllable(CString order, int IMEI, int SN, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment,int RFID, int IMEI2, CString uplimit, CString downlimit, CString disuplimit, CString disdownlimit, CString imeipre,CString imeisuf, CString comimeilen);//保存订单所选择的字段
 	void Readsyllable(CString order);//读取订单所选择的字段
 	void Savebind(CString order, int SIM, int VIP, int ICCID, int BAT, int MAC, int Equipment, int RFID);//保存订单所绑定的字段
 	void Readbind(CString order);//读取订单所绑定的字段
