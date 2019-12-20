@@ -10,8 +10,6 @@ public class SopSQL {
 
 	public static final String SELECT_CUSTOMER_BY_FACTORY = "SELECT * FROM sop_customer WHERE factory_id = ?";
 
-	public static final String SELECT_LINE_BY_FACTORY = "SELECT * FROM line WHERE factory_id = ?";
-
 	public static final String SELECT_WORKSHOP_BY_COLUMN = "SELECT id FROM sop_workshop WHERE workshop_name = ? UNION ALL SELECT id FROM sop_workshop WHERE workshop_number = ?";
 
 	public static final String SELECT_LINE_BY_WORKSHOP = "SELECT * FROM line WHERE workshop_id = ?";
@@ -42,8 +40,6 @@ public class SopSQL {
 
 	public static final String SELECT_SOPNOTICE = "SELECT id,title,content,start_time as startTime,end_time as endTime FROM sop_notice ";
 
-	public static final String SELECT_FILE_JOIN_HISTORY = "SELECT f.file_name as fileName,f.file_number as fileNumber,f.version,f.product_model as productModel,f.series_model as seriesModel,h.id,h.push_time as pushTime,h.push_person as pushPerson,d.detail_site_number as detailSiteNumber,d.detail_site_name as detailSiteName,d.detail_line as detailLine,d.detail_workshop as detailWorkshop,d.detail_factory as detailFactory,d.detail_title as detailTitle,d.detail_content as detailContent,d.picture_number as pictureNumber,d.picture_name as pictureName,d.picture_path as picturePath FROM sop_history h,sop_history_detail d,sop_file f WHERE h.id = d.history_id AND h.file_id = f.id AND h.file_id = ? ";
-
 	public static final String SELECT_ACTIONLOG = "SELECT id,[time],address,url,result_code as resultCode,uid,consume_time as consumeTime,[action],parameters FROM action_log ";
 
 	public static final String SELECT_SITE_BY_MAC = "SELECT * FROM sop_site WHERE mac = ?";
@@ -64,7 +60,7 @@ public class SopSQL {
 
 	public static final String SELECT_SOPSITEDISPLAY = "SELECT * FROM sop_site_display";
 
-	public static final String SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY = "SELECT s.site_name,s.site_number,l.line_name,w.workshop_name,f.abbreviation FROM sop_site s,line l,sop_workshop w,sop_factory f WHERE s.line_id = l.id AND l.factory_id = f.id AND l.workshop_id = w.id AND s.id = ?";
+	public static final String SELECT_SITE_JOIN_LINE_WORKSHOP_FACTORY = "SELECT s.site_name,s.site_number,l.line_name,w.workshop_name,f.abbreviation FROM sop_site s,line l,sop_workshop w,sop_factory f WHERE s.line_id = l.id AND w.factory_id = f.id AND l.workshop_id = w.id AND s.id = ?";
 
 	public static final String SELECT_FILEHISTORY_JOIN_FILE = "SELECT h.id,h.file_id as fileId,h.push_person as pushPerson,h.push_time as pushTime,f.file_number as fileNumber,f.file_name as fileName,f.version,f.product_model as productModel,f.series_model as seriesModel FROM sop_file_history h,sop_file f WHERE h.file_id = f.id AND h.file_id = ? ";
 

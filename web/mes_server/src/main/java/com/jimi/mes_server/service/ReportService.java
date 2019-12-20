@@ -121,6 +121,9 @@ public class ReportService extends SelectService {
 		} else if (table.equals("Gps_ManuSimDataParam")) {
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
 			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
+		} else if (table.equals("GPSOQC_Result")) {
+			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);
@@ -210,6 +213,9 @@ public class ReportService extends SelectService {
 		} else if (table.equals("Gps_ManuSimDataParam")) {
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
 			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
+		} else if (table.equals("GPSOQC_Result")) {
+			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);

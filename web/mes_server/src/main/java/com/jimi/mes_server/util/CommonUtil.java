@@ -6,9 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.URLEncoder;
-import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,29 +75,6 @@ public class CommonUtil {
 			oldFile.renameTo(newFile);
 		}
 		return true;
-	}
-
-
-	/**
-	 * 根据文件路径提取MD5值
-	 * @param path 文件路径
-	 * @date 2019年8月10日 下午3:13:04
-	 */
-	public static String getMD5(String path) {
-		StringBuffer sb = new StringBuffer();
-		try (FileInputStream fis = new FileInputStream(new File(path));) {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] buffer = new byte[1024];
-			int length = -1;
-			while ((length = fis.read(buffer, 0, 1024)) != -1) {
-				md.update(buffer, 0, length);
-			}
-			BigInteger bigInt = new BigInteger(1, md.digest());
-			sb.append(bigInt.toString(16).toUpperCase());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return sb.toString();
 	}
 
 
@@ -222,7 +197,7 @@ public class CommonUtil {
 
 
 	public static void main(String[] args) {
-		getMD5("C:\\Users\\HCJ\\Desktop\\配置文件\\配置文件\\GT02F_20_61DM2_B25E_R0_V02_20151112_1042.rar");
+
 	}
 
 

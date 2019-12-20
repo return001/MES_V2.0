@@ -16,7 +16,11 @@ public enum WebUserType {
 	SOPMANAGER(9, "SopManager"), 
 	SOPREVIEWER(11, "SopReviewer"),
 	SOPQCCONFIRMER(12, "SopQcConfirmer"), 
-	CASUALWORKER(13, "casualWorker");
+	CASUALWORKER(13, "casualWorker"),
+	OQCMANAGER(14, "oqcManager"), 
+	OQCCONFIGURATOR(16, "oqcConfigurator"),
+	OQCTESTER(17, "oqcTester"), 
+	OQCCUSTOMER(18, "oqcCustomer");
 
 	private Integer id;
 

@@ -94,10 +94,6 @@ public class SopService extends SelectService {
 		if (sopCustomer != null) {
 			throw new OperationException("当前工厂被客户所引用，请先删除客户，再进行操作");
 		}
-		Line line = Line.dao.findFirst(SopSQL.SELECT_LINE_BY_FACTORY, id);
-		if (line != null) {
-			throw new OperationException("当前工厂被产线所引用，请先删除产线，再进行操作");
-		}
 		return sopFactory.delete();
 	}
 
@@ -273,6 +269,10 @@ public class SopService extends SelectService {
 		SopSite sopSite = SopSite.dao.findById(id);
 		if (sopSite == null) {
 			throw new OperationException("当前站点不存在");
+		}
+		SopSiteDisplay sopSiteDisplay = SopSiteDisplay.dao.findFirst(SopSQL.SELECT_SITEDISPLAY_BY_SITE, id);
+		if (sopSiteDisplay != null && !StringUtils.isAllBlank(sopSiteDisplay.getPictures(), sopSiteDisplay.getNotices())) {
+			throw new OperationException("当前站点正在播放，请先停播");
 		}
 		return sopSite.delete();
 	}

@@ -52,7 +52,6 @@ import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
 import com.jimi.mes_server.model.SchedulingPlan;
-import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.model.SopWorkshop;
 import com.jimi.mes_server.service.base.SelectService;
@@ -203,12 +202,6 @@ public class ProductionService {
 			}
 			line.setWorkshopId(workshopId);
 		}
-		if (factoryId != null) {
-			if (SopFactory.dao.findById(factoryId) == null) {
-				throw new OperationException("工厂不存在");
-			}
-			line.setFactoryId(factoryId);
-		}
 		line.setTimeLength(timeLength);
 		return line.save();
 	}
@@ -305,12 +298,6 @@ public class ProductionService {
 				throw new OperationException("车间不存在");
 			}
 			line.setWorkshopId(workshopId);
-		}
-		if (factoryId != null) {
-			if (SopFactory.dao.findById(factoryId) == null) {
-				throw new OperationException("工厂不存在");
-			}
-			line.setFactoryId(factoryId);
 		}
 		line.setLineRemark(lineRemark);
 		line.setTimeLength(timeLength);

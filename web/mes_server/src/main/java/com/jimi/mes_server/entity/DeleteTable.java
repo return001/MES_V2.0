@@ -20,7 +20,8 @@ public enum DeleteTable {
 	GpsManuPrintParam("Gps_ManuPrintParam", 8), 
 	GpsTestResult("Gps_TestResult", 9), 
 	NetMarkIMEI("NetMarkIMEI", 10), 
-	GpsManuSimDataParam("Gps_ManuSimDataParam", 11);
+	GpsManuSimDataParam("Gps_ManuSimDataParam", 11), 
+	GpsOqcResult("GPSOQC_Result", 12);
 
 	private String name;
 

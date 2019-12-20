@@ -90,15 +90,6 @@ public abstract class BaseLine<M extends BaseLine<M>> extends Model<M> implement
 		return getInt("workshop_id");
 	}
 
-	public M setFactoryId(java.lang.Integer factoryId) {
-		set("factory_id", factoryId);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getFactoryId() {
-		return getInt("factory_id");
-	}
-
 	public M setTimeLength(java.lang.Integer timeLength) {
 		set("time_length", timeLength);
 		return (M)this;

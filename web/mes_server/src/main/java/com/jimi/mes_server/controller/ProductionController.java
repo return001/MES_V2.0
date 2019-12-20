@@ -342,7 +342,7 @@ public class ProductionController extends Controller {
 	 * @param line 产线ID
 	 * @date 2019年8月8日 下午3:53:07
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void addComputer(String ip, String computerName, String remark, Integer line) {
 		if (line == null || StrKit.isBlank(ip)) {
 			throw new ParameterException("参数不能为空");
@@ -363,7 +363,7 @@ public class ProductionController extends Controller {
 	 * @param id 产线电脑ID
 	 * @date 2019年8月8日 下午3:53:37
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void deleteComputer(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -381,7 +381,7 @@ public class ProductionController extends Controller {
 	 * @param lineId 产线电脑ID
 	 * @date 2019年8月8日 下午3:53:53
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
+	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopManager" })
 	public void selectComputer(Integer lineId) {
 		if (lineId == null) {
 			throw new ParameterException("参数不能为空");
@@ -398,7 +398,7 @@ public class ProductionController extends Controller {
 	 * @param remark 备注
 	 * @date 2019年8月8日 下午3:54:13
 	 */
-	@Access({ "engineer" })
+	@Access({ "engineer", "SopManager" })
 	public void editComputer(Integer id, String ip, String computerName, String remark) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
