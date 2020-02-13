@@ -19,7 +19,7 @@ public class GeneratorStarter {
 		/*String url = PropKit.get("d_url");
 		String user = PropKit.get("d_user");
 		String password = PropKit.get("d_password");*/
-		String url = "jdbc:sqlserver://10.10.11.90:6033;DatabaseName=GPSTest";
+		String url = "jdbc:sqlserver://183.236.111.164:6033;DatabaseName=GPSTest";
 		String user = "sa";
 		String password = "jiminewpower";
 		// base model 所使用的包名

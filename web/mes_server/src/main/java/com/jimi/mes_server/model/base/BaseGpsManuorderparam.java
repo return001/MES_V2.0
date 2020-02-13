@@ -531,4 +531,13 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getStr("IMEIMutiRange");
 	}
 
+	public M setRfidArea(java.lang.String rfidArea) {
+		set("RFID_Area", rfidArea);
+		return (M)this;
+	}
+	
+	public java.lang.String getRfidArea() {
+		return getStr("RFID_Area");
+	}
+
 }

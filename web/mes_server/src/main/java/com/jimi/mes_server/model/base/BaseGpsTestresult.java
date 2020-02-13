@@ -225,4 +225,13 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 		return getInt("NBCouResult");
 	}
 
+	public M setRfidResult(java.lang.Integer RfidResult) {
+		set("RfidResult", RfidResult);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getRfidResult() {
+		return getInt("RfidResult");
+	}
+
 }
