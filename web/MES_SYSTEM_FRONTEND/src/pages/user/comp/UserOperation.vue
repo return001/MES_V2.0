@@ -94,7 +94,7 @@
           webUserType: '',
           inService: ''
         },
-        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         permissionList: [
           {
             name: 'DataRelativeSheet',
@@ -143,6 +143,10 @@
           {
             name: 'Gps_ManuSimDataParam',
             remark: '种子物联网卡表'
+          },
+          {
+            name: 'GPSOQC_Result',
+            remark: 'OQC测试结果表'
           }
         ],
         isPending: false

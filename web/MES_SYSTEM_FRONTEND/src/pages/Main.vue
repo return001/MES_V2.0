@@ -63,11 +63,15 @@
   }
 
   .user-info-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space:nowrap;
     font-size: 14px;
     color: #458aff;
     line-height: 48px;
     display: inline-block;
     position: absolute;
-    padding: 0 7px;
+    padding: 0 14px 0 7px;
+    width: 66px;
   }
 </style>

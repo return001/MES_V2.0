@@ -132,10 +132,11 @@
       ...mapGetters(['routerIn', 'token', 'userType']),
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setLoginToken']),
+      ...mapActions(['setLoginToken']),
       /*点击切换项目、路由导航*/
       initData: function (item) {
         if (item !== this.$route.path.split('/')[1]) {
+          this.$openLoading();
           this.toggleState(item);
           this.linkTo(item);
         }

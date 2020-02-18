@@ -3,9 +3,6 @@ import {deepCopy} from "../utils/utils";
 export const setLoginToken = (state, token) => {
   state.token = token;
 };
-export const setTableRouter = (state, tableRouterData) => {
-  state.tableRouterApi = tableRouterData;
-};
 
 export const setRouter = (state, routerIn) => {
   state.routerIn = routerIn

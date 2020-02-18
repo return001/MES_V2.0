@@ -45,7 +45,7 @@
             </el-select>
           </div>
           <div class="form-group" v-if="userData.webUserType === 1">
-            <label class="col-form-label">权限设置:</label>
+            <label class="col-form-label">Web权限设置:</label>
             <el-button size="small" @click="isAddingPermission = true" style="width: 200px;">查看详细权限</el-button>
           </div>
           <div class="divider"></div>
@@ -131,7 +131,7 @@
             ]
           }
         ],
-        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         permissionList: [
           {
             name: 'DataRelativeSheet',
@@ -180,8 +180,12 @@
           {
             name: 'Gps_ManuSimDataParam',
             remark: '种子物联网卡表'
+          },
+          {
+            name: 'GPSOQC_Result',
+            remark: 'OQC测试结果表'
           }
-        ]
+        ],
       }
     },
     components: {
@@ -211,9 +215,10 @@
         Object.assign(this.$data, this.$options.data())
       },
     },
-    mounted() {
+    async mounted() {
       this.$openLoading();
-      this.getUserType();
+      await this.getUserType();
+      eventBus.$emit('userQueryData');
     },
     methods: {
       initForm: function () {
@@ -223,11 +228,11 @@
       },
 
       getUserType: function () {
-        return new Promise(() => {
+        return new Promise(resolve => {
           this.isPending = true;
           axiosFetch({
             url: getUserTypeUrl
-          }).then(async response => {
+          }).then(response => {
             if (response.data.result === 200) {
               this.$store.commit('setUserTypeList', response.data.data)
             } else {
@@ -238,6 +243,7 @@
           }).finally(() => {
             this.isPending = false;
             this.$closeLoading();
+            resolve()
           })
         })
       },
@@ -245,7 +251,7 @@
 
       addUser: function () {
         Object.assign(this.userData, this.$options.data().userData);
-        this.tempPermission = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.tempPermission = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.isAdding = true;
       },
       addSubmit: function () {
@@ -263,9 +269,16 @@
               options.data.deletePermission = this.tempPermission.toString();
             }
 
+
             //userType patch
             options.data.userType = "&00&10";
-
+            if (user.webUserType === 14 || user.webUserType === 16) {
+              options.data.userType = "&1201&1202&1203";
+            } else if (user.webUserType === 17) {
+              options.data.userType = "&1202&1203";
+            } else if (user.webUserType === 18) {
+              options.data.userType = "&1204";
+            }
 
             axiosFetch(options).then(response => {
               this.isPending = false;

@@ -8,7 +8,6 @@ Vue.use(Vuex);
 
 const state = {
   token: '',
-  tableRouterApi: 'default',
   routerIn: 'table',
   isEditing: false,
   editData: [],

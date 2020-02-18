@@ -12,7 +12,7 @@ export const getTime = function () {
 import store from '../store'
 
 export const checkDelPermission = function (queryType) {
-  let tableList = ['DataRelativeSheet', 'DataRelativeUnique', 'DataRelativeUpdate', 'Gps_AutoTest_Result', 'Gps_AutoTest_Result2', 'Gps_AutoTest_Result3', 'Gps_CartonBoxTwenty_Result', 'Gps_CoupleTest_Result', 'Gps_ManuPrintParam', 'Gps_TestResult', 'NetMarkIMEI', 'Gps_ManuSimDataParam'];
+  let tableList = ['DataRelativeSheet', 'DataRelativeUnique', 'DataRelativeUpdate', 'Gps_AutoTest_Result', 'Gps_AutoTest_Result2', 'Gps_AutoTest_Result3', 'Gps_CartonBoxTwenty_Result', 'Gps_CoupleTest_Result', 'Gps_ManuPrintParam', 'Gps_TestResult', 'NetMarkIMEI', 'Gps_ManuSimDataParam', 'GPSOQC_Result'];
 
   let index = tableList.indexOf(queryType);
   return store.state.delPermission[index] !== "0"
@@ -49,6 +49,12 @@ export const permissionList = function () {
     case "SopReviewer":
     case "SopQcConfirmer":
       list = ['setting', 'esop'];
+      break;
+
+    case "oqcManager":
+    case "configurationManager":
+    case "developConfigurator":
+      list = ['test'];
       break;
 
     default:

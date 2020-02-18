@@ -33,7 +33,8 @@
                 type: '0',
                 name: '功能测试'
               },
-            ]
+            ],
+            hideIn: ['oqcManager','developConfigurator']
           },
           {
             title: '组装测试',
@@ -46,7 +47,8 @@
                 type: '2',
                 name: '耦合测试'
               }
-            ]
+            ],
+            hideIn: ['oqcManager','developConfigurator']
           },
           {
             title: '研发测试',
@@ -59,7 +61,8 @@
                 type: '4',
                 name: '耦合测试'
               }
-            ]
+            ],
+            hideIn: ['oqcManager']
           },
           {
             title: 'OQC',
@@ -68,7 +71,8 @@
                 type: '5',
                 name: 'OQC'
               }
-            ]
+            ],
+            hideIn: ['developConfigurator']
           }
         ],
         //控制列表active状态，当前已激活的项目
@@ -81,13 +85,19 @@
         this.toggleState(this.testType)
       }
     },
+    beforeMount() {
+      this.linkList = this.linkList.filter(item => {
+        if (item.hideIn.indexOf(this.$store.state.userType) < 0) {
+          return item
+        }
+      });
+    },
     mounted: function () {
       this.toggleState(this.testType)
     },
     computed: {
       ...mapGetters([
-        'testType',
-        'isLoading'
+        'testType'
       ]),
     },
     methods: {

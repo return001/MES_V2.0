@@ -69,7 +69,6 @@
 
 <script>
   import eventBus from '@/utils/eventBus'
-  import {mapGetters} from 'vuex';
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {tableDownloadUrl, tableDeleteUrl, validateUrl, tableCartonDownloadUrl} from "../../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../../utils/fetchData";
@@ -197,9 +196,6 @@
       })
     },
     computed: {
-      ...mapGetters([
-        'tableRouterApi'
-      ]),
       relTable: function () {
         if (this.$route.query.type === 'DataRelativeSheet') {
           return '是否关联打印表'

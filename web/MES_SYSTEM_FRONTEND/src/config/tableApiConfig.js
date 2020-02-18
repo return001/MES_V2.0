@@ -90,7 +90,11 @@ export const setRouterConfig = (name, params) => {
     case 'LTestLogMessage':
       return {
         data: ROUTER_CONFIG.LTestLogMessage
-      }
+      };
+    case 'GPSOQC_Result':
+      return {
+        data: ROUTER_CONFIG.GPSOQC_Result
+      };
   }
 };
 
@@ -566,6 +570,49 @@ const ROUTER_CONFIG = {
       {field: 'AutoTestSMTResult', title: '预备字段1', colStyle: {'width': '80px'}},
       {field: 'SMTIQCResult', title: 'SMT IQC', colStyle: {'width': '90px'}},
       // {field: 'OtherTestSign', title: '???', colStyle: {'width': '100px'}, visible: false},
+      // {
+      //   field: 'Result', title: '总结果', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
+      //     switch (cellValue) {
+      //       case 0:
+      //         return '失败';
+      //       case 1:
+      //         return '成功';
+      //     }
+      //   }
+      // },
+      {
+        field: 'CPResult', title: '比对结果', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
+          switch (cellValue) {
+            case 0:
+              return '失败';
+            case 1:
+              return '成功';
+          }
+        }
+      },
+      {
+        field: 'WeightResult', title: '称重结果', colStyle: {'width': '80px'},
+      },
+      {
+        field: 'OQCResult01', title: '工厂OQC结果', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
+          switch (cellValue) {
+            case 0:
+              return '失败';
+            case 1:
+              return '成功';
+          }
+        }
+      },
+      {
+        field: 'OQCResult02', title: '客户OQC结果', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
+          switch (cellValue) {
+            case 0:
+              return '失败';
+            case 1:
+              return '成功';
+          }
+        }
+      },
       {
         field: 'Result', title: '总结果', colStyle: {'width': '80px'}, formatter(row, column, cellValue, index) {
           switch (cellValue) {
@@ -575,7 +622,7 @@ const ROUTER_CONFIG = {
               return '成功';
           }
         }
-      }
+      },
     ]
   },
   DataRelativeUnique: {
@@ -772,6 +819,80 @@ const ROUTER_CONFIG = {
       {field: 'CategoryNum5', title: '老化后错误类型', colStyle: {'width': '100px'},},
       {field: 'Computer5', title: '错误主机(老化后)', colStyle: {'width': '100px'},},
       {field: 'TestTime', title: '时间', colStyle: {'width': '100px'},},
+
+
+    ]
+  },
+  GPSOQC_Result: {
+    primaryKey: 'Id',
+    type: 'int',
+    queryOptions: [
+      {
+        id: 'SN',
+        name: '芯片ID',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'IMEI',
+        name: 'IMEI号',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'ZhiDan',
+        name: '制单号',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'SoftModel',
+        name: '机型',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'Version',
+        name: '软件版本',
+        model: '',
+        type: 'text'
+      },
+      {
+        id: 'TestTime',
+        name: '时间',
+        timeRange: '',
+        type: 'date'
+      }
+    ],
+    dataColumns: [
+      {field: 'Id', title: 'ID', colStyle: {'width': '80px'},},
+      {field: 'SN', title: '芯片ID', colStyle: {'width': '200px'},},
+      {field: 'IMEI', title: 'IMEI', colStyle: {'width': '100px'},},
+      {field: 'ZhiDan', title: '订单号', colStyle: {'width': '200px'},},
+      {field: 'SoftModel', title: '机型', colStyle: {'width': '100px'},},
+      {field: 'Version', title: '版本号', colStyle: {'width': '100px'},},
+      {field: 'Result', title: '测试结果', colStyle: {'width': '100px'}, formatter(row, column, cellValue, index) {
+        switch (cellValue) {
+        case 0:
+          return '失败';
+        case 1:
+          return '成功';
+        }
+      }},
+      {field: 'TestId', title: '测试人员', colStyle: {'width': '100px'},},
+      {field: 'ConfigId', title: '配置人员', colStyle: {'width': '100px'},},
+      {field: 'TestGrade', title: '配置权限', colStyle: {'width': '100px'}, formatter(row, column, cellValue, index) {
+          switch (cellValue) {
+            case 0:
+              return '测试人员';
+            case 1:
+              return '管理员';
+          }
+        }},
+      {field: 'Computer', title: '错误主机(组装)', colStyle: {'width': '100px'},},
+      {field: 'TestSetting', title: '配置指令', colStyle: {'width': '400px'},},
+      {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'},},
+      {field: 'Remark', title: '备注', colStyle: {'width': '100px'},},
 
 
     ]

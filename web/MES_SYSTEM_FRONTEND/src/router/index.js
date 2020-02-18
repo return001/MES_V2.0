@@ -4,49 +4,51 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store'
 import Main from '../pages/Main'
-import Login from '../pages/user/Login'
-import OrderManage from '../pages/order/details/OrderManage'
-import UserConfig from '../pages/user/UserConfig'
+import {closeLoading} from "../utils/loading";
+
+const Login = () => import ('../pages/user/Login');
+const OrderManage = () => import ('../pages/order/details/OrderManage');
+const UserConfig = () => import ('../pages/user/UserConfig');
 /*红茶*/
-import RedTea from '../pages/redtea/RedTeaMain'
+const RedTea = () => import ('../pages/redtea/RedTeaMain');
 /*测试配置*/
-import TestMain from '../pages/test/TestMain'
-import TestManage from '../pages/test/details/TestManage'
+const TestMain = () => import ('../pages/test/TestMain');
+const TestManage = () => import ('../pages/test/details/TestManage');
 /*表单查询*/
-import TableMain from '../pages/table/TableMain'
-import TableModule from '../pages/table/details/TableModule'
-import TableModuleSP from '../pages/table/details/TableModuleSP'
-import TableBackups from '../pages/table/details/Backups'
-import MultiTableModule from '../pages/table/details/MultiTableModule'
+const TableMain = () => import (/* webpackChunkName: "group-table" */'../pages/table/TableMain');
+const TableModule = () => import (/* webpackChunkName: "group-table" */'../pages/table/details/TableModule');
+const TableModuleSP = () => import (/* webpackChunkName: "group-table" */'../pages/table/details/TableModuleSP');
+const TableBackups = () => import (/* webpackChunkName: "group-table" */'../pages/table/details/Backups');
+const MultiTableModule = () => import (/* webpackChunkName: "group-table" */'../pages/table/details/MultiTableModule');
 /*功能集合*/
-import FuncMain from '../pages/func/FuncMain'
-import MacMain from '../pages/func/mac/MacMain'
-import IMEIMain from '../pages/func/imei/IMEIMain'
+const FuncMain = () => import ( /* webpackChunkName: "group-func" */'../pages/func/FuncMain');
+const MacMain = () => import ( /* webpackChunkName: "group-func" */'../pages/func/mac/MacMain');
+const IMEIMain = () => import ( /* webpackChunkName: "group-func" */'../pages/func/imei/IMEIMain');
 /*排产计划*/
-import PlanMain from '../pages/plan/PlanMain'
-import OrderSetting from '../pages/plan/details/OrderSetting'
-import ProcessSetting from '../pages/plan/details/ProcessSetting'
-import ProcessGroupSetting from '../pages/plan/details/ProcessGroupSetting'
-import LineSetting from '../pages/plan/details/LineSetting'
-import CapacitySetting from '../pages/plan/details/CapacitySetting'
-import PlanSetting from '../pages/plan/details/PlanSetting'
+const PlanMain = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/PlanMain');
+const OrderSetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/OrderSetting');
+const ProcessSetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/ProcessSetting');
+const ProcessGroupSetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/ProcessGroupSetting');
+const LineSetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/LineSetting');
+const CapacitySetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/CapacitySetting');
+const PlanSetting = () => import (/* webpackChunkName: "group-plan" */'../pages/plan/details/PlanSetting');
 /*基础配置*/
-import SettingMain from "../pages/setting/SettingMain";
-import FactorySetting from "../pages/setting/details/FactorySetting";
-import WorkshopSetting from "../pages/setting/details/WorkshopSetting";
-import SiteSetting from "../pages/setting/details/SiteSetting";
-import CustomerSetting from "../pages/setting/details/CustomerSetting";
-import ModelSetting from "../pages/setting/details/ModelSetting";
-import ProductSetting from "../pages/setting/details/ProductSetting";
+const SettingMain = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/SettingMain");
+const FactorySetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/FactorySetting");
+const WorkshopSetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/WorkshopSetting");
+const SiteSetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/SiteSetting");
+const CustomerSetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/CustomerSetting");
+const ModelSetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/ModelSetting");
+const ProductSetting = () => import (/* webpackChunkName: "group-setting" */"../pages/setting/details/ProductSetting");
 /*E_SOP*/
-import ESopMain from "../pages/e_sop/ESopMain";
-import FileManager from "../pages/e_sop/details/FileManager";
-import NoticeManager from "../pages/e_sop/details/NoticeManager";
-import ESopActionLog from "../pages/e_sop/details/ESopActionLog";
-import ESopLogs from "../pages/e_sop/details/ESopLogs";
-import SiteInfo from "../pages/e_sop/details/SiteInfo";
+const ESopMain = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/ESopMain");
+const FileManager = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/FileManager");
+const NoticeManager = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/NoticeManager");
+const ESopActionLog = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/ESopActionLog");
+const ESopLogs = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/ESopLogs");
+const SiteInfo = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/SiteInfo");
 /*看板*/
-import Dashboard from '../pages/dashboard/Dashboard'
+const Dashboard = () => import ('../pages/dashboard/Dashboard');
 
 /*函数*/
 import {permissionList} from "../utils/utils";
@@ -303,5 +305,10 @@ index.beforeEach((to, from, next) => {
     next();
   }
 });
+
+index.afterEach((to, from) => {
+  closeLoading();
+});
+
 
 export default index;

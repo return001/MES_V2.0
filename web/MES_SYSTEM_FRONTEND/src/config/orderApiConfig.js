@@ -57,6 +57,7 @@ const ROUTER_CONFIG = {
       {field: 'Color', title: '颜色', colStyle: {'width': '60px'}, notNull: true},
       {field: 'Weight', title: '重量', colStyle: {'width': '80px'}, notNull: true},
       {field: 'Qty', title: '数量', colStyle: {'width': '80px'}, notNull: true},
+      {field: 'RFID_Area', title: '地区', colStyle: {'width': '80px'}, notNull: true},
       {field: 'ProductNo', title: '产品编号', colStyle: {'width': '140px'}, notNull: true},
       {field: 'Version', title: '版本', colStyle: {'width': '140px'}, notNull: true},
       {field: 'IMEIStart', title: '起始IMEI号', colStyle: {'width': '150px'}, notNull: true},
@@ -118,6 +119,7 @@ const ROUTER_CONFIG = {
       {field: 'IMEI2End', title: 'IMEI2终止位', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'IMEI2Prints', title: 'IMEI2打印', colStyle: {'width': '100px'}, value: '', "notNull": false},
       {field: 'IMEIMutiRange', title: 'IMEI多号段', colStyle: {'width': '100px'}, value: '', "notNull": false},
+      {field: 'Week', title: '周期', colStyle: {'width': '100px'}, value: '', "notNull": false},
     ]
   },
 
@@ -157,6 +159,42 @@ export const getOrderEditOptions = () => {
     {field: 'Color', title: '颜色', value: '', type: 'text', notNull: true},
     {field: 'Weight', title: '重量', value: '', type: 'text', notNull: true},
     {field: 'Qty', title: '数量', value: '', type: 'text', notNull: true},
+    {
+      field: 'RFID_Area', title: '地区', value: '', type: 'select', notNull: true, valueList: [
+        {
+          label: '天波',
+          key: '天波'
+        },
+        {
+          label: '辽宁',
+          key: '辽宁'
+        },
+        {
+          label: '贵州',
+          key: '贵州'
+        },
+        {
+          label: '江西',
+          key: '江西'
+        },
+        {
+          label: '四川',
+          key: '四川'
+        },
+        {
+          label: '长治',
+          key: '长治'
+        },
+        {
+          label: '阿艾富',
+          key: '阿艾富'
+        },
+        {
+          label: '海振邦',
+          key: '海振邦'
+        }
+      ]
+    },
     {field: 'ProductNo', title: '产品编号', value: '', type: 'text', notNull: true},
     {field: 'Version', title: '版本', value: '', type: 'text', notNull: true},
     {field: 'IMEIStart', title: '起始IMEI号', value: '', type: 'text', notNull: true},
@@ -167,28 +205,30 @@ export const getOrderEditOptions = () => {
     {field: 'BATEnd', title: '终止BAT号', value: '', type: 'text', notNull: false},
     {field: 'VIPStart', title: '起始VIP号', value: '', type: 'text', notNull: false},
     {field: 'VIPEnd', title: '终止VIP号', value: '', type: 'text', notNull: false},
-    {field: 'IMEIRel', title: 'IMEI关联', value: '', type: 'select', notNull: true, valueList: [
     {
-      label: '无绑定',
-      key: 0
+      field: 'IMEIRel', title: 'IMEI关联', value: '', type: 'select', notNull: true, valueList: [
+        {
+          label: '无绑定',
+          key: 0
+        },
+        {
+          label: '与SMI卡绑定',
+          key: 1
+        },
+        {
+          label: '与SIM&BAT绑定',
+          key: 2
+        },
+        {
+          label: '与SIM&VIP绑定',
+          key: 3
+        },
+        {
+          label: '与BAT绑定',
+          key: 4
+        }
+      ]
     },
-    {
-      label: '与SMI卡绑定',
-      key: 1
-    },
-    {
-      label: '与SIM&BAT绑定',
-      key: 2
-    },
-    {
-      label: '与SIM&VIP绑定',
-      key: 3
-    },
-    {
-      label: '与BAT绑定',
-      key: 4
-    }
-  ]},
     {field: 'TACInfo', title: 'TAC信息', value: '', type: 'text', notNull: true},
     {field: 'CompanyName', title: '公司名', type: 'text', notNull: false},
     {field: 'Remark1', title: '备注1', value: '', type: 'text', notNull: false},
@@ -220,5 +260,6 @@ export const getOrderEditOptions = () => {
     {field: 'IMEI2End', title: 'IMEI2终止位', value: '', type: 'text', notNull: false},
     {field: 'IMEI2Prints', title: 'IMEI2打印', value: '', type: 'text', notNull: false},
     {field: 'IMEIMutiRange', title: 'IMEI多号段', value: '', type: 'text', notNull: false},
+    {field: 'Week', title: '周期', value: '', type: 'text', notNull: false},
   ]
 };

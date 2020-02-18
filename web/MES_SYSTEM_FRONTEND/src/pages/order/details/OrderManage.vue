@@ -12,8 +12,7 @@
   import Options from './comp/Options'
   import TableDetails from './comp/TableDetails'
   import EditPanel from './comp/EditPanel'
-  import CreateRelation from './comp/CreateRelation'
-  import {mapGetters} from 'vuex'
+  // import CreateRelation from './comp/CreateRelation'
 
   export default {
     name: "OrderManage",
@@ -27,14 +26,11 @@
         isRouterAlive: true
       }
     },
-    computed: {
-      ...mapGetters(['isEditing', 'editData'])
-    },
     components: {
       Options,
       TableDetails,
       EditPanel,
-      CreateRelation
+      // CreateRelation
     },
 
     methods: {

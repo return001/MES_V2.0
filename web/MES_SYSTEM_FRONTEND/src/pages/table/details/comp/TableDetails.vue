@@ -137,7 +137,6 @@
     },
     computed: {
       ...mapGetters([
-        'tableRouterApi',
         'tableDeleteGroup'
       ]),
       getTableConfig: function () {
@@ -195,7 +194,7 @@
 
     },
     methods: {
-      ...mapActions(['setTableRouter', 'setTableDeleteGroup']),
+      ...mapActions(['setTableDeleteGroup']),
       init: function () {
         Object.assign(this.$data, this.$options.data())
       },

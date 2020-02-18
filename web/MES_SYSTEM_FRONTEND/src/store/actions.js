@@ -2,10 +2,6 @@ export const setLoginToken = ({commit}, token) => {
   commit('setLoginToken', token)
 };
 
-export const setTableRouter = ({commit}, tableRouterData) => {
-  commit('setTableRouter', tableRouterData)
-};
-
 export const setRouter = ({commit}, routerIn) => {
   commit('setRouter', routerIn)
 };

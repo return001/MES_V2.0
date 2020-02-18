@@ -2,10 +2,6 @@ export const token = (state) => {
   return state.token;
 };
 
-export const tableRouterApi = (state) => {
-  return state.tableRouterApi;
-};
-
 export const routerIn = (state) => {
   return state.routerIn
 };

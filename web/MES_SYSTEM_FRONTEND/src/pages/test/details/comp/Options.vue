@@ -10,7 +10,12 @@
       <div class="form-group-btn">
         <el-button size="small" type="primary" @click="thisFetch">查询</el-button>
       </div>
-      <div class="form-group-btn" v-if="$store.state.userType === 'SuperAdmin' || $store.state.userType === 'engineer'">
+      <div class="form-group-btn"
+           v-if="$store.state.userType === 'SuperAdmin'
+           || $store.state.userType === 'engineer'
+           || $store.state.userType === 'oqcManager'
+           || $store.state.userType === 'configurationManager'
+           || $store.state.userType === 'developConfigurator' ">
         <el-button size="small" type="primary" @click="addOrder">新增</el-button>
       </div>
     </div>
@@ -18,7 +23,6 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex';
   import {getTestConfig, testSelectUrl} from "../../../../config/testApiConfig";
   import eventBus from "../../../../utils/eventBus";
 
@@ -91,18 +95,12 @@
       this.initForm('test_manage')
 
     },
-    computed: {
-      ...mapGetters([
-        'testType'
-      ]),
-    },
     watch: {
       $route: function (val) {
         this.initForm('test_manage');
       }
     },
     methods: {
-      ...mapActions(['setEditing', 'setEditData']),
       initForm: function (opt) {
         let routerConfig = getTestConfig(opt);
         this.queryOptions = JSON.parse(JSON.stringify(routerConfig.data.queryOptions));

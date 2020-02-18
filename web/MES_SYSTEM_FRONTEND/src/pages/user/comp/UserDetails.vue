@@ -61,12 +61,6 @@
             title: '用户类型',
             colStyle: {'width': '100px'},
             formatter(row, column, cellValue, index) {
-              switch (cellValue) {
-                case true:
-                  return '是';
-                case false:
-                  return '否';
-              }
               let mark = false;
               if (!!store.state.userTypeList.webTypeList) {
                 let list = store.state.userTypeList.webTypeList;
@@ -107,7 +101,7 @@
     },
     mounted() {
       this.init();
-      this.thisFetch();
+      //this.thisFetch();
 
       /*event register*/
       eventBus.$off('userQueryData');

@@ -20,7 +20,7 @@
 </template>
 
 <script>
-  import {mapGetters, mapActions} from 'vuex'
+  import {mapGetters} from 'vuex'
 
   export default {
     data() {
@@ -73,6 +73,10 @@
               {
                 type: "NetMarkIMEI",
                 name: "网标与IMEI绑定表"
+              },
+              {
+                type: "GPSOQC_Result",
+                name: "OQC测试结果"
               },
               {
                 type: "Gps_ManuSimDataParam",
@@ -139,12 +143,10 @@
     },
     computed: {
       ...mapGetters([
-        'tableRouterApi',
         'isLoading'
       ]),
     },
     methods: {
-      ...mapActions(['setTableRouter']),
       toggleState: function (item) {
         this.activeItem = item;
       },

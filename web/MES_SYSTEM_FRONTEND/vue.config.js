@@ -4,8 +4,11 @@ module.exports = {
   runtimeCompiler: true,
 
   chainWebpack: config => {
-    config.optimization.splitChunks({
+    config.plugins.delete('prefetch');
+
+/*    config.optimization.splitChunks({
       chunks: 'all'
-    })
+    })*/
+
   }
-}
+};

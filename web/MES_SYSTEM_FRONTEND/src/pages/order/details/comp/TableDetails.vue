@@ -76,7 +76,6 @@
 
 <script>
   import {axiosFetch} from "../../../../utils/fetchData";
-  import {mapGetters, mapActions} from 'vuex'
   import {getOrderConfig, orderSelectUrl, orderOperUrl} from "../../../../config/orderApiConfig";
   import EditPanel from './EditPanel';
   import {errHandler} from "../../../../utils/errorHandler";
@@ -91,7 +90,7 @@
     data() {
       return {
         tableData: [],
-        tableColumns: [],
+        tableColumns: getOrderConfig('order_manage').data.dataColumns,
         isPending: false,
         paginationOptions: {
           currentPage: 1,
@@ -105,12 +104,6 @@
       }
     },
     created() {
-    },
-    computed: {
-      ...mapGetters([
-        'tableRouterApi'
-      ]),
-
     },
     mounted: function () {
       this.init();
@@ -162,8 +155,6 @@
         if (this.queryString !== '') {
           options.data.filter = this.queryString
         }
-        let routerConfig = getOrderConfig('order_manage');
-        this.tableColumns = routerConfig.data.dataColumns;
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
