@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title id="title">几米智造每日产能详情报表</title>
+</head>
+<body>
+<p style="font-weight: bold; font-size: 14px;">统计时间范围: <span id="time-range"></span></p>
+<h2 style="width: 100%; text-align: center">日产能报表(汇总)</h2>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">日可出货总量: <span id="capacity-total-daily"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: right;">数量单位: PCS</p>
+<div class="tg-wrap" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+  <table id="summary" class="tg" style="border-collapse: collapse; border-spacing: 0; width: 100%">
+    <tr>
+      <td style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-qprr">订单号</td>
+      <td style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-qprr">机型</td>
+      <td align="center" style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-qprr">订单数量</td>
+      <td align="center" style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-qprr">上线起始日期</td>
+      <td align="center" style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-qprr">计划完成日期</td>
+      <td align="center" style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-m7ex">可出货数量</td>
+      <td align="center" style="font-family:Arial, sans-serif;font-weight:bold; font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-m7ex">完成率</td>
+    </tr>
+    <tr id="capacity-total-content">
+      <td id = "order" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-oiyu"></td>
+      <td id = "model" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-oiyu"></td>
+      <td id = "number" align="center" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-oiyu"></td>
+      <td id = "startDate" align="center" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-oiyu"></td>
+      <td id = "planDate" align="center" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-oiyu"></td>
+      <td id = "production" align="center" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-cbs6"></td>
+      <td id = "completeRate" align="center" style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-cbs6"></td>
+    </tr>
+  </table>
+</div>
+<h2 style="width: 100%; text-align: center">日产能报表(详情)</h2>
+<div id="detailDiv" class="tg-wrap" style="font-family:Arial, sans-serif;font-size:14px; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+	<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">订单号: <span
+  id="capacity-order"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">机型: <span
+  id="capacity-machine-name"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">产品编号: <span
+  id="capacity-product-number"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">软件版本: <span
+  id="capacity-software-version"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">订单数量: <span
+  id="capacity-order-count"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">可出货数量: <span
+  id="capacity-finished-count"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">完成率: <span
+  id="capacity-finished-rate"></span></p>
+<p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">在制时长(天): <span
+  id="on-produce-time"></span></p>
+<!-- <p style="font-weight: bold; font-size: 14px; float: left; margin-right: 50px">实际每小时产能:<span
+  id="actual-capacity-hour"></span></p> -->
+<p style="font-weight: bold; font-size: 14px; float: right;">数量单位: PCS</p>
+  <table id="details" class="tg" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+    <colgroup>
+      <col style="width: 100px">
+      <col style="width: auto">
+      <col style="width: auto">
+      <col style="width: auto">
+    </colgroup>
+    <div id="capacity-content-box">
+      <tr>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;text-align:center;vertical-align:middle" class="tg-uzvj">工位</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;text-align:center;vertical-align:middle" class="tg-uzvj">时间段</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;text-align:center;vertical-align:middle" class="tg-uzvj">已完成数量</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;text-align:center;vertical-align:middle" class="tg-uzvj">实际用时 (分:秒)</td>
+      </tr>
+      <tr id="0-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">SMT</span></td>
+      </tr>
+      <tr id="0-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-0"></td>
+      </tr>
+      <tr id="0-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-1"></td>
+      </tr>
+      <tr id="0-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-2"></td>
+      </tr>
+      <tr id="0-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-3"></td>
+      </tr>
+      <tr id="0-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-4"></td>
+      </tr>
+      <tr id="0-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-5"></td>
+      </tr>
+      <tr id="0-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-6"></td>
+      </tr>
+      <tr id="0-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-7"></td>
+      </tr>
+      <tr id="0-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-8"></td>
+      </tr>
+      <tr id="0-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-9"></td>
+      </tr>
+      <tr id="0-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-10"></td>
+      </tr>
+      <tr id="0-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-11"></td>
+      </tr>
+      <tr id="0-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-12"></td>
+      </tr>
+      <tr id="0-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-13"></td>
+      </tr>
+      <tr id="0-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-14"></td>
+      </tr>
+      <tr id="0-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-15"></td>
+      </tr>
+      <tr id="0-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-16"></td>
+      </tr>
+      <tr id="0-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-17"></td>
+      </tr>
+      <tr id="0-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-18"></td>
+      </tr>
+      <tr id="0-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-19"></td>
+      </tr>
+      <tr id="0-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-20"></td>
+      </tr>
+      <tr id="0-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-21"></td>
+      </tr>
+      <tr id="0-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-22"></td>
+      </tr>
+      <tr id="0-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time-23"></td>
+      </tr>
+      <tr id="0-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="0-actual-used-time--1"></td>
+      </tr>
+
+<tr id="1-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">组装</span></td>
+      </tr>
+     <tr id="1-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-0"></td>
+      </tr>
+      <tr id="1-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-1"></td>
+      </tr>
+      <tr id="1-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-2"></td>
+      </tr>
+      <tr id="1-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-3"></td>
+      </tr>
+      <tr id="1-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-4"></td>
+      </tr>
+      <tr id="1-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-5"></td>
+      </tr>
+      <tr id="1-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-6"></td>
+      </tr>
+      <tr id="1-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-7"></td>
+      </tr>
+      <tr id="1-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-8"></td>
+      </tr>
+      <tr id="1-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-9"></td>
+      </tr>
+      <tr id="1-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-10"></td>
+      </tr>
+      <tr id="1-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-11"></td>
+      </tr>
+      <tr id="1-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-12"></td>
+      </tr>
+      <tr id="1-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-13"></td>
+      </tr>
+      <tr id="1-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-14"></td>
+      </tr>
+      <tr id="1-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-15"></td>
+      </tr>
+      <tr id="1-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-16"></td>
+      </tr>
+      <tr id="1-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-17"></td>
+      </tr>
+      <tr id="1-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-18"></td>
+      </tr>
+      <tr id="1-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-19"></td>
+      </tr>
+      <tr id="1-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-20"></td>
+      </tr>
+      <tr id="1-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-21"></td>
+      </tr>
+      <tr id="1-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-22"></td>
+      </tr>
+      <tr id="1-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time-23"></td>
+      </tr>
+      <tr id="1-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="1-actual-used-time--1"></td>
+      </tr>
+
+<tr id="2-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">老化</span></td>
+      </tr>
+      <tr id="2-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-0"></td>
+      </tr>
+      <tr id="2-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-1"></td>
+      </tr>
+      <tr id="2-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-2"></td>
+      </tr>
+      <tr id="2-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-3"></td>
+      </tr>
+      <tr id="2-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-4"></td>
+      </tr>
+      <tr id="2-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-5"></td>
+      </tr>
+      <tr id="2-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-6"></td>
+      </tr>
+      <tr id="2-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-7"></td>
+      </tr>
+      <tr id="2-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-8"></td>
+      </tr>
+      <tr id="2-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-9"></td>
+      </tr>
+      <tr id="2-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-10"></td>
+      </tr>
+      <tr id="2-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-11"></td>
+      </tr>
+      <tr id="2-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-12"></td>
+      </tr>
+      <tr id="2-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-13"></td>
+      </tr>
+      <tr id="2-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-14"></td>
+      </tr>
+      <tr id="2-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-15"></td>
+      </tr>
+      <tr id="2-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-16"></td>
+      </tr>
+      <tr id="2-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-17"></td>
+      </tr>
+      <tr id="2-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-18"></td>
+      </tr>
+      <tr id="2-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-19"></td>
+      </tr>
+      <tr id="2-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-20"></td>
+      </tr>
+      <tr id="2-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-21"></td>
+      </tr>
+      <tr id="2-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-22"></td>
+      </tr>
+      <tr id="2-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time-23"></td>
+      </tr>
+      <tr id="2-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="2-actual-used-time--1"></td>
+      </tr>
+
+<tr id="3-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">耦合</span></td> </tr>
+      <tr id="3-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-0"></td>
+      </tr>
+      <tr id="3-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-1"></td>
+      </tr>
+      <tr id="3-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-2"></td>
+      </tr>
+      <tr id="3-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-3"></td>
+      </tr>
+      <tr id="3-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-4"></td>
+      </tr>
+      <tr id="3-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-5"></td>
+      </tr>
+      <tr id="3-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-6"></td>
+      </tr>
+      <tr id="3-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-7"></td>
+      </tr>
+      <tr id="3-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-8"></td>
+      </tr>
+      <tr id="3-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-9"></td>
+      </tr>
+      <tr id="3-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-10"></td>
+      </tr>
+      <tr id="3-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-11"></td>
+      </tr>
+      <tr id="3-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-12"></td>
+      </tr>
+      <tr id="3-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-13"></td>
+      </tr>
+      <tr id="3-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-14"></td>
+      </tr>
+      <tr id="3-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-15"></td>
+      </tr>
+      <tr id="3-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-16"></td>
+      </tr>
+      <tr id="3-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-17"></td>
+      </tr>
+      <tr id="3-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-18"></td>
+      </tr>
+      <tr id="3-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-19"></td>
+      </tr>
+      <tr id="3-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-20"></td>
+      </tr>
+      <tr id="3-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-21"></td>
+      </tr>
+      <tr id="3-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-22"></td>
+      </tr>
+      <tr id="3-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time-23"></td>
+      </tr>
+      <tr id="3-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="3-actual-used-time--1"></td>
+      </tr>
+
+<tr id="4-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">机身贴</span></td></tr>
+      <tr id="4-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-0"></td>
+      </tr>
+      <tr id="4-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-1"></td>
+      </tr>
+      <tr id="4-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-2"></td>
+      </tr>
+      <tr id="4-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-3"></td>
+      </tr>
+      <tr id="4-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-4"></td>
+      </tr>
+      <tr id="4-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-5"></td>
+      </tr>
+      <tr id="4-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-6"></td>
+      </tr>
+      <tr id="4-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-7"></td>
+      </tr>
+      <tr id="4-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-8"></td>
+      </tr>
+      <tr id="4-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-9"></td>
+      </tr>
+      <tr id="4-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-10"></td>
+      </tr>
+      <tr id="4-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-11"></td>
+      </tr>
+      <tr id="4-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-12"></td>
+      </tr>
+      <tr id="4-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-13"></td>
+      </tr>
+      <tr id="4-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-14"></td>
+      </tr>
+      <tr id="4-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-15"></td>
+      </tr>
+      <tr id="4-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-16"></td>
+      </tr>
+      <tr id="4-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-17"></td>
+      </tr>
+      <tr id="4-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-18"></td>
+      </tr>
+      <tr id="4-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-19"></td>
+      </tr>
+      <tr id="4-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-20"></td>
+      </tr>
+      <tr id="4-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-21"></td>
+      </tr>
+      <tr id="4-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-22"></td>
+      </tr>
+      <tr id="4-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time-23"></td>
+      </tr>
+      <tr id="4-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="4-actual-used-time--1"></td>
+      </tr>
+
+     <tr id="5-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">彩盒贴</span></td> </tr>
+      <tr id="5-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-0"></td>
+      </tr>
+      <tr id="5-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-1"></td>
+      </tr>
+      <tr id="5-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-2"></td>
+      </tr>
+      <tr id="5-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-3"></td>
+      </tr>
+      <tr id="5-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-4"></td>
+      </tr>
+      <tr id="5-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-5"></td>
+      </tr>
+      <tr id="5-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-6"></td>
+      </tr>
+      <tr id="5-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-7"></td>
+      </tr>
+      <tr id="5-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-8"></td>
+      </tr>
+      <tr id="5-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-9"></td>
+      </tr>
+      <tr id="5-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-10"></td>
+      </tr>
+      <tr id="5-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-11"></td>
+      </tr>
+      <tr id="5-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-12"></td>
+      </tr>
+      <tr id="5-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-13"></td>
+      </tr>
+      <tr id="5-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-14"></td>
+      </tr>
+      <tr id="5-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-15"></td>
+      </tr>
+      <tr id="5-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-16"></td>
+      </tr>
+      <tr id="5-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-17"></td>
+      </tr>
+      <tr id="5-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-18"></td>
+      </tr>
+      <tr id="5-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-19"></td>
+      </tr>
+      <tr id="5-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-20"></td>
+      </tr>
+      <tr id="5-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-21"></td>
+      </tr>
+      <tr id="5-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-22"></td>
+      </tr>
+      <tr id="5-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time-23"></td>
+      </tr>
+      <tr id="5-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="5-actual-used-time--1"></td>
+      </tr>
+
+    <tr id="6-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">IMEI对比</span></td></tr>
+      <tr id="6-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-0"></td>
+      </tr>
+      <tr id="6-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-1"></td>
+      </tr>
+      <tr id="6-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-2"></td>
+      </tr>
+      <tr id="6-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-3"></td>
+      </tr>
+      <tr id="6-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-4"></td>
+      </tr>
+      <tr id="6-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-5"></td>
+      </tr>
+      <tr id="6-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-6"></td>
+      </tr>
+      <tr id="6-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-7"></td>
+      </tr>
+      <tr id="6-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-8"></td>
+      </tr>
+      <tr id="6-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-9"></td>
+      </tr>
+      <tr id="6-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-10"></td>
+      </tr>
+      <tr id="6-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-11"></td>
+      </tr>
+      <tr id="6-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-12"></td>
+      </tr>
+      <tr id="6-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-13"></td>
+      </tr>
+      <tr id="6-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-14"></td>
+      </tr>
+      <tr id="6-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-15"></td>
+      </tr>
+      <tr id="6-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-16"></td>
+      </tr>
+      <tr id="6-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-17"></td>
+      </tr>
+      <tr id="6-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-18"></td>
+      </tr>
+      <tr id="6-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-19"></td>
+      </tr>
+      <tr id="6-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-20"></td>
+      </tr>
+      <tr id="6-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-21"></td>
+      </tr>
+      <tr id="6-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-22"></td>
+      </tr>
+      <tr id="6-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time-23"></td>
+      </tr>
+      <tr id="6-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="6-actual-used-time--1"></td>
+      </tr>
+
+      <tr id="7-name">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-uzvj" rowspan="25"><span id="position-title">卡通箱</span></td></tr>
+      <tr id="7-time-0">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-0">00:00~01:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-0"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-0"></td>
+      </tr>
+      <tr id="7-time-1">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-1">01:00~02:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-1"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-1"></td>
+      </tr>
+      <tr id="7-time-2">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-2">02:00~03:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-2"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-2"></td>
+      </tr>
+      <tr id="7-time-3">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-3">03:00~04:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-3"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-3"></td>
+      </tr>
+      <tr id="7-time-4">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-4">04:00~05:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-4"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-4"></td>
+      </tr>
+      <tr id="7-time-5">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-5">05:00~06:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-5"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-5"></td>
+      </tr>
+      <tr id="7-time-6">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-6">06:00~07:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-6"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-6"></td>
+      </tr>
+      <tr id="7-time-7">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-7">07:00~08:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-7"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-7"></td>
+      </tr>
+      <tr id="7-time-8">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-8">08:00~09:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-8"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-8"></td>
+      </tr>
+      <tr id="7-time-9">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-9">09:00~10:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-9"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-9"></td>
+      </tr>
+      <tr id="7-time-10">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-10">10:00~11:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-10"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-10"></td>
+      </tr>
+      <tr id="7-time-11">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-11">11:00~12:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-11"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-11"></td>
+      </tr>
+      <tr id="7-time-12">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-12">12:00~13:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-12"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-12"></td>
+      </tr>
+      <tr id="7-time-13">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-13">13:00~14:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-13"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-13"></td>
+      </tr>
+      <tr id="7-time-14">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-14">14:00~15:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-14"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-14"></td>
+      </tr>
+      <tr id="7-time-15">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-15">15:00~16:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-15"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-15"></td>
+      </tr>
+      <tr id="7-time-16">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-16">16:00~17:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-16"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-16"></td>
+      </tr>
+      <tr id="7-time-17">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-17">17:00~18:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-17"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-17"></td>
+      </tr>
+      <tr id="7-time-18">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-18">18:00~19:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-18"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-18"></td>
+      </tr>
+      <tr id="7-time-19">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-19">19:00~20:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-19"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-19"></td>
+      </tr>
+      <tr id="7-time-20">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-20">20:00~21:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-20"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-20"></td>
+      </tr>
+      <tr id="7-time-21">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-21">21:00~22:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-21"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-21"></td>
+      </tr>
+      <tr id="7-time-22">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-22">22:00~23:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-22"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-22"></td>
+      </tr>
+      <tr id="7-time-23">
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="time-range-23">23:00~24:00</td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count-23"></td>
+        <td style="padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time-23"></td>
+      </tr>
+      <tr id="7-summary">
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" colspan="2">总计</td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-finished-count--1"></td>
+        <td style="background-color: #a1d5ff;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;" class="tg-9wq8" id="7-actual-used-time--1"></td>
+      </tr>
+    </div>
+  </table>
+</div>
+</body>
+</html>

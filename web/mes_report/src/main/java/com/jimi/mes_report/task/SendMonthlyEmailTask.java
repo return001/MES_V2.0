@@ -47,7 +47,7 @@ public class SendMonthlyEmailTask implements Runnable {
 		calendar.add(Calendar.DAY_OF_MONTH, -1);
 		String endTime = dateFormat.format(calendar.getTime()) + " 23:59:59";
 		// 设定当月记录的时间
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date recordDate = new Date();
 		try {
 			recordDate = format.parse(dateFormat.format(calendar.getTime()) + " 23:00:00");

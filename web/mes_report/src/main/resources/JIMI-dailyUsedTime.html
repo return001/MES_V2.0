@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head> 
+  <meta charset="UTF-8" /> 
+  <title>几米智造在线订单工时报表</title> 
+ </head> 
+ <body> 
+  <table class="tg" style="table-layout: fixed; width: 1361px;border-collapse:collapse;border-spacing:0;margin:0px auto;">
+   <tbody>
+    <tr> 
+     <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:22px;background-color:#9aff99;border-color:#333333;text-align:center;vertical-align:top; border-bottom:  none;" class="tg-8lyv" colspan="4">几米智造在线订单工时报表</td> 
+    </tr>
+   </tbody>
+  </table> 
+  <div class="tg-wrap">
+   <table class="tg" style="table-layout: fixed; width: 1361px;border-collapse:collapse;border-spacing:0;margin:0px auto;" id="report-table"> 
+    <colgroup> 
+     <col style="width: 165px" /> 
+     <col style="width: 178px" /> 
+     <col style="width: 190px" /> 
+     <col style="width: 187px" /> 
+    </colgroup> 
+    <tbody>
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">订单号</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-order"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">机型</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-s0bm" id="report-machine"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">产品编号</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-s0bm" colspan="3" id="report-product"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">软件版本</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" colspan="3" id="report-version"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">订单已用时</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">状态</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-status"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">实际生产已用时（小时）</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">平均生产用时（分/台）</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;font-weight:bold;font-size:14px;border-color:#333333;text-align:left;vertical-align:top" class="tg-xqgd">历史最低生产用时（分/台）</td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">SMT</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-smt-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-smt-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-smt-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">组装</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-zz-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-zz-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-zz-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">老化</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-lh-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-lh-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="reoprt-lh-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">耦合</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-oh-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-oh-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-oh-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">机身贴</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-jst-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-jst-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-jst-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">彩盒贴</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-cht-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-cht-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-cht-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">IMEI对比</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-imei-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-imei-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-imei-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm">卡通箱</td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-carton-used-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-carton-avg-time"></td> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" id="report-carton-min-time"></td> 
+     </tr> 
+     <tr> 
+      <td style="font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;" class="tg-s0bm" colspan="4"></td> 
+     </tr> 
+    </tbody>
+   </table>
+  </div>  
+ </body>
+</html>

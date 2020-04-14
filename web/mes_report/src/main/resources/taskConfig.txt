@@ -19,3 +19,8 @@ task_month.cron=20 0 1 * *
 task_month.class=com.jimi.mes_report.task.SendMonthlyEmailTask
 task_month.daemon=true
 task_month.enable=true
+
+task_month.cron=25 0 * * *
+task_month.class=com.jimi.mes_report.task.SendDailyProductionEmailTask
+task_month.daemon=true
+task_month.enable=true

@@ -25,6 +25,8 @@ public class MappingKit {
 		arp.addMapping("time_type", "id", TimeType.class);
 		arp.addMapping("workstation_production", "id", WorkstationProduction.class);
 		arp.addMapping("workstation_type", "id", WorkstationType.class);
+		/*arp.addMapping("workstations_orders", "id", WorkstationsOrders.class);
+		arp.addMapping("workstations_use_time", "id", WorkstationsUseTime.class);*/
 	}
 }
 

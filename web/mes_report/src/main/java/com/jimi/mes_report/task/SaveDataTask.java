@@ -1,11 +1,13 @@
 package com.jimi.mes_report.task;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.mes_report.constant.Constant;
@@ -14,6 +16,8 @@ import com.jimi.mes_report.model.Capacity;
 import com.jimi.mes_report.model.OrderProduction;
 import com.jimi.mes_report.model.Orders;
 import com.jimi.mes_report.model.WorkstationProduction;
+import com.jimi.mes_report.model.WorkstationsOrders;
+import com.jimi.mes_report.model.WorkstationsUseTime;
 import com.jimi.mes_report.util.ErrorLogWritter;
 
 import cc.darhao.dautils.api.UuidUtil;
@@ -23,7 +27,6 @@ import cc.darhao.dautils.api.UuidUtil;
  * @date     2019年4月29日 上午11:23:22
  */
 public class SaveDataTask implements Runnable {
-
 
 	@Override
 	public void run() {
@@ -36,9 +39,10 @@ public class SaveDataTask implements Runnable {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		// 获取前一天时间
 		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		/*calendar.set(2019, 3, 1, 13, 13, 13);*/
 		String startTime = dateFormat.format(calendar.getTime()) + " 00:00:00";
 		String endTime = dateFormat.format(calendar.getTime()) + " 23:59:59";
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		// 设定当天记录的时间
 		Date recordDate = new Date();
 		try {
@@ -47,12 +51,14 @@ public class SaveDataTask implements Runnable {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + e.getMessage());
 			e.printStackTrace();
 		}
-		List<Record> orderRecords = Db.use("db1").find(SQL.SELECT_ORDER_BY_TIME, startTime, endTime);
-		// 格式化需要使用到打印日期和IMEI日期
+		// 格式化需要使用到的打印日期和IMEI日期
 		SimpleDateFormat printDateFormat = new SimpleDateFormat("yyyy.MM.dd");
 		SimpleDateFormat IMEIDateFormat = new SimpleDateFormat("yyyy/M/d");
 		String printTime = printDateFormat.format(recordDate);
 		String IMEITime = IMEIDateFormat.format(recordDate);
+
+		// 保存每日产能和日报数据
+		List<Record> orderRecords = Db.use("db1").find(SQL.SELECT_ORDER_BY_TIME, startTime, endTime);
 		if (orderRecords != null && !orderRecords.isEmpty()) {
 			for (Record orderRecord : orderRecords) {
 				String zhiDan = orderRecord.getStr("ZhiDan");
@@ -66,6 +72,207 @@ public class SaveDataTask implements Runnable {
 			return;
 		}
 		saveWorkStationProductions(startTime, endTime, printTime, IMEITime, recordDate);
+
+		/*// 保存每日订单各个工位所用时间
+		String printStartTime = printDateFormat.format(calendar.getTime()) + " 00:00:00";
+		String printEndTime = printDateFormat.format(recordDate) + " 23:59:59";
+		String IMEIStartTime = IMEIDateFormat.format(recordDate) + " 00:00:00";
+		String IMEIEndTime = IMEIDateFormat.format(recordDate) + " 23:59:59";
+		// 查询工位的所有订单
+		Object[] params = { IMEIStartTime, IMEIEndTime, startTime, endTime, startTime, endTime, startTime, endTime, startTime, endTime, startTime, endTime, printStartTime, printEndTime, printStartTime, printEndTime };
+		List<Record> dailyOrders = Db.use("db1").find(SQL.SELECT_DAILY_ORDERS, params);
+		if (dailyOrders != null && !dailyOrders.isEmpty()) {
+			for (Record dailyOrder : dailyOrders) {
+				saveOrders(dailyOrder, startTime, endTime, IMEIStartTime, IMEIEndTime, printStartTime, printEndTime, recordDate);
+			}
+		}*/
+	}
+
+
+	/**@author HCJ
+	 * 保存订单信息
+	 * @param dailyOrder 每日的订单信息
+	 * @param startTime 开始时间
+	 * @param endTime 结束时间
+	 * @param IMEIStartTime IMEI开始时间
+	 * @param IMEIEndTime IMEI结束时间
+	 * @param printStartTime 打印开始时间
+	 * @param printEndTime 打印结束时间
+	 * @param recordDate 记录的时间
+	 * @date 2020年4月3日 下午2:19:02
+	 */
+	private void saveOrders(Record dailyOrder, String startTime, String endTime, String IMEIStartTime, String IMEIEndTime, String printStartTime, String printEndTime, Date recordDate) {
+		String zhiDan = dailyOrder.getStr("ZhiDan");
+		String version = dailyOrder.getStr("Version");
+		String softModel = dailyOrder.getStr("SoftModel");
+		// 查询当前订单在各个工位所花时间
+		Object[] params = { startTime, endTime, zhiDan, version, softModel, startTime, endTime, zhiDan, version, softModel, startTime, endTime, zhiDan, version, softModel, startTime, endTime, zhiDan, version, softModel, printStartTime, printEndTime, zhiDan, version, softModel, printStartTime, printEndTime, zhiDan, version, softModel, IMEIStartTime, IMEIEndTime, zhiDan, startTime, endTime, zhiDan, version, softModel };
+		List<Record> orderWorkstationsUseTimes = Db.use("db1").find(SQL.SELECT_COST_TIME_BY_ORDERS, params);
+		// 查询是否已存在当前订单
+		WorkstationsOrders workstationsOrders = WorkstationsOrders.dao.findFirst(SQL.SELECT_WORKSTATIONSORDERS, zhiDan, softModel, version);
+		if (workstationsOrders == null || workstationsOrders.getId() == null) {
+			saveWorkstationsOrdersAndUseTime(dailyOrder, orderWorkstationsUseTimes, recordDate, workstationsOrders, false);
+		} else {
+			saveWorkstationsOrdersAndUseTime(dailyOrder, orderWorkstationsUseTimes, recordDate, workstationsOrders, true);
+		}
+	}
+
+
+	/**@author HCJ
+	 * 保存和更新订单信息和各个工位的时长信息
+	 * @param dailyOrder 当日订单的信息
+	 * @param orderWorkstationsUseTimes 当日订单对应的各个工位所用的时长信息和产量
+	 * @param recordDate 记录的时间
+	 * @param workstationsOrders 已存在的订单
+	 * @param isOrderExist 订单是否已存在
+	 * @date 2020年4月3日 下午2:20:02
+	 */
+	private void saveWorkstationsOrdersAndUseTime(Record dailyOrder, List<Record> orderWorkstationsUseTimes, Date recordDate, WorkstationsOrders workstationsOrders, boolean isOrderExist) {
+		// 获取最大时间和最小时间得到当天订单已用时间
+		Date minDate = null;
+		Date maxDate = null;
+		for (Record orderWorkstationsUseTime : orderWorkstationsUseTimes) {
+			Integer production = orderWorkstationsUseTime.getInt("production");
+			if (production == 0) {
+				continue;
+			}
+			Date startTime = orderWorkstationsUseTime.getDate("startTime");
+			Date endTime = orderWorkstationsUseTime.getDate("endTime");
+			if (minDate == null) {
+				minDate = startTime;
+			}
+			if (maxDate == null) {
+				maxDate = endTime;
+			}
+			if (minDate.after(startTime)) {
+				minDate = startTime;
+			}
+			if (maxDate.before(endTime)) {
+				maxDate = endTime;
+			}
+		}
+		// 是否存在计划产量
+		boolean isPlanProductExist = false;
+		int planProduct = 0;
+		if (!StrKit.isBlank(dailyOrder.getStr("IMEIStart")) && !StrKit.isBlank(dailyOrder.getStr("IMEIEnd"))) {
+			try {
+				long IMEIStart = Long.parseLong(dailyOrder.getStr("IMEIStart"));
+				long IMEIEnd = Long.parseLong(dailyOrder.getStr("IMEIEnd"));
+				planProduct = (int) (IMEIEnd - IMEIStart + 1);
+				isPlanProductExist = true;
+			} catch (Exception e) {
+				ErrorLogWritter.save("格式化IMEI参数出错" + e.getClass().getSimpleName() + ":" + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		// 是否存在订单
+		if (!isOrderExist) {
+			// 保存订单信息
+			WorkstationsOrders newWorkstationsOrders = new WorkstationsOrders();
+			newWorkstationsOrders.setOrderNumber(dailyOrder.getStr("ZhiDan")).setProductionNumber(dailyOrder.getStr("ProductNo"));
+			newWorkstationsOrders.setSoftModel(dailyOrder.getStr("SoftModel")).setSoftVersion(dailyOrder.getStr("Version"));
+			// 设置间隔时长四舍五入保留三位小数
+			newWorkstationsOrders.setTotalUseTime(BigDecimal.valueOf(((double) (maxDate.getTime() - minDate.getTime())) / 3600 / 1000).setScale(3, BigDecimal.ROUND_HALF_UP).toString());
+			newWorkstationsOrders.setTime(recordDate);
+			// 设置订单状态
+			if (isPlanProductExist) {
+				// 卡通箱数量与计划数量比较
+				if (orderWorkstationsUseTimes.get(orderWorkstationsUseTimes.size() - 1).getInt("production") >= planProduct) {
+					newWorkstationsOrders.setStatus("已完成");
+				} else {
+					newWorkstationsOrders.setStatus("进行中");
+				}
+			} else {
+				newWorkstationsOrders.setStatus("进行中");
+			}
+			newWorkstationsOrders.save();
+			// 保存订单对应工位所用时间
+			for (int i = 0; i < orderWorkstationsUseTimes.size(); i++) {
+				WorkstationsUseTime useTime = new WorkstationsUseTime();
+				Record orderWorkstationsUseTime = orderWorkstationsUseTimes.get(i);
+				Integer production = orderWorkstationsUseTime.getInt("production");
+				// 保存生产时长和每台生产时长以及产量
+				if (production == 0) {
+					useTime.setActualUseTime("0").setAverageUseTime("0").setTotalProduct(0);
+				} else {
+					Date startTime = orderWorkstationsUseTime.getDate("startTime");
+					Date endTime = orderWorkstationsUseTime.getDate("endTime");
+					BigDecimal actualUseTime = BigDecimal.valueOf(((double) (endTime.getTime() - startTime.getTime())) / 3600 / 1000).setScale(3, BigDecimal.ROUND_HALF_UP);
+					// 如果实际生产小时小于此数字则设定默认值
+					if (actualUseTime.doubleValue() < 0.001) {
+						actualUseTime = BigDecimal.valueOf(0.001);
+					}
+					useTime.setActualUseTime(actualUseTime.toString());
+					double actualUseMinute = actualUseTime.doubleValue() * Constant.HOUR_TO_MINUTE;
+					// 如果实际生产分钟小于一分钟则设定为一分钟
+					if (actualUseMinute < 1) {
+						actualUseMinute = 1;
+					}
+					useTime.setAverageUseTime(String.valueOf(production / (int) actualUseMinute));
+					useTime.setTotalProduct(production);
+				}
+				// 根据机型版本工位获取最小平均时间
+				String minAverageUseTime = null;
+				Record record = Db.findFirst(SQL.SELECT_MIN_AVERAGE_USE_TIME, dailyOrder.getStr("SoftModel"), dailyOrder.getStr("Version"), i + 1);
+				if (record == null || StrKit.isBlank(record.getStr("minAverageUseTime"))) {
+					minAverageUseTime = "0";
+				} else {
+					minAverageUseTime = record.getStr("minAverageUseTime");
+				}
+				useTime.setWorkstationsOrdersId(newWorkstationsOrders.getId()).setType(i + 1).setMinUsedTime(minAverageUseTime).save();
+			}
+		} else {
+			// 更新订单信息
+			// 获取当前订单已存在的工位时长信息
+			List<WorkstationsUseTime> workstationsUseTimes = WorkstationsUseTime.dao.find(SQL.SELECT_WORKSTATIONS_USE_TIMES_BY_ORDER, workstationsOrders.getId());
+			// 更新订单总时长
+			BigDecimal newTotalUseTime = BigDecimal.valueOf(((double) (maxDate.getTime() - minDate.getTime())) / 3600 / 1000).setScale(3, BigDecimal.ROUND_HALF_UP);
+			workstationsOrders.setTotalUseTime(String.valueOf(Double.parseDouble(workstationsOrders.getTotalUseTime()) + newTotalUseTime.doubleValue()));
+			workstationsOrders.setTime(recordDate);
+			// 更新订单状态
+			if (isPlanProductExist) {
+				// 获取订单已生产的卡通箱生产数量
+				Integer originalProduction = 0;
+				for (WorkstationsUseTime workstationsUseTime : workstationsUseTimes) {
+					if (Constant.CARTON_TEST_TYPE.equals(workstationsUseTime.getType())) {
+						originalProduction = workstationsUseTime.getTotalProduct();
+					}
+				}
+				// 卡通箱数量与计划数量比较
+				if (orderWorkstationsUseTimes.get(orderWorkstationsUseTimes.size() - 1).getInt("production") + originalProduction >= planProduct) {
+					workstationsOrders.setStatus("已完成");
+				}
+			}
+			workstationsOrders.update();
+			// 更新订单的工位时长信息
+			for (int i = 0; i < orderWorkstationsUseTimes.size(); i++) {
+				Record orderWorkstationsUseTime = orderWorkstationsUseTimes.get(i);
+				for (WorkstationsUseTime workstationsUseTime : workstationsUseTimes) {
+					if (i + 1 == workstationsUseTime.getType()) {
+						Integer newProduction = orderWorkstationsUseTime.getInt("production");
+						// 更新生产时长和每台生产时长以及产量
+						if (newProduction > 0) {
+							Date startTime = orderWorkstationsUseTime.getDate("startTime");
+							Date endTime = orderWorkstationsUseTime.getDate("endTime");
+							BigDecimal newUseTime = BigDecimal.valueOf(((double) (endTime.getTime() - startTime.getTime())) / 3600 / 1000).setScale(3, BigDecimal.ROUND_HALF_UP);
+							double actualUseTime = Double.parseDouble(workstationsUseTime.getActualUseTime()) + newUseTime.doubleValue();
+							workstationsUseTime.setActualUseTime(String.valueOf(actualUseTime));
+							workstationsUseTime.setTotalProduct(newProduction + workstationsUseTime.getTotalProduct());
+							workstationsUseTime.setAverageUseTime(BigDecimal.valueOf(workstationsUseTime.getTotalProduct() / actualUseTime).setScale(3, BigDecimal.ROUND_HALF_UP).toString());
+							// 根据机型版本工位获取最小平均时间
+							String minAverageUseTime = null;
+							Record record = Db.findFirst(SQL.SELECT_MIN_AVERAGE_USE_TIME, dailyOrder.getStr("SoftModel"), dailyOrder.getStr("Version"), workstationsUseTime.getType());
+							if (record == null || StrKit.isBlank(record.getStr("minAverageUseTime"))) {
+								minAverageUseTime = "0";
+							} else {
+								minAverageUseTime = record.getStr("minAverageUseTime");
+							}
+							workstationsUseTime.setMinUsedTime(minAverageUseTime).update();
+						}
+					}
+				}
+			}
+		}
 	}
 
 
@@ -127,8 +334,7 @@ public class SaveDataTask implements Runnable {
 		Integer CHTestProduction = Db.use("db1").queryInt(SQL.SELECT_CHPRINTNUM_BY_TESTTIME, printTime + "%");
 		saveWorkStationProduction(CHTestProduction, Constant.CH_TEST_TYPE, recordDate);
 
-		Integer IMEITestProduction = Db.use("db1").queryInt(SQL.SELECT_IMEINUM_BY_TESTTIME, IMEITime + " %",
-				Constant.SUCCESS_CPRESULT);
+		Integer IMEITestProduction = Db.use("db1").queryInt(SQL.SELECT_IMEINUM_BY_TESTTIME, IMEITime + " %", Constant.SUCCESS_CPRESULT);
 		saveWorkStationProduction(IMEITestProduction, Constant.IMEI_TEST_TYPE, recordDate);
 
 		Integer cartonTestProduction = Db.use("db1").queryInt(SQL.SELECT_CARTONNUM_BY_TESTTIME, startTime, endTime);

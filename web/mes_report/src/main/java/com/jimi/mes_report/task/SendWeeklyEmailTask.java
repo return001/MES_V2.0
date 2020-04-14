@@ -41,7 +41,7 @@ public class SendWeeklyEmailTask implements Runnable {
 		Date endDate = calendar.getTime();
 		String endTime = dateFormat.format(calendar.getTime()) + " 23:59:59";
 		// 设定当周记录的时间
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date recordDate = new Date();
 		try {
 			recordDate = format.parse(dateFormat.format(calendar.getTime()) + " 23:00:00");

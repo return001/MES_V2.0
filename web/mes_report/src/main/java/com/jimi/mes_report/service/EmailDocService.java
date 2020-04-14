@@ -5,16 +5,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.jfinal.kit.PropKit;
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfplugin.mail.MailKit;
 import com.jimi.mes_report.constant.Constant;
+import com.jimi.mes_report.model.entity.DailyProductionReport;
+import com.jimi.mes_report.model.entity.DailyProductionReportItem;
+import com.jimi.mes_report.model.entity.HourStatisticsItem;
 import com.jimi.mes_report.util.ErrorLogWritter;
 
 /**邮件服务类
@@ -23,9 +28,12 @@ import com.jimi.mes_report.util.ErrorLogWritter;
  */
 public class EmailDocService {
 
+	// 空数组
+	public final static Document[] EMPTY_DOCUMENT_ARRAY = new Document[0];
+
 
 	/**@author HCJ
-	 * 根据数据生成Document集合
+	 * 根据数据生成产能和日报表的Document集合
 	 * @param orderNumRecords 工单号集合
 	 * @param orderCapacityRecords 工单、产能集合
 	 * @param orderProductionRecord 所有订单的产量
@@ -174,6 +182,7 @@ public class EmailDocService {
 			}
 		}
 		Element stationTable = paperDoc.select("table#station").first();
+		Integer cartonProduct = 0;
 		for (Record stationProductionRecord : stationProductionRecords) {
 			String stationProduction = stationProductionRecord.getInt("product").toString();
 			switch (stationProductionRecord.getInt("type")) {
@@ -200,6 +209,7 @@ public class EmailDocService {
 				break;
 			case 8:
 				stationTable.select("#cartonBoxTestActualTotal").first().text(stationProduction);
+				cartonProduct = stationProductionRecord.getInt("product");
 				break;
 			default:
 				break;
@@ -238,7 +248,7 @@ public class EmailDocService {
 		}
 		Element productionTable = paperDoc.select("table#production").first();
 		productionTable.select("#dailyPlanProduct").first().text(orderProductionRecord.get("plan_product").toString());
-		productionTable.select("#dailyActualProduct").first().text(orderProductionRecord.get("actual_product").toString());
+		productionTable.select("#dailyActualProduct").first().text(cartonProduct.toString());
 		productionTable.select("#maximumProduct").first().text(historyMaxProduct.toString());
 
 		Element hourlyProductionTable = capacityDoc.select("table#hourlyProduction").first();
@@ -246,12 +256,12 @@ public class EmailDocService {
 		case 1:
 			hourlyProductionTable.select("#hourlyMaximumProduct").first().text(String.valueOf(historyMaxProduct / Constant.DAILY_WORKING_HOURS));
 			hourlyProductionTable.select("#hourlyPlanProduct").first().text(String.valueOf(orderProductionRecord.getInt("plan_product") / Constant.DAILY_WORKING_HOURS));
-			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(orderProductionRecord.getInt("actual_product") / Constant.DAILY_WORKING_HOURS));
+			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(cartonProduct / Constant.DAILY_WORKING_HOURS));
 			break;
 		case 2:
 			hourlyProductionTable.select("#hourlyMaximumProduct").first().text(String.valueOf(historyMaxProduct / Constant.DAILY_WORKING_HOURS / Constant.WEEKLY_DAYS));
 			hourlyProductionTable.select("#hourlyPlanProduct").first().text(String.valueOf(orderProductionRecord.getInt("plan_product") / Constant.DAILY_WORKING_HOURS / Constant.WEEKLY_DAYS));
-			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(orderProductionRecord.getInt("actual_product") / Constant.DAILY_WORKING_HOURS / Constant.WEEKLY_DAYS));
+			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(cartonProduct / Constant.DAILY_WORKING_HOURS / Constant.WEEKLY_DAYS));
 			break;
 		case 3:
 			// 获取前一个月的天数
@@ -260,12 +270,221 @@ public class EmailDocService {
 			int monthDays = calendar.getActualMaximum(Calendar.DATE);
 			hourlyProductionTable.select("#hourlyMaximumProduct").first().text(String.valueOf(historyMaxProduct / Constant.DAILY_WORKING_HOURS / monthDays));
 			hourlyProductionTable.select("#hourlyPlanProduct").first().text(String.valueOf(orderProductionRecord.getInt("plan_product") / Constant.DAILY_WORKING_HOURS / monthDays));
-			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(orderProductionRecord.getInt("actual_product") / Constant.DAILY_WORKING_HOURS / monthDays));
+			hourlyProductionTable.select("#hourlyActualProduct").first().text(String.valueOf(cartonProduct / Constant.DAILY_WORKING_HOURS / monthDays));
 			break;
 		default:
 			break;
 		}
-		Document[] documents = new Document[] { paperDoc, capacityDoc };
+		Document[] documents = new Document[] { paperDoc/*, capacityDoc*/ };
+		return documents;
+	}
+
+
+	/**@author HCJ
+	 * 根据数据生成订单已用时间的Document集合
+	 * @param ordersRecords 订单信息和各个工位花费时长集合
+	 * @date 2020年4月3日 下午4:07:37
+	 */
+	public Document[] getUsedTimeDocument(List<Record> ordersRecords) {
+		Document usedTimeDoc = null;
+		try {
+			File usedTimeTemplate = new File(EmailDocService.class.getClassLoader().getResource("JIMI-dailyUsedTime.html").toURI());
+			usedTimeDoc = Jsoup.parse(usedTimeTemplate, "UTF-8");
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+		}
+		// 根据数据信息进行归类
+		Map<String, List<Record>> map = new HashMap<>();
+		for (Record record : ordersRecords) {
+			String key = record.getStr("order_number") + record.getStr("soft_model") + record.getStr("soft_version") + record.getStr("production_number");
+			if (map.containsKey(key)) {
+				map.get(key).add(record);
+			} else {
+				List<Record> records = new ArrayList<>();
+				records.add(record);
+				map.put(key, records);
+			}
+		}
+		// 根据list大小创建table
+		StringBuffer usedTimeBuffer = new StringBuffer();
+		String usedTimeTable = usedTimeDoc.select("table#report-table").first().toString();
+		int size = map.size();
+		if (size > 1) {
+			for (int i = 0; i < size - 1; i++) {
+				usedTimeBuffer.append(usedTimeTable);
+			}
+		}
+		usedTimeDoc.select("div").append(usedTimeBuffer.toString());
+		// 填充数据
+		int index = 0;
+		for (List<Record> usedTimes : map.values()) {
+			Element usedTimesTable = usedTimeDoc.select("table#report-table").get(index);
+			for (Record record : usedTimes) {
+				switch (record.getInt("type")) {
+				case 1:
+					usedTimesTable.select("#reoprt-smt-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#reoprt-smt-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-smt-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 2:
+					usedTimesTable.select("#report-zz-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#report-zz-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#report-zz-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 3:
+					usedTimesTable.select("#reoprt-lh-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#reoprt-lh-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-lh-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 4:
+					usedTimesTable.select("#report-oh-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#report-oh-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#report-oh-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 5:
+					usedTimesTable.select("#report-jst-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#report-jst-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-jst-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 6:
+					usedTimesTable.select("#reoprt-cht-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#reoprt-cht-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-cht-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 7:
+					usedTimesTable.select("#reoprt-imei-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#reoprt-imei-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-imei-min-time").first().text(record.get("min_used_time"));
+					break;
+				case 8:
+					usedTimesTable.select("#reoprt-carton-used-time").first().text(record.get("actual_use_time"));
+					usedTimesTable.select("#reoprt-carton-avg-time").first().text(record.get("average_use_time"));
+					usedTimesTable.select("#reoprt-carton-min-time").first().text(record.get("min_used_time"));
+					break;
+				default:
+					break;
+				}
+			}
+			usedTimesTable.select("#report-order").first().text(usedTimes.get(5).get("order_number"));
+			usedTimesTable.select("#report-machine").first().text(usedTimes.get(5).get("soft_model"));
+			usedTimesTable.select("#report-product").first().text(usedTimes.get(5).get("production_number"));
+			usedTimesTable.select("#report-version").first().text(usedTimes.get(5).get("soft_version"));
+			usedTimesTable.select("#report-used-time").first().text(usedTimes.get(5).get("total_use_time"));
+			usedTimesTable.select("#report-status").first().text(usedTimes.get(5).get("status"));
+			index++;
+		}
+		Document[] documents = new Document[] { usedTimeDoc };
+		return documents;
+	}
+
+
+	public Document[] getDailyProductionReportDocument(Date date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Document dailyProductionDoc = null;
+		try {
+			File dailyProductionTemplate = new File(EmailDocService.class.getClassLoader().getResource("JIMI-dailyProduction.html").toURI());
+			dailyProductionDoc = Jsoup.parse(dailyProductionTemplate, "UTF-8");
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+		}
+		String dateString = dateFormat.format(date);
+		// 根据时间获取每日报表信息dailyProductionReport
+		DailyProductionReport dailyProductionReport = DailyReportItemService.getDailyProductionReport(dateString);
+
+		int output = dailyProductionReport.getOutput();
+		if (output < 0) {
+			return EMPTY_DOCUMENT_ARRAY;
+		}
+		// 填充时间范围和日产量
+		dailyProductionDoc.getElementById("time-range").text(dateString + " 00:00:00 ~ " + dateString + " 23:59:59");
+		dailyProductionDoc.getElementById("capacity-total-daily").text(String.valueOf(output));
+		List<DailyProductionReportItem> dailyProductionList = dailyProductionReport.getItems();
+		// 根据集合大小拼接表格
+		int size = dailyProductionList.size();
+		StringBuffer summarySb = new StringBuffer();
+		StringBuffer detailsSb = new StringBuffer();
+		String summaryTableString = dailyProductionDoc.select("tr#capacity-total-content").first().toString();
+		String detailsTableString = dailyProductionDoc.select("div#detailDiv").first().toString();
+		if (size > 1) {
+			for (int i = 0; i < size - 1; i++) {
+				summarySb.append(summaryTableString);
+				detailsSb.append(detailsTableString);
+			}
+		}
+		dailyProductionDoc.select("table#summary").append(summarySb.toString());
+		dailyProductionDoc.select("div#detailDiv").append(detailsSb.toString());
+		// 填充数据
+		for (int i = 0; i < dailyProductionList.size(); i++) {
+			DailyProductionReportItem item = dailyProductionList.get(i);
+			Element summaryTable = dailyProductionDoc.select("tr#capacity-total-content").get(i);
+			Element detailsTable = dailyProductionDoc.select("div#detailDiv").get(i);
+			// 填充汇总表格
+			summaryTable.select("#order").first().text(item.getOrderNo());
+			if (!StrKit.isBlank(item.getModel())) {
+				summaryTable.select("#model").first().text(item.getModel());
+			}else {
+				summaryTable.select("#model").first().text("-");
+			}
+			summaryTable.select("#number").first().text(String.valueOf(item.getPlanProductionQuantity()));
+			if (item.getStartDate() != null) {
+				summaryTable.select("#startDate").first().text(dateFormat.format(item.getStartDate()));
+			} else {
+				summaryTable.select("#startDate").first().text("-");
+			}
+			if (item.getPlanDate() != null) {
+				summaryTable.select("#planDate").first().text(dateFormat.format(item.getPlanDate()));
+			} else {
+				summaryTable.select("#planDate").first().text("-");
+			}
+			summaryTable.select("#production").first().text(String.valueOf(item.getProductionQuantity()));
+			summaryTable.select("#completeRate").first().text(item.getCompletionRate() + "%");
+			// 填充详情表格表头
+			detailsTable.select("#capacity-order").first().text(item.getOrderNo());
+			if (!StrKit.isBlank(item.getModel())) {
+				detailsTable.select("#capacity-machine-name").first().text(item.getModel());
+			}else {
+				detailsTable.select("#capacity-machine-name").first().text("-");
+			}
+			if (!StrKit.isBlank(item.getProductNo())) {
+				detailsTable.select("#capacity-product-number").first().text(item.getProductNo());
+			} else {
+				detailsTable.select("#capacity-product-number").first().text("-");
+			}
+			if (!StrKit.isBlank(item.getVersion())) {
+				detailsTable.select("#capacity-software-version").first().text(item.getVersion());
+			}else {
+				detailsTable.select("#capacity-software-version").first().text("-");
+			}
+			detailsTable.select("#capacity-order-count").first().text(String.valueOf(item.getPlanProductionQuantity()));
+			detailsTable.select("#capacity-finished-count").first().text(String.valueOf(item.getProductionQuantity()));
+			detailsTable.select("#capacity-finished-rate").first().text(item.getCompletionRate() + "%");
+			detailsTable.select("#on-produce-time").first().text(String.valueOf(item.getProductionDays()));
+			/*detailsTable.select("#actual-capacity-hour").first().text(String.valueOf(item.getCapacity()));*/
+			// 填充详情表格内容
+			for (int j = 0; j < 8; j++) {
+				List<HourStatisticsItem> hourStatisticsItems = item.getHourStatisticsItems(j);
+				for (HourStatisticsItem hourStatisticsItem : hourStatisticsItems) {
+					if (hourStatisticsItem.getOutput() < 1 && hourStatisticsItem.getHour() >= 0) {
+						detailsTable.select("#" + j + "-time-" + hourStatisticsItem.getHour()).first().empty();
+						continue;
+					}
+					if (hourStatisticsItem.getHour() == -1 && hourStatisticsItem.getOutput()==0) {
+						detailsTable.select("#" + j + "-name").first().empty();
+						detailsTable.select("#" + j + "-summary").first().empty();
+						continue;
+					}
+					detailsTable.select("#" + j + "-finished-count-" + hourStatisticsItem.getHour()).first().text(String.valueOf(hourStatisticsItem.getOutput()));
+					int minutes = hourStatisticsItem.getConsumingTime() / 60;
+					int remainingSeconds = hourStatisticsItem.getConsumingTime() % 60;
+					detailsTable.select("#" + j + "-actual-used-time-" + hourStatisticsItem.getHour()).first().text(String.valueOf(minutes+"分"+remainingSeconds+"秒"));
+				}
+				
+			}
+			if (!detailsTable.hasClass("tg-9wq8")) {
+				detailsTable.select("#capacity-content-box").first().empty();
+			}
+		}
+		Document[] documents = new Document[] { dailyProductionDoc };
 		return documents;
 	}
 
