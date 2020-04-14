@@ -18,7 +18,7 @@ public class SopSQL {
 
 	public static final String SELECT_SITE_BY_LINE = "SELECT * FROM sop_site WHERE line_id = ?";
 
-	public static final String SELECT_SITE_BY_SITENUMBER = "SELECT * FROM sop_site WHERE site_number = ?";
+	public static final String SELECT_SITE_BY_SITENUMBER = "SELECT * FROM sop_site WHERE site_number = ? and line_id = ?";
 
 	public static final String SELECT_SITE_JOIN_LINE = "SELECT s.id,s.site_name as siteName,s.site_number as siteNumber,s.mac,s.play_times as playTimes,s.process_order as processOrder,s.switch_interval as switchInterval,s.second_mac as secondMac,s.state,l.line_name as lineName,l.line_no as 'lineNo',l.id as lineId FROM sop_site s, line l WHERE s.line_id = l.id ";
 
@@ -75,4 +75,14 @@ public class SopSQL {
 	public static final String SELECT_CONFIRM_LOG = "SELECT id,user_name as userName,[time],site_number as siteNumber,line_name as lineName,content,type FROM sop_confirm_log";
 
 	public static final String SELECT_COUNT_LOG = "SELECT id,number,line_name as lineName,site_number as siteNumber,user_name as userName,start_time as startTime,end_time as endTime FROM sop_count_log";
+
+	public static final String SELECT_SITE_PROCESS_LINE = "SELECT s.site_name AS siteName, s.id AS siteId, p.id AS processId, p.process_name AS processName FROM sop_site s, process p WHERE s.process_order = p.process_no AND s.line_id = ?";
+
+	public static final String SELECT_POSTINFO = "SELECT s.site_name AS siteName, s.id AS siteId, p.id AS processId, p.process_name AS processName, u.UserDes AS userName, u.Id AS userId,a.id as postId FROM sop_position_assignment a, sop_site s, process p, LUserAccount u WHERE a.process_id = p.id AND a.site_id = s.id AND a.line_id = s.line_id AND a.user_id = u.Id AND s.line_id = ?";
+
+	public static final String SELECT_ASSIGNABLE_USER_PREFIX = "SELECT * FROM (SELECT * FROM LUserAccount WHERE MainProcess = ? UNION SELECT * FROM LUserAccount WHERE CHARINDEX(?, OtherProcess)>0 ";
+
+	public static final String SELECT_ASSIGNABLE_USER_SUFFIX = " UNION SELECT * FROM LUserAccount ) a ";
+
+	public static final String SELECT_POSTINFO_BY_SITE = "SELECT * FROM sop_position_assignment WHERE site_id = ?";
 }

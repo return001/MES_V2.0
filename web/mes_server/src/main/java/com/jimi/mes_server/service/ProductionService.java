@@ -216,6 +216,12 @@ public class ProductionService {
 		if (sopSite != null) {
 			throw new OperationException("当前产线被站点所引用，请先删除站点，再进行操作");
 		}
+		List<LineComputer> lineComputers = LineComputer.dao.find(SQL.SELECT_LINECOMPUTER_BY_LINE, id);
+		if (lineComputers != null && !lineComputers.isEmpty()) {
+			for (LineComputer lineComputer : lineComputers) {
+				lineComputer.delete();
+			}
+		}
 		return line.delete();
 	}
 
@@ -305,7 +311,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addProcess(String processNo, String processName, String processRemark, Integer processGroup) {
+	public boolean addProcess(Integer processNo, String processName, String processRemark, Integer processGroup) {
 		if (Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo) != null) {
 			throw new OperationException("工序编号已存在");
 		}
@@ -337,9 +343,9 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectProcess(String processNo, String processName, Integer processGroup) {
+	public Page<Record> selectProcess(Integer processNo, String processName, Integer processGroup) {
 		StringBuilder filter = new StringBuilder();
-		if (!StrKit.isBlank(processNo)) {
+		if (processNo != null) {
 			filter.append(" and process_no like '%" + processNo + "%' ");
 		}
 		if (!StrKit.isBlank(processName)) {
@@ -358,7 +364,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup, Integer position) {
+	public boolean editProcess(Integer id, Integer processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		Process process = Process.dao.findById(id);
 		if (process == null) {
 			throw new OperationException("修改失败，工序不存在");
@@ -372,7 +378,7 @@ public class ProductionService {
 			Db.update(SQL.UPDATE_PROCESS_POSITION, secondProcess.getPosition(), process.getId());
 			return true;
 		}
-		if (!StrKit.isBlank(processNo)) {
+		if (processNo != null) {
 			Process temp = Process.dao.findFirst(SQL.SELECT_PROCESS_BY_PROCESSNO, processNo);
 			if (temp != null && !temp.getId().equals(id)) {
 				throw new OperationException("工序编号已存在");
@@ -1069,10 +1075,10 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("订单不存在");
 		}
-		List<LineComputer> lineComputers = LineComputer.dao.find(SQL.SELECT_LINECOMPUTER_BY_LINE, schedulingPlan.getLine());
+		/*List<LineComputer> lineComputers = LineComputer.dao.find(SQL.SELECT_LINECOMPUTER_BY_LINE, schedulingPlan.getLine());
 		if (lineComputers == null || lineComputers.isEmpty()) {
 			throw new OperationException("产线电脑不存在");
-		}
+		}*/
 		String sql = null;
 		Integer planProducedQuantity = 0;
 		if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
@@ -1082,9 +1088,10 @@ public class ProductionService {
 		} else if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
 			sql = SQL.SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY;
 		}
-		for (LineComputer lineComputer : lineComputers) {
-			planProducedQuantity += Db.queryInt(sql, order.getZhidan(), order.getSoftModel(), "%" + lineComputer.getIp() + "%");
-		}
+		/*for (LineComputer lineComputer : lineComputers) {
+			planProducedQuantity += Db.queryInt(sql, order.getZhidan(), "%" + lineComputer.getIp() + "%");
+		}*/
+		planProducedQuantity = Db.queryInt(sql, order.getZhidan());
 		if (schedulingPlan.getSchedulingQuantity() <= planProducedQuantity) {
 			schedulingPlan.setRemainingQuantity(0);
 		} else {
@@ -1153,7 +1160,7 @@ public class ProductionService {
 			}
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			schedulingPlan.setCompleteTime(new Date());
-			Integer quantity = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL, order.getZhidan(), order.getSoftModel());
+			Integer quantity = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL, order.getZhidan());
 			if (quantity >= order.getQuantity()) {
 				order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
 				return schedulingPlan.update() && order.update();
@@ -1254,14 +1261,15 @@ public class ProductionService {
 		planGantt.setId(index);
 		planGantt.setName(zhidan);
 		planGantt.setPlanProduction(planProduction.toString());
-		StringBuilder computerSql = new StringBuilder(" and (");
+		/*StringBuilder computerSql = new StringBuilder(" and (");
 		for (Record record : records) {
 			computerSql.append(" Computer LIKE '%" + record.getStr("ip") + "%' or ");
 		}
 		if (StringUtils.endsWith(computerSql, "or ")) {
 			computerSql.delete(computerSql.lastIndexOf("or"), computerSql.length());
 		}
-		String sql = computerSql.append(")").toString();
+		String sql = computerSql.append(")").toString();*/
+		String sql = " ";
 		PlanGantt smtGantt = genPlanGantt(index + 1, zhidan, planProduction, sql);
 		PlanGantt functionGantt = genPlanGantt(index + 2, zhidan, planProduction, sql);
 		PlanGantt agedGantt = genPlanGantt(index + 3, zhidan, planProduction, sql);

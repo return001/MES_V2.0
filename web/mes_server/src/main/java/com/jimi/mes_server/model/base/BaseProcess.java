@@ -18,13 +18,13 @@ public abstract class BaseProcess<M extends BaseProcess<M>> extends Model<M> imp
 		return getInt("id");
 	}
 
-	public M setProcessNo(java.lang.String processNo) {
+	public M setProcessNo(java.lang.Integer processNo) {
 		set("process_no", processNo);
 		return (M)this;
 	}
 	
-	public java.lang.String getProcessNo() {
-		return getStr("process_no");
+	public java.lang.Integer getProcessNo() {
+		return getInt("process_no");
 	}
 
 	public M setProcessName(java.lang.String processName) {

@@ -176,4 +176,14 @@ public class UserService extends SelectService {
 			return user;
 		}
 	}
+
+
+	public boolean updatePassword(String orgPwd, String curPwd, int userId) {
+		LUserAccount user = LUserAccount.dao.findById(userId);
+		if (user==null||!user.getInService()) {
+			throw new OperationException("当前用户不存在或未启用");
+		}
+		user.setPassword(curPwd);
+		return user.update();
+	}
 }

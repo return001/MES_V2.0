@@ -152,11 +152,11 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULINGPLANDETAIL_BY_ID = "SELECT scheduler, LUserAccount.UserDes AS schedulerName, scheduling_time AS schedulingTime, plan_modifier AS planModifier, NULL AS modifierName, plan_modify_time as planModifyTime, production_confirmer AS productionConfirmer, NULL AS confirmerName, line_change_time as lineChangeTime FROM scheduling_plan JOIN LUserAccount ON LUserAccount.Id = scheduling_plan.scheduler WHERE scheduling_plan.id = ?";
 
-	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_AutoTest_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_AutoTest_Result WHERE ZhiDan = ? ";
 
-	public final static String SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CoupleTest_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+	public final static String SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CoupleTest_Result WHERE ZhiDan = ? ";
 
-	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ? and Computer like ? ";
+	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? ";
 
 	public final static String SELECT_REWORK_ORDER = "SELECT * FROM orders WHERE is_rework = 1 and order_status = 1 or order_status = 2";
 
@@ -234,7 +234,7 @@ public class SQL {
 
 	public final static String UPDATE_PROCESS_POSITION = "UPDATE process SET [position] = ? where id = ?";
 
-	public final static String SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ? and SoftModel = ?";
+	public final static String SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?";
 
 	public final static String UPDATE_MODELCAPACITY_BY_MODEL_PROCESS = "UPDATE model_capacity SET rhythm = ? WHERE process_group = ? and  soft_model = ?";
 
@@ -242,4 +242,5 @@ public class SQL {
 
 	public final static String SELECT_COUPLE_ERROR_FOR_CUSTOMER = "SELECT B.errorName1,B.errorNum1,B.errorName2,B.errorNum2 FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL AND ErrorMessage2 != '') A ) B";
 
+	public final static String SELECT_USER_BY_DES = "SELECT * FROM LUserAccount where UserDes = ?";
 }

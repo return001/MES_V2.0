@@ -29,6 +29,7 @@ import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.FileHistoryDetail;
+import com.jimi.mes_server.entity.PostInfo;
 import com.jimi.mes_server.entity.PreviewInfo;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopRecycleFileType;
@@ -39,7 +40,9 @@ import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.PictureVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
+import com.jimi.mes_server.model.LUserAccount;
 import com.jimi.mes_server.model.Line;
+import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.SopConfirmLog;
 import com.jimi.mes_server.model.SopCountLog;
 import com.jimi.mes_server.model.SopCustomer;
@@ -52,6 +55,7 @@ import com.jimi.mes_server.model.SopLoginLog;
 import com.jimi.mes_server.model.SopNotice;
 import com.jimi.mes_server.model.SopNoticeHistory;
 import com.jimi.mes_server.model.SopPictureHistory;
+import com.jimi.mes_server.model.SopPositionAssignment;
 import com.jimi.mes_server.model.SopProductModel;
 import com.jimi.mes_server.model.SopSeriesModel;
 import com.jimi.mes_server.model.SopSite;
@@ -223,8 +227,8 @@ public class SopService extends SelectService {
 
 
 	public boolean addSite(String siteNumber, String siteName, Integer processOrder, Integer lineId, Integer playTimes, Integer switchInterval, String mac, String secondMac) {
-		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber) != null) {
-			throw new OperationException("站点编号已存在,请重新输入");
+		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber, lineId) != null) {
+			throw new OperationException("当前产线下站点编号已存在,请重新输入");
 		}
 		if (SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_MAC, mac) != null) {
 			throw new OperationException("存在站点的MAC地址与输入的MAC重复,请重新输入");
@@ -307,9 +311,9 @@ public class SopService extends SelectService {
 			throw new OperationException("当前站点不存在");
 		}
 		if (!StrKit.isBlank(siteNumber)) {
-			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber);
+			SopSite temp = SopSite.dao.findFirst(SopSQL.SELECT_SITE_BY_SITENUMBER, siteNumber, lineId);
 			if (temp != null && !temp.getId().equals(id)) {
-				throw new OperationException("站点编号已存在,请重新输入");
+				throw new OperationException("当前产线下站点编号已存在,请重新输入");
 			}
 			sopSite.setSiteNumber(siteNumber);
 		}
@@ -1719,6 +1723,92 @@ public class SopService extends SelectService {
 		sql.append(" order by id desc");
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public List<Record> selectPost(Integer pageNo, Integer pageSize, Integer lineId) {
+		SqlPara sqlPara = new SqlPara();
+		sqlPara.setSql(SopSQL.SELECT_SITE_PROCESS_LINE);
+		sqlPara.addPara(lineId);
+		List<Record> target = Db.paginate(pageNo, pageSize, sqlPara).getList();
+		SqlPara temp = new SqlPara();
+		temp.setSql(SopSQL.SELECT_POSTINFO);
+		temp.addPara(lineId);
+		List<Record> tempRecords = Db.paginate(pageNo, pageSize, temp).getList();
+
+		return PostInfo.getPostInfo(tempRecords, target);
+	}
+
+
+	public Page<Record> selectAssignableUser(Integer pageNo, Integer pageSize, Integer postId, Integer processId, String userDes, String userName) {
+		Process process = new Process();
+		if (postId != null) {
+			SopPositionAssignment positionAssignment = SopPositionAssignment.dao.findById(postId);
+			if (positionAssignment == null) {
+				throw new OperationException("当前岗位信息不存在");
+			}
+			process = Process.dao.findById(positionAssignment.getProcessId());
+			if (process == null) {
+				throw new OperationException("当前岗位信息的工序不存在");
+			}
+		} else {
+			process = Process.dao.findById(processId);
+			if (process == null) {
+				throw new OperationException("当前岗位信息的工序不存在");
+			}
+		}
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SopSQL.SELECT_ASSIGNABLE_USER_PREFIX);
+		if (!StrKit.isBlank(userName)) {
+			sql.append(" UNION SELECT * FROM LUserAccount WHERE Name LIKE '%" + userName + "%'");
+		}
+		if (!StrKit.isBlank(userDes)) {
+			sql.append(" UNION SELECT * FROM LUserAccount WHERE UserDes LIKE '%" + userDes + "%'");
+		}
+		sql.append(SopSQL.SELECT_ASSIGNABLE_USER_SUFFIX);
+		sqlPara.setSql(sql.toString());
+		sqlPara.addPara(process.getProcessName());
+		sqlPara.addPara(process.getProcessName());
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public boolean assignUser(Integer userId, Integer lineId, Integer processId, Integer siteId, Integer postId) {
+		LUserAccount user = LUserAccount.dao.findById(userId);
+		if (user == null || !user.getInService()) {
+			throw new OperationException("当前用户不存在或未启用");
+		}
+		if (postId != null) {
+			SopPositionAssignment positionAssignment = SopPositionAssignment.dao.findById(postId);
+			if (positionAssignment == null) {
+				throw new OperationException("当前岗位信息不存在");
+			}
+			return Db.tx(() -> {
+				if (positionAssignment.getUserId() != null) {
+					user.setIsOnline(false).update();
+				}
+				positionAssignment.setUserId(userId).update();
+				return true;
+			});
+		} else {
+			if (Line.dao.findById(lineId) == null) {
+				throw new OperationException("当前产线不存在");
+			}
+			if (Process.dao.findById(processId) == null) {
+				throw new OperationException("当前工序不存在");
+			}
+			if (SopSite.dao.findById(siteId) == null) {
+				throw new OperationException("当前站点不存在");
+			}
+			SopPositionAssignment positionAssignment = new SopPositionAssignment();
+			return positionAssignment.setLineId(lineId).setProcessId(processId).setSiteId(siteId).setUserId(userId).save();
+		}
+	}
+
+
+	public boolean updateUserState(Integer userId, boolean isOnline) {
+		LUserAccount user = LUserAccount.dao.findById(userId);
+		return user.setIsOnline(isOnline).update();
 	}
 
 }

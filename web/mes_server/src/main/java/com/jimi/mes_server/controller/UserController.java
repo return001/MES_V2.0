@@ -1,5 +1,7 @@
 package com.jimi.mes_server.controller;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
@@ -133,5 +135,33 @@ public class UserController extends Controller {
 	 */
 	public void getUserIdAndName(String userName) {
 		renderJson(ResultUtil.succeed(userService.getUserIdAndName(userName)));
+	}
+
+
+	/**@author HCJ
+	 * 更新密码
+	 * @param orgPwd 原始密码
+	 * @param curPwd 新密码
+	 * @date 2020年4月13日 下午5:21:13
+	 */
+	@Access({ "engineer", "SuperAdmin", "operator", "administration", "schedulingSZPC", "schedulingJMPMC", "SopManager", "SopReviewer", "SopQcConfirmer", "oqcManager", "oqcConfigurator", "oqcTester", "oqcCustomer", "configurationManager", "developConfigurator", "ordinaryUser" })
+	public void updatePassword(String orgPwd, String curPwd) {
+		if (StringUtils.isAnyBlank(orgPwd, curPwd)) {
+			throw new ParameterException("参数不能为空");
+		}
+		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
+		if (userVO == null) {
+			throw new OperationException("用户未登录");
+		}
+		if (!userVO.getPassword().equals(orgPwd)) {
+			throw new OperationException("当前用户原始密码输入错误");
+		}
+		if (userService.updatePassword(orgPwd, curPwd, userVO.getId())) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+
 	}
 }

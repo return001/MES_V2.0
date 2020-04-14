@@ -108,4 +108,58 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return getInt("WebUserType");
 	}
 
+	public M setLineName(java.lang.String LineName) {
+		set("LineName", LineName);
+		return (M)this;
+	}
+	
+	public java.lang.String getLineName() {
+		return getStr("LineName");
+	}
+
+	public M setEmployeeType(java.lang.String EmployeeType) {
+		set("EmployeeType", EmployeeType);
+		return (M)this;
+	}
+	
+	public java.lang.String getEmployeeType() {
+		return getStr("EmployeeType");
+	}
+
+	public M setMainProcess(java.lang.String MainProcess) {
+		set("MainProcess", MainProcess);
+		return (M)this;
+	}
+	
+	public java.lang.String getMainProcess() {
+		return getStr("MainProcess");
+	}
+
+	public M setProficiency(java.lang.String Proficiency) {
+		set("Proficiency", Proficiency);
+		return (M)this;
+	}
+	
+	public java.lang.String getProficiency() {
+		return getStr("Proficiency");
+	}
+
+	public M setOtherProcess(java.lang.String OtherProcess) {
+		set("OtherProcess", OtherProcess);
+		return (M)this;
+	}
+	
+	public java.lang.String getOtherProcess() {
+		return getStr("OtherProcess");
+	}
+
+	public M setIsOnline(java.lang.Boolean IsOnline) {
+		set("IsOnline", IsOnline);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getIsOnline() {
+		return get("IsOnline");
+	}
+
 }

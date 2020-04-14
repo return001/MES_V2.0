@@ -1052,4 +1052,76 @@ public class SopController extends Controller {
 		renderJson(ResultUtil.succeed(sopService.selectCountLog(pageNo, pageSize, startTimeFrom, startTimeTo, endTimeFrom, endTimeTo, userName, siteNumber)));
 	}
 
+
+	/**@author HCJ
+	 * 根据产线查询岗位信息
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param lineId 产线ID
+	 * @date 2020年3月16日 上午9:27:49
+	 */
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	public void selectPost(Integer pageNo, Integer pageSize, Integer lineId) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		if (lineId == null) {
+			throw new ParameterException("产线ID不能为空");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectPost(pageNo, pageSize, lineId)));
+	}
+
+
+	/**@author HCJ
+	 * 查询可分配用户
+	 * @param pageNo 页码
+	 * @param pageSize 页大小
+	 * @param postId 岗位信息ID
+	 * @param processId 工序ID
+	 * @param userDes 用户描述
+	 * @param userName 用户名称
+	 * @date 2020年3月16日 上午9:28:18
+	 */
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	public void selectAssignableUser(Integer pageNo, Integer pageSize, Integer postId, Integer processId, String userDes, String userName) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		if (!(postId == null ^ processId == null)) {
+			throw new ParameterException("参数不能同时为空或者同时存在");
+		}
+		renderJson(ResultUtil.succeed(sopService.selectAssignableUser(pageNo, pageSize, postId, processId, userDes, userName)));
+	}
+
+
+	/**@author HCJ
+	 * 分配用户
+	 * @param userId 用户ID
+	 * @param lineId 产线ID
+	 * @param processId 工序ID
+	 * @param siteId 站点ID
+	 * @param postId 岗位信息ID
+	 * @date 2020年3月16日 上午9:29:13
+	 */
+	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	public void assignUser(Integer userId, Integer lineId, Integer processId, Integer siteId, Integer postId) {
+		if (userId == null) {
+			throw new ParameterException("用户不能为空");
+		}
+		if (!(postId == null ^ (lineId == null || processId == null || siteId == null))) {
+			throw new ParameterException("参数不能同时为空或者同时存在");
+		}
+		if (sopService.assignUser(userId, lineId, processId, siteId, postId)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
 }

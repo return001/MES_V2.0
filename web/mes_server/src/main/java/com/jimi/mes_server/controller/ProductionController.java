@@ -269,8 +269,8 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:50:40
 	 */
 	@Access({ "engineer", "SopManager" })
-	public void addProcess(String processNo, String processName, String processRemark, Integer processGroup) {
-		if (StringUtils.isAnyBlank(processNo, processName)) {
+	public void addProcess(Integer processNo, String processName, String processRemark, Integer processGroup) {
+		if (StrKit.isBlank(processName) || processNo == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (productionService.addProcess(processNo, processName, processRemark, processGroup)) {
@@ -307,7 +307,7 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:51:20
 	 */
 	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
-	public void selectProcess(String processNo, String processName, Integer processGroup) {
+	public void selectProcess(Integer processNo, String processName, Integer processGroup) {
 		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo, processName, processGroup)));
 	}
 
@@ -322,7 +322,7 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:52:31
 	 */
 	@Access({ "engineer", "SopManager" })
-	public void editProcess(Integer id, String processNo, String processName, String processRemark, Integer processGroup, Integer position) {
+	public void editProcess(Integer id, Integer processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
