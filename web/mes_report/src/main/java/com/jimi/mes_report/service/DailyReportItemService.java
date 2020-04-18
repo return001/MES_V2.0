@@ -14,16 +14,11 @@ import com.jimi.mes_report.util.CommonUtil;
 import com.jimi.mes_report.util.DateFormat;
 import com.jimi.mes_report.util.ErrorLogWritter;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 public class DailyReportItemService {
 
@@ -34,18 +29,20 @@ public class DailyReportItemService {
 		DateFormat date = new DateFormat(day);
 		List<Record> tempOrders = Db.use("db1").find(DailyProductionSql.SELECT_ALL_ZHIDAN_BY_TIME, date.getTime());
 		List<String> orders = new ArrayList<>();
+		// 还原分单前的订单号
 		for (Record record : tempOrders) {
 			String zhidan = record.getStr("ZhiDan");
 			if (zhidan.contains("-")) {
 				record.set("ZhiDan", zhidan.substring(0, zhidan.lastIndexOf("-")));
 			}
 		}
+		// 去除重复订单号
 		for (Record record : tempOrders) {
 			if (!orders.contains(record.getStr("ZhiDan"))) {
 				orders.add(record.getStr("ZhiDan"));
 			}
 		}
-		/*List<Record> list = new ArrayList<>();
+		/*List<String> list = new ArrayList<>();
 		list.add(orders.get(19));
 		list.add(orders.get(22));
 		list.add(orders.get(35));
@@ -60,7 +57,7 @@ public class DailyReportItemService {
 		DailyProductionReportItem item;
 		int production = 0;
 		for (String zhidan : orders) {
-			Record record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN,zhidan);
+			Record record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN, zhidan);
 			String version = null;
 			String softModel = null;
 			String productNo = null;
@@ -105,10 +102,13 @@ public class DailyReportItemService {
 
 			List<HourStatisticsItem> items = item.getHourStatisticsItems(WorkstationType.CARTON);
 			HourStatisticsItem hourStatisticsItem = items.get(items.size() - 1);
-			// 已完成数量
-			int productionQuantity = Db.use("db1").queryInt(DailyProductionSql.SELECT_CARTON_NUMBER_BY_ZHIDAN, zhidan);
+			// 日可出货总量
 			production = production + hourStatisticsItem.getOutput();
+			// 订单已完成数量
+			int productionQuantity = Db.use("db1").queryInt(DailyProductionSql.SELECT_CARTON_NUMBER_BY_ZHIDAN, zhidan);
 			item.setProductionQuantity(productionQuantity);
+			// 订单当天已完成数量
+			item.setDailyProductionQuantity(hourStatisticsItem.getOutput());
 			// 订单数量
 			int planProductionQuantity = 0;
 			if (!StrKit.isBlank(imeiEnd) && !StrKit.isBlank(imeiStart)) {
@@ -130,14 +130,14 @@ public class DailyReportItemService {
 				item.setPlanProductionQuantity(0);
 				item.setCompletionRate(0);
 			}
-			if (item.getCompletionRate()>100) {
+			if (item.getCompletionRate() > 100) {
 				item.setPlanProductionQuantity(productionQuantity);
 				item.setCompletionRate(100f);
 			}
 			// 每小时产能
 			int totalConsumingTime = 0;
 			for (HourStatisticsItem temp : items) {
-				totalConsumingTime = totalConsumingTime+temp.getConsumingTime();
+				totalConsumingTime = totalConsumingTime + temp.getConsumingTime();
 			}
 			if (totalConsumingTime > 0) {
 				int hour = totalConsumingTime % 3600;

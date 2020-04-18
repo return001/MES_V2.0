@@ -438,6 +438,7 @@ public class EmailDocService {
 			}
 			summaryTable.select("#production").first().text(String.valueOf(item.getProductionQuantity()));
 			summaryTable.select("#completeRate").first().text(item.getCompletionRate() + "%");
+			summaryTable.select("#dailyProduction").first().text(String.valueOf(item.getDailyProductionQuantity()));
 			// 填充详情表格表头
 			detailsTable.select("#capacity-order").first().text(item.getOrderNo());
 			if (!StrKit.isBlank(item.getModel())) {
