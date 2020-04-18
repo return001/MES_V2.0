@@ -1,0 +1,6 @@
+cron4j=task_save_data
+
+task_save_data.cron=37 11 * * *
+task_save_data.class=com.jimi.mes_standard_capacity.task.SaveStandardCapacityTask
+task_save_data.daemon=true
+task_save_data.enable=true
