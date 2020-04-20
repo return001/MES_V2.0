@@ -22,27 +22,10 @@ import java.util.List;
 
 public class DailyReportItemService {
 
-	public static final String GET_START_DATE = "SELECT MIN(TestTime) AS startDate FROM Gps_AutoTest_Result where ZhiDan = ?";
-
-
 	public static DailyProductionReport getDailyProductionReport(String day) {
 		DateFormat date = new DateFormat(day);
-		List<Record> tempOrders = Db.use("db1").find(DailyProductionSql.SELECT_ALL_ZHIDAN_BY_TIME, date.getTime());
-		List<String> orders = new ArrayList<>();
-		// 还原分单前的订单号
-		for (Record record : tempOrders) {
-			String zhidan = record.getStr("ZhiDan");
-			if (zhidan.contains("-")) {
-				record.set("ZhiDan", zhidan.substring(0, zhidan.lastIndexOf("-")));
-			}
-		}
-		// 去除重复订单号
-		for (Record record : tempOrders) {
-			if (!orders.contains(record.getStr("ZhiDan"))) {
-				orders.add(record.getStr("ZhiDan"));
-			}
-		}
-		/*List<String> list = new ArrayList<>();
+		List<Record> orders = Db.use("db1").find(DailyProductionSql.SELECT_ALL_ZHIDAN_BY_TIME, date.getTime());
+		/*List<Record> list = new ArrayList<>();
 		list.add(orders.get(19));
 		list.add(orders.get(22));
 		list.add(orders.get(35));
@@ -56,8 +39,15 @@ public class DailyReportItemService {
 		List<DailyProductionReportItem> itemList = new ArrayList<>();
 		DailyProductionReportItem item;
 		int production = 0;
-		for (String zhidan : orders) {
+		for (Record order : orders) {
+			String zhidan = order.getStr("ZhiDan");
 			Record record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN, zhidan);
+			if (record == null) {
+				if (zhidan.contains("-")) {
+					String tempZhiDan = zhidan.substring(0, zhidan.lastIndexOf("-"));
+					record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN, tempZhiDan);
+				}
+			}
 			String version = null;
 			String softModel = null;
 			String productNo = null;
@@ -71,8 +61,6 @@ public class DailyReportItemService {
 				imeiEnd = record.getStr("IMEIEnd");
 			}
 			item = new DailyProductionReportItem();
-			// 总日产量
-			int totalProductionQuantity = 0;
 
 			for (int type = 0; type < 8; type++) {
 				int workTotalOutput = 0; // 各工位总完成量
@@ -92,7 +80,6 @@ public class DailyReportItemService {
 					workTotalConsumingTime += consumingTime;
 					item.addHourStatisticsItem(type, i, output, consumingTime);
 				}
-				totalProductionQuantity += workTotalOutput;
 				item.addHourStatisticsItem(type, -1, workTotalOutput, workTotalConsumingTime);
 			}
 			item.setOrderNo(zhidan);
@@ -101,14 +88,25 @@ public class DailyReportItemService {
 			item.setProductNo(productNo);
 
 			List<HourStatisticsItem> items = item.getHourStatisticsItems(WorkstationType.CARTON);
-			HourStatisticsItem hourStatisticsItem = items.get(items.size() - 1);
-			// 日可出货总量
-			production = production + hourStatisticsItem.getOutput();
+
+			// 还原订单分单前的订单号
+			String tempZhiDan = new String(zhidan);
+			if (tempZhiDan.contains("-")) {
+				tempZhiDan = tempZhiDan.substring(0, tempZhiDan.lastIndexOf("-"));
+			}
 			// 订单已完成数量
-			int productionQuantity = Db.use("db1").queryInt(DailyProductionSql.SELECT_CARTON_NUMBER_BY_ZHIDAN, zhidan);
+			String productionQuantitySql = DailyProductionSql.SELECT_CARTON_NUMBER_BY_ZHIDAN + "'" + tempZhiDan + "%'";
+			int productionQuantity = Db.use("db1").queryInt(productionQuantitySql);
 			item.setProductionQuantity(productionQuantity);
 			// 订单当天已完成数量
-			item.setDailyProductionQuantity(hourStatisticsItem.getOutput());
+			StringBuilder dailyProductionQuantitySb = new StringBuilder(DailyProductionSql.SELECT_CARTON_NUMBER_BY_ZHIDAN_TESTTIME);
+			dailyProductionQuantitySb.append("'").append(tempZhiDan).append("%'");
+			dailyProductionQuantitySb.append(" AND TestTime >= '").append(date.getTestTimeStart());
+			dailyProductionQuantitySb.append("' AND TestTime <= '").append(date.getTestTimeEnd()).append("'");
+			int dailyProductionQuantity = Db.use("db1").queryInt(dailyProductionQuantitySb.toString());
+			item.setDailyProductionQuantity(dailyProductionQuantity);
+			// 日可出货总量
+			production = production + dailyProductionQuantity;
 			// 订单数量
 			int planProductionQuantity = 0;
 			if (!StrKit.isBlank(imeiEnd) && !StrKit.isBlank(imeiStart)) {
@@ -148,7 +146,7 @@ public class DailyReportItemService {
 				item.setCapacity(capacity);
 			}
 			// 上线日期
-			Record startDateRecord = Db.use("db1").findFirst(GET_START_DATE, zhidan);
+			Record startDateRecord = Db.use("db1").findFirst(DailyProductionSql.GET_START_DATE + "'" + tempZhiDan + "%'");
 			String startTime = startDateRecord.getStr("startDate");
 			try {
 				item.setStartDate(DateUtil.yyyyMMdd(startTime));

@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi</groupId>
 	<artifactId>mes_report</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<packaging>war</packaging>
 
 	<name>mes_report</name>

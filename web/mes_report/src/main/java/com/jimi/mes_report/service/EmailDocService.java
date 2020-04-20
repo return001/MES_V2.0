@@ -11,6 +11,7 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
@@ -392,7 +393,7 @@ public class EmailDocService {
 		DailyProductionReport dailyProductionReport = DailyReportItemService.getDailyProductionReport(dateString);
 
 		int output = dailyProductionReport.getOutput();
-		if (output < 0) {
+		if (output <= 0) {
 			return EMPTY_DOCUMENT_ARRAY;
 		}
 		// 填充时间范围和日产量
@@ -422,7 +423,7 @@ public class EmailDocService {
 			summaryTable.select("#order").first().text(item.getOrderNo());
 			if (!StrKit.isBlank(item.getModel())) {
 				summaryTable.select("#model").first().text(item.getModel());
-			}else {
+			} else {
 				summaryTable.select("#model").first().text("-");
 			}
 			summaryTable.select("#number").first().text(String.valueOf(item.getPlanProductionQuantity()));
@@ -443,7 +444,7 @@ public class EmailDocService {
 			detailsTable.select("#capacity-order").first().text(item.getOrderNo());
 			if (!StrKit.isBlank(item.getModel())) {
 				detailsTable.select("#capacity-machine-name").first().text(item.getModel());
-			}else {
+			} else {
 				detailsTable.select("#capacity-machine-name").first().text("-");
 			}
 			if (!StrKit.isBlank(item.getProductNo())) {
@@ -453,7 +454,7 @@ public class EmailDocService {
 			}
 			if (!StrKit.isBlank(item.getVersion())) {
 				detailsTable.select("#capacity-software-version").first().text(item.getVersion());
-			}else {
+			} else {
 				detailsTable.select("#capacity-software-version").first().text("-");
 			}
 			detailsTable.select("#capacity-order-count").first().text(String.valueOf(item.getPlanProductionQuantity()));
@@ -469,7 +470,7 @@ public class EmailDocService {
 						detailsTable.select("#" + j + "-time-" + hourStatisticsItem.getHour()).first().empty();
 						continue;
 					}
-					if (hourStatisticsItem.getHour() == -1 && hourStatisticsItem.getOutput()==0) {
+					if (hourStatisticsItem.getHour() == -1 && hourStatisticsItem.getOutput() == 0) {
 						detailsTable.select("#" + j + "-name").first().empty();
 						detailsTable.select("#" + j + "-summary").first().empty();
 						continue;
@@ -477,13 +478,31 @@ public class EmailDocService {
 					detailsTable.select("#" + j + "-finished-count-" + hourStatisticsItem.getHour()).first().text(String.valueOf(hourStatisticsItem.getOutput()));
 					int minutes = hourStatisticsItem.getConsumingTime() / 60;
 					int remainingSeconds = hourStatisticsItem.getConsumingTime() % 60;
-					detailsTable.select("#" + j + "-actual-used-time-" + hourStatisticsItem.getHour()).first().text(String.valueOf(minutes+"分"+remainingSeconds+"秒"));
+					detailsTable.select("#" + j + "-actual-used-time-" + hourStatisticsItem.getHour()).first().text(String.valueOf(minutes + "分" + remainingSeconds + "秒"));
 				}
-				
 			}
-			if (!detailsTable.hasClass("tg-9wq8")) {
-				detailsTable.select("#capacity-content-box").first().empty();
+		}
+		// 去除分单的订单
+		// 存储分单前的订单号
+		List<String> orders = new ArrayList<>();
+		// 存储分单前的订单号在表格的位置
+		List<Integer> indexs = new ArrayList<>();
+		Elements elements = dailyProductionDoc.select("tr#capacity-total-content");
+		for (int i = 0; i < elements.size(); i++) {
+			String order = elements.get(i).select("td#order").first().text();
+			if (order.contains("-")) {
+				order = order.substring(0, order.lastIndexOf("-"));
+				// 将分单前的订单号写入表格
+				elements.get(i).select("td#order").first().text(order);
 			}
+			if (!orders.contains(order)) {
+				orders.add(order);
+			} else {
+				indexs.add(i);
+			}
+		}
+		for (Integer index : indexs) {
+			elements.get(index).empty();
 		}
 		Document[] documents = new Document[] { dailyProductionDoc };
 		return documents;

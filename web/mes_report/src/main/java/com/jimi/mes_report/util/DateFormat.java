@@ -13,11 +13,29 @@ public class DateFormat {
 
 	private String testDate;
 
+	private String cpTimeStart;
+
+	private String cpTimeEnd;
+
+	private String printTimeStart;
+
+	private String printTimeEnd;
+
+	private String testTimeStart;
+
+	private String testTimeEnd;
+
 
 	public DateFormat(String date) {
 		this.imeiDate = date.replace("-0", "/").replace("-", "/");
 		this.printDate = date.replace("-", ".");
 		this.testDate = date;
+		this.cpTimeStart = this.imeiDate + " 00:00:00";
+		this.cpTimeEnd = this.imeiDate + " 23:59:59";
+		this.printTimeStart = this.printDate + " 00:00:00:000";
+		this.printTimeEnd = this.printDate + " 23:59:59:999";
+		this.testTimeStart = this.testDate + " 00:00:00";
+		this.testTimeEnd = this.testDate + " 23:59:59";
 	}
 
 
@@ -51,13 +69,67 @@ public class DateFormat {
 	}
 
 
+	public String getCpTimeStart() {
+		return cpTimeStart;
+	}
+
+
+	public void setCpTimeStart(String cpTimeStart) {
+		this.cpTimeStart = cpTimeStart;
+	}
+
+
+	public String getCpTimeEnd() {
+		return cpTimeEnd;
+	}
+
+
+	public void setCpTimeEnd(String cpTimeEnd) {
+		this.cpTimeEnd = cpTimeEnd;
+	}
+
+
+	public String getPrintTimeStart() {
+		return printTimeStart;
+	}
+
+
+	public void setPrintTimeStart(String printTimeStart) {
+		this.printTimeStart = printTimeStart;
+	}
+
+
+	public String getPrintTimeEnd() {
+		return printTimeEnd;
+	}
+
+
+	public void setPrintTimeEnd(String printTimeEnd) {
+		this.printTimeEnd = printTimeEnd;
+	}
+
+
+	public String getTestTimeStart() {
+		return testTimeStart;
+	}
+
+
+	public void setTestTimeStart(String testTimeStart) {
+		this.testTimeStart = testTimeStart;
+	}
+
+
+	public String getTestTimeEnd() {
+		return testTimeEnd;
+	}
+
+
+	public void setTestTimeEnd(String testTimeEnd) {
+		this.testTimeEnd = testTimeEnd;
+	}
+
+
 	public String[] getTime() {
-		String cpTimeStart = this.imeiDate + " 00:00:00";
-		String cpTimeEnd = this.imeiDate + " 23:59:59";
-		String printTimeStart = this.printDate + " 00:00:00:000";
-		String printTimeEnd = this.printDate + " 23:59:59:999";
-		String testTimeStart = this.testDate + " 00:00:00";
-		String testTimeEnd = this.testDate + " 23:59:59";
 		String[] time = new String[] { cpTimeStart, cpTimeEnd, testTimeStart, testTimeEnd, testTimeStart, testTimeEnd, testTimeStart, testTimeEnd, testTimeStart, testTimeEnd, testTimeStart, testTimeEnd, printTimeStart, printTimeEnd, printTimeStart, printTimeEnd };
 		return time;
 	}

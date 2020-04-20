@@ -3,41 +3,41 @@ package com.jimi.mes_report.constant;
 public class DailyProductionSql {
 
     public  static final String SELECT_ALL_ZHIDAN = "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan from Gps_ManuCpParam where CPTIME > ? and CPTIME < ? and CPRESULT = 1 and LEN(ZhiDan) > 0 GROUP BY ZhiDan ) r LEFT JOIN Gps_ManuOrderParam o " +
+            "(SELECT ZhiDan from Gps_ManuCpParam where CPTIME >= ? and CPTIME <= ? and CPRESULT = 1 and LEN(ZhiDan) > 0 GROUP BY ZhiDan ) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result2 where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result2 where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result3 where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_AutoTest_Result3 where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_CoupleTest_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_CoupleTest_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_CartonBoxTwenty_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_CartonBoxTwenty_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam where CH_PrintTime > ? and CH_PrintTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam where CH_PrintTime >= ? and CH_PrintTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 " +
             "UNION " +
             "SELECT r.ZhiDan,o.Version,o.SoftModel,o.ProductNo,o.IMEIStart,o.IMEIEnd from " +
-            "(SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam where JS_PrintTime > ? and JS_PrintTime < ? and LEN(ZhiDan) > 0 " +
+            "(SELECT ZhiDan,Version,SoftModel from Gps_ManuPrintParam where JS_PrintTime >= ? and JS_PrintTime <= ? and LEN(ZhiDan) > 0 " +
             "GROUP BY ZhiDan,SoftModel,Version) r LEFT JOIN Gps_ManuOrderParam o " +
             "on o.ZhiDan = r.ZhiDan and o.Status != 3 ";
 
@@ -427,10 +427,13 @@ public class DailyProductionSql {
             "UNION ALL "+
             "SELECT MAX(TestTime) as endTime,MIN(TestTime) as startTime,count(*) as output from Gps_CartonBoxTwenty_Result where  ZhiDan = ?    and TestTime >= ? and TestTime <= ? ";
 
-    public static final String SELECT_ALL_ZHIDAN_BY_TIME = "SELECT ZhiDan from Gps_ManuCpParam where CPTIME > ? and CPTIME < ? and CPRESULT = 1 and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result2 where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result3 where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_CoupleTest_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_CartonBoxTwenty_Result where TestTime > ? and TestTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_ManuPrintParam where CH_PrintTime > ? and CH_PrintTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_ManuPrintParam where JS_PrintTime > ? and JS_PrintTime < ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan";
+    public static final String SELECT_ALL_ZHIDAN_BY_TIME = "SELECT ZhiDan from Gps_ManuCpParam where CPTIME >= ? and CPTIME <= ? and CPRESULT = 1 and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result2 where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_AutoTest_Result3 where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_CoupleTest_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_CartonBoxTwenty_Result where TestTime >= ? and TestTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_ManuPrintParam where CH_PrintTime >= ? and CH_PrintTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan UNION SELECT ZhiDan from Gps_ManuPrintParam where JS_PrintTime >= ? and JS_PrintTime <= ? and LEN(ZhiDan) > 0 GROUP BY ZhiDan";
 
     public static final String SELECT_ALL_ORDER_BY_ZHIDAN = "SELECT * FROM Gps_ManuOrderParam WHERE ZhiDan = ?";
-    
-    		public static final String SELECT_CARTON_NUMBER_BY_ZHIDAN = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?";
 
+    public static final String SELECT_CARTON_NUMBER_BY_ZHIDAN = "SELECT count(*) as productionQuantity FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan like ";
+
+    public static final String SELECT_CARTON_NUMBER_BY_ZHIDAN_TESTTIME = "SELECT count(*) as dailyProductionQuantity FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan like ";
+
+    public static final String GET_START_DATE = "SELECT MIN(TestTime) AS startDate FROM Gps_AutoTest_Result where ZhiDan like ";
 }
