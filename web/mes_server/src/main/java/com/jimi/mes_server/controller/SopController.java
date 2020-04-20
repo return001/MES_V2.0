@@ -80,7 +80,7 @@ public class SopController extends Controller {
 	 * @param fullName 全称
 	 * @date 2019年10月24日 下午2:15:31
 	 */
-	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	@Access({ "schedulingJMPMC", "schedulingSZPC", "operator", "engineer", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectFactory(Integer pageNo, Integer pageSize, String factoryAlias, String abbreviation, String fullName) {
 		renderJson(ResultUtil.succeed(sopService.selectFactory(pageNo, pageSize, factoryAlias, abbreviation, fullName)));
 	}
@@ -154,7 +154,7 @@ public class SopController extends Controller {
 	 * @param workshopName 车间名称
 	 * @date 2019年10月24日 下午2:17:26
 	 */
-	@Access({ "SopReviewer", "SopManager", "SopQcConfirmer" })
+	@Access({ "schedulingJMPMC", "schedulingSZPC", "operator", "engineer", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectWorkshop(Integer pageNo, Integer pageSize, Integer factoryId, String workshopNumber, String workshopName) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");

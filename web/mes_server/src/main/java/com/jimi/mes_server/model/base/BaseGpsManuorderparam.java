@@ -535,9 +535,18 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		set("RFID_Area", rfidArea);
 		return (M)this;
 	}
-	
+
 	public java.lang.String getRfidArea() {
 		return getStr("RFID_Area");
+	}
+
+	public M setPlanProduction(java.lang.Integer PlanProduction) {
+		set("PlanProduction", PlanProduction);
+		return (M)this;
+	}
+
+	public java.lang.Integer getPlanProduction() {
+		return getInt("PlanProduction");
 	}
 
 }

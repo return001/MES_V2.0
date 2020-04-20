@@ -15,7 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
@@ -65,6 +66,8 @@ import com.jimi.mes_server.util.ExcelHelper;
 public class ProductionService {
 
 	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+
+	/*private static ExecutorService executorService = Executors.newFixedThreadPool(6);*/
 
 
 	public Page<Record> getProcessGroup() {
@@ -1030,7 +1033,8 @@ public class ProductionService {
 		SqlPara sqlPara = new SqlPara();
 		String orderBy = " ORDER BY id DESC ";
 		sqlPara.setSql(SQL.SELECT_SCHEDULINGPLAN + filter + orderBy);
-		return formatPlanTimeOut(formatOrderDateAndCustomer(Db.paginate(planQueryCriteria.getPageNo(), 10, sqlPara), null));
+		Page<Record> page = Db.paginate(planQueryCriteria.getPageNo(), 10, sqlPara);
+		return formatPlanTimeOut(formatOrderDateAndCustomer(page, null));
 	}
 
 
@@ -1080,7 +1084,7 @@ public class ProductionService {
 			throw new OperationException("产线电脑不存在");
 		}*/
 		String sql = null;
-		Integer planProducedQuantity = 0;
+		Integer planProducedQuantity;
 		if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
 			sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
 		} else if (Constant.TESTING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
@@ -1092,12 +1096,19 @@ public class ProductionService {
 			planProducedQuantity += Db.queryInt(sql, order.getZhidan(), "%" + lineComputer.getIp() + "%");
 		}*/
 		planProducedQuantity = Db.queryInt(sql, order.getZhidan());
-		if (schedulingPlan.getSchedulingQuantity() <= planProducedQuantity) {
+		/*if (schedulingPlan.getSchedulingQuantity() <= planProducedQuantity) {
 			schedulingPlan.setRemainingQuantity(0);
 		} else {
 			schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
 		}
-		schedulingPlan.setProducedQuantity(planProducedQuantity).update();
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				schedulingPlan.setProducedQuantity(planProducedQuantity).update();
+			}
+		};
+		executorService.execute(runnable);*/
 		Record record = new Record();
 		record.set("planProducedQuantity", planProducedQuantity);
 		return record;
@@ -1302,7 +1313,6 @@ public class ProductionService {
 		planGantt.setCompletionRate(cartonGantt.getCompletionRate());
 		planGantt.setCompletionQuantity(cartonGantt.getCompletionQuantity());
 		return gantts;
-
 	}
 
 
@@ -1515,18 +1525,14 @@ public class ProductionService {
 	 */
 	private Page<Record> formatOrderDateAndCustomer(Page<Record> page, Boolean isOperator) {
 		List<Record> records = page.getList();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		for (Record record : records) {
 			if (isOperator != null && isOperator) {
 				record.set("customerNumber", "***");
 				record.set("customerName", "***");
 			}
-			try {
-				record.set("orderDate", dateFormat.format(record.getDate("orderDate")));
-				record.set("deliveryDate", dateFormat.format(record.getDate("deliveryDate")));
-			} catch (Exception e) {
-				record.set("orderDate", record.getStr("orderDate"));
-				record.set("deliveryDate", record.getStr("deliveryDate"));
+			if (!StringUtils.isAnyBlank(record.getStr("orderDate"), record.getStr("deliveryDate"))) {
+				record.set("orderDate", record.getStr("orderDate").replace(" 00:00:00", ""));
+				record.set("deliveryDate", record.getStr("deliveryDate").replace(" 00:00:00", ""));
 			}
 		}
 		return page;
@@ -1543,11 +1549,10 @@ public class ProductionService {
 		for (Record record : records) {
 			if (record.getDate("planCompleteTime") == null) {
 				continue;
-			} else {
-				if (new Date().after(record.getDate("planCompleteTime"))) {
-					if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
-						record.set("isTimeout", true);
-					}
+			}
+			if (new Date().after(record.getDate("planCompleteTime"))) {
+				if (selectPlanProducedQuantity(record.getInt("id")).getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
+					record.set("isTimeout", true);
 				}
 			}
 		}

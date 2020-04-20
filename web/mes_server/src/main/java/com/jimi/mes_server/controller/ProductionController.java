@@ -49,7 +49,7 @@ public class ProductionController extends Controller {
 	 * 获取工序组ID和名称
 	 * @date 2019年8月8日 下午3:38:32
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
+	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcessGroup() {
 		renderJson(ResultUtil.succeed(productionService.getProcessGroup()));
 	}
@@ -59,7 +59,7 @@ public class ProductionController extends Controller {
 	 * 获取工序ID和名称
 	 * @date 2019年8月8日 下午3:39:02
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
+	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcess() {
 		renderJson(ResultUtil.succeed(productionService.getProcess()));
 	}
@@ -69,7 +69,7 @@ public class ProductionController extends Controller {
 	 * 获取产线ID和名称
 	 * @date 2019年8月8日 下午3:39:25
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
+	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getLine() {
 		renderJson(ResultUtil.succeed(productionService.getLine()));
 	}

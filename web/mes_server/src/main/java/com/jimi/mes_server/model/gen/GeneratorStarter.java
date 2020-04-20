@@ -16,12 +16,12 @@ public class GeneratorStarter {
 	 */
 	public static void main(String[] args) {
 		PropKit.use("properties.ini");
-		/*String url = PropKit.get("d_url");
+		String url = PropKit.get("d_url");
 		String user = PropKit.get("d_user");
-		String password = PropKit.get("d_password");*/
-		String url = "jdbc:sqlserver://183.236.111.164:6033;DatabaseName=GPSTest";
+		String password = PropKit.get("d_password");
+		/*String url = "jdbc:sqlserver://183.236.111.164:6033;DatabaseName=GPSTest";
 		String user = "sa";
-		String password = "jiminewpower";
+		String password = "jiminewpower";*/
 		// base model 所使用的包名
 		String baseModelPkg = PropKit.get("baseModelPackage");
 		// base model 文件保存路径

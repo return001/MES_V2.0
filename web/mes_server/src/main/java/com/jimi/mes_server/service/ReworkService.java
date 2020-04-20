@@ -35,15 +35,15 @@ public class ReworkService {
 		String suffix = " )";
 		if (!StrKit.isBlank(sn)) {
 			sql = concatSqlParameter(" SN in (", sn.split(","), suffix);
+			gpsAutotestAntidups = GpsAutotestAntidup.dao.find(SQL.SELECT_AUTOTEST_ANTIDUP_SQL_FRAGMENT + sql);
+			if (gpsAutotestAntidups == null || gpsAutotestAntidups.isEmpty()) {
+				throw new OperationException("Gps_AutoTest_AntiDup表格不存在符合条件的记录");
+			}
 			if (!StrKit.isBlank(version)) {
 				sql.append(concatSqlParameter(" and Version in (", version.split(","), suffix));
 			}
 			if (!StrKit.isBlank(softModel)) {
 				sql.append(concatSqlParameter(" and SoftModel in (", softModel.split(","), suffix));
-			}
-			gpsAutotestAntidups = GpsAutotestAntidup.dao.find(SQL.SELECT_AUTOTEST_ANTIDUP_SQL_FRAGMENT + sql);
-			if (gpsAutotestAntidups == null || gpsAutotestAntidups.isEmpty()) {
-				throw new OperationException("Gps_AutoTest_AntiDup表格不存在符合条件的记录");
 			}
 			gpsAutotestResult2s = GpsAutotestResult2.dao.find(SQL.SELECT_AUTOTEST_RESULT2_SQL_FRAGMENT + sql);
 			if (gpsAutotestResult2s == null || gpsAutotestResult2s.isEmpty()) {
