@@ -47,4 +47,10 @@ public class Constant {
 	// 一小时分钟数
 	public final static Integer HOUR_TO_MINUTE = 60;
 
+	// 每日最大卡通箱的产量
+	public final static String DAILY_MAX_CAPACITY_KEY = "MES_REPORT:DAILY_MAX_CARTON_CAPACITY";
+
+	// 每日最大卡通箱的产量花费的时间
+	public final static String DAILY_MAX_CAPACITY_COST_TIME_KEY = "MES_REPORT:DAILY_MAX_CARTON_CAPACITY_TIME";
+
 }

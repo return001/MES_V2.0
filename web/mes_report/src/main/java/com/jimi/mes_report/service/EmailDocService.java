@@ -16,11 +16,14 @@ import org.jsoup.select.Elements;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.redis.Cache;
+import com.jfinal.plugin.redis.Redis;
 import com.jfplugin.mail.MailKit;
 import com.jimi.mes_report.constant.Constant;
 import com.jimi.mes_report.model.entity.DailyProductionReport;
 import com.jimi.mes_report.model.entity.DailyProductionReportItem;
 import com.jimi.mes_report.model.entity.HourStatisticsItem;
+import com.jimi.mes_report.util.CommonUtil;
 import com.jimi.mes_report.util.ErrorLogWritter;
 
 /**邮件服务类
@@ -396,9 +399,10 @@ public class EmailDocService {
 		if (output <= 0) {
 			return EMPTY_DOCUMENT_ARRAY;
 		}
-		// 填充时间范围和日产量
+		// 填充时间范围和日产量以及历史情况
 		dailyProductionDoc.getElementById("time-range").text(dateString + " 00:00:00 ~ " + dateString + " 23:59:59");
-		dailyProductionDoc.getElementById("capacity-total-daily").text(String.valueOf(output));
+		dailyProductionDoc.getElementById("produce-time-current").text(CommonUtil.secondToTime(dailyProductionReport.getConsumingTime()));
+
 		List<DailyProductionReportItem> dailyProductionList = dailyProductionReport.getItems();
 		// 根据集合大小拼接表格
 		int size = dailyProductionList.size();
@@ -504,6 +508,46 @@ public class EmailDocService {
 		for (Integer index : indexs) {
 			elements.get(index).empty();
 		}
+		// 填充新的日出货量
+		int totalDailyProduction = 0;
+		Elements newElements = dailyProductionDoc.select("tr#capacity-total-content");
+		for (int i = 0; i < newElements.size(); i++) {
+			String dailyProduction = null;
+			try {
+				dailyProduction = newElements.get(i).select("td#dailyProduction").first().text();
+			} catch (Exception e) {
+				continue;
+			}
+			if (StrKit.isBlank(dailyProduction)) {
+				continue;
+			}
+			totalDailyProduction = totalDailyProduction + Integer.parseInt(dailyProduction);
+		}
+		// 更新最大日产量和花费的时间
+		int dailyMaxProduction = 0;
+		int dailyMaxProductionTime = 0;
+		Cache cache = Redis.use();
+		if (cache.exists(Constant.DAILY_MAX_CAPACITY_KEY)) {
+			int dailyMaxCapacityTemp = Integer.parseInt(cache.get(Constant.DAILY_MAX_CAPACITY_KEY));
+			int dailyMaxCapacityTimeTemp = Integer.parseInt(cache.get(Constant.DAILY_MAX_CAPACITY_COST_TIME_KEY));
+			if (totalDailyProduction > dailyMaxCapacityTemp) {
+				dailyMaxProduction = totalDailyProduction;
+				dailyMaxProductionTime = dailyProductionReport.getConsumingTime();
+				cache.set(Constant.DAILY_MAX_CAPACITY_KEY, dailyMaxProduction);
+				cache.set(Constant.DAILY_MAX_CAPACITY_COST_TIME_KEY, dailyMaxProductionTime);
+			} else {
+				dailyMaxProduction = dailyMaxCapacityTemp;
+				dailyMaxProductionTime = dailyMaxCapacityTimeTemp;
+			}
+		} else {
+			dailyMaxProduction = totalDailyProduction;
+			dailyMaxProductionTime = dailyProductionReport.getConsumingTime();
+			cache.set(Constant.DAILY_MAX_CAPACITY_KEY, dailyMaxProduction);
+			cache.set(Constant.DAILY_MAX_CAPACITY_COST_TIME_KEY, dailyMaxProductionTime);
+		}
+		dailyProductionDoc.getElementById("capacity-total-daily").text(String.valueOf(totalDailyProduction));
+		dailyProductionDoc.getElementById("capacity-total-history-max-daily").text(String.valueOf(dailyMaxProduction));
+		dailyProductionDoc.getElementById("produce-time-history").text(CommonUtil.secondToTime(dailyMaxProductionTime));
 		Document[] documents = new Document[] { dailyProductionDoc };
 		return documents;
 	}

@@ -38,7 +38,10 @@ public class DailyReportItemService {
 		list.add(orders.get(34));*/
 		List<DailyProductionReportItem> itemList = new ArrayList<>();
 		DailyProductionReportItem item;
+		// 日可出货量
 		int production = 0;
+		// 日可出货量花费时间
+		int dailyProductionTime = 0;
 		for (Record order : orders) {
 			String zhidan = order.getStr("ZhiDan");
 			Record record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN, zhidan);
@@ -63,8 +66,10 @@ public class DailyReportItemService {
 			item = new DailyProductionReportItem();
 
 			for (int type = 0; type < 8; type++) {
-				int workTotalOutput = 0; // 各工位总完成量
-				int workTotalConsumingTime = 0; // 各工位总完成时间
+				// 各工位总完成量
+				int workTotalOutput = 0;
+				// 各工位总完成时间
+				int workTotalConsumingTime = 0;
 				String[] column = date.getTimeColumn(type, zhidan);
 				List<Record> records = HourlyProductionCounter.count(type, column);
 				for (int i = 0; i < records.size(); i++) {
@@ -80,6 +85,7 @@ public class DailyReportItemService {
 					workTotalConsumingTime += consumingTime;
 					item.addHourStatisticsItem(type, i, output, consumingTime);
 				}
+				dailyProductionTime = dailyProductionTime + workTotalConsumingTime;
 				item.addHourStatisticsItem(type, -1, workTotalOutput, workTotalConsumingTime);
 			}
 			item.setOrderNo(zhidan);
@@ -133,7 +139,7 @@ public class DailyReportItemService {
 				item.setCompletionRate(100f);
 			}
 			// 每小时产能
-			int totalConsumingTime = 0;
+			/*int totalConsumingTime = 0;
 			for (HourStatisticsItem temp : items) {
 				totalConsumingTime = totalConsumingTime + temp.getConsumingTime();
 			}
@@ -144,7 +150,7 @@ public class DailyReportItemService {
 				}
 				float capacity = productionQuantity / hour;
 				item.setCapacity(capacity);
-			}
+			}*/
 			// 上线日期
 			Record startDateRecord = Db.use("db1").findFirst(DailyProductionSql.GET_START_DATE + "'" + tempZhiDan + "%'");
 			String startTime = startDateRecord.getStr("startDate");
@@ -170,7 +176,7 @@ public class DailyReportItemService {
 				return o2.getPlanProductionQuantity() - o1.getPlanProductionQuantity();
 			}
 		});
-		DailyProductionReport dailyProductionReport = new DailyProductionReport(production, 0, 0, 0);
+		DailyProductionReport dailyProductionReport = new DailyProductionReport(production, 0, dailyProductionTime, 0);
 		dailyProductionReport.setItems(itemList);
 		return dailyProductionReport;
 	}

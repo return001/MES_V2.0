@@ -13,9 +13,11 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
 import com.jfinal.plugin.cron4j.Cron4jPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
 import com.jfplugin.mail.MailPlugin;
 import com.jimi.mes_report.model.MappingKit;
+import com.jimi.mes_report.util.VisualSerializer;
 
 /**全局配置
  * @author   HCJ
@@ -50,22 +52,28 @@ public class MesConfig extends JFinalConfig {
 		PropKit.use("properties.ini");
 		DruidPlugin dp = null;
 		DruidPlugin dp1 = null;
+		RedisPlugin rp = null;
 		// 判断是否是生产环境，配置数据连接池
 		if (isProductionEnvironment()) {
 			dp = new DruidPlugin(PropKit.get("p_url"), PropKit.get("p_user"), PropKit.get("p_password"));
 			dp1 = new DruidPlugin(PropKit.get("p_url1"), PropKit.get("p_user"), PropKit.get("p_password"));
+			rp = new RedisPlugin("MES_REPORT", PropKit.get("p_redisIp"), PropKit.get("p_redisPassword"));
 			System.out.println("DateBase is in production envrionment");
 		} else if (isTestEnvironment()) {
 			dp = new DruidPlugin(PropKit.get("t_url"), PropKit.get("t_user"), PropKit.get("t_password"));
 			dp1 = new DruidPlugin(PropKit.get("t_url1"), PropKit.get("t_user"), PropKit.get("t_password"));
+			rp = new RedisPlugin("MES_REPORT", PropKit.get("t_redisIp"));
 			System.out.println("DateBase is in test envrionment");
 		} else {
 			dp = new DruidPlugin(PropKit.get("d_url"), PropKit.get("d_user"), PropKit.get("d_password"));
 			dp1 = new DruidPlugin(PropKit.get("d_url1"), PropKit.get("d_user"), PropKit.get("d_password"));
+			rp = new RedisPlugin("MES_REPORT", PropKit.get("d_redisIp"), PropKit.get("d_redisPassword"));
 			System.out.println("DateBase is in development envrionment");
 		}
+		rp.setSerializer(new VisualSerializer());
 		me.add(dp);
 		me.add(dp1);
+		me.add(rp);
 		// 配置ORM
 		ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 		ActiveRecordPlugin arp1 = new ActiveRecordPlugin("db1", dp1);
