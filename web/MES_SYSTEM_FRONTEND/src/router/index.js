@@ -47,9 +47,11 @@ const NoticeManager = () => import (/* webpackChunkName: "group-e-sop" */"../pag
 const ESopActionLog = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/ESopActionLog");
 const ESopLogs = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/ESopLogs");
 const SiteInfo = () => import (/* webpackChunkName: "group-e-sop" */"../pages/e_sop/details/SiteInfo");
+const StaffAssign = () => import (/* webpackChunkName: "group-plan" */'../pages/e_sop/details/StaffAssign');
 /*看板*/
 const Dashboard = () => import ('../pages/dashboard/Dashboard');
-
+/*修改密码*/
+const EditPassword = () => import('../pages/user/EditPassword');
 /*函数*/
 import {permissionList} from "../utils/utils";
 
@@ -146,6 +148,10 @@ const index = new Router({
             {
               path: 'site',
               component: SiteInfo
+            },
+            {
+              path: 'assign',
+              component: StaffAssign
             },
             {
               path: 'action_log',
@@ -252,6 +258,11 @@ const index = new Router({
           path: '/redtea',
           name: 'RedTea',
           component: RedTea
+        },
+        {
+          path: '/editPassword',
+          name: 'EditPassword',
+          component: EditPassword
         }
       ]
     },

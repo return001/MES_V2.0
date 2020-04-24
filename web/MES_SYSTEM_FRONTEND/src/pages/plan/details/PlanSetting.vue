@@ -409,6 +409,7 @@
   import GanttComp from './comp/GanttComp'
   import eventBus from "../../../utils/eventBus";
   import {MessageBox} from "element-ui";
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "PlanSetting",

@@ -1,6 +1,6 @@
 {
   "name": "mes_system_frontend",
-  "version": "2.4.2",
+  "version": "2.5.3",
   "description": "For MES front-end",
   "author": "DarkNin <darknin@outlook.com>",
   "private": true,
@@ -9,16 +9,16 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "core-js": "^3.4.3",
-    "vue": "^2.6.10",
-    "vue-router": "^3.0.3",
-    "vuex": "^3.0.1",
     "echarts": "^4.2.1",
     "element-ui": "^2.13.0",
     "file-saver": "^2.0.2",
-    "rz-el-comp": "^0.1.11",
+    "rz-el-comp": "^0.1.12",
     "v-charts": "^1.19.0",
-    "axios": "^0.18.0"
+    "vue": "^2.6.10",
+    "vue-router": "^3.0.3",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@babel/plugin-syntax-dynamic-import": "^7.7.4",

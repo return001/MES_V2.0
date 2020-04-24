@@ -4,9 +4,11 @@
     <side-setting/>
     <router-view/>
     <div id="user-info">
-      <span class="user-info-avatar">
-        <i class="el-icon-user-solid"></i>
-      </span>
+      <el-tooltip content="修改密码" effect="light">
+        <span class="user-info-avatar" @click="editUser">
+          <i class="el-icon-setting"></i>
+        </span>
+      </el-tooltip>
       <span class="user-info-name">
         {{userName}}
       </span>
@@ -28,6 +30,12 @@
       }
     },
     mounted() {
+    },
+
+    methods: {
+      editUser: function () {
+        this.$router.push('/editPassword');
+      }
     }
   }
 </script>
@@ -55,6 +63,7 @@
     z-index: 1;
     padding: 12px;
     box-sizing: border-box;
+    cursor: pointer;
   }
 
   .user-info-avatar i {
@@ -65,7 +74,7 @@
   .user-info-name {
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space:nowrap;
+    white-space: nowrap;
     font-size: 14px;
     color: #458aff;
     line-height: 48px;
@@ -73,5 +82,6 @@
     position: absolute;
     padding: 0 14px 0 7px;
     width: 66px;
+    box-sizing: border-box;
   }
 </style>

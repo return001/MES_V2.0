@@ -6,15 +6,18 @@
         <div class="form-row">
           <div class="form-group">
             <label for="user-id" class="col-form-label">ID:</label>
-            <el-input size="small" type="text" id="user-id" class="form-control" v-model="userData.id" disabled></el-input>
+            <el-input size="small" type="text" id="user-id" class="form-control" v-model="userData.id"
+                      disabled></el-input>
           </div>
           <div class="form-group">
             <label for="user-des" class="col-form-label">*用户名:</label>
-            <el-input size="small" type="text" id="user-name" class="form-control" v-model.trim="userData.name"></el-input>
+            <el-input size="small" type="text" id="user-name" class="form-control"
+                      v-model.trim="userData.name"></el-input>
           </div>
           <div class="form-group">
             <label for="user-des" class="col-form-label">*用户描述:</label>
-            <el-input size="small" type="text" id="user-des" class="form-control" v-model.trim="userData.userDes"></el-input>
+            <el-input size="small" type="text" id="user-des" class="form-control"
+                      v-model.trim="userData.userDes"></el-input>
           </div>
           <div class="form-group">
             <label for="user-pwd" class="col-form-label">*密码:</label>
@@ -41,6 +44,65 @@
               <el-option label="请选择" value="" disabled></el-option>
               <el-option label="禁用" value="0"></el-option>
               <el-option label="启用" value="1"></el-option>
+            </el-select>
+          </div>
+
+          <div class="form-group">
+            <label for="line-select" class="col-form-label">所属产线:</label>
+            <el-select size="small" id="line-select" class="custom-select" v-model="userData.lineName">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option v-for="item in lineGroup" :value="item.lineName" :key="'line-item-'+item.id"
+                         :label="item.lineName"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="employee-select" class="col-form-label">是否正式员工:</label>
+            <el-select size="small" id="employee-select" class="custom-select" v-model="userData.employeeType">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option value="正式工" label="正式工"></el-option>
+              <el-option value="临时工" label="临时工"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="process-select" class="col-form-label">主要操作工序:</label>
+            <el-select size="small"
+                       id="process-select"
+                       class="custom-select"
+                       v-model="userData.mainProcess"
+                       @change="selectMainProcess">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option v-for="item in processGroup"
+                         :value="item.processName"
+                         :key="'process-item-'+item.id"
+                         :label="item.processName"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="proficiency-select" class="col-form-label">熟练程度:</label>
+            <el-select size="small"
+                       id="proficiency-select"
+                       class="custom-select"
+                       v-model="userData.proficiency"
+                       :disabled="!userData.mainProcess">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option value="熟练" label="熟练"></el-option>
+              <el-option value="一般" label="一般"></el-option>
+              <el-option value="不熟" label="不熟"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="other-skill">其它技能:</label>
+            <el-select size="small"
+                       id="other-skill"
+                       class="custom-select"
+                       v-model="userData.otherProcess"
+                       multiple
+                       :disabled="!userData.mainProcess">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option v-for="item in processSelectGroupSrcAfter"
+                         :value="item.processName"
+                         :key="'order-process-item-'+item.id"
+                         :label="item.processName"></el-option>
             </el-select>
           </div>
         </div>
@@ -82,6 +144,7 @@
 
   export default {
     name: "UserOperation",
+    props: ['lineGroup', 'processGroup'],
     data() {
       return {
         isEditing: false,
@@ -92,7 +155,12 @@
           userDes: '',
           password: '',
           webUserType: '',
-          inService: ''
+          inService: '',
+          lineName: '',
+          employeeType: '',
+          mainProcess: '',
+          proficiency: '',
+          otherProcess: []
         },
         tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         permissionList: [
@@ -149,7 +217,8 @@
             remark: 'OQC测试结果表'
           }
         ],
-        isPending: false
+        isPending: false,
+        processSelectGroupSrcAfter: null,
       }
     },
     mounted() {
@@ -170,6 +239,11 @@
         this.userData.userDes = val.UserDes;
         this.userData.webUserType = val.WebUserType;
         this.userData.inService = val.InService ? "1" : "0";
+        this.userData.lineName = val.LineName;
+        this.userData.employeeType = val.EmployeeType;
+        this.userData.mainProcess = val.MainProcess;
+        this.userData.proficiency = val.Proficiency;
+        this.userData.otherProcess = !val.OtherProcess ? [] : val.OtherProcess.split('@@');
         let tempArray = [];
         val.DeletePermission.split(',').forEach(item => {
           tempArray.push(item === '1' ? 1 : 0)
@@ -184,11 +258,21 @@
           //空值判断
           let mark = false;
           Object.keys(this.userData).forEach(item => {
-            if (this.userData[item] === "" && item !== 'password') {
+            if (!this.userData[item] &&
+              !(item === 'password'
+                || item === 'lineName'
+                || item === 'employeeType'
+                || item === 'mainProcess'
+                || item === 'proficiency'
+                || item === 'otherProcess')) {
               this.$alertInfo("存在不能为空数据");
               mark = true;
             }
           });
+          if (!!this.userData['mainProcess'] && !this.userData['proficiency']) {
+            this.$alertInfo('工序熟练度不能为空');
+            mark = true;
+          }
           if (mark) {
             this.isPending = false;
             this.$closeLoading();
@@ -199,6 +283,10 @@
             url: userUpdateUrl,
             data: this.userData
           };
+
+
+          options.data.otherProcess = this.userData.otherProcess.join('@@');
+
           if (this.userData.webUserType === 1) {
             options.data.deletePermission = this.tempPermission.toString();
           }
@@ -229,6 +317,18 @@
           })
         }
 
+      },
+      selectMainProcess: function (e) {
+        if (!!e) {
+          this.userData.proficiency = '熟练';
+        } else {
+          this.userData.proficiency = '';
+        }
+        this.userData.otherProcess = [];
+        this.processSelectGroupSrcAfter = this.processGroup.filter(item => {
+          return item.processName !== e
+
+        })
       }
     }
   }

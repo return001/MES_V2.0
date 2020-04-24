@@ -33,32 +33,32 @@ export const permissionList = function () {
   let list;
   switch (store.state.userType) {
     case "administration":
-      list = ['users'];
+      list = ['users', 'editPassword'];
       break;
 
     case "SuperAdmin":
-      list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea', 'esop', 'setting'];
+      list = ['table', 'order', 'test', 'func', 'plan', 'users', 'redtea', 'esop', 'setting', 'editPassword'];
       break;
 
     case "schedulingSZPC":
     case "schedulingJMPMC":
-      list = ['plan'];
+      list = ['plan', 'editPassword'];
       break;
 
     case "SopManager":
     case "SopReviewer":
     case "SopQcConfirmer":
-      list = ['setting', 'esop'];
+      list = ['setting', 'esop', 'editPassword'];
       break;
 
     case "oqcManager":
     case "configurationManager":
     case "developConfigurator":
-      list = ['test'];
+      list = ['test', 'editPassword'];
       break;
 
     default:
-      list = ['table', 'order', 'test', 'func', 'plan', 'redtea'];
+      list = ['table', 'order', 'test', 'func', 'plan', 'redtea', 'edit', 'editPassword'];
       break;
 
   }

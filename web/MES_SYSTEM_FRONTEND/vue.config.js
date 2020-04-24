@@ -3,12 +3,12 @@ module.exports = {
   productionSourceMap: false,
   runtimeCompiler: true,
 
-  chainWebpack: config => {
+  /*chainWebpack: config => {
     config.plugins.delete('prefetch');
 
-/*    config.optimization.splitChunks({
+/!*    config.optimization.splitChunks({
       chunks: 'all'
-    })*/
+    })*!/
 
-  }
+  }*/
 };

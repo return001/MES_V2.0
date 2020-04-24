@@ -43,6 +43,10 @@
                 name: '站点信息'
               },
               {
+                type: 'assign',
+                name: '指派员工'
+              },
+              {
                 type: 'action_log',
                 name: '操作日志'
               },

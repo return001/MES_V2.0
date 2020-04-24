@@ -218,8 +218,8 @@
             options.data[i] = params[i];
           }
         }
-        if (!params && this.$route.query.type === 'DataRelativeSheet') {
-          options.data.isReferred = false
+        if (!params && (this.$route.query.type === 'DataRelativeSheet' || this.$route.query.type === 'Gps_CartonBoxTwenty_Result')) {
+          options.data.isReferred = this.isReferred
         }
         this.fetchData(options)
       },

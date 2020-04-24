@@ -785,3 +785,67 @@ export const NoticeFormRules = {
     {required: true, message: '请选择日期', trigger: 'change'},
   ],
 };
+
+/*管理*/
+export const assignTableColumns = [
+  {
+    'label': '站点名称',
+    'key': 'siteName',
+    'min-width': '100px'
+  },
+  {
+    'label': '工序编号',
+    'key': 'processId',
+    'min-width': '100px'
+  },
+  {
+    'label': '工序名称',
+    'key': 'processName',
+    'min-width': '100px'
+  },
+  {
+    'label': '操作员工',
+    'key': 'userName',
+    'min-width': '100px'
+  },
+];
+
+export const assignStaffTableColumns = [
+  {
+    'label': '工号',
+    'key': 'Name',
+    'min-width': '80px'
+  },
+  {
+    'label': '描述',
+    'key': 'UserDes',
+    'min-width': '80px'
+  },
+  {
+    'label': '主要操作工序',
+    'key': 'MainProcess',
+    'min-width': '100px'
+  },
+  {
+    'label': '熟练程度',
+    'key': 'Proficiency',
+    'min-width': '100px'
+  },
+  {
+    'label': '其他技能',
+    'key': 'OtherProcess',
+    'min-width': '100px'
+  },
+  {
+    'label': '是否在岗',
+    'key': 'isOnline',
+    'min-width': '60px',
+    formatter(row, column, cellValue, index) {
+      if (cellValue) {
+        return '是'
+      } else {
+        return '否'
+      }
+    }
+  },
+];

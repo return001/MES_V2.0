@@ -353,6 +353,7 @@
   } from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {MessageBox} from 'element-ui';
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "OrderSetting",

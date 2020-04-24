@@ -8,6 +8,9 @@
             <component :opt="item" :is="item.type + '-comp'"></component>
           </div>
           <div class="form-group-btn">
+            <el-button size="small" type="info" @click="initForm">重置条件</el-button>
+          </div>
+          <div class="form-group-btn">
             <el-button size="small" type="primary" @click="addUser">添加用户</el-button>
           </div>
           <div class="form-group-btn">
@@ -15,7 +18,7 @@
           </div>
         </div>
       </div>
-      <user-details/>
+      <user-details :lineGroup="lineSelectGroupSrc" :processGroup="processSelectGroupSrc"/>
 
       <!--新增用户面板-->
       <el-dialog class="add-panel" v-if="isAdding" title="新增用户" :visible.sync="isAdding" width="480px"
@@ -47,6 +50,61 @@
           <div class="form-group" v-if="userData.webUserType === 1">
             <label class="col-form-label">Web权限设置:</label>
             <el-button size="small" @click="isAddingPermission = true" style="width: 200px;">查看详细权限</el-button>
+          </div>
+          <div class="form-group">
+            <label for="line-select" class="col-form-label">所属产线:</label>
+            <el-select size="small" id="line-select" class="custom-select" v-model="userData.lineName">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option v-for="item in lineSelectGroupSrc" :value="item.lineName" :key="'line-item-'+item.id"
+                         :label="item.lineName"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="employee-select" class="col-form-label">是否正式员工:</label>
+            <el-select size="small" id="employee-select" class="custom-select" v-model="userData.employeeType">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option value="正式工" label="正式工"></el-option>
+              <el-option value="临时工" label="临时工"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="process-select" class="col-form-label">主要操作工序:</label>
+            <el-select size="small" id="process-select" class="custom-select" v-model="userData.mainProcess" @change="selectMainProcess">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option v-for="item in processSelectGroupSrc"
+                         :value="item.processName"
+                         :key="'process-item-'+item.id"
+                         :label="item.processName"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="proficiency-select" class="col-form-label">熟练程度:</label>
+            <el-select size="small"
+                       id="proficiency-select"
+                       class="custom-select"
+                       v-model="userData.proficiency"
+                       :disabled="!userData.mainProcess">
+              <el-option value="" selected label="未选择"></el-option>
+              <el-option value="熟练" label="熟练"></el-option>
+              <el-option value="一般" label="一般"></el-option>
+              <el-option value="不熟" label="不熟"></el-option>
+            </el-select>
+          </div>
+          <div class="form-group">
+            <label for="other-skill">其它技能:</label>
+<!--            <el-input size="small" type="text" id="other-skill" class="form-control"-->
+<!--                      v-model.trim="userData.otherProcess"></el-input>-->
+            <el-select size="small" id="other-skill"
+                       class="custom-select"
+                       v-model="otherProcess"
+                       multiple
+                       :disabled="!userData.mainProcess">
+              <el-option v-for="item in processSelectGroupSrcAfter"
+                         :value="item.processName"
+                         :key="'order-process-item-'+item.id"
+                         :label="item.processName"></el-option>
+            </el-select>
+
           </div>
           <div class="divider"></div>
           <div class="user-config-btn-group">
@@ -84,7 +142,7 @@
 <script>
   import UserDetails from './comp/UserDetails'
   import {axiosFetch} from "../../utils/fetchData";
-  import {userAddUrl, getUserTypeUrl} from "../../config/globalUrl";
+  import {userAddUrl, getUserTypeUrl, planProcessGetUrl, planLineGetUrl} from "../../config/globalUrl";
   import eventBus from "../../utils/eventBus";
 
   export default {
@@ -98,7 +156,11 @@
           userDes: '',
           password: '',
           webUserType: '',
-          inService: true
+          inService: true,
+          lineName: '',
+          employeeType: '',
+          mainProcess: '',
+          proficiency: ''
         },
         isPending: false,
         queryOptions: [
@@ -129,7 +191,64 @@
                 string: '启用状态'
               }
             ]
-          }
+          },
+          {
+            id: 'EmployeeType',
+            name: '是否正式员工',
+            model: '',
+            type: 'select',
+            list: [
+              {
+                value: '临时工',
+                string: '临时工'
+              },
+              {
+                value: '正式工',
+                string: '正式工'
+              }
+            ]
+          },
+          {
+            id: 'MainProcess',
+            name: '主要工序',
+            model: '',
+            type: 'select',
+            list: []
+          },
+          {
+            id: 'Proficiency',
+            name: '熟练程度',
+            model: '',
+            type: 'select',
+            list: [
+              {
+                value: '熟练',
+                string: '熟练'
+              },
+              {
+                value: '一般',
+                string: '一般'
+              },
+              {
+                value: '不熟',
+                string: '不熟'
+              },
+            ]
+          },
+
+          {
+            id: 'LineName',
+            name: '所属产线',
+            model: '',
+            type: 'select',
+            list: []
+          },
+          {
+            id: 'OtherProcess',
+            name: '其他技能',
+            model: '',
+            type: 'text'
+          },
         ],
         tempPermission: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         permissionList: [
@@ -186,6 +305,10 @@
             remark: 'OQC测试结果表'
           }
         ],
+        processSelectGroupSrc: null,
+        processSelectGroupSrcAfter: null,
+        lineSelectGroupSrc: null,
+        otherProcess: []
       }
     },
     components: {
@@ -212,12 +335,28 @@
     },
     watch: {
       $route: function (route) {
-        Object.assign(this.$data, this.$options.data())
+        Object.assign(this.$data.userData, this.$options.data().userData);
+        Object.assign(this.$data.tempPermission, this.$options.data().tempPermission);
+        Object.assign(this.$data.otherProcess, this.$options.data().otherProcess);
       },
+
     },
     async mounted() {
       this.$openLoading();
-      await this.getUserType();
+      await this.dataPreload().then(() => {
+        this.queryOptions[4].list = this.processSelectGroupSrc.map(item => {
+          return {
+            value: item['processName'],
+            string: item['processName']
+          }
+        });
+        this.queryOptions[6].list = this.lineSelectGroupSrc.map(item => {
+          return {
+            value: item['lineName'],
+            string: item['lineName']
+          }
+        })
+      });
       eventBus.$emit('userQueryData');
     },
     methods: {
@@ -226,7 +365,13 @@
           item.model = "";
         })
       },
-
+      dataPreload: async function () {
+        return new Promise(resolve => {
+          Promise.all([this.getUserType(), this.fetchProcess(), this.fetchLine()]).then(() => {
+            resolve();
+          })
+        })
+      },
       getUserType: function () {
         return new Promise(resolve => {
           this.isPending = true;
@@ -248,6 +393,40 @@
         })
       },
 
+      fetchProcess: function () {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: planProcessGetUrl
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.processSelectGroupSrc = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取工序信息失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
+      fetchLine: function () {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: planLineGetUrl
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.lineSelectGroupSrc = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取产线信息失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
 
       addUser: function () {
         Object.assign(this.userData, this.$options.data().userData);
@@ -259,12 +438,20 @@
           this.$openLoading();
           this.isPending = true;
           let user = this.userData;
-          if (!(user.name === "" || user.password === "" || user.webUserType === "" || user.userDes === "")) {
+
+          if (user['mainProcess'] !== '' && user['proficiency'] === '') {
+            this.$alertWarning("工序熟练度不能为空");
+            this.isPending = false;
+            this.$closeLoading();
+          } else if (!(user.name === "" || user.password === "" || user.webUserType === "" || user.userDes === "")) {
             let optData = JSON.parse(JSON.stringify(user));
             let options = {
               url: userAddUrl,
               data: optData
             };
+
+            options.data.otherProcess = this.otherProcess.join('@@');
+
             if (user.webUserType === 1) {
               options.data.deletePermission = this.tempPermission.toString();
             }
@@ -348,6 +535,19 @@
           eventBus.$emit('userQueryData', this.queryString)
         });
       },
+
+      selectMainProcess: function (e) {
+        if (!!e) {
+          this.userData.proficiency = '熟练';
+        } else {
+          this.userData.proficiency = '';
+        }
+        this.otherProcess = [];
+        this.processSelectGroupSrcAfter = this.processSelectGroupSrc.filter(item => {
+          return item.processName !== e
+
+        })
+      }
     }
   }
 </script>

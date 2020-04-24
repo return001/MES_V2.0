@@ -746,7 +746,6 @@ export const planQueryOptions = [
   },
 ];
 
-import eventBus from '../utils/eventBus'
 
 export const planTableColumns = [
   // {

@@ -134,6 +134,7 @@
   import {multiTableDeleteUrl, multiTableQueryUrl, validateUrl, multiTableDownloadUrl} from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {MultiTableConfig} from "../../../config/multiTableConfig";
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "MultiTableModule",

@@ -51,6 +51,7 @@
 <script>
   import {tableHistoryDownloadUrl, tableHistoryQueryUrl} from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "Backups",

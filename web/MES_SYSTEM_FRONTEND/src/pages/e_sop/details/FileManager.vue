@@ -426,6 +426,7 @@
     eSopFileDownloadUrl
   } from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
+  import {saveAs} from 'file-saver';
   import common from "./mixins/common";
   import file_notice from "./mixins/file_notice"
 
@@ -714,7 +715,8 @@
               })
             }
           }).catch(err => {
-            this.$alertDanger('请求超时，请刷新重试')
+            this.$alertDanger('请求超时，请刷新重试');
+            throw new Error(err);
           }).finally(() => {
             this.isPending = false;
             this.$closeLoading();

@@ -113,6 +113,7 @@
 <script>
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {imeiDownloadUrl, imeiQueryUrl, imeiZhidanQueryUrl} from "../../../config/globalUrl";
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "IMEIMain",

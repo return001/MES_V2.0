@@ -14,6 +14,7 @@ export const userAddUrl = url + '/user/add';
 export const userQueryUrl = url + '/user/select';
 export const getUserTypeUrl = url + '/user/getUserType';
 export const getUserUrl = url + '/user/getUserIdAndName';
+export const editUserPasswordUrl = url + '/user/updatePassword';
 export const redTeaUrl = url + '/redTea/findCId';
 
 export const tableDownloadUrl = url + '/report/download';
@@ -186,3 +187,8 @@ export const eSopCountLogSelectUrl = url + '/sop/selectCountLog';
 
 /*客户端*/
 export const eSopLoginLogSelectUrl = url + '/sop/selectLoginLog';
+
+/*人员分配*/
+export const eSopStationStatusSelectUrl = url + '/sop/selectPost';
+export const eSopAssignableStaffSelectUrl = url + '/sop/selectAssignableUser';
+export const eSopAssignStaffUrl = url + '/sop/assignUser';

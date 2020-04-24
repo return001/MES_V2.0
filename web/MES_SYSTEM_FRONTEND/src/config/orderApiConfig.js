@@ -1,4 +1,6 @@
 /*订单数据配置*/
+import fa from "element-ui/src/locale/lang/fa";
+
 let url;
 if (process.env.NODE_ENV === 'production') {
   url = window.g.API_URL
@@ -57,6 +59,7 @@ const ROUTER_CONFIG = {
       {field: 'Color', title: '颜色', colStyle: {'width': '60px'}, notNull: true},
       {field: 'Weight', title: '重量', colStyle: {'width': '80px'}, notNull: true},
       {field: 'Qty', title: '数量', colStyle: {'width': '80px'}, notNull: true},
+      {field: 'PlanProduction', title: '计划数量', colStyle: {'width': '80px'}, notNull: false},
       {field: 'RFID_Area', title: '地区', colStyle: {'width': '80px'}, notNull: true},
       {field: 'ProductNo', title: '产品编号', colStyle: {'width': '140px'}, notNull: true},
       {field: 'Version', title: '版本', colStyle: {'width': '140px'}, notNull: true},
@@ -159,6 +162,7 @@ export const getOrderEditOptions = () => {
     {field: 'Color', title: '颜色', value: '', type: 'text', notNull: true},
     {field: 'Weight', title: '重量', value: '', type: 'text', notNull: true},
     {field: 'Qty', title: '数量', value: '', type: 'text', notNull: true},
+    {field: 'PlanProduction', title: '计划数量', value: '', type: 'text', notNull: false},
     {
       field: 'RFID_Area', title: '地区', value: '', type: 'select', notNull: true, valueList: [
         {
