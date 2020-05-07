@@ -138,9 +138,9 @@
 </template>
 
 <script>
-  import {userUpdateUrl} from "../../../config/globalUrl";
-  import {axiosFetch} from "../../../utils/fetchData";
-  import eventBus from "../../../utils/eventBus";
+  import {userUpdateUrl} from "../../../../config/globalUrl";
+  import {axiosFetch} from "../../../../utils/fetchData";
+  import eventBus from "../../../../utils/eventBus";
 
   export default {
     name: "UserOperation",

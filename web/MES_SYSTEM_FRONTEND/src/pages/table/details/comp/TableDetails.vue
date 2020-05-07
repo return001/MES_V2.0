@@ -110,6 +110,7 @@
   export default {
     name: "Details",
     components: {},
+    inject: ['_getFunctionPermission'],
     data() {
       return {
         isPending: false,
@@ -173,6 +174,7 @@
       },
     },
     mounted() {
+      console.log(this._getFunctionPermission(0));
       this.init();
       if (this.$route.query.type) {
         eventBus.$emit('setIsReferred', false);

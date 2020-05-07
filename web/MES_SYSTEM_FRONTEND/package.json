@@ -15,7 +15,6 @@
     "element-ui": "^2.13.0",
     "file-saver": "^2.0.2",
     "rz-el-comp": "^0.1.12",
-    "v-charts": "^1.19.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
     "vuex": "^3.0.1"

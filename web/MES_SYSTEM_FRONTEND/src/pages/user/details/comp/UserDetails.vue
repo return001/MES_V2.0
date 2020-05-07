@@ -38,11 +38,11 @@
 </template>
 
 <script>
-    import {userQueryUrl} from "../../../config/globalUrl";
-    import {axiosFetch} from "../../../utils/fetchData";
+    import {userQueryUrl} from "../../../../config/globalUrl";
+    import {axiosFetch} from "../../../../utils/fetchData";
     import UserOperation from "./UserOperation"
-    import eventBus from "../../../utils/eventBus";
-    import store from "../../../store"
+    import eventBus from "../../../../utils/eventBus";
+    import store from "../../../../store"
 
     export default {
         name: "UserDetails",

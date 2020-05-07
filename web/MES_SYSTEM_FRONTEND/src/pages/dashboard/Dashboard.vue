@@ -1,185 +1,190 @@
 <template>
-  <el-carousel indicator-position="none" height="100vh" :autoplay="false" ref="lineCarousel">
-    <el-carousel-item>
-      <div class="dashboard">
-        <div class="dashboard-title">
-          <span>产品组装状态看板</span>
-        </div>
-        <div class="dashboard-table">
-          <el-table
-            :data="tableData0"
-            max-height="480"
-            ref="tablecomponent0"
-            :span-method="detailsTableSpanMethod0">
-            <el-table-column v-for="(subItem, index) in tableColumns"
-                             :key="'0' + index.toString()"
-                             :prop="subItem.key"
-                             :label="subItem.label"
-                             :min-width="subItem.width"
-                             :formatter="subItem.formatter">
-            </el-table-column>
+  <div id="dashboard" :style="'font-size:' + clientFontSize + 'px' " >
+    <el-button id="call-fullscreen-btn"  @click="toggleFullScreen" circle icon="el-icon-full-screen"></el-button>
+    <el-carousel indicator-position="none" height="100vh" :autoplay="false" ref="lineCarousel">
+      <el-carousel-item>
+        <div class="dashboard">
+          <div class="dashboard-title" id="dashboard-title">
+            <div>产品组装状态看板</div>
+          </div>
+          <div class="dashboard-table">
+            <el-table
+                :data="tableData0"
+                :max-height="clientHeight * 0.48"
+                ref="tablecomponent0"
+                :span-method="detailsTableSpanMethod0">
+              <el-table-column v-for="(subItem, index) in tableColumns"
+                               :key="'0' + index.toString()"
+                               :prop="subItem.key"
+                               :label="subItem.label"
+                               :min-width="subItem.width"
+                               :formatter="subItem.formatter">
+              </el-table-column>
 
-          </el-table>
-        </div>
-        <div class="dashboard-component-container">
-          <div class="dashboard-component" style="width: 25%">
-            <div class="dashboard-msg-title">{{errMsgTitle0}}</div>
-            <div class="dashboard-msg-item">
-              <div class="dashboard-msg-subtitle">不良原因</div>
-              <div class="dashboard-msg-subtitle">不良数量</div>
+            </el-table>
+          </div>
+          <div class="dashboard-component-container">
+            <div class="dashboard-component" style="width: 25%">
+              <div class="dashboard-msg-title">{{errMsgTitle0}}</div>
+              <div class="dashboard-msg-item">
+                <div class="dashboard-msg-subtitle">不良原因</div>
+                <div class="dashboard-msg-subtitle">不良数量</div>
+              </div>
+              <div class="dashboard-msg-content">
+                <div class="dashboard-msg-item" v-for="item in chartData0.series[0].data">
+                  <div class="dashboard-msg-subitem">{{item.name}}</div>
+                  <div class="dashboard-msg-subitem">{{item.value}}</div>
+                </div>
+              </div>
             </div>
-            <div class="dashboard-msg-content">
-              <div class="dashboard-msg-item" v-for="item in chartData0.rows">
-                <div class="dashboard-msg-subitem">{{item.name}}</div>
-                <div class="dashboard-msg-subitem">{{item.count}}</div>
+            <div class="dashboard-component dashboard-component-chart" style="width: 55%">
+              <div id="dashboard-pie-0" style="width: 100%; height: 100%"></div>
+            </div>
+            <div class="dashboard-component dashboard-component-info" style="width: 30%">
+              <div class="info-item">
+                <span class="info-item-title">生产线别: </span>
+                <span class="info-item-content">组装</span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">生产: 刘业武</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">工程: 何斌</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">品质: 王权兴</span>
+                <span class="info-item-content"></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </el-carousel-item>
+      <el-carousel-item>
+        <div class="dashboard">
+          <div class="dashboard-title">
+            <div>产品测试状态看板</div>
+          </div>
+          <div class="dashboard-table">
+            <el-table
+                :data="tableData1"
+                :max-height="clientHeight * 0.48"
+                max-height="480"
+                ref="tablecomponent1"
+                :span-method="detailsTableSpanMethod1">
+              <el-table-column v-for="(subItem, index) in tableColumns"
+                               :key="'1' + index.toString()"
+                               :prop="subItem.key"
+                               :label="subItem.label"
+                               :min-width="subItem.width"
+                               :formatter="subItem.formatter">
+              </el-table-column>
+
+            </el-table>
+          </div>
+          <div class="dashboard-component-container">
+            <div class="dashboard-component" style="width: 25%">
+              <div class="dashboard-msg-title">{{errMsgTitle1}}</div>
+              <div class="dashboard-msg-item">
+                <div class="dashboard-msg-subtitle">不良原因</div>
+                <div class="dashboard-msg-subtitle">不良数量</div>
+              </div>
+              <div class="dashboard-msg-content">
+                <div class="dashboard-msg-item" v-for="item in chartData1.series[0].data">
+                  <div class="dashboard-msg-subitem">{{item.name}}</div>
+                  <div class="dashboard-msg-subitem">{{item.value}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="dashboard-component dashboard-component-chart" style="width: 55%">
+              <div id="dashboard-pie-1" style="width: 100%; height: 100%"></div>
+            </div>
+            <div class="dashboard-component dashboard-component-info" style="width: 30%">
+              <div class="info-item">
+                <span class="info-item-title">生产线别: </span>
+                <span class="info-item-content">测试</span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">生产: 谢仁露</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">工程: 任继鹏</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">品质: 王晓美</span>
+                <span class="info-item-content"></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </el-carousel-item>
+      <el-carousel-item>
+        <div class="dashboard">
+          <div class="dashboard-title">
+            <div>产品包装状态看板</div>
+          </div>
+          <div class="dashboard-table">
+            <el-table
+                :data="tableData2"
+                :max-height="clientHeight * 0.48"
+                max-height="480"
+                ref="tablecomponent2"
+                :span-method="detailsTableSpanMethod2">
+              <el-table-column v-for="(subItem, index) in tableColumns"
+                               :key="'2' + index.toString()"
+                               :prop="subItem.key"
+                               :label="subItem.label"
+                               :min-width="subItem.width"
+                               :formatter="subItem.formatter">
+              </el-table-column>
+
+            </el-table>
+          </div>
+          <div class="dashboard-component-container">
+            <div class="dashboard-component" style="width: 25%">
+              <div class="dashboard-msg-title">{{errMsgTitle2}}</div>
+              <div class="dashboard-msg-item">
+                <div class="dashboard-msg-subtitle">不良原因</div>
+                <div class="dashboard-msg-subtitle">不良数量</div>
+              </div>
+              <div class="dashboard-msg-content">
+                <div class="dashboard-msg-item" v-for="item in chartData2.series[0].data">
+                  <div class="dashboard-msg-subitem">{{item.name}}</div>
+                  <div class="dashboard-msg-subitem">{{item.value}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="dashboard-component dashboard-component-chart" style="width: 55%">
+              <div id="dashboard-pie-2" style="width: 100%; height: 100%"></div>
+            </div>
+            <div class="dashboard-component dashboard-component-info" style="width: 30%">
+              <div class="info-item">
+                <span class="info-item-title">生产线别: </span>
+                <span class="info-item-content">包装</span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">生产: 穆小燕</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">工程: 何斌</span>
+                <span class="info-item-content"></span>
+              </div>
+              <div class="info-item">
+                <span class="info-item-title">品质: 王淘路</span>
+                <span class="info-item-content"></span>
               </div>
             </div>
           </div>
-          <div class="dashboard-component dashboard-component-chart" style="width: 55%">
-            <ve-pie :data="chartData0" judge-width :settings="chartSetting"></ve-pie>
-          </div>
-          <div class="dashboard-component dashboard-component-info" style="width: 30%">
-            <div class="info-item">
-              <span class="info-item-title">生产线别: </span>
-              <span class="info-item-content">组装</span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">生产: 刘业武</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">工程: 何斌</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">品质: 王权兴</span>
-              <span class="info-item-content"></span>
-            </div>
-          </div>
-
         </div>
-      </div>
-    </el-carousel-item>
-    <el-carousel-item>
-      <div class="dashboard">
-        <div class="dashboard-title">
-          <span>产品测试状态看板</span>
-        </div>
-        <div class="dashboard-table">
-          <el-table
-            :data="tableData1"
-            max-height="480"
-            ref="tablecomponent1"
-            :span-method="detailsTableSpanMethod1">
-            <el-table-column v-for="(subItem, index) in tableColumns"
-                             :key="'1' + index.toString()"
-                             :prop="subItem.key"
-                             :label="subItem.label"
-                             :min-width="subItem.width"
-                             :formatter="subItem.formatter">
-            </el-table-column>
-
-          </el-table>
-        </div>
-        <div class="dashboard-component-container">
-          <div class="dashboard-component" style="width: 25%">
-            <div class="dashboard-msg-title">{{errMsgTitle1}}</div>
-            <div class="dashboard-msg-item">
-              <div class="dashboard-msg-subtitle">不良原因</div>
-              <div class="dashboard-msg-subtitle">不良数量</div>
-            </div>
-            <div class="dashboard-msg-content">
-              <div class="dashboard-msg-item" v-for="item in chartData1.rows">
-                <div class="dashboard-msg-subitem">{{item.name}}</div>
-                <div class="dashboard-msg-subitem">{{item.count}}</div>
-              </div>
-            </div>
-          </div>
-          <div class="dashboard-component dashboard-component-chart" style="width: 55%">
-            <ve-pie :data="chartData1" judge-width :settings="chartSetting"></ve-pie>
-          </div>
-          <div class="dashboard-component dashboard-component-info" style="width: 30%">
-            <div class="info-item">
-              <span class="info-item-title">生产线别: </span>
-              <span class="info-item-content">测试</span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">生产: 谢仁露</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">工程: 任继鹏</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">品质: 王晓美</span>
-              <span class="info-item-content"></span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </el-carousel-item>
-    <el-carousel-item>
-      <div class="dashboard">
-        <div class="dashboard-title">
-          <span>产品包装状态看板</span>
-        </div>
-        <div class="dashboard-table">
-          <el-table
-            :data="tableData2"
-            max-height="480"
-            ref="tablecomponent2"
-            :span-method="detailsTableSpanMethod2">
-            <el-table-column v-for="(subItem, index) in tableColumns"
-                             :key="'2' + index.toString()"
-                             :prop="subItem.key"
-                             :label="subItem.label"
-                             :min-width="subItem.width"
-                             :formatter="subItem.formatter">
-            </el-table-column>
-
-          </el-table>
-        </div>
-        <div class="dashboard-component-container">
-          <div class="dashboard-component" style="width: 25%">
-            <div class="dashboard-msg-title">{{errMsgTitle2}}</div>
-            <div class="dashboard-msg-item">
-              <div class="dashboard-msg-subtitle">不良原因</div>
-              <div class="dashboard-msg-subtitle">不良数量</div>
-            </div>
-            <div class="dashboard-msg-content">
-              <div class="dashboard-msg-item" v-for="item in chartData2.rows">
-                <div class="dashboard-msg-subitem">{{item.name}}</div>
-                <div class="dashboard-msg-subitem">{{item.count}}</div>
-              </div>
-            </div>
-          </div>
-          <div class="dashboard-component dashboard-component-chart" style="width: 55%">
-            <ve-pie :data="chartData2" judge-width :settings="chartSetting"></ve-pie>
-          </div>
-          <div class="dashboard-component dashboard-component-info" style="width: 30%">
-            <div class="info-item">
-              <span class="info-item-title">生产线别: </span>
-              <span class="info-item-content">包装</span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">生产: 穆小燕</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">工程: 何斌</span>
-              <span class="info-item-content"></span>
-            </div>
-            <div class="info-item">
-              <span class="info-item-title">品质: 王淘路</span>
-              <span class="info-item-content"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-carousel-item>
-  </el-carousel>
+      </el-carousel-item>
+    </el-carousel>
+  </div>
 </template>
 
 <script>
@@ -190,14 +195,12 @@
     dashboardErrMsgSelectUrlCS,
     dashboardSelectUrlCS
   } from "../../config/globalUrl";
-  import VePie from 'v-charts/lib/pie.common'
   import {getTime} from "../../utils/utils";
+
+  import Echart from 'echarts'
 
   export default {
     name: "Dashboard",
-    components: {
-      VePie
-    },
     data() {
       return {
         tableColumns: [
@@ -262,31 +265,85 @@
 
         currentLine: 0,
 
-        //v-chart setting
+        //EChart setting
+        chartInstance0: undefined,
+        chartInstance1: undefined,
+        chartInstance2: undefined,
         chartData0: {
-          columns: ["name", "count"],
-          rows: []
+          textStyle: {
+            fontSize: 12
+          },
+          color: ['#feffa6','#3eacdd', '#758ca8', '#d46b83', '#91c7ae','#749f83',  '#eea127', '#b89b97','#65676c', '#546570', '#c4ccd3'],
+          label: {
+            formatter: '{b} : {c} ({d}%)'
+          },
+          legend: {
+            data: []
+          },
+          series: [{
+            type: 'pie',
+            radius: '68%',
+            center: ['50%', '60%'],
+            data: [],
+          }]
         },
         chartData1: {
-          columns: ["name", "count"],
-          rows: []
+          textStyle: {
+            fontSize: 12
+          },
+          color: ['#feffa6','#3eacdd', '#758ca8', '#d46b83', '#91c7ae','#749f83',  '#eea127', '#b89b97','#65676c', '#546570', '#c4ccd3'],
+          label: {
+            formatter: '{b} : {c} ({d}%)'
+          },
+          legend: {
+            data: []
+          },
+          series: [{
+            type: 'pie',
+            radius: '68%',
+            center: ['50%', '60%'],
+            data: [],
+          }]
         },
         chartData2: {
-          columns: ["name", "count"],
-          rows: []
-        },
-        chartSetting: {
-          radius: 86,
-          offsetY: 150,
+          textStyle: {
+            fontSize: 12
+          },
+          color: ['#feffa6','#3eacdd', '#758ca8', '#d46b83', '#91c7ae','#749f83',  '#eea127', '#b89b97','#65676c', '#546570', '#c4ccd3'],
           label: {
-            show: true,
             formatter: '{b} : {c} ({d}%)'
-          }
-        }
+          },
+          legend: {
+            data: []
+          },
+          series: [{
+            type: 'pie',
+            radius: '68%',
+            center: ['50%', '60%'],
+            data: [],
+          }]
+        },
+        clientWidth: document.body.clientWidth,
+        clientHeight: document.body.clientHeight,
+        clientFontSize: 16,
+        dashboardChartShow: true
       }
     },
     mounted() {
+
+      window.addEventListener('resize', () => {
+        this.resetScale();
+      });
+
+
+
       this.$nextTick(() => {
+        const chartPie0 = this.chartInstance0 = Echart.init(document.getElementById('dashboard-pie-0'), 'light');
+        const chartPie1 = this.chartInstance1 = Echart.init(document.getElementById('dashboard-pie-1'), 'light');
+        const chartPie2 = this.chartInstance2 = Echart.init(document.getElementById('dashboard-pie-2'), 'light');
+
+
+
         this.fetchDashboardData();
 
         let loopSetErrMsg = () => {
@@ -304,7 +361,9 @@
           this.fetchLineData(0);
           this.fetchLineData(1);
           this.fetchLineData(2);
-        }, 1000 * 15 * 60)
+        }, 1000 * 15 * 60);
+
+        this.resetScale();
 
       });
     },
@@ -313,7 +372,7 @@
         setTimeout(() => {
           this.mainScrollingInterval = setInterval(() => {
             if (this.$refs['tablecomponent' + this.currentLine].bodyWrapper.scrollTop < (this.$refs['tablecomponent' + this.currentLine].bodyWrapper.scrollHeight - this.$refs['tablecomponent' + this.currentLine].bodyWrapper.clientHeight)) {
-              this.$refs['tablecomponent' + this.currentLine].bodyWrapper.scrollTop += 1
+              this.$refs['tablecomponent' + this.currentLine].bodyWrapper.scrollTop += ((this.clientWidth / 1920) < 1 ? 1 : (this.clientWidth / 1920))
             } else {
               clearInterval(this.mainScrollingInterval);
               setTimeout(() => {
@@ -370,11 +429,15 @@
           if (response.data.result === 200) {
             //this.$set(this.$data, 'tableData' + line, response.data.data);
             let dataArray = [];
+            let legendArray = [];
             let dataGroup = Object.keys(response.data.data);
             for (let i = 1; i <= dataGroup.length / 2; i++) {
-              dataArray.push({name: response.data.data['errorName' + i], count: response.data.data['errorNum' + i]})
+              dataArray.push({name: response.data.data['errorName' + i], value: response.data.data['errorNum' + i]});
+              legendArray.push(response.data.data['errorName' + i])
             }
-            this['chartData' + line].rows = dataArray;
+            this['chartData' + line].series[0].data = dataArray;
+            this['chartData' + line].legend.data = legendArray;
+            this['chartInstance' + line].setOption(this['chartData' + line]);
             this.setErrMsgTitle(line);
           } else {
             console.log(response.data.data)
@@ -450,67 +513,117 @@
         this['errMsgTitle' + line] = begin + ' 00:00:00 至\n' + now + ' 不良原因分布'
       },
 
+      toggleFullScreen() {
+        /*支持chrome，做Firefox兼容*/
+        if (!(document.fullscreenElement || document.mozFullScreen)) {
+          if (!!document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen({
+              navigationUI: 'hide'
+            })
+          } else if (!!document.documentElement.mozRequestFullScreen){
+            document.body.mozRequestFullScreen({
+              navigationUI: 'hide'
+            })
+          }
+
+        } else {
+          document.exitFullscreen ? document.exitFullscreen() : document.mozCancelFullScreen();
+        }
+      },
+
+      resetScale() {
+        /*根据客户端DPI设置以确定页面字体缩放*/
+        const designWidth = 1920;
+        const currentWidth = document.body.clientWidth;
+        this.clientFontSize = 16 * currentWidth / designWidth;
+
+        this.clientHeight = document.body.clientHeight;
+        this.clientWidth = document.body.clientWidth;
+
+        for (let i = 0; i < 3; i ++) {
+          this['chartData' + i].textStyle.fontSize = this.clientFontSize * 0.9;
+          this['chartInstance' + i].setOption(this['chartData' + i]);
+          this['chartInstance' + i].resize();
+        }
+      }
+
     }
   }
 </script>
 
 <style scoped>
+  #dashboard {
+    font-size: 16px;
+    width: 100%;
+    height: 100%;
+  }
+
+  #call-fullscreen-btn {
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    z-index: 10;
+    opacity: 0.1;
+  }
+  #call-fullscreen-btn:hover {
+    opacity: 1;
+  }
 
   .dashboard {
     position: absolute;
     width: 100%;
-    height: 100vh;
-    padding: 20px;
+    height: 100%;
+    padding: 1.6em;
     box-sizing: border-box;
     background: url("../../assets/dashboard_bg.png") fixed;
   }
 
   .dashboard-title {
+    font-size: 1.6em;
     width: 100%;
-    padding: 10px 20px;
+    padding: 0.6em 2em;
     background: rgb(60, 111, 222);
     background: linear-gradient(90deg, rgb(55, 133, 230) 0%, rgba(69, 165, 229, 0.8) 80%);
     box-sizing: border-box;
-    min-height: 60px;
-    margin-bottom: 10px;
-    box-shadow: 0 0 10px #b6b6b6;
-    border-radius: 5px;
+    height: 10%;
+    margin-bottom: 0.6em;
+    box-shadow: 0 0 0.6em #b6b6b6;
+    border-radius: 0.4em;
   }
 
-  .dashboard-title span {
-    display: inline-block;
+  .dashboard-title div {
+    font-size: 2em;
     width: 100%;
-    text-align: center;
-    height: 60px;
-    line-height: 60px;
-    font-size: 40px;
+    height: 100%;
     font-weight: bold;
-    /*color: #555555;*/
     color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .dashboard-table {
     width: 100%;
-    min-height: 200px;
-    height: 58vh;
+    min-height: 5em;
+    height: 56%;
     background: rgb(60, 111, 222);
     background: linear-gradient(90deg, rgb(55, 126, 222) 0%, rgba(69, 165, 229, 0.8) 80%);
     opacity: 0.9;
-    padding: 10px 20px 20px;
+    padding: 0.6em 1.2em 1.2em;
     box-sizing: border-box;
-    box-shadow: 0 0 10px #b6b6b6;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    box-shadow: 0 0 0.6em #b6b6b6;
+    border-radius: 0.4em;
+    margin-bottom: 0.6em;
   }
 
   .dashboard-table /deep/ * {
     background-color: rgba(0, 0, 0, 0);
     color: #ffffff;
-    font-size: 18px;
+    font-size: 1em;
   }
 
   .dashboard-component-container {
-    height: 29vh;
+    height: 32%;
     display: flex;
     justify-content: flex-start;
   }
@@ -519,11 +632,11 @@
     background: rgb(62, 131, 255);
     background: linear-gradient(135deg, rgb(59, 136, 235) 0%, rgba(82, 170, 232, 0.8) 60%);
     opacity: 0.9;
-    height: 29vh;
+    height: 100%;
     box-sizing: border-box;
-    box-shadow: 0 0 10px #b6b6b6;
-    border-radius: 5px;
-    margin-right: 10px;
+    box-shadow: 0 0 0.6em #b6b6b6;
+    border-radius: 0.4em;
+    margin-right: 0.6em;
     position: relative;
   }
 
@@ -537,7 +650,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    padding: 38px 40px;
+    padding: 2em 2em;
     color: #5f6066;
     font-weight: bold;
   }
@@ -545,7 +658,7 @@
   .dashboard-component-chart {
     background: rgba(82, 170, 232, 0.8);
     background: linear-gradient(90deg, rgba(82, 170, 232, 0.8) 0%, rgba(228, 245, 255, 0.8) 30%, rgba(84, 191, 255, 0.8) 95%);
-    padding: 10px 0;
+    padding: 0.6em 0;
   }
 
   .dashboard-msg-title, .dashboard-msg-item {
@@ -553,7 +666,7 @@
   }
 
   .dashboard-msg-title {
-    padding: 20px 30px;
+    padding: 1.6em 2em;
     font-weight: bold;
     white-space: pre-wrap;
   }
@@ -567,7 +680,7 @@
   .dashboard-msg-item {
     width: 100%;
     display: flex;
-    padding: 0 30px 6px;
+    padding: 0 2em 0.3em;
     box-sizing: border-box;
 
   }

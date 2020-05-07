@@ -1,19 +1,18 @@
 <template>
-  <div id="setting-main" style="margin-left: 52px;">
+  <div id="user-main" style="margin-left: 52px;">
     <div class="side-bar">
       <side-bar/>
     </div>
     <div class="router-style">
       <router-view v-if="isRouterAlive"/>
     </div>
-
   </div>
 </template>
 
 <script>
   import SideBar from './details/comp/SideBar'
   export default {
-    name: "SettingMain",
+    name: "UserMain",
     components: {SideBar},
     provide() {
       return {

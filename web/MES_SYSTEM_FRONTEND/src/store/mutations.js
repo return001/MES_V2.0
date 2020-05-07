@@ -36,3 +36,7 @@ export const setTableDeleteGroup = (state, obj) => {
 export const setStashData = (state, obj) => {
   state.stashData = deepCopy(obj);
 };
+
+export const setCharactersFuncMap = (state, obj) => {
+  state.charactersFuncMap = deepCopy(obj);
+};

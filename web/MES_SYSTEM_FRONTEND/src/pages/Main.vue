@@ -18,6 +18,9 @@
 
 <script>
   import SideSetting from '../components/SideSetting'
+  import {getFunctionPermission} from "../config/charactersFunc";
+  import eventBus from "../utils/eventBus";
+  import store from "../store"
 
   export default {
     name: "Main",
@@ -29,12 +32,20 @@
         userName: sessionStorage.getItem('UserName') || ''
       }
     },
+    provide() {
+      return {
+        _getFunctionPermission: this.getPermission
+      }
+    },
     mounted() {
     },
 
     methods: {
       editUser: function () {
         this.$router.push('/editPassword');
+      },
+      getPermission: function (functionType) {
+        return getFunctionPermission(this.$route.path, this.$route.query, functionType, store.state.charactersFuncMap.map)
       }
     }
   }

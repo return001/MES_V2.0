@@ -141,9 +141,9 @@
 
 <script>
   import UserDetails from './comp/UserDetails'
-  import {axiosFetch} from "../../utils/fetchData";
-  import {userAddUrl, getUserTypeUrl, planProcessGetUrl, planLineGetUrl} from "../../config/globalUrl";
-  import eventBus from "../../utils/eventBus";
+  import {axiosFetch} from "../../../utils/fetchData";
+  import {userAddUrl, getUserTypeUrl, planProcessGetUrl, planLineGetUrl} from "../../../config/globalUrl";
+  import eventBus from "../../../utils/eventBus";
 
   export default {
     name: "UserConfig",

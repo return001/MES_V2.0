@@ -30,6 +30,8 @@ const state = {
   delPermission: [],
 
   stashData: {},
+
+  charactersFuncMap: undefined
 };
 
 const store = new Vuex.Store({

@@ -31,3 +31,7 @@ export const delPermission = (state) => {
 export const tableDeleteGroup = (state) => {
   return state.tableDeleteGroup
 };
+
+export const charactersFuncMap = (state) => {
+  return state.charactersFuncMap
+};
