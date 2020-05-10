@@ -693,6 +693,10 @@ export const planQueryOptions = [
         value: 4,
         label: '待通知'
       },
+      {
+        value: 5,
+        label: '异常结单'
+      },
     ]
   },
   {
@@ -768,6 +772,16 @@ export const planTableColumns = [
     'key': 'zhidan',
     'min-width': '120px'
   },
+  {
+    'label': '机型',
+    'key': 'softModel',
+    'min-width': '100px'
+  },
+  {
+    'label': '客户料号',
+    'key': 'customerMaterialNo',
+    'min-width': '120px'
+  },
   /*{
     'label': '是否超时',
     'key': 'isTimeout',
@@ -796,6 +810,16 @@ export const planTableColumns = [
   {
     'label': '排产数量',
     'key': 'schedulingQuantity',
+    'min-width': '80px'
+  },
+  {
+    'label': '人数',
+    'key': 'personNumber',
+    'min-width': '80px'
+  },
+  {
+    'label': '节拍/用时(s)',
+    'key': 'rhythm',
     'min-width': '80px'
   },
   {

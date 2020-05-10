@@ -27,22 +27,28 @@
 
       </el-table-column>
       <el-table-column
+          v-if="isShowGantt"
         :label="timeLineYear"
         class-name="gantt-column">
         <el-table-column
           v-for="(item, index) in timeLine"
-          :key="item.key + index"
+          :key="item.key"
           :prop="item.key"
           :label="item.label"
           width="50px"
           class-name="gantt-column">
           <template slot-scope="scope">
-            <span :class="setColumnsColor(scope)"></span>
+            <span :class="setColumnsColor(scope)">{{getColumnsCapacity(scope)}}</span>
           </template>
         </el-table-column>
       </el-table-column>
 
     </el-table>
+    <div class="gantt-hint" v-if="!isShowGantt">
+      *仅针对一年内开始的订单
+      <br>
+      或生产周期在一年内的已完成订单显示图示
+    </div>
   </el-dialog>
 </template>
 
@@ -66,13 +72,15 @@
         ],
         timeLine: [],
         tableData: [],
-        timeLineYear: ''
+        timeLineYear: '',
+        isShowGantt: false, //控制进度条显示
       }
     },
 
     watch: {
       propTableData(val) {
         this.$set(this.$data, 'tableData', val);
+        this.isShowGantt = this.checkInterval();
         this.initGanttColumns();
         this.isShowing = true;
       }
@@ -89,6 +97,24 @@
       resetData() {
         this.tableData = [];
         this.timeLine = [];
+        this.isShowGantt = false;
+      },
+
+      /**
+      **@description: 检查时间是否为一年内
+      **@date: 2020/5/7 19:47
+      **@author: DarkNin
+      **@method: checkInterval
+      **@params: startTime
+      */
+      checkInterval() {
+        let startTimeObj = new Date(this.propTableData[0].startTime).getTime();
+        let endTimeObj = new Date(this.propTableData[0].endTime).getTime();
+        if (endTimeObj && startTimeObj) {
+          return endTimeObj - startTimeObj <= 365 * 24 * 60 * 60 * 1000;
+        } else {
+          return new Date().getTime - startTimeObj <= 365 * 24 * 60 * 60 * 1000;
+        }
       },
 
       /**
@@ -113,6 +139,27 @@
             //当结束时间不存在而开始时间存在，填充至当前时间
             return 'gantt-color-fill'
           }
+        }
+      },
+
+      /**
+      **@description: 根据行列信息设置具体时间的产量
+      **@date: 2020/5/7 17:15
+      **@author: DarkNin
+      **@method: getColumnsCapacity
+      **@params: scope: Object
+      */
+      getColumnsCapacity(scope) {
+        let thatTime = parseInt(scope.column.property); //timeLine[x].key 当日时间
+        let dailyCapacity = scope.row.dailyCapacity;
+        let keyTimeObject = new Date(thatTime);
+        let keyTimeMonth = keyTimeObject.getMonth() < 9 ? '0' + (keyTimeObject.getMonth() + 1) : keyTimeObject.getMonth() + 1;
+        let keyTimeDay = keyTimeObject.getDate() < 9 ? '0' + keyTimeObject.getDate() : keyTimeObject.getDate();
+        let keyTime = `${keyTimeObject.getFullYear()}.${keyTimeMonth}.${keyTimeDay}`;
+        if (!!dailyCapacity) {
+          return dailyCapacity[keyTime] || ''
+        } else {
+          return ''
         }
       },
 
@@ -182,10 +229,21 @@
     display: inline-block;
     height: 20px;
     width: 50px;
-    line-height: unset;
+    line-height: 20px;
     background: linear-gradient(135deg, #ffffff 25%, #54b6f6 0, #54b6f6 50%,
     #ffffff 0, #ffffff 75%, #54b6f6 0);
     background-size: 10px 10px;
+    color: #5ac663;
+    text-shadow: #FFF 0 0 4px, #FFF 0 0 4px, #FFF 0 0 4px, #FFF 0 0 4px, #FFF 0 0 4px, #FFF 0 0 4px, #FFF 0 0 4px;
+    font-weight: bold;
+  }
+
+  .gantt-hint {
+    text-align: right;
+    font-size: 12px;
+    line-height: 16px;
+    height: 16px;
+    color: #999999;
   }
 
 
