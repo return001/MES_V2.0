@@ -905,181 +905,207 @@ export const processTableColumns = [{
 ];
 
 /*排产计划*/
-export const planQueryOptions = [{
-        type: 'select',
-        label: '状态',
-        key: 'schedulingPlanStatus',
-        list: [{
-                value: 1,
-                label: '已排产'
-            },
-            {
-                value: 2,
-                label: '进行中'
-            },
-            {
-                value: 3,
-                label: '已完成'
-            },
-            {
-                value: 4,
-                label: '待通知'
-            },
-        ]
-    },
-    {
-        type: 'text',
-        label: '订单号',
-        key: 'zhidan'
-    },
-    // {
-    //   type: 'select',
-    //   async: true,
-    //   label: '工序组',
-    //   key: 'processGroupName',
-    //   url: ''
-    // },
-    // {
-    //   type: 'select',
-    //   async: true,
-    //   label: '产线',
-    //   key: 'line',
-    //   url: ''
-    // },
-    {
-        type: 'text',
-        label: '生产计划单号',
-        key: 'productionPlanningNumber'
-    },
-    {
-        type: 'text',
-        label: '机型',
-        key: 'softModel'
-    },
-    {
-        type: 'timeRange',
-        label: '预计开始时间',
-        key: 'planStartTime'
-    },
-    {
-        type: 'timeRange',
-        label: '预计完成时间',
-        key: 'planCompleteTime'
-    },
-    {
-        type: 'timeRange',
-        label: '开始时间',
-        key: 'startTime'
-    },
-    {
-        type: 'timeRange',
-        label: '完成时间',
-        key: 'completeTime'
-    },
+export const planQueryOptions = [
+  {
+    type: 'select',
+    label: '状态',
+    key: 'schedulingPlanStatus',
+    list: [
+      {
+        value: 1,
+        label: '已排产'
+      },
+      {
+        value: 2,
+        label: '进行中'
+      },
+      {
+        value: 3,
+        label: '已完成'
+      },
+      {
+        value: 4,
+        label: '待通知'
+      },
+      {
+        value: 5,
+        label: '异常结单'
+      },
+    ]
+  },
+  {
+    type: 'text',
+    label: '订单号',
+    key: 'zhidan'
+  },
+  // {
+  //   type: 'select',
+  //   async: true,
+  //   label: '工序组',
+  //   key: 'processGroupName',
+  //   url: ''
+  // },
+  // {
+  //   type: 'select',
+  //   async: true,
+  //   label: '产线',
+  //   key: 'line',
+  //   url: ''
+  // },
+  {
+    type: 'text',
+    label: '生产计划单号',
+    key: 'productionPlanningNumber'
+  },
+  {
+    type: 'text',
+    label: '机型',
+    key: 'softModel'
+  },
+  {
+    type: 'timeRange',
+    label: '预计开始时间',
+    key: 'planStartTime'
+  },
+  {
+    type: 'timeRange',
+    label: '预计完成时间',
+    key: 'planCompleteTime'
+  },
+  {
+    type: 'timeRange',
+    label: '开始时间',
+    key: 'startTime'
+  },
+  {
+    type: 'timeRange',
+    label: '完成时间',
+    key: 'completeTime'
+  },
 ];
 
 
 export const planTableColumns = [
-    // {
-    //   'label': '工序组',
-    //   'key': 'groupName',
-    //   'min-width': '80px'
-    // },
-    {
-        'label': '产线',
-        'key': 'lineName',
-        'min-width': '100px'
-    },
-    {
-        'label': '状态',
-        'key': 'statusName',
-        'min-width': '80px'
-    },
-    {
-        'label': '订单号',
-        'key': 'zhidan',
-        'min-width': '120px'
-    },
-    /*{
-      'label': '是否超时',
-      'key': 'isTimeout',
-      'min-width': '60',
-      formatter (row, column, cellValue, index) {
-        if (cellValue) {
-          //eventBus.$emit('setTimeoutHighlight', column.id);
-          return '是'
-        } else {
-          return '否'
-        }
+  // {
+  //   'label': '工序组',
+  //   'key': 'groupName',
+  //   'min-width': '80px'
+  // },
+  {
+    'label': '产线',
+    'key': 'lineName',
+    'min-width': '100px'
+  },
+  {
+    'label': '状态',
+    'key': 'statusName',
+    'min-width': '80px'
+  },
+  {
+    'label': '订单号',
+    'key': 'zhidan',
+    'min-width': '120px'
+  },
+  {
+    'label': '机型',
+    'key': 'softModel',
+    'min-width': '100px'
+  },
+  {
+    'label': '客户料号',
+    'key': 'customerMaterialNo',
+    'min-width': '120px'
+  },
+  /*{
+    'label': '是否超时',
+    'key': 'isTimeout',
+    'min-width': '60',
+    formatter (row, column, cellValue, index) {
+      if (cellValue) {
+        //eventBus.$emit('setTimeoutHighlight', column.id);
+        return '是'
+      } else {
+        return '否'
       }
-    },*/
-    {
-        'label': '是否紧急',
-        'key': 'isUrgent',
-        'min-width': '80px',
-        formatter(row, column, cellValue, index) {
-            if (cellValue) {
-                return '是'
-            } else {
-                return '否'
-            }
-        }
-    },
-    {
-        'label': '排产数量',
-        'key': 'schedulingQuantity',
-        'min-width': '80px'
-    },
-    {
-        'label': '产能(PCS/H)',
-        'key': 'capacity',
-        'min-width': '70px'
-    },
-    {
-        'label': '生产计划单号',
-        'key': 'productionPlanningNumber',
-        'min-width': '100px'
-    },
-    {
-        'label': '预计开始时间',
-        'key': 'planStartTime',
-        'min-width': '170px'
-    },
-    {
-        'label': '预计结束时间',
-        'key': 'planCompleteTime',
-        'min-width': '170px'
-    },
-    {
-        'label': '开始时间',
-        'key': 'startTime',
-        'min-width': '170px'
-    },
-    {
-        'label': '结束时间',
-        'key': 'completeTime',
-        'min-width': '170px'
-    },
-    {
-        'label': '实际完成数量',
-        'key': 'producedQuantity',
-        'min-width': '80px'
-    },
-    {
-        'label': '未完成量',
-        'key': 'remainingQuantity',
-        'min-width': '80px'
-    },
-    {
-        'label': '未完成原因',
-        'key': 'remainingReason',
-        'min-width': '120px'
-    },
-    {
-        'label': '备注',
-        'key': 'remark',
-        'min-width': '120px'
-    },
+    }
+  },*/
+  {
+    'label': '是否紧急',
+    'key': 'isUrgent',
+    'min-width': '80px',
+    formatter (row, column, cellValue, index) {
+      if (cellValue) {
+        return '是'
+      } else {
+        return '否'
+      }
+    }
+  },
+  {
+    'label': '排产数量',
+    'key': 'schedulingQuantity',
+    'min-width': '80px'
+  },
+  {
+    'label': '人数',
+    'key': 'personNumber',
+    'min-width': '80px'
+  },
+  {
+    'label': '节拍/用时(s)',
+    'key': 'rhythm',
+    'min-width': '80px'
+  },
+  {
+    'label': '产能(PCS/H)',
+    'key': 'capacity',
+    'min-width': '70px'
+  },
+  {
+    'label': '生产计划单号',
+    'key': 'productionPlanningNumber',
+    'min-width': '100px'
+  },
+  {
+    'label': '预计开始时间',
+    'key': 'planStartTime',
+    'min-width': '170px'
+  },
+  {
+    'label': '预计结束时间',
+    'key': 'planCompleteTime',
+    'min-width': '170px'
+  },
+  {
+    'label': '开始时间',
+    'key': 'startTime',
+    'min-width': '170px'
+  },
+  {
+    'label': '结束时间',
+    'key': 'completeTime',
+    'min-width': '170px'
+  },
+  {
+    'label': '实际完成数量',
+    'key': 'producedQuantity',
+    'min-width': '80px'
+  },
+  {
+    'label': '未完成量',
+    'key': 'remainingQuantity',
+    'min-width': '80px'
+  },
+  {
+    'label': '未完成原因',
+    'key': 'remainingReason',
+    'min-width': '120px'
+  },
+  {
+    'label': '备注',
+    'key': 'remark',
+    'min-width': '120px'
+  },
 ];
 
 export const planTableExtraOrderColumns = [{

@@ -14,7 +14,7 @@
         label-position="top"
         @submit.native.prevent
         :rules="planEditOptionsRules">
-        <el-form-item
+        <!--<el-form-item
           size="small"
           v-if="permissionShow([true, false])"
           class="plan-edit-form-comp"
@@ -99,7 +99,7 @@
             autocomplete="off"
             placeholder="请填写转线时间"
             v-model="planEditOptionsData.lineChangeTime"></el-input>
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item
           size="small"
           v-if="permissionShow([true, false])"

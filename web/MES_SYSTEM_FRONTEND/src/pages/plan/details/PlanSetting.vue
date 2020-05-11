@@ -1,15 +1,15 @@
 <template>
   <div id="plan-setting">
     <div class="plan-setting-main">
-      <div class="query-comp">
+      <div class="query-comp" ref="query-comp">
         <div class="query-comp-container" v-if="!!thisQueryOptions.line">
           <div class="query-comp-select">
             <label for="process-query-item">产线:</label>
             <el-select
-              v-model="thisQueryOptions['line'].value"
-              id="process-query-item"
-              placeholder="请选择产线"
-              size="small">
+                v-model="thisQueryOptions['line'].value"
+                id="process-query-item"
+                placeholder="请选择产线"
+                size="small">
               <el-option v-for="listItem in lineSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -41,17 +41,17 @@
           <div class="query-comp-timerange" v-else-if="item.type === 'timeRange'">
             <label :for="item.key + index">{{item.label}}:</label>
             <el-date-picker
-              :id="item.key + index"
-              v-model="thisQueryOptions[item.key].value"
-              type="datetimerange"
-              :picker-options="timePickerOptions"
-              prefix-icon="el-icon-date"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              value-format="yyyy-MM-dd"
-              autocomplete="off"
-              size="small">
+                :id="item.key + index"
+                v-model="thisQueryOptions[item.key].value"
+                type="datetimerange"
+                :picker-options="timePickerOptions"
+                prefix-icon="el-icon-date"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                value-format="yyyy-MM-dd"
+                autocomplete="off"
+                size="small">
             </el-date-picker>
           </div>
         </div>
@@ -73,6 +73,14 @@
              v-if="permissionControl(['schedulingJMPMC'])">
           <el-button type="primary" size="small" @click="showOrderImport('rework')">导入待返工单</el-button>
         </div>
+        <div class="query-comp-container"
+             v-if="permissionControl(['schedulingJMPMC'])">
+          <el-button type="primary" size="small" @click="showOrderPlannedImport">重排已排产</el-button>
+        </div>
+
+        <div class="query-comp-fold" ref="query-comp-fold">
+          <span class="el-icon-d-caret query-comp-fold-btn" @click="toggleQueryCompHide"></span>
+        </div>
       </div>
       <div class="content-comp" v-if="processGroupSelectGroup.length > 0">
         <div class="content-tag">
@@ -81,11 +89,11 @@
           </div>
         </div>
         <el-table
-          :data="tableData"
-          max-height="560"
-          ref="tablecomponent"
-          :row-class-name="setTimeoutHighlight"
-          stripe>
+            :data="tableData"
+            max-height="560"
+            ref="tablecomponent"
+            :row-class-name="setTimeoutHighlight"
+            stripe>
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
                            :prop="item.key"
@@ -95,26 +103,26 @@
           </el-table-column>
 
           <el-table-column
-            type="index"
-            :index="indexMethod"
-            fixed="left"
-            width="60">
+              type="index"
+              :index="indexMethod"
+              fixed="left"
+              width="60">
           </el-table-column>
           <el-table-column
-            label="甘特图"
-            width="80"
-            fixed="right"
-            v-if="permissionControl(['engineer', 'schedulingJMPMC'])"
+              label="甘特图"
+              width="80"
+              fixed="right"
+              v-if="permissionControl(['engineer', 'schedulingJMPMC'])"
           >
             <template slot-scope="scope">
               <el-button type="text" icon="el-icon-picture-outline-round" @click="showGantt(scope.row)"></el-button>
             </template>
           </el-table-column>
           <el-table-column
-            label="操作"
-            width="140"
-            fixed="right"
-            v-if="permissionControl(['engineer','schedulingJMPMC'])"
+              label="操作"
+              width="140"
+              fixed="right"
+              v-if="permissionControl(['engineer','schedulingJMPMC'])"
           >
             <template slot-scope="scope">
               <el-tooltip content="详细" placement="top">
@@ -122,58 +130,58 @@
               </el-tooltip>
               <el-tooltip content="编辑" placement="top">
                 <el-button
-                  type="text"
-                  :disabled="scope.row.schedulingPlanStatus === 3"
-                  @click="editData(scope.row)"
-                  icon="el-icon-edit-outline"></el-button>
+                    type="text"
+                    :disabled="scope.row.schedulingPlanStatus === 3"
+                    @click="editData(scope.row)"
+                    icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
               <el-tooltip content="状态" placement="top">
                 <el-button
-                  type="text"
-                  :disabled="scope.row.schedulingPlanStatus === 3"
-                  @click="openStatusEditDialog(scope.row)"
-                  icon="el-icon-more"></el-button>
+                    type="text"
+                    :disabled="scope.row.schedulingPlanStatus === 3"
+                    @click="openStatusEditDialog(scope.row)"
+                    icon="el-icon-more"></el-button>
               </el-tooltip>
               <el-tooltip content="删除" placement="top"
                           v-if="permissionControl(['schedulingJMPMC'])">
                 <el-button
-                  type="text"
-                  @click="deleteData(scope.row)"
-                  icon="el-icon-delete"></el-button>
+                    type="text"
+                    @click="deleteData(scope.row)"
+                    icon="el-icon-delete"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
         <!--分页控制-->
         <el-pagination
-          background
-          :current-page.sync="paginationOptions.currentPage"
-          :page-sizes="[10]"
-          :page-size.sync="paginationOptions.pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="paginationOptions.total"
-          @current-change="fetchData"
-          @size-change="queryData"
-          class="page-pagination">
+            background
+            :current-page.sync="paginationOptions.currentPage"
+            :page-sizes="[10]"
+            :page-size.sync="paginationOptions.pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="paginationOptions.total"
+            @current-change="fetchData"
+            @size-change="queryData"
+            class="page-pagination">
         </el-pagination>
       </div>
     </div>
 
     <!--dialog component-->
     <el-dialog
-      title="额外信息"
-      :visible.sync="isOrderDetailsShowing"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      @closed="tableDetailsData = []"
-      width="650px">
+        title="额外信息"
+        :visible.sync="isOrderDetailsShowing"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        @closed="tableDetailsData = []"
+        width="650px">
 
       <div class="order-details-title">订单信息:</div>
       <el-table
-        :data="tableDetailsOrderData"
-        max-height="560"
-        size="small"
-        ref="tabledetailscomponent">
+          :data="tableDetailsOrderData"
+          max-height="560"
+          size="small"
+          ref="tabledetailscomponent">
         <el-table-column v-for="(item, index) in tableDetailsOrderColumns"
                          :key="index"
                          :prop="item.key"
@@ -185,10 +193,10 @@
       </el-table>
       <div class="order-details-title">责任人信息:</div>
       <el-table
-        :data="tableDetailsUserData"
-        max-height="560"
-        size="small"
-        ref="tabledetailscomponent">
+          :data="tableDetailsUserData"
+          max-height="560"
+          size="small"
+          ref="tabledetailscomponent">
         <el-table-column v-for="(item, index) in tableDetailsUserColumns"
                          :key="index"
                          :prop="item.key"
@@ -196,31 +204,36 @@
                          :min-width="item['min-width']"
                          :formatter="item.formatter">
         </el-table-column>
-
       </el-table>
+      <div class="order-details-picture">
+        <img :src="item" :alt="index" v-for="(item, index) in tableDetailsPicturesList">
+      </div>
     </el-dialog>
 
 
     <el-dialog
-      title="导入未排产订单"
-      :visible.sync="isOrderImporting"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      @closed="resetOrderImportDialog"
-      width="90%">
+        title="导入未排产订单"
+        :visible.sync="isOrderImporting"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        @closed="resetOrderImportDialog"
+        width="90%">
 
       <el-table
-        class="order-import-table"
-        border
-        size="small"
-        :data="importingOrderData"
-        max-height="560"
-        ref="importtablecomponent"
-        highlight-current-row
-        @current-change="orderImportSelectionChange">
+          class="order-import-table"
+          border
+          size="small"
+          :data="importingOrderData"
+          max-height="560"
+          ref="importtablecomponent"
+          @selection-change="orderImportSelectionChange">
         <el-table-column
-          type="index"
-          width="50">
+            type="selection"
+            width="40">
+        </el-table-column>
+        <el-table-column
+            type="index"
+            width="50">
         </el-table-column>
         <el-table-column v-for="(item, index) in importingOrderColumns"
                          :key="index"
@@ -235,37 +248,32 @@
            v-if="importingOrderSettingAll.length > 0">
         <div class="order-import-stash-title">待导入订单:</div>
         <el-tag
-          v-for="(item, index) in importingOrderSettingAll"
-          :key="item.order"
-          closable
-          @close="spliceOrderSetting(index)">
+            v-for="(item, index) in importingOrderSettingAll"
+            :key="item.order"
+            closable
+            @close="spliceOrderSetting(index)">
           {{item.orderName}}
         </el-tag>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" type="info" @click="isOrderImporting = false">取消</el-button>
         <el-button size="small" type="primary" @click="setOrderImportOptions">配置</el-button>
-        <el-button size="small" type="primary" v-if="importingOrderSettingAll.length > 0" @click="submitOrderImport">导入</el-button>
       </span>
 
-      <el-dialog
-        title="详情"
-        :visible.sync="isOrderImportingSettingShowing"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false"
-        width="400px"
-        append-to-body>
-        {{showingStashImportingSetting}}
-      </el-dialog>
-
-      <el-dialog
-        title="设置"
-        :visible.sync="isOrderImportingSetting"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false"
-        @closed="resetOrderImportSettingDialog"
-        width="500px"
-        append-to-body>
+      <edit-importing-order-comp
+          v-if="isOrderImportingSetting"
+          :is-order-importing-setting.sync="isOrderImportingSetting"
+          :importing-orders="importingOrderSelection"
+          :active-process-group="activeProcessGroup"
+          v-on:reload="partlyReload"/>
+<!--      <el-dialog
+          title="设置"
+          :visible.sync="isOrderImportingSetting"
+          :close-on-click-modal="false"
+          :close-on-press-escape="false"
+          @closed="resetOrderImportSettingDialog"
+          width="500px"
+          append-to-body>
         <div class="order-setting-group">
           <div class="order-setting-title">
             <span>排产数量*</span>
@@ -299,27 +307,27 @@
             <div class="order-setting-time-item">
               <label for="order-setting-plan-start-time">预计开始时间:* </label>
               <el-date-picker
-                id="order-setting-plan-start-time"
-                v-model="importingOrderSettingStartTime"
-                type="datetime"
-                size="small"
-                prefix-icon="el-icon-date"
-                default-time="08:00:00"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                autocomplete="off">
+                  id="order-setting-plan-start-time"
+                  v-model="importingOrderSettingStartTime"
+                  type="datetime"
+                  size="small"
+                  prefix-icon="el-icon-date"
+                  default-time="08:00:00"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  autocomplete="off">
               </el-date-picker>
             </div>
             <div class="order-setting-time-item">
               <label for="order-setting-plan-complete-time">预计结束时间:* </label>
               <el-date-picker
-                id="order-setting-plan-complete-time"
-                v-model="importingOrderSettingCompleteTime"
-                type="datetime"
-                size="small"
-                prefix-icon="el-icon-date"
-                default-time="08:00:00"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                autocomplete="off">
+                  id="order-setting-plan-complete-time"
+                  v-model="importingOrderSettingCompleteTime"
+                  type="datetime"
+                  size="small"
+                  prefix-icon="el-icon-date"
+                  default-time="08:00:00"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  autocomplete="off">
               </el-date-picker>
             </div>
 
@@ -340,17 +348,17 @@
           <el-button size="small" type="primary" @click="stashOrderSetting">保存</el-button>
       </span>
 
-      </el-dialog>
+      </el-dialog>-->
     </el-dialog>
 
     <!--状态编辑-->
     <el-dialog
-      title="修改状态"
-      :visible.sync="isOrderStatusEditing"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      @closed="resetStatusEdit"
-      width="300px">
+        title="修改状态"
+        :visible.sync="isOrderStatusEditing"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        @closed="resetStatusEdit"
+        width="300px">
       <div class="edit-status">
         <el-select size="small" v-model="orderEditStatus" placeholder="请选择状态">
           <el-option :value="1" label="进行"
@@ -368,14 +376,14 @@
 
     <!--edit panel-->
     <plan-edit-panel
-      :row="planEditRow"
-      :pmc-editing="pmcEditing"
-      :engineer-editing="engineerEditing"
-      :line-select-group="lineSelectGroup"
-      :totally-editing="totallyEditing"/>
+        :row="planEditRow"
+        :pmc-editing="pmcEditing"
+        :engineer-editing="engineerEditing"
+        :line-select-group="lineSelectGroup"
+        :totally-editing="totallyEditing"/>
 
     <!--甘特图-->
-    <gantt-comp :prop-table-data="ganttData"/>
+    <gantt-comp :prop-table-data="ganttData" v-if="isShowingGantt"/>
   </div>
 </template>
 
@@ -410,11 +418,13 @@
   import eventBus from "../../../utils/eventBus";
   import {MessageBox} from "element-ui";
   import {saveAs} from 'file-saver';
+  import EditImportingOrderComp from "./comp/EditImportingOrderComp";
 
   export default {
     name: "PlanSetting",
     inject: ['reload'],
     components: {
+      EditImportingOrderComp,
       PlanEditPanel,
       GanttComp
     },
@@ -432,6 +442,7 @@
         tableColumns: planTableColumns,
         tableDetailsOrderData: [],
         tableDetailsUserData: [],
+        tableDetailsPicturesList: [],
         tableDetailsOrderColumns: planTableExtraOrderColumns,
         tableDetailsUserColumns: planTableExtraUserColumns,
         paginationOptions: {
@@ -476,7 +487,7 @@
         importingOrderData: [],
         importingOrderDataTemp: [], //用于临时存放已配置的数据
         importingOrderColumns: orderUnscheduledTableColumns,
-        importingOrderSelection: null,
+        importingOrderSelection: [],
         importingOrderSettingGroup: [
           {
             schedulingQuantity: '',
@@ -502,7 +513,12 @@
         isOrderDetailsShowing: false,
 
         //甘特图数据
-        ganttData: []
+        isShowingGantt: false,
+        ganttData: [],
+
+
+        //切换查询栏伸缩
+        isQueryCompHidden: false
       }
     },
     watch: {
@@ -564,7 +580,7 @@
           this.queryData();
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc','lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup' ])
+        _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc', 'lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup'])
       },
       /**
        **@description: 权限控制-显示隐藏
@@ -677,6 +693,12 @@
           case '包装':
             this.activeProcessGroupType = 2;
             break;
+          case '贴片':
+            this.activeProcessGroupType = 3;
+            break;
+          case 'smt':
+            this.activeProcessGroupType = 4;
+            break;
         }
         this.initQueryOptions();
         this.queryData();
@@ -760,17 +782,22 @@
       },
       /*显示该订单的排产参数设置界面*/
       setOrderImportOptions: function () {
-        if (!!this.importingOrderSelection) {
-          if (this.importingOrderSelection.unscheduledQuantity === 0) {
-            this.$alertInfo('该订单未排产数量为0');
+        if (this.importingOrderSelection.length > 0) {
+          let noEmptyArray = this.importingOrderSelection.filter(item => {
+            return item.unscheduledQuantity === 0
+          });
+          if (noEmptyArray.length > 0) {
+            this.$alertInfo('存在未排产数量为0的订单');
+            return;
+          }
+          let noCapacityArray = this.importingOrderSelection.filter(item => {
+            return item.capacity === 0
+          });
+          if (noCapacityArray.length > 0) {
+            this.$alertInfo('存在产能为0的订单，请前往产能管理模块添加信息');
             return;
           }
 
-          this.$set(this.importingOrderSettingGroup, 0, {
-            schedulingQuantity: this.importingOrderSelection.unscheduledQuantity,
-            capacity: this.importingOrderSelection.capacity,
-            line: this.importingOrderSelection.line
-          });
           this.isOrderImportingSetting = true
         } else {
           this.$alertInfo("请选择订单")
@@ -883,33 +910,6 @@
         this.importingOrderSettingAll.splice(index, 1);
       },
 
-      /*提交*/
-      submitOrderImport: function () {
-        if (!this.isPending) {
-          this.isPending = true;
-          this.$openLoading();
-          axiosFetch({
-            url: planDetailsAddUrl,
-            data: {
-              setting: JSON.stringify(this.importingOrderSettingAll)
-            }
-          }).then(response => {
-            if (response.data.result === 200) {
-              this.$alertSuccess("操作成功");
-              this.partlyReload();
-              //this.reload();
-            } else {
-              this.$alertWarning(response.data.data)
-            }
-          }).catch(err => {
-            this.$alertDanger('未知错误')
-          }).finally(() => {
-            this.isPending = false;
-            this.$closeLoading();
-          })
-        }
-
-      },
 
       resetOrderImportDialog: function () {
         this.importingOrderData = [];
@@ -1033,6 +1033,7 @@
             if (response.data.result === 200) {
               this.tableDetailsUserData = [response.data.data.planUser];
               this.tableDetailsOrderData = [response.data.data.order];
+              this.tableDetailsPicturesList = Object.keys(response.data.data.picture).map(key => response.data.data.picture[key]);
               this.isOrderDetailsShowing = true;
             } else {
               this.$alertWarning(response.data.data)
@@ -1106,6 +1107,7 @@
             if (response.data.result === 200) {
               if (response.data.data.length > 0) {
                 this.ganttData = response.data.data;
+                this.isShowingGantt = true;
               } else {
                 this.$alertInfo("无数据")
               }
@@ -1125,13 +1127,40 @@
         if (row.isTimeout) {
           return 'timeout-highlight'
         }
+      },
+
+      toggleQueryCompHide() {
+        let queryComp = this.$refs['query-comp'];
+        let foldComp = this.$refs['query-comp-fold'];
+        if (this.isQueryCompHidden) {
+          queryComp.style.height = 'unset';
+          foldComp.style.cssText = 'box-shadow: unset';
+        } else {
+          queryComp.style.height = queryComp.clientHeight * 0.38 + 'px';
+          foldComp.style.cssText = 'box-shadow: inset 0px -10px 15px -8px #CFCFCF;';
+        }
+        this.isQueryCompHidden = !this.isQueryCompHidden;
+      },
+
+      /*重排已排产*/
+      showOrderPlannedImport() {
+        this.importingOrderData = this.tableData.filter(item => item.statusName === '已排产');
+        if (this.importingOrderData.length !== 0) {
+          this.importingOrderData.map(item => {
+            item.unscheduledQuantity = item.schedulingQuantity;
+            return item
+          });
+          this.isOrderImporting = true;
+        } else {
+          this.$alertInfo('当前工序组不存在已排产订单');
+        }
       }
     }
   }
 </script>
 
 <style scoped>
-  #plan-setting /deep/ .el-button  i {
+  #plan-setting /deep/ .el-button i {
     font-size: 17px;
     font-weight: bold;
   }
@@ -1147,12 +1176,14 @@
   }
 
   .query-comp {
+    position: relative;
     background-color: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 5px;
     padding: 10px 20px;
     display: flex;
     flex-wrap: wrap;
+    overflow: hidden;
   }
 
   .query-comp-container {
@@ -1184,6 +1215,22 @@
   .query-comp-container .el-button {
     margin-top: 24px;
     /*width: 80px;*/
+  }
+
+  .query-comp-fold {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .query-comp-fold-btn {
+    color: #c1c1c1;
+    cursor: pointer;
+    z-index: 10;
   }
 
   .content-comp {
@@ -1240,6 +1287,14 @@
     margin-top: 5px;
     font-weight: bold;
     color: #909399;
+  }
+
+  .order-details-picture {
+    width: 100%;
+    height: auto;
+  }
+  .order-details-picture img {
+    width: 100%;
   }
 
   .order-import-table /deep/ td {
