@@ -102,31 +102,41 @@
             :row-class-name="setTimeoutHighlight"
             size="mini"
             stripe>
-          <el-table-column v-for="(item, index) in tableColumns"
-                           :key="index"
-                           :prop="item.key"
-                           :label="item.label"
-                           :min-width="item['min-width']">
-          </el-table-column>
-
           <el-table-column
               type="index"
               fixed="left"
               width="40">
           </el-table-column>
           <el-table-column
-              label="是否紧急"
-              width="50"
-              fixed="right"
+              label="产线"
+              width="120"
           >
             <template slot-scope="scope">
-              <el-checkbox v-model="tableEditData[scope.row.id].isUrgent"></el-checkbox>
+              <el-select
+                  :disabled="!isOptionsEditable"
+                  v-model="tableEditData[scope.row.id].line"
+                  placeholder="请选择产线"
+                  size="mini">
+                <el-option v-for="listItem in lineGroup"
+                           :key="listItem.id"
+                           :value="listItem.id"
+                           :label="listItem.lineName"></el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="是否紧急"
+              width="50"
+          >
+            <template slot-scope="scope">
+              <el-checkbox
+                  :disabled="!isOptionsEditable"
+                  v-model="tableEditData[scope.row.id].isUrgent"></el-checkbox>
             </template>
           </el-table-column>
           <el-table-column
               label="转线时长(小时)"
               width="80"
-              fixed="right"
           >
             <template slot-scope="scope">
               <el-input class="table-inner-input-text"
@@ -140,7 +150,6 @@
           <el-table-column
               label="排产数量"
               width="80"
-              fixed="right"
           >
             <template slot-scope="scope">
               <el-input class="table-inner-input-text"
@@ -151,6 +160,13 @@
                         v-model="tableEditData[scope.row.id].schedulingQuantity"></el-input>
             </template>
           </el-table-column>
+          <el-table-column v-for="(item, index) in tableColumns"
+                           :key="index"
+                           :prop="item.key"
+                           :label="item.label"
+                           :min-width="item['min-width']">
+          </el-table-column>
+
           <el-table-column
               label="预计生产时长(小时)"
               width="80"
@@ -234,7 +250,7 @@
 
   export default {
     name: "EditImportingOrderComp",
-    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup'],
+    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup','lineGroup'],
     data() {
       return {
         planOptions: {
@@ -304,7 +320,7 @@
               personNumber: item.processPeopleQuantity,
               lineChangeTime: item.transferLineTime,
               planInterval: null,
-              isUrgent: item.isUrgent
+              isUrgent: Boolean(item.isUrgent)
             });
             return item
           })
@@ -333,7 +349,7 @@
           personNumber: item.processPeopleQuantity,
           lineChangeTime: item.transferLineTime,
           planInterval: null,
-          isUrgent: item.isUrgent
+          isUrgent: Boolean(item.isUrgent)
         });
         return item
       })

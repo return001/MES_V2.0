@@ -265,6 +265,7 @@
           :is-order-importing-setting.sync="isOrderImportingSetting"
           :importing-orders="importingOrderSelection"
           :active-process-group="activeProcessGroup"
+          :line-group="lineSelectGroup"
           v-on:reload="partlyReload"/>
 <!--      <el-dialog
           title="设置"
@@ -790,13 +791,13 @@
             this.$alertInfo('存在未排产数量为0的订单');
             return;
           }
-          let noCapacityArray = this.importingOrderSelection.filter(item => {
+          /*let noCapacityArray = this.importingOrderSelection.filter(item => {
             return item.capacity === 0
           });
           if (noCapacityArray.length > 0) {
             this.$alertInfo('存在产能为0的订单，请前往产能管理模块添加信息');
             return;
-          }
+          }*/
 
           this.isOrderImportingSetting = true
         } else {
