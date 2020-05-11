@@ -6,7 +6,6 @@
       <span><img src="@/assets/JimiLogo.jpg" id="JimiLogo" draggable="false"></span>
       <p>All rights reserved.</p>
     </div>
-
   </div>
 </template>
 

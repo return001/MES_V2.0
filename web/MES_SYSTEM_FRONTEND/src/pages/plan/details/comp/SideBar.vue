@@ -31,6 +31,10 @@
             title: '生产排产',
             subList: [
               {
+                type: 'file_type',
+                name: '文件类型'
+              },
+              {
                 type: 'order',
                 name: '订单管理'
               },
@@ -54,6 +58,10 @@
                 type: 'detail',
                 name: '排产计划'
               },
+              {
+                type: 'log',
+                name: '排产日志'
+              }
             ]
           }
         ],

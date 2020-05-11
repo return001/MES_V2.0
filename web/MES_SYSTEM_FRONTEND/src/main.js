@@ -17,6 +17,7 @@ import {
   Pagination,
   Button,
   MessageBox,
+  Message,
   DatePicker,
   Dialog,
   Row,
@@ -43,12 +44,13 @@ import {
   Tag,
   Alert,
   Divider,
-  RadioGroup
+  RadioGroup,
+  Switch
 } from 'element-ui'
 
 import {RZSideBar, RZFormQueryBar, RZFormItem} from 'rz-el-comp'
 
-[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag, Alert, Divider, RadioGroup,
+[Table, TableColumn, Pagination, Button, DatePicker, Dialog, Row, Col, Input, Select, Option, Tooltip, CheckboxGroup, Checkbox, MenuItem, Menu, MenuItemGroup, Submenu, Tabs, TabPane, Radio, Form, FormItem, Upload, Carousel, CarouselItem, Autocomplete, Tag, Alert, Divider, RadioGroup,Switch,
 
   RZSideBar, RZFormQueryBar, RZFormItem
 ].forEach(item => {
@@ -65,6 +67,7 @@ Vue.prototype.$alertDanger = alertDanger;
 Vue.prototype.$alertInfo = alertInfo;
 Vue.prototype.$alertSuccess = alertSuccess;
 Vue.prototype.$alertWarning = alertWarning;
+Vue.prototype.$message = Message;
 
 Vue.prototype.$openLoading = openLoading;
 Vue.prototype.$closeLoading = closeLoading;

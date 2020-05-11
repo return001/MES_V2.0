@@ -16,10 +16,10 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <!--<div class="query-comp-container"
+        <div class="query-comp-container"
              v-if="permissionControl(['engineer'])">
           <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
-        </div>-->
+        </div>
       </div>
     </div>
 
@@ -44,7 +44,7 @@
           width="60">
         </el-table-column>
 
-        <!--<el-table-column
+        <el-table-column
           label="操作"
           width="160"
           fixed="right"
@@ -64,11 +64,11 @@
               <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
             </el-tooltip>
           </template>
-        </el-table-column>-->
+        </el-table-column>
       </el-table>
     </div>
     <!--dialog component-->
-    <!--<el-dialog
+    <el-dialog
       :title="editPanelTitle"
       :visible.sync="isProcessGroupEditing"
       :close-on-click-modal="false"
@@ -103,7 +103,7 @@
         <el-button @click="closeEditProcessGroupPanel" type="info">取消</el-button>
         <el-button @click="submitEditProcessGroup" type="primary">保存</el-button>
       </span>
-    </el-dialog>-->
+    </el-dialog>
   </div>
 
 </template>
@@ -113,7 +113,8 @@
     processGroupQueryOptions,
     processGroupTableColumns,
     processGroupEditOptions,
-    processGroupEditOptionsRules
+    processGroupEditOptionsRules,
+    sessionFactory  //获取session中的对应工厂
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -233,15 +234,22 @@
           let options = {
             url: planProcessGroupSelectUrl,
             data: {
+              // factory:sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
             }
           };
-          if (this.queryString !== '') {
-            options.data.filter = this.queryString;
-          }
+          Object.keys(this.thisQueryOptions).forEach(item => {
+            options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
+          });
+          console.log(options)
+          // if (this.queryString !== '') {
+          //   options.data.filter = this.queryString;
+          // }
+          console.log(this.thisQueryOptions)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
+              console.log(response.data.data.list)
               this.tableData = response.data.data.list;
               this.paginationOptions.currentPage = response.data.data.pageNumber;
               this.paginationOptions.total = response.data.data.totalRow;
@@ -257,6 +265,7 @@
         }
       },
       editData: function (type, val) {
+        console.log(val)
         //初始化要提交的值
         this.processGroupEditOptions.forEach(item => {
           this.$set(this.processGroupEditOptionsData, item.key, '')
@@ -270,8 +279,8 @@
               }
             })
           });
-          this.$set(this.processGroupEditOptionsData, 'id', val.id);
-
+          this.$set(this.processGroupEditOptionsData, 'id', val.groupId);
+          console.log(this.processGroupEditOptionsData)
           this.isProcessGroupEditing = true;
         } else if (type === 'add') {
           this.processGroupEditType = 'add';
@@ -293,8 +302,10 @@
             };
             if (this.processGroupEditType === 'edit') {
               options.url = planProcessGroupEditUrl
+              options.data.factory = sessionFactory;
             } else if (this.processGroupEditType === 'add') {
               options.url = planProcessGroupAddUrl
+              options.data.factory = sessionFactory;
             }
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
@@ -321,7 +332,6 @@
         this.$refs['processGroupEditForm'].clearValidate();
       },
       deleteData: function (val) {
-
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',
@@ -332,7 +342,7 @@
           axiosFetch({
             url: planProcessGroupDeleteUrl,
             data: {
-              id: val.id
+              id: val.id,
             }
           }).then(response => {
             if (response.data.result === 200) {

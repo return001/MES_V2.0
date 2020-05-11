@@ -4,6 +4,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   url = window.g.LOCAL_URL
 }
+const mockUrl = '';
 
 /*用户*/
 export const validateUrl = url + '/user/validate';
@@ -57,6 +58,12 @@ export const multiTableDownloadUrl = url + '/report/downloadMultiTable';
 
 
 /*排产计划*/
+
+/*文件类型*/
+export const planFileTypeSelectUrl = url + '/production/selectFileType'; //查询文件类型
+export const planFileTypeDeleteUrl = url + '/production/deleteFileType'; //删除文件类型
+export const planFileTypeEditUrl = url + '/production/editFileType'; //编辑文件类型
+export const planFileTypeAddUrl = url + '/production/addFileType'; //添加文件类型
 /*订单管理*/
 export const planOrderSelectUrl = url + '/production/selectOrder'; //查询
 export const planOrderDeleteUrl = url + '/production/deleteOrder'; //删除
@@ -67,13 +74,14 @@ export const planOrderDetailsSelectUrl = url + '/production/selectOrderDetail'; 
 export const planOrderTableImportUrl = url + '/production/importOrderTable'; //导入xx表
 export const planOrderTableDownloadUrl = url + '/production/downloadOrderTable'; //下载xx表
 export const planOrderTableDeleteUrl = url + '/production/deleteOrderTable'; //删除xx表
-
+export const planOrderTableEditUrl = url + '/production/editOrderTable'; //修改订单文件状态
 /*工序组管理*/
 export const planProcessGroupSelectUrl = url + '/production/selectProcessGroup';//查询
 export const planProcessGroupDeleteUrl = url + '/production/deleteProcessGroup';//删除
 export const planProcessGroupEditUrl = url + '/production/editProcessGroup';//修改
 export const planProcessGroupAddUrl = url + '/production/addProcessGroup';//新增
 export const planProcessGroupGetUrl = url + '/production/getProcessGroup'; //获取工序组信息 用于页面加载时异步读取
+
 /*工序管理*/
 export const planProcessSelectUrl = url + '/production/selectProcess'; //查询
 export const planProcessDeleteUrl = url + '/production/deleteProcess'; //删除
@@ -112,12 +120,14 @@ export const planDetailsReworkSelectUrl = url + '/production/selectReworkPlan'; 
 export const planProducedQuantitySelectUrl = url + '/production/selectPlanProducedQuantity'; //获取订单已生产数量
 export const planCheckCompleteTimeSelectUrl = url + '/production/checkCompleteTime'; //检测是否可以完成
 
+/*排产日志*/
+export const planLogsSelectUrl = url + '/production/selectProductionLog'; //查询
+
 /*看板*/
 export const dashboardSelectUrl = url + '/report/selectDashboardTable';
 export const dashboardErrMsgSelectUrl = url + '/report/selectErrorMsg';
 export const dashboardSelectUrlCS = url + '/report/selectDashboardTableForCustomer';
 export const dashboardErrMsgSelectUrlCS = url + '/report/selectErrorMsgForCustomer';
-
 
 /*基础配置*/
 /*厂区*/

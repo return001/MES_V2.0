@@ -63,9 +63,9 @@
             v-if="permissionControl(['engineer', 'SopManager'])"
           >
             <template slot-scope="scope">
-              <el-tooltip content="产线PC配置" placement="top">
-                <el-button type="text" @click="showLineSetting(scope.row)" icon="el-icon-t-setting"></el-button>
-              </el-tooltip>
+<!--              <el-tooltip content="产线PC配置" placement="top">-->
+<!--                <el-button type="text" @click="showLineSetting(scope.row)" icon="el-icon-t-setting"></el-button>-->
+<!--              </el-tooltip>-->
               <el-tooltip content="编辑" placement="top">
                 <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
               </el-tooltip>
@@ -165,21 +165,21 @@
                 </el-tooltip>
               </template>
             </el-autocomplete>
-            <!--<el-select
-              v-model="lineEditOptionsData[lineItem.key]"
-              filterable
-              remote
-              reserve-keyword
-              placeholder="请输入关键词"
-              :remote-method="userRemoteMethod"
-              :loading="remoteLoading">
-              <el-option
-                v-for="subItem in asyncUserSelectList"
-                :key="subItem.id"
-                :label="subItem.name"
-                :value="subItem.id">
-              </el-option>
-            </el-select>-->
+<!--            <el-select-->
+<!--              v-model="lineEditOptionsData[lineItem.key]"-->
+<!--              filterable-->
+<!--              remote-->
+<!--              reserve-keyword-->
+<!--              placeholder="请输入关键词"-->
+<!--              :remote-method="userRemoteMethod"-->
+<!--              :loading="remoteLoading">-->
+<!--              <el-option-->
+<!--                v-for="subItem in asyncUserSelectList"-->
+<!--                :key="subItem.id"-->
+<!--                :label="subItem.name"-->
+<!--                :value="subItem.id">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
 
           </div>
           <div class="line-edit-form-comp-textarea" v-if="lineItem.type === 'textArea'">

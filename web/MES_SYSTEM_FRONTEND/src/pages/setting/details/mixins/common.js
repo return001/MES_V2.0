@@ -26,6 +26,9 @@ function getDataList(url, errItemTitle, vue) {
 function setStashData(data) {
   store.commit('setStashData', data)
 }
+export const getFactoryList = function getFactoryList() {
+  return getDataList(eSopFactorySelectUrl, '工厂', this);
+};
 
 export default {
   inject: ['reload'],
@@ -40,6 +43,7 @@ export default {
 
     }
   },
+
 
   methods: {
     /*重载*/
@@ -76,6 +80,7 @@ export default {
     _getFactoryList() {
       return getDataList(eSopFactorySelectUrl, '工厂', this);
     },
+
     _getLineList() {
       return getDataList(planLineGetUrl, '产线', this);
     },

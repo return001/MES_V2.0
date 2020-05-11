@@ -11,18 +11,18 @@
           </div>
         </div>
         <!--选择器-->
-        <div class="query-comp-container" v-if="!!thisQueryOptions.process">
+        <div class="query-comp-container" v-if="!!thisQueryOptions.processGroup">
           <div class="query-comp-select">
-            <label for="process-query-item">工序:</label>
+            <label for="process-query-item">工序组:</label>
             <el-select
-              v-model="thisQueryOptions['process'].value"
+              v-model="thisQueryOptions['processGroup'].value"
               id="process-query-item"
               placeholder="请选择工序"
               size="small">
-              <el-option v-for="listItem in processSelectGroupSrc"
+              <el-option v-for="listItem in processGroupSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
-                         :label="listItem.processName"></el-option>
+                         :label="listItem.groupName"></el-option>
             </el-select>
           </div>
         </div>
@@ -38,6 +38,7 @@
         </div>
       </div>
       <div class="content-comp">
+<!--        :span-method="detailsTableSpanMethod"-->
         <el-table
           :data="tableData"
           max-height="560"
@@ -62,17 +63,11 @@
 
           <el-table-column
             label="操作"
-            width="160"
+            width="100"
             fixed="right"
             v-if="permissionControl(['engineer'])"
           >
             <template slot-scope="scope">
-              <el-tooltip content="上移" placement="top">
-                <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>
-              </el-tooltip>
-              <el-tooltip content="下移" placement="top">
-                <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>
-              </el-tooltip>
               <el-tooltip content="编辑" placement="top">
                 <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
@@ -81,11 +76,117 @@
               </el-tooltip>
             </template>
           </el-table-column>
+          <el-table-column
+            label="复制"
+            width="100"
+            fixed="right"
+            v-if="permissionControl(['engineer'])"
+          >
+            <template slot-scope="scope">
+              <el-tooltip content="复制" placement="top">
+                <el-button type="text" @click="copyCapacity(scope.row)" icon="el-icon-t-copy"></el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </div>
 
-    <!--dialog component-->
+    <!--dialog component (新增和复制）-->
+    <el-dialog
+      :title="editPanelTitle"
+      :visible.sync="isCapacityAdd"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @closed="resetEditCapacityForm"
+      width="970px">
+      <el-form
+        ref="capacityEditForm"
+        :model="capacityEditOptionsData"
+        class="capacity-edit-form"
+        label-position="top"
+        @submit.native.prevent
+        :rules="capacityEditOptionsRules">
+        <el-form-item size="small" class="capacity-edit-form-comp" label="客户编号" prop="customerNumber">
+          <el-select v-model="capacityEditOptionsData.customerNumber" placeholder="请选择客户编号" class="capacity-edit-form-comp-text"
+                     @change="choiceCustomer"
+                     :disabled="processGroupSelectGroup.length === 0">
+            <el-option v-for="listItem in customerDatas"
+                       :key="listItem.id"
+                       :value="listItem.id"
+                       :label="listItem.customerNumber"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          size="small"
+          class="capacity-edit-form-comp"
+          label="客户名称">
+          <div class="capacity-edit-form-comp-text">
+            <el-input
+              type="text"
+              placeholder="客户名称"
+              disabled
+              autocomplete="off"
+              v-model="customerNames"></el-input>
+          </div>
+        </el-form-item>
+
+        <el-form-item
+          size="small"
+          class="capacity-edit-form-comp"
+          v-for="(item, index) in capacityAddOptions"
+          :key="index"
+          :label="item.label + '：'"
+          :prop="item.key">
+          <div class="capacity-edit-form-comp-text" v-if="item.type === 'text'">
+            <el-input
+              type="text"
+              :id="'edit' + item.key + index" :placeholder="'请填写' + item.label"
+              clearable
+              autocomplete="off"
+              v-model="capacityEditOptionsData[item.key]"></el-input>
+          </div>
+        </el-form-item>
+
+
+        <el-form-item>
+          <el-table
+            :data="sameGroupDatas"
+            max-height="560"
+            border
+            ref="tablecomponent">
+            <el-table-column
+                             v-for="(item, index) in capacityEditTableColumns"
+                             :key="index"
+                             :prop="item.key"
+                             :label="item.label"
+                             :min-width="item['min-width']"
+                             :formatter="item.formatter">
+              <template slot-scope="scope">
+                <div class="copy-capacity-data">
+                  <el-input v-model="scope.row[scope.column.property]" :disabled="scope.column.property === 'groupName'"></el-input>
+                </div>
+              </template>
+            </el-table-column>
+
+
+
+            <el-table-column
+              type="index"
+              :index="indexMethod"
+              fixed="left"
+              width="60">
+            </el-table-column>
+          </el-table>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="closeEditCapacityPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitEditCapacity('add')" type="primary">保存</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 编辑dialog -->
     <el-dialog
       :title="editPanelTitle"
       :visible.sync="isCapacityEditing"
@@ -102,20 +203,11 @@
         :rules="capacityEditOptionsRules">
         <el-form-item size="small" class="capacity-edit-form-comp" label="工序组" prop="processGroup">
           <el-select v-model="capacityEditOptionsData.processGroup" class="capacity-edit-form-comp-text"
-                     @change="processGroupEditChange" placeholder="请选择工序组">
+                     @change="processGroupEditChange" placeholder="请选择工序组" disabled>
             <el-option v-for="listItem in processGroupSelectGroup"
                        :key="listItem.id"
                        :value="listItem.id"
                        :label="listItem.groupName"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item size="small" class="capacity-edit-form-comp" label="工序" prop="process">
-          <el-select v-model="capacityEditOptionsData.process" placeholder="请选择工序" class="capacity-edit-form-comp-text"
-                     :disabled="processGroupSelectGroup.length === 0">
-            <el-option v-for="listItem in processSelectGroup"
-                       :key="listItem.id"
-                       :value="listItem.id"
-                       :label="listItem.processName"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item
@@ -125,11 +217,12 @@
           :key="index"
           :label="item.label + '：'"
           :prop="item.key">
-          <div class="capacity-edit-form-comp-text" v-if="item.type === 'text'">
+          <div class="capacity-edit-form-comp-text" v-if="item.type === 'text'" >
             <el-input
               type="text"
               :id="'edit' + item.key + index" :placeholder="'请填写' + item.label"
               clearable
+              :disabled="item.key === 'softModel'"
               autocomplete="off"
               v-model="capacityEditOptionsData[item.key]"></el-input>
           </div>
@@ -153,7 +246,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="closeEditCapacityPanel" type="info">取消</el-button>
-        <el-button size="small" @click="submitEditCapacity" type="primary">保存</el-button>
+        <el-button size="small" @click="submitEditCapacity('edit')" type="primary">保存</el-button>
       </span>
     </el-dialog>
   </div>
@@ -164,7 +257,9 @@
     capacityQueryOptions,
     capacityTableColumns,
     capacityEditOptions,
-    capacityEditOptionsRules
+    capacityEditOptionsRules,
+    capacityEditTableColumns,
+    capacityAddOptions
   } from "../../../config/planConfig";
   import {
     planCapacityAddUrl,
@@ -172,7 +267,8 @@
     planCapacityEditUrl,
     planCapacitySelectUrl,
     planProcessGroupGetUrl,
-    planProcessGetUrl
+    planProcessGetUrl,
+    eSopCustomerSelectUrl
   } from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from "element-ui"
@@ -187,8 +283,11 @@
         processSelectGroupSrc: [], //工序信息 源
         processSelectGroup: [], //工序信息
         processGroupSelectGroup: [], //工序组信息
+        customerDatas:[], //客户信息
+        customerNames:"",
         tableData: [],
         tableColumns: capacityTableColumns,
+
         paginationOptions: {
           currentPage: 1,
           pageSize: 65535,
@@ -196,19 +295,23 @@
         },
         /*编辑新增产能信息*/
         isCapacityEditing: false,
+        sameGroupDatas:[],  //点击复制后信息存储
+        capacityAddOptions: capacityAddOptions,
         capacityEditOptions: capacityEditOptions,
+        capacityEditTableColumns: capacityEditTableColumns,
         capacityEditOptionsRules: capacityEditOptionsRules,
         capacityEditType: '',
+        isCapacityAdd:false,
         capacityEditOptionsData: {
-          'process': ''
+          'process': '',
+          customerNumber:"",
         },
 
 
         mergeData: {},//合并行的记录
         mergePos: {},//mergeData中每项的索引
-        mergeProp: ['softModel'],
-        mergeKeys: ['softModel'],
-
+        mergeProp: ['softModel','customerNumber','customerName'],
+        mergeKeys: ['softModel','customerNumber','customerName'],
       }
     },
     computed: {
@@ -244,6 +347,7 @@
         };
         _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectGroupSrc', 'processGroupSelectGroup',  ])
       },
+
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -269,6 +373,10 @@
           type: 'select',
           value: ''
         })
+        this.$set(this.thisQueryOptions, 'processGroup', {
+          type: 'select',
+          value: ''
+        })
       },
 
       initEditOptions: function () {
@@ -286,6 +394,40 @@
           })
         })
       },
+
+      /*获取客户信息*/
+      fetchCustomer() {
+        this.$openLoading();
+        let options = {
+          url: eSopCustomerSelectUrl,
+          data: {
+            pageNo: this.paginationOptions.currentPage,
+            pageSize: this.paginationOptions.pageSize
+          }
+        };
+        axiosFetch(options).then(response => {
+          if (response.data.result === 200) {
+            this.customerDatas = response.data.data.list;
+          } else {
+            this.$alertWarning(response.data.data)
+          }
+        }).catch(err => {
+          this.$alertDanger('未知错误')
+        }).finally(() => {
+          this.isPending = false;
+          this.$closeLoading();
+
+        })
+      },
+      choiceCustomer(val){
+        console.log(this.capacityEditOptionsData)
+        this.customerDatas.forEach(item=>{
+          if(item.id === val){
+            this.customerNames=item.customerName
+          }
+        })
+      },
+
       /*获取工序信息*/
       fetchProcess: function () {
         return new Promise(resolve => {
@@ -312,6 +454,7 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.processGroupSelectGroup = response.data.data.list;
+              console.log(this.processGroupSelectGroup)
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -347,13 +490,16 @@
               pageSize: this.paginationOptions.pageSize,
             }
           };
+
           Object.keys(this.thisQueryOptions).forEach(item => {
             if (this.thisQueryOptions[item].value !== "") {
+              console.log(this.thisQueryOptions)
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
+
               this.getSpanArr(response.data.data.list, this.mergeKeys);
               this.tableData = response.data.data.list;
               this.paginationOptions.currentPage = response.data.data.pageNumber;
@@ -366,6 +512,7 @@
           }).finally(() => {
             this.isPending = false;
             this.$closeLoading();
+
           })
         }
       },
@@ -378,6 +525,7 @@
        **@params: mod
        */
       editData: function (type, val) {
+        this.fetchCustomer()
         if (!!this.$refs['capacityEditForm']) {
           this.$refs['capacityEditForm'].clearValidate();
         }
@@ -403,28 +551,106 @@
 
           this.isCapacityEditing = true;
         } else if (type === 'add') {
+
+          console.log(this.processGroupSelectGroup)
+          this.processGroupSelectGroup.forEach((item,i)=>{
+            let arr ={processGroup:""}
+            this.sameGroupDatas.push(arr)
+            this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
+            this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
+          })
+          console.log(this.sameGroupDatas)
+
+          // this.sameGroupDatas= 654
+          // this.processGroupSelectGroup =457
           this.capacityEditType = 'add';
-          this.isCapacityEditing = true;
+          this.isCapacityAdd = true;
         }
+      },
+
+      //复制产能信息
+      copyCapacity(val){
+        this.fetchCustomer();
+        this.capacityEditType = 'add';
+        this.isCapacityAdd = true;
+        let tempData = JSON.parse(JSON.stringify(this.tableData))
+        tempData.forEach(item=>{
+          if(item.customerNumber === val.customerNumber && item.softModel === val.softModel){
+            this.sameGroupDatas.push(item)
+          }
+        })
+        console.log(this.tableData)
+        console.log(this.processGroupSelectGroup)
+        console.log(this.sameGroupDatas)
+
+        // let arr ={processGroup:"",groupName:""}
+        // this.sameGroupDatas.push(arr)
+        // for(var i= 0;i<this.processGroupSelectGroup.length;i++){
+        //   for(var j=0;j<this.sameGroupDatas.length;j++) {
+        //     if(this.processGroupSelectGroup[i].id !== this.sameGroupDatas[j].processGroup){
+        //       this.sameGroupDatas[i].processGroup = this.processGroupSelectGroup[i].id
+        //       this.sameGroupDatas[i].groupName = this.processGroupSelectGroup[i].igroupNamed
+        //     }
+        //   }
+        // }
+          // var sameGroup = [];
+          // var that = this
+          // this.sameGroupDatas.forEach(aItem=>{
+          //   console.log(aItem)
+          //   sameGroup.push(aItem.processGroup)
+          //   });
+
+          //   console.log(sameGroup)
+          //   this.sameGroupDatas.forEach(aItem=>{
+          //     this.processGroupSelectGroup.forEach((gItem,g)=>{
+          //       if(sameGroup.includes(gItem.id)===false){
+          //         this.sameGroupDatas[g]['processGroup'] =this.processGroupSelectGroup[g]['id']
+          //         // this.sameGroupDatas[g].groupName =this.processGroupSelectGroup[g].gItem.groupName
+          //       }
+          //     })
+            // let arr ={processGroup:""}
+            // this.sameGroupDatas.push(arr)
+            // this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
+            // this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
+          // })
+
       },
 
       closeEditCapacityPanel: function () {
         this.isCapacityEditing = false;
+        this.sameGroupDatas=[];
+        this.isCapacityAdd =false;
       },
       submitEditCapacity: function () {
+        this.sameGroupDatas.forEach(item=>{
+          item.customerNumber= this.capacityEditOptionsData.customerNumber;
+          item.customerName= this.customerNames;
+          item.softModel= this.capacityEditOptionsData.softModel;
+          item.customerModel= this.capacityEditOptionsData.customerModel;
+        })
+        console.log(this.sameGroupDatas)
+
         this.$refs['capacityEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
             this.$openLoading();
             let options = {
               url: '',
-              data: this.capacityEditOptionsData
+              data:{
+                modelCapacityString:[],
+              },
             };
             if (this.capacityEditType === 'edit') {
               options.url = planCapacityEditUrl
+              options.data= this.capacityEditOptionsData
             } else if (this.capacityEditType === 'add') {
+              options.data.modelCapacityString= JSON.stringify(this.sameGroupDatas)
               options.url = planCapacityAddUrl
+              console.log(options)
+              console.log(this.sameGroupDatas)
+              console.log(this.tableData)
             }
+            console.log(options)
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
                 this.$alertSuccess('操作成功');
@@ -446,9 +672,13 @@
           }
         })
       },
+
       resetEditCapacityForm: function () {
         this.processSelectGroup = [];
         this.capacityEditOptionsData = {};
+        this.sameGroupDatas=[];
+        this.customerNames ="";
+        this.isCapacityAdd =false;
         this.$refs['capacityEditForm'].clearValidate();
         this.initEditOptions();
       },
@@ -503,9 +733,14 @@
         keyName.forEach((kitem, k) => {
           tableData.forEach((data, i) => {
             if (i === 0) {
+              // console.log(this.mergeData,"888888")
               this.mergeData[kitem] = this.mergeData[kitem] || [];
+              // console.log(this.mergeData[kitem],"0000000")
               this.mergeData[kitem].push(1);
+              // console.log(this.mergeData[kitem],"666666")
               this.mergePos[kitem] = 0
+              // console.log(this.mergeData,"1111111")
+              // console.log(this.mergePos,"2222222222")
             } else {
               // 判断当前元素与上一个元素是否相同
               if (data[kitem] === tableData[i - 1][kitem]) {
@@ -515,19 +750,39 @@
                 this.mergeData[kitem].push(1);
                 this.mergePos[kitem] = i
               }
+              // console.log(this.mergeData,"333333")
+              // console.log(this.mergePos,"444444")
             }
           })
         });
       },
       detailsTableSpanMethod: function ({row, column, rowIndex, columnIndex}) {
+        // console.log(this.mergeData)
+        // console.log(this.mergeProp)
+        // console.log(column)
         if (this.mergeProp.includes(column.property)) {
-          const _row = this.mergeData[column.property][rowIndex];
+
+          // console.log(this.mergeData[column.property])
+          // console.log(rowIndex)
+          // console.log(this.mergeData[column.property][rowIndex])
+          const _row = this.mergeData[column.property][rowIndex]; //0,2,0,2,0,2
+          // console.log(this.mergeData)
           const _col = _row > 0 ? 1 : 0;
+          // console.log(_row,_col)
           return {
             rowspan: _row,
             colspan: _col
           }
+          if(column.property === "copy"){
+            const _row = this.mergeData[column.property][rowIndex];
+            const _col = _row > 0 ? 1 : 0;
+            return {
+              rowspan: _row,
+              colspan: _col
+            }
+          }
         }
+
       },
 
 
@@ -646,6 +901,11 @@
     width: 80px;
   }
 
+  .copy-capacity-data /deep/ input{
+    border: 0;
+    outline: none;
+    background:rgba(0,0,0,0);
+  }
   .content-comp {
     background-color: #ffffff;
     border: 1px solid #eeeeee;

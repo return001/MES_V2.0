@@ -10,7 +10,8 @@
               v-model="thisQueryOptions['processGroup'].value"
               id="process-group-query-item"
               placeholder="请选择工序组"
-              size="small">
+              size="small"
+              >
               <el-option v-for="listItem in processGroupSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -155,7 +156,9 @@
     data() {
       return {
         queryOptions: processQueryOptions,
-        thisQueryOptions: {},
+        thisQueryOptions: {
+          processGroup:undefined,
+        },
         processGroupSelectGroup: [],
         tableData: [],
         tableColumns: processTableColumns,
@@ -206,6 +209,7 @@
         };
         _partlyReload(['thisQueryOptions', 'processEditOptionsData',  'processGroupSelectGroup',  ])
       },
+
       /**
        **@description: 权限控制-显示隐藏
        **@date: 2019/8/13 11:39
@@ -247,6 +251,7 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
+              console.log(response.data)
               this.processGroupSelectGroup = response.data.data.list;
             } else {
               this.$alertWarning(response.data.data)
