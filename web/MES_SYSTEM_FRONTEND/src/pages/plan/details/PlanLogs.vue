@@ -96,7 +96,7 @@
 
         paginationOptions: {
           currentPage: 1,
-          pageSize: 65535,
+          pageSize: 20,
           total: 0
         },
         timePickerOptions: {
@@ -226,12 +226,13 @@
             }
           };
           // if (this.queryString !== '') {
-          //   console.log(this.queryString)
           //   options.data.filter = this.queryString;
           // }
           Object.keys(this.thisQueryOptions).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
           });
+          options.data.startTime = options.data.orderDate[0]
+          options.data.endTime = options.data.orderDate[1]
           console.log(options)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {

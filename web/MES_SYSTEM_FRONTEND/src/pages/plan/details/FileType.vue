@@ -132,7 +132,8 @@
     fileTypeQueryOptions,
     fileTypeTableColumns,
     fileTypeEditOptions,
-    fileEditOptionsRules
+    fileEditOptionsRules,
+    sessionFactory,
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -259,6 +260,7 @@
           let options = {
             url: planFileTypeSelectUrl,
             data: {
+              factory:sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
             }

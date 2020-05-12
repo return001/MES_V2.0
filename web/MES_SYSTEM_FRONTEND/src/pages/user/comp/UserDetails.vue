@@ -176,7 +176,6 @@
                             this.$alertWarning(response.data.data)
                         }
                     }).catch(err => {
-                        console.log(JSON.stringify(err));
                         this.$alertDanger('请求超时，清刷新重试')
                     }).finally(() => {
                         this.$closeLoading();

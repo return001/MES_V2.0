@@ -51,12 +51,12 @@
           v-if="permissionControl(['engineer'])"
         >
           <template slot-scope="scope">
-            <el-tooltip content="上移" placement="top">
-              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>
-            </el-tooltip>
-            <el-tooltip content="下移" placement="top">
-              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>
-            </el-tooltip>
+<!--            <el-tooltip content="上移" placement="top">-->
+<!--              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>-->
+<!--            </el-tooltip>-->
+<!--            <el-tooltip content="下移" placement="top">-->
+<!--              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>-->
+<!--            </el-tooltip>-->
             <el-tooltip content="编辑" placement="top">
               <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
             </el-tooltip>
@@ -242,14 +242,11 @@
           Object.keys(this.thisQueryOptions).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
           });
-          console.log(options)
           // if (this.queryString !== '') {
           //   options.data.filter = this.queryString;
           // }
-          console.log(this.thisQueryOptions)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data.data.list)
               this.tableData = response.data.data.list;
               this.paginationOptions.currentPage = response.data.data.pageNumber;
               this.paginationOptions.total = response.data.data.totalRow;
@@ -280,7 +277,6 @@
             })
           });
           this.$set(this.processGroupEditOptionsData, 'id', val.groupId);
-          console.log(this.processGroupEditOptionsData)
           this.isProcessGroupEditing = true;
         } else if (type === 'add') {
           this.processGroupEditType = 'add';
@@ -342,7 +338,7 @@
           axiosFetch({
             url: planProcessGroupDeleteUrl,
             data: {
-              id: val.id,
+              id: val.groupId,
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -366,7 +362,7 @@
         let position;
         if (direction === 'up') {
           if (val.$index > 0) {
-            position = this.tableData[val.$index - 1].id
+            position = this.tableData[val.$index - 1].groupId
           } else {
             return
           }
@@ -391,8 +387,9 @@
               }
             })
           });
-          this.$set(this.processGroupEditOptionsData, 'id', val.row.id);
+          this.$set(this.processGroupEditOptionsData, 'id', val.row.groupId);
           this.$set(this.processGroupEditOptionsData, 'position', position);
+          this.$set(this.processGroupEditOptionsData, 'factory', Number(sessionFactory));
         }
         axiosFetch({
           url: planProcessGroupEditUrl,

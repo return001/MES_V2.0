@@ -34,14 +34,14 @@ export const orderQueryOptions = [{
                 value: 6,
                 label: '已完成'
             },
-            {
-                value: 7,
-                label: '已作废'
-            },
             // {
-            //   value: 8,
-            //   label: '异常结单'
+            //     value: 7,
+            //     label: '已作废'
             // },
+            {
+              value: 7,
+              label: '异常结单'
+            },
         ]
     },
     {
@@ -761,23 +761,24 @@ export const capacityTableColumns = [{
 ];
 
 /*新增编辑页面的table*/
-export const capacityEditTableColumns = [{
+export const capacityEditTableColumns = [
+    {
         'label': '工序组',
         'key': 'groupName',
         'min-width': '140px'
     },
     {
-        'label': '人数(个)',
+        'label': '* 人数(个)',
         'key': 'processPeopleQuantity',
         'min-width': '140px'
     },
     {
-        'label': '节拍/用时(s)',
+        'label': '* 节拍/用时(s)',
         'key': 'rhythm',
         'min-width': '140px'
     },
     {
-        'label': '产能(PCS/H)',
+        'label': '* 产能(PCS/H)',
         'key': 'capacity',
         'min-width': '140px'
     },
@@ -1200,7 +1201,7 @@ export const logsQueryOptions = [{
     {
         type: 'text',
         label: '操作人',
-        key: 'operator'
+        key: 'userName'
     },
     {
         type: 'timeRange',
@@ -1216,41 +1217,41 @@ export const logsQueryOptions = [{
 export const logsTableColumns = [{
         'label': '订单号',
         'key': 'zhidan',
-        'min-width': '100px'
+        'min-width': '70px'
     },
     {
         'label': '内部替换号',
         'key': 'alias',
-        'min-width': '100px'
+        'min-width': '60px'
     },
     {
         'label': '操作日志',
         'key': 'action',
-        'min-width': '110px'
+        'min-width': '300px'
     },
     {
         'label': '操作结果',
         'key': 'resultCode',
-        'min-width': '90px'
+        'min-width': '50px'
     },
     {
         'label': '操作人',
         'key': 'uid',
-        'min-width': '90px'
+        'min-width': '60px'
     },
     {
         'label': '操作时间',
         'key': 'time',
-        'min-width': '110px'
+        'min-width': '80px'
     },
     {
         'label': 'IP地址',
         'key': 'address',
-        'min-width': '100px'
+        'min-width': '70px'
     },
     {
         'label': '备注',
         'key': 'groupRemark',
-        'min-width': '80px'
+        'min-width': '70px'
     },
 ];

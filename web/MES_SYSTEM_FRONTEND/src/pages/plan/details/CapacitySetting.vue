@@ -113,7 +113,7 @@
                      :disabled="processGroupSelectGroup.length === 0">
             <el-option v-for="listItem in customerDatas"
                        :key="listItem.id"
-                       :value="listItem.id"
+                       :value="listItem.customerNumber"
                        :label="listItem.customerNumber"></el-option>
           </el-select>
         </el-form-item>
@@ -272,6 +272,7 @@
   } from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from "element-ui"
+  import {closeLoading} from "../../../utils/loading";
 
   export default {
     name: "CapacitySetting",
@@ -306,6 +307,7 @@
           'process': '',
           customerNumber:"",
         },
+        Parameter:true,  //缺少参数
 
 
         mergeData: {},//合并行的记录
@@ -420,7 +422,7 @@
         })
       },
       choiceCustomer(val){
-        console.log(this.capacityEditOptionsData)
+        console.log(this.customerDatas)
         this.customerDatas.forEach(item=>{
           if(item.id === val){
             this.customerNames=item.customerName
@@ -454,7 +456,6 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.processGroupSelectGroup = response.data.data.list;
-              console.log(this.processGroupSelectGroup)
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -493,13 +494,11 @@
 
           Object.keys(this.thisQueryOptions).forEach(item => {
             if (this.thisQueryOptions[item].value !== "") {
-              console.log(this.thisQueryOptions)
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
-
               this.getSpanArr(response.data.data.list, this.mergeKeys);
               this.tableData = response.data.data.list;
               this.paginationOptions.currentPage = response.data.data.pageNumber;
@@ -551,15 +550,12 @@
 
           this.isCapacityEditing = true;
         } else if (type === 'add') {
-
-          console.log(this.processGroupSelectGroup)
           this.processGroupSelectGroup.forEach((item,i)=>{
             let arr ={processGroup:""}
             this.sameGroupDatas.push(arr)
             this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
             this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
           })
-          console.log(this.sameGroupDatas)
 
           // this.sameGroupDatas= 654
           // this.processGroupSelectGroup =457
@@ -579,41 +575,6 @@
             this.sameGroupDatas.push(item)
           }
         })
-        console.log(this.tableData)
-        console.log(this.processGroupSelectGroup)
-        console.log(this.sameGroupDatas)
-
-        // let arr ={processGroup:"",groupName:""}
-        // this.sameGroupDatas.push(arr)
-        // for(var i= 0;i<this.processGroupSelectGroup.length;i++){
-        //   for(var j=0;j<this.sameGroupDatas.length;j++) {
-        //     if(this.processGroupSelectGroup[i].id !== this.sameGroupDatas[j].processGroup){
-        //       this.sameGroupDatas[i].processGroup = this.processGroupSelectGroup[i].id
-        //       this.sameGroupDatas[i].groupName = this.processGroupSelectGroup[i].igroupNamed
-        //     }
-        //   }
-        // }
-          // var sameGroup = [];
-          // var that = this
-          // this.sameGroupDatas.forEach(aItem=>{
-          //   console.log(aItem)
-          //   sameGroup.push(aItem.processGroup)
-          //   });
-
-          //   console.log(sameGroup)
-          //   this.sameGroupDatas.forEach(aItem=>{
-          //     this.processGroupSelectGroup.forEach((gItem,g)=>{
-          //       if(sameGroup.includes(gItem.id)===false){
-          //         this.sameGroupDatas[g]['processGroup'] =this.processGroupSelectGroup[g]['id']
-          //         // this.sameGroupDatas[g].groupName =this.processGroupSelectGroup[g].gItem.groupName
-          //       }
-          //     })
-            // let arr ={processGroup:""}
-            // this.sameGroupDatas.push(arr)
-            // this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
-            // this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
-          // })
-
       },
 
       closeEditCapacityPanel: function () {
@@ -628,7 +589,6 @@
           item.softModel= this.capacityEditOptionsData.softModel;
           item.customerModel= this.capacityEditOptionsData.customerModel;
         })
-        console.log(this.sameGroupDatas)
 
         this.$refs['capacityEditForm'].validate((isValid) => {
           if (isValid) {
@@ -644,21 +604,35 @@
               options.url = planCapacityEditUrl
               options.data= this.capacityEditOptionsData
             } else if (this.capacityEditType === 'add') {
+              this.sameGroupDatas.forEach(item=>{
+                item.customerNumber = item.customerNumber.toString()
+                item.capacity = Number(item.capacity)
+                item.processPeopleQuantity = Number(item.processPeopleQuantity)
+                item.transferLineTime = Number(item.transferLineTime)
+                item.rhythm = Number(item.rhythm)
+                console.log(item)
+                if(item.capacity <= 0 || item.rhythm <= 0 || item.processPeopleQuantity <= 0){
+                  this.Parameter = false
+                }
+              })
+              if(!this.Parameter){
+                this.$alertWarning('设置数量有误')
+                this.$closeLoading()
+                return
+              }
               options.data.modelCapacityString= JSON.stringify(this.sameGroupDatas)
               options.url = planCapacityAddUrl
-              console.log(options)
-              console.log(this.sameGroupDatas)
-              console.log(this.tableData)
             }
-            console.log(options)
+            console.log(this.sameGroupDatas)
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
                 this.$alertSuccess('操作成功');
                 this.resetEditCapacityForm();
                 this.closeEditCapacityPanel();
                 this.partlyReload();
-                //this.reload();
-              } else {
+              }
+              else {
+
                 this.$alertWarning(response.data.data)
               }
             }).catch(err => {
@@ -696,7 +670,6 @@
       },
 
       deleteData: function (val) {
-
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',
@@ -733,14 +706,9 @@
         keyName.forEach((kitem, k) => {
           tableData.forEach((data, i) => {
             if (i === 0) {
-              // console.log(this.mergeData,"888888")
               this.mergeData[kitem] = this.mergeData[kitem] || [];
-              // console.log(this.mergeData[kitem],"0000000")
               this.mergeData[kitem].push(1);
-              // console.log(this.mergeData[kitem],"666666")
               this.mergePos[kitem] = 0
-              // console.log(this.mergeData,"1111111")
-              // console.log(this.mergePos,"2222222222")
             } else {
               // 判断当前元素与上一个元素是否相同
               if (data[kitem] === tableData[i - 1][kitem]) {
@@ -750,25 +718,14 @@
                 this.mergeData[kitem].push(1);
                 this.mergePos[kitem] = i
               }
-              // console.log(this.mergeData,"333333")
-              // console.log(this.mergePos,"444444")
             }
           })
         });
       },
       detailsTableSpanMethod: function ({row, column, rowIndex, columnIndex}) {
-        // console.log(this.mergeData)
-        // console.log(this.mergeProp)
-        // console.log(column)
         if (this.mergeProp.includes(column.property)) {
-
-          // console.log(this.mergeData[column.property])
-          // console.log(rowIndex)
-          // console.log(this.mergeData[column.property][rowIndex])
           const _row = this.mergeData[column.property][rowIndex]; //0,2,0,2,0,2
-          // console.log(this.mergeData)
           const _col = _row > 0 ? 1 : 0;
-          // console.log(_row,_col)
           return {
             rowspan: _row,
             colspan: _col
@@ -912,6 +869,10 @@
     border-radius: 5px;
     padding: 10px;
     margin-top: 10px;
+    /*height: 80vh;*/
+  }
+  .content-comp /deep/ .el-talbe{
+    height: 80vh;
   }
 
   .capacity-edit-form {

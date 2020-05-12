@@ -114,14 +114,19 @@
                           v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
                 <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
               </el-tooltip>
-              <!-- <el-tooltip content="异常结单" placement="top"
+              <el-tooltip content="异常结单" placement="top"
                           v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
-                <el-button type="text" @click="abnormalEndData(scope.row)" icon="el-icon-more" :disabled="scope.row.abnoable === false"></el-button>
-              </el-tooltip> -->
-              <el-tooltip content="作废订单" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
-                <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-t-delete" :disabled="scope.row.endable === false"></el-button>
+                <el-button type="text" @click="abnormalEndData(scope.row)" icon="el-icon-t-delete" :disabled="scope.row.abnoable === false"></el-button>
               </el-tooltip>
+              <el-tooltip content="确认订单" placement="top"
+                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+                <el-button type="text" @click="confirmOrder(scope.row)" icon="el-icon-check" :disabled="scope.row.orderConfirm === false"></el-button>
+              </el-tooltip>
+
+<!--              <el-tooltip content="删除订单" placement="top"-->
+<!--                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">-->
+<!--                <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-t-delete" :disabled="scope.row.endable === false"></el-button>-->
+<!--              </el-tooltip>-->
             </template>
           </el-table-column>
         </el-table>
@@ -444,6 +449,7 @@
         :visible.sync="orderFileStatus"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
+        @closed="closeOrderStatusPanel"
         append-to-body
         width="400px">
         <template>
@@ -648,15 +654,15 @@
           showingItemRemarkList:[
           {
             label: '作废原因',
-            key: 'deleteReason'
+            key: 'abnormalEndReason'
           },
           {
             label: '作废人',
-            key: 'deletePersonName'
+            key: 'abnormalEndPersonName'
           },
           {
             label: '作废时间',
-            key: 'deleteTime'
+            key: 'abnormalEndTime'
           },
 
           {
@@ -902,9 +908,11 @@
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
               this.tableData.forEach(item=>{
+                if(item.orderStatus !== 1){
+                  item.orderConfirm = false;    //只有待确认的状态可以 确认订单
+                }
                 if(item.orderStatus !== 1 && item.orderStatus !== 2){  //不可以编辑的状态
                   item.editable = false;
-
                 }
                 if(item.orderStatus === 6 || item.orderStatus === 7 || item.orderStatus === 8){   //不可以异常结单的状态
                   item.abnoable = false
@@ -1160,16 +1168,15 @@
         }).then(() => {
           this.$openLoading();
           axiosFetch({
-            url: planOrderEditUrl,
+            url: planOrderDeleteUrl,
             data: {
-              zhidan:this.abnormalEndItem.zhidan,
-              orderDate:this.abnormalEndItem.orderDate,
-              deliveryDate:this.abnormalEndItem.deliveryDate,
-              softModel:this.abnormalEndItem.softModel,
-              quantity:this.abnormalEndItem.quantity,
+              // zhidan:this.abnormalEndItem.zhidan,
+              // orderDate:this.abnormalEndItem.orderDate,
+              // deliveryDate:this.abnormalEndItem.deliveryDate,
+              // softModel:this.abnormalEndItem.softModel,
+              // quantity:this.abnormalEndItem.quantity,
               id: this.abnormalEndItem.id,
-              orderStatus:8,
-              abnormanEndRemarks: this.abnormanEndRemarks
+              abnormalEndReason: this.abnormanEndRemarks
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -1192,6 +1199,42 @@
         this.isAbnormalEnd = false;
         this.abnormalEndItem = {};
         this.abnormanEndRemarks = "";
+      },
+
+      //确认订单
+      confirmOrder(val){
+        MessageBox.confirm('将确认此订单，是否继续?', '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() =>{
+          this.$openLoading();
+          this.isPending = true;
+          let options = {
+            url: planOrderEditUrl,
+            data: {}
+          };
+          console.log(val)
+          Object.keys(val).forEach(item => {
+            options.data[item] = JSON.parse(JSON.stringify(val[item]))
+          });
+          options.data.orderStatus = 2
+          console.log(options)
+          axiosFetch(options).then(response => {
+            if (response.data.result === 200) {
+              this.$alertSuccess('确认成功');
+              this.partlyReload();
+              //this.reload();
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger("未知错误")
+          }).finally(() => {
+            this.$closeLoading();
+            this.isPending = false;
+          })
+        })
       },
 
 
@@ -1249,7 +1292,7 @@
        */
       showDetails: function (val) {
         let orderStatus = val.orderStatus
-        if(orderStatus === 3 || orderStatus === 4 || orderStatus === 5 || orderStatus === 6 || orderStatus === 7 || orderStatus === 8){  //已完成或结束的订单不能作废文件
+        if(orderStatus === 6 || orderStatus === 7 || orderStatus === 8){  //已完成或结束的订单不能作废文件
           this.uploadAble = false
         }
         this.fetchFileType()
@@ -1424,12 +1467,13 @@
       submitFileStatus: function () {
           this.$openLoading();
           this.isPending = true;
+        console.log(this.fileStatus)
           axiosFetch({
             url: planOrderTableEditUrl,
             data: {
               id: this.orderInfo.id,
               isNormal:this.fileStatus,
-              remark:"111111"
+              // remark:"文件状态修改"
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -1439,12 +1483,17 @@
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
+            console.log(err)
             this.$alertDanger("未知错误")
           }).finally(() => {
             this.$closeLoading();
             this.isPending = false;
           }).catch(() => {
               })
+      },
+      //关闭文件状态页
+      closeOrderStatusPanel(){
+        this.fileStatus = ""
       },
 
       //获取工厂

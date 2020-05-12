@@ -66,7 +66,7 @@ export const planFileTypeEditUrl = url + '/production/editFileType'; //编辑文
 export const planFileTypeAddUrl = url + '/production/addFileType'; //添加文件类型
 /*订单管理*/
 export const planOrderSelectUrl = url + '/production/selectOrder'; //查询
-export const planOrderDeleteUrl = url + '/production/deleteOrder'; //删除
+export const planOrderDeleteUrl = url + '/production/abnormalEndOrder'; //异常结单
 export const planOrderEditUrl = url + '/production/editOrder'; //修改
 export const planOrderAddUrl = url + '/production/addOrder'; //新增
 export const planOrderImportUrl = url + '/production/importOrder'; //导入订单

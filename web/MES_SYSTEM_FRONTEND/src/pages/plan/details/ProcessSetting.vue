@@ -251,7 +251,6 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data)
               this.processGroupSelectGroup = response.data.data.list;
             } else {
               this.$alertWarning(response.data.data)
