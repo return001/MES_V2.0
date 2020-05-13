@@ -422,9 +422,8 @@
         })
       },
       choiceCustomer(val){
-        console.log(this.customerDatas)
         this.customerDatas.forEach(item=>{
-          if(item.id === val){
+          if(item.customerNumber === val){
             this.customerNames=item.customerName
           }
         })
@@ -611,7 +610,7 @@
                 item.transferLineTime = Number(item.transferLineTime)
                 item.rhythm = Number(item.rhythm)
                 console.log(item)
-                if(item.capacity <= 0 || item.rhythm <= 0 || item.processPeopleQuantity <= 0){
+                if(item.capacity <= 0 || item.processPeopleQuantity <= 0){
                   this.Parameter = false
                 }
               })
@@ -626,9 +625,9 @@
             console.log(this.sameGroupDatas)
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
-                this.$alertSuccess('操作成功');
                 this.resetEditCapacityForm();
                 this.closeEditCapacityPanel();
+                this.$alertSuccess('操作成功');
                 this.partlyReload();
               }
               else {

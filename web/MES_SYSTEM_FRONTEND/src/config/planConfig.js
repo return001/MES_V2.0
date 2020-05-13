@@ -701,7 +701,7 @@ export const capacityEditOptionsRules = {
     'softModel': [{ required: true, message: '请填写机型', trigger: 'blur' }],
     // 'customerModel': [{required: true, message: '请填写客户型号', trigger: 'blur'}],
     'customerNumber': [{ required: true, message: '请选择客户编号', trigger: 'change' }],
-    'rhythm': [{ required: true, message: '请填写节拍', trigger: 'blur' }],
+    // 'rhythm': [{ required: true, message: '请填写节拍', trigger: 'blur' }],
     'processPeopleQuantity': [{ required: true, message: '请填写人数', trigger: 'blur' },
         { pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur' }
     ],
@@ -773,7 +773,7 @@ export const capacityEditTableColumns = [
         'min-width': '140px'
     },
     {
-        'label': '* 节拍/用时(s)',
+        'label': '节拍/用时(s)',
         'key': 'rhythm',
         'min-width': '140px'
     },

@@ -453,8 +453,8 @@
         append-to-body
         width="400px">
         <template>
-          <el-radio v-model="fileStatus" label="1">正常</el-radio>
-          <el-radio v-model="fileStatus" label="2">异常</el-radio>
+          <el-radio v-model="fileStatus" label="true">正常</el-radio>
+          <el-radio v-model="fileStatus" label="false">异常</el-radio>
         </template>
         <div style="display: inline-block;width: 40px;"></div>
         <el-button size="small" @click="submitFileStatus()" type="primary">提交</el-button>
