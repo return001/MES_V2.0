@@ -1051,7 +1051,6 @@
 
       //导出计划
       exportPlan: function () {
-
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();

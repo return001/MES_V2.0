@@ -957,7 +957,6 @@
         this.orderEditOptions.forEach(item => {
           this.$set(this.orderEditOptionsData, item.key, '')
         });
-        // this.$set(this.orderEditOptions[0],'list',this.factoryList)
         if (type === 'edit') {
           //获取备注
           axiosFetch({
@@ -1052,6 +1051,7 @@
       },
 
       submitEditOrder: function () {
+        console.log(this.isReworkEdit,"+","isrework:"+this.isRework)
         this.$refs['orderEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
@@ -1062,6 +1062,7 @@
             };
             if (this.orderEditType === 'edit') {
               options.url = planOrderEditUrl
+              options.data.isRework = this.isRework
             } else if (this.orderEditType === 'add' || this.orderEditType === 'rework' || this.orderEditType === 'copy') {
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
@@ -1088,7 +1089,7 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-              this.isReworkEdit = true;
+              this.isReworkEdit = false;
               this.$set(this.orderEditOptionsData,'factory',undefined)
               //this.reload();
             })
@@ -1218,7 +1219,13 @@
           Object.keys(val).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(val[item]))
           });
+          if (val.reworkZhidan || val.reworkQuantity){
+            options.data.isRework = true
+          }else{
+            options.data.isRework = false
+          }
           options.data.orderStatus = 2
+
           console.log(options)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
