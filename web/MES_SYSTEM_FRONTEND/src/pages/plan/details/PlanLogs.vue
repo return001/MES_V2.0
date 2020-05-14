@@ -233,7 +233,6 @@
           });
           options.data.startTime = options.data.orderDate[0]
           options.data.endTime = options.data.orderDate[1]
-          console.log(options)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;

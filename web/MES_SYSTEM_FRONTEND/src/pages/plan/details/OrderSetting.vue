@@ -899,8 +899,6 @@
           options.data['deliveryDateTo'] = options.data['deliveryDate'][1]
           options.data['orderDateFrom'] = options.data['orderDate'][0]
           options.data['orderDateTo'] = options.data['orderDate'][1]
-          console.log(this.thisQueryOptions)
-          console.log(options)
           // if (this.queryString !== '') {
             // options.data.filter = this.queryString;
           // }
@@ -1051,7 +1049,6 @@
       },
 
       submitEditOrder: function () {
-        console.log(this.isReworkEdit,"+","isrework:"+this.isRework)
         this.$refs['orderEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
@@ -1215,7 +1212,6 @@
             url: planOrderEditUrl,
             data: {}
           };
-          console.log(val)
           Object.keys(val).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(val[item]))
           });
@@ -1225,8 +1221,6 @@
             options.data.isRework = false
           }
           options.data.orderStatus = 2
-
-          console.log(options)
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('确认成功');
@@ -1320,16 +1314,15 @@
             if (response.data.result === 200) {
               this.showingItemInfo = response.data.data.orderUser;
               this.isDetailsShowing = true;
-
               this.showingItemFileInfo = response.data.data.orderFileInfo;
-
               this.showingItemFileInfo.forEach(item=>{
-                if(item.deleteName !== null || val.orderStatus !== 1){  //排产及以后的订单，不能改变文件状态
+                if(item.deleteName !== null || val.orderStatus === 7 ||  val.orderStatus === 6){  //完成及以后的订单，不能改变文件状态    已完成或结束的订单不能作废文件
                   item.fileEditable = false;
-                }
-                if(item.deleteName !== null || val.orderStatus !== 1 || val.orderStatus !== 2){  //已完成或结束的订单不能作废文件
                   item.fileDeleteable = false;
                 }
+                // if(item.deleteName !== null || val.orderStatus !== 1 || val.orderStatus !== 2){
+                //   item.fileDeleteable = false;
+                // }
                 if(item.isNormal === false){
                   item.isNormal ="异常"
                 }else if(item.isNormal === true){
@@ -1398,7 +1391,8 @@
             }
           }).then(response => {
             let contentType = response.request.getResponseHeader('content-type');
-            if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+            if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
+
               let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
               saveAs(response.data, decodeURIComponent(name))
             } else {
@@ -1474,7 +1468,6 @@
       submitFileStatus: function () {
           this.$openLoading();
           this.isPending = true;
-        console.log(this.fileStatus)
           axiosFetch({
             url: planOrderTableEditUrl,
             data: {

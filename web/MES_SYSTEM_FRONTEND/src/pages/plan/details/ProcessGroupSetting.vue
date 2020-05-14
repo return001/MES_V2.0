@@ -262,7 +262,6 @@
         }
       },
       editData: function (type, val) {
-        console.log(val)
         //初始化要提交的值
         this.processGroupEditOptions.forEach(item => {
           this.$set(this.processGroupEditOptionsData, item.key, '')
