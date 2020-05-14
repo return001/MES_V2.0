@@ -53,7 +53,7 @@
               autocomplete="off"
           ></el-input>
         </el-form-item>
-        <!--<el-form-item
+        <el-form-item
             size="mini"
             label="工作间休息时长(小时)"
             prop="restTime"
@@ -63,7 +63,7 @@
               v-model="planOptions.restTime"
               autocomplete="off"
           ></el-input>
-        </el-form-item>-->
+        </el-form-item>
         <el-form-item
             size="mini"
             label="每天生产开始时间"
@@ -80,6 +80,22 @@
               prefix-icon="el-icon-alarm-clock"
           >
           </el-time-picker>
+        </el-form-item>
+
+        <el-form-item
+            size="mini"
+            label="产线"
+            prop="line"
+            class="order-setting-comp"
+        >
+            <el-select
+                v-model="planOptions.line"
+                placeholder="请选择产线">
+              <el-option v-for="listItem in lineGroup"
+                         :key="listItem.id"
+                         :value="listItem.id"
+                         :label="listItem.lineName"></el-option>
+            </el-select>
         </el-form-item>
         <el-switch
             size="mini"
@@ -99,30 +115,12 @@
             :data="tableData"
             max-height="560"
             ref="list-table-component"
-            :row-class-name="setTimeoutHighlight"
-            size="mini"
-            stripe>
+            :row-class-name="setHighlight"
+            size="mini">
           <el-table-column
               type="index"
               fixed="left"
               width="40">
-          </el-table-column>
-          <el-table-column
-              label="产线"
-              width="120"
-          >
-            <template slot-scope="scope">
-              <el-select
-                  :disabled="!isOptionsEditable"
-                  v-model="tableEditData[scope.row.id].line"
-                  placeholder="请选择产线"
-                  size="mini">
-                <el-option v-for="listItem in lineGroup"
-                           :key="listItem.id"
-                           :value="listItem.id"
-                           :label="listItem.lineName"></el-option>
-              </el-select>
-            </template>
           </el-table-column>
           <el-table-column
               label="是否紧急"
@@ -135,7 +133,7 @@
             </template>
           </el-table-column>
           <el-table-column
-              label="转线时长(小时)"
+              label="转线时长(分)"
               width="80"
           >
             <template slot-scope="scope">
@@ -144,20 +142,20 @@
                         size="mini"
                         :disabled="!isOptionsEditable"
                         @change="clearPredictTime"
-                        v-model="tableEditData[scope.row.id].lineChangeTime"></el-input>
+                        v-model.number="tableEditData[scope.row.id].lineChangeTime"></el-input>
             </template>
           </el-table-column>
           <el-table-column
               label="排产数量"
-              width="80"
+              width="90"
           >
             <template slot-scope="scope">
               <el-input class="table-inner-input-text"
                         type="text"
                         size="mini"
                         :disabled="!isOptionsEditable"
-                        @change="clearPredictTime"
-                        v-model="tableEditData[scope.row.id].schedulingQuantity"></el-input>
+                        @change="changeQuantity($event, scope.$index)"
+                        v-model.number="tableEditData[scope.row.id].schedulingQuantity"></el-input>
             </template>
           </el-table-column>
           <el-table-column v-for="(item, index) in tableColumns"
@@ -173,12 +171,12 @@
               fixed="right"
           >
             <template slot-scope="scope">
-              {{tableEditData[scope.row.id].planInterval}}
+              <span>{{tableEditData[scope.row.id].planInterval}}</span>
             </template>
           </el-table-column>
           <el-table-column
               label="预计开始时间"
-              width="200"
+              :width="isAuto ? '160' : '200'"
               fixed="right"
           >
             <template slot-scope="scope">
@@ -202,11 +200,23 @@
           </el-table-column>
           <el-table-column
               label="预计结束时间"
-              width="160"
+              :width="isAuto ? '160' : '200'"
               fixed="right"
           >
             <template slot-scope="scope">
-              <span>{{tableEditData[scope.row.id].planCompleteTime}}</span>
+              <el-date-picker
+                  v-model="tableEditData[scope.row.id].planCompleteTime"
+                  type="datetime"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  autocomplete="off"
+                  size="mini"
+                  prefix-icon="el-icon-date"
+                  v-if="!isAuto"
+                  class="table-column-date"
+                  :disabled="!isOptionsEditable"
+              >
+              </el-date-picker>
+              <span v-else>{{tableEditData[scope.row.id].planCompleteTime}}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -215,9 +225,9 @@
               fixed="right"
           >
             <template slot-scope="scope">
-              <!--<el-tooltip content="插入" placement="top">
-                <el-button type="text" icon="el-icon-plus"></el-button>
-              </el-tooltip>-->
+              <el-tooltip content="插入" placement="top">
+                <el-button type="text" icon="el-icon-plus" @click="insertOrder(scope.$index)"></el-button>
+              </el-tooltip>
               <el-tooltip content="上移" placement="top">
                 <el-button type="text" icon="el-icon-sort-up" @click="changeOrderPos(0, scope.$index)"
                            :disabled="scope.$index === 0"></el-button>
@@ -234,23 +244,71 @@
         </el-table>
       </div>
     </div>
+    <div class="import-order-tips">
+      <div class="import-tips-container timeout">字样</div>
+      <p>预计时间异常</p>
+      <div class="import-tips-container quantity-out"></div>
+      <p>排产数量超额(不计算重排订单)</p>
+    </div>
     <span slot="footer" class="dialog-footer">
           <el-button size="small" type="success" @click="calcOptions">解析</el-button>
           <el-button size="small" type="info" @click="cancelEdit">取消</el-button>
           <el-button size="small" type="primary" :disabled="!isImportable" @click="submitEdit">导入</el-button>
       </span>
 
+    <el-dialog
+        title="插入订单"
+        :visible.sync="isInserting"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        width="80%"
+        @close="closeInsert"
+        append-to-body>
+
+      <el-table
+          class="order-import-table"
+          border
+          size="small"
+          :data="srcOrders"
+          max-height="560"
+          ref="inserttablecomponent"
+          highlight-current-row
+          :row-class-name="setExistHighlight"
+          @current-change="orderInsertSelectionChange">
+        <el-table-column
+            type="index"
+            width="50">
+        </el-table-column>
+        <el-table-column v-for="(item, index) in orderColumns"
+                         :key="index"
+                         :prop="item.key"
+                         :label="item.label"
+                         :min-width="item['min-width']"
+                         :formatter="item.formatter">
+        </el-table-column>
+
+      </el-table>
+      <div class="insert-tips">
+        <div class="insert-tips-container exist-highlight"></div>
+        <p>已存在于预排产列表</p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" type="info" @click="isInserting = false">取消</el-button>
+        <el-button size="small" type="primary" @click="submitInsert">插入</el-button>
+      </span>
+    </el-dialog>
   </el-dialog>
 </template>
 
 <script>
   import Moment from 'moment'
-  import {planDetailsAddUrl} from "../../../../config/globalUrl";
+  import {planDetailsAddUrl, planDetailsReAddUrl} from "../../../../config/globalUrl";
   import {axiosFetch} from "../../../../utils/fetchData";
+  import {MessageBox} from "element-ui";
 
   export default {
     name: "EditImportingOrderComp",
-    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup','lineGroup'],
+    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup','lineGroup', 'srcOrders', 'orderColumns', 'isReImport'],
     data() {
       return {
         planOptions: {
@@ -258,7 +316,8 @@
           planDays: null,
           planTimePerDay: null,
           // restTime: null,
-          startTimePerDay: ''
+          startTimePerDay: '',
+          line: null
         },
         planOptionsRules: {
           'planStartTime': [
@@ -276,9 +335,10 @@
           'startTimePerDay': [
             {required: true, message: '请输入生产开始时间', trigger: 'blur'}
           ],
-
+          'line': [
+            {required: true, message: '请选择产线', trigger: 'blur'}
+          ],
         },
-
         tableColumns: [
           {'label': '订单号/生产PO', 'key': 'zhidan', 'min-width': '100px'},
           {'label': '订单数量', 'key': 'quantity', 'min-width': '60px'},
@@ -301,6 +361,11 @@
         planStartTime: null,
         isImportable: false,
         isPending: false,
+        insertingPosition: null,
+        isInserting: false,
+        insertingOrder: undefined,
+        existOrders: [],
+        currentOrderQuantity: undefined,
       }
     },
     watch: {
@@ -308,7 +373,8 @@
         if (val) {
           this.tableData = val.map(item => {
             this.$set(this.tableEditData, item.id, {
-              order: item.id,
+              id: this.isReImport ? item.id : undefined,
+              order: this.isReImport ? item.orders : item.id,
               remark: null,
               schedulingQuantity: item.unscheduledQuantity,
               line: null,
@@ -331,13 +397,37 @@
       },
       'isAuto': function (val) {
         this.planOptionsRules['planStartTime'][0].required = val
+      },
+      'tableData': function (val) {
+        this.existOrders = val.map(item => item.id)
+      },
+      'tableEditData': {
+        handler: function (val) {
+          //存储 订单：数量
+          let obj = {};
+          Object.keys(val).forEach(key => {
+            //仅统计非重排单
+            if (val[key].id === undefined) {
+              if (obj[val[key].order]) {
+                obj[val[key].order] += val[key].schedulingQuantity
+              } else {
+                obj[val[key].order] = val[key].schedulingQuantity
+              }
+            }
+
+          });
+          this.currentOrderQuantity = obj;
+        },
+        deep: true
       }
     },
     computed: {},
     mounted() {
       this.tableData = this.importingOrders.map(item => {
+        //仅重排单拥有id
         this.$set(this.tableEditData, item.id, {
-          order: item.id,
+          id: this.isReImport ? item.id : undefined,
+          order: this.isReImport ? item.orders : item.id,
           remark: null,
           schedulingQuantity: item.unscheduledQuantity,
           line: null,
@@ -377,10 +467,14 @@
               return;
             }
 
+            /*计算每日开始时间距离0点的分钟数*/
+            let startTimePerDayObj = new Date(this.planOptions.startTimePerDay);
+            let onWorkTimeToZeroMins = startTimePerDayObj.getHours() * 60 + startTimePerDayObj.getMinutes();
+
             this.calcPredictTime();
 
             if (this.isAuto) {
-              let startTime = Moment(this.planOptions.planStartTime).add(this.tableEditData[this.tableData[0].id].lineChangeTime, 'h').format('YYYY-MM-DD HH:mm:ss');
+              let startTime = Moment(this.planOptions.planStartTime).add(this.tableEditData[this.tableData[0].id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss');
               this.$set(this.tableEditData[this.tableData[0].id], 'planStartTime', startTime);
               this.planStartTime = startTime;
               this.calcTotalPredictStartEndTime();
@@ -426,12 +520,21 @@
             if (index === 0) {
               e[item.id].planCompleteTime = Moment(e[item.id].planStartTime).add(timeAdd, 'h').format('YYYY-MM-DD HH:mm:ss')
             } else {
-              e[item.id].planStartTime = Moment(e[this.tableData[index - 1].id].planCompleteTime).add(e[item.id].lineChangeTime, 'h').format('YYYY-MM-DD HH:mm:ss');
+              e[item.id].planStartTime = Moment(e[this.tableData[index - 1].id].planCompleteTime).add(e[item.id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss');
               e[item.id].planCompleteTime = Moment(e[item.id].planStartTime).add(timeAdd, 'h').format('YYYY-MM-DD HH:mm:ss')
             }
           })
         }
       },
+
+      /*修改条目数量*/
+      changeQuantity(value, index) {
+
+
+        this.clearPredictTime();
+      },
+
+
 
       /*当执行某些操作时清空现各订单的预计起始时间*/
       clearPredictTime() {
@@ -450,7 +553,72 @@
         } else if (type === 1) {
           this.tableData.splice(index, 1, ...this.tableData.splice(index + 1, 1, this.tableData[index]))
         }
-        this.clearPredictTime();
+        if (this.isAuto) {
+          this.clearPredictTime();
+        }
+      },
+
+      insertOrder(index) {
+        this.insertingPosition = index;
+        this.isInserting = true;
+      },
+
+      orderInsertSelectionChange(val) {
+        this.insertingOrder = JSON.parse(JSON.stringify(val))
+      },
+
+      submitInsert() {
+        let item = this.insertingOrder;
+        if (!item) {
+          this.$alertInfo('请选择订单');
+          return;
+        }
+        if (item.capacity === 0) {
+          this.$alertInfo('所选订单产能为0，请前往产能管理模块添加信息');
+          return;
+        }
+        if (item.unscheduledQuantity === 0) {
+          this.$alertInfo('所选订单待排产数量为0');
+          return;
+        }
+        let checkIdInGroup = function (group, id) {
+          for (let i = 0; i < group.length; i++) {
+            if (group[i].id === id) {
+              return true
+            }
+          }
+          return false;
+        };
+        let isExist = checkIdInGroup(this.tableData, item.id);
+        let tempId = item.id;
+        if (isExist) {
+          item.id = item.id + '-' + Math.floor(Math.random()* 100000);
+        }
+        this.$set(this.tableEditData, item.id, {
+          order: tempId,
+          remark: null,
+          schedulingQuantity: isExist ? 0 : item.unscheduledQuantity,
+          line: null,
+          capacity: item.capacity,
+          processGroup: this.activeProcessGroup,
+          planStartTime: '',
+          planCompleteTime: '',
+          rhythm: item.rhythm,
+          personNumber: item.processPeopleQuantity,
+          lineChangeTime: item.transferLineTime,
+          planInterval: null,
+          isUrgent: Boolean(item.isUrgent)
+        });
+        this.tableData.splice(this.insertingPosition + 1, 0, item);
+        this.closeInsert();
+      },
+
+      closeInsert() {
+        this.insertingOrder = undefined;
+        this.$refs['inserttablecomponent'].setCurrentRow();
+        this.insertingPosition = null;
+        this.isInserting = false;
+
       },
 
       deleteOrder(index) {
@@ -470,16 +638,22 @@
           this.$alertInfo('请完善信息');
           return
         }
-        if (!this.isPending) {
+
+        MessageBox.confirm('请确认是否按此配置导入排产(请留意页面中可能存在的错误提示)', '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
           this.$openLoading();
           this.isPending = true;
           let options = {
-            url: planDetailsAddUrl,
+            url: this.isReImport ? planDetailsReAddUrl : planDetailsAddUrl,
             data: {
               settings: null
             }
           };
           let settingArray = Object.keys(this.tableEditData).map(key => {
+            this.tableEditData[key].line = this.planOptions.line;
             return this.tableEditData[key]
           });
           options.data.settings = JSON.stringify(settingArray);
@@ -497,18 +671,40 @@
             this.isPending = false;
             this.$closeLoading();
           });
-        }
+        })
       },
 
 
-      setTimeoutHighlight({row, index}) {
+      setHighlight({row, index}) {
+        /*时间异常高亮*/
         let rowCompleteTime = this.tableEditData[row.id].planCompleteTime;
         let totalPlanCompleteTime = Moment(this.planOptions.planStartTime).add(this.planOptions.planDays, 'd');
+
+        /*数量异常高亮
+        row.unscheduledQuantity < this.currentOrderQuantity[row.id]
+        */
+        let isReImportRow = Boolean(this.tableEditData[row.id].id !== undefined);
+
+        if (!!rowCompleteTime && Moment(rowCompleteTime).isAfter(totalPlanCompleteTime) && row.unscheduledQuantity < this.currentOrderQuantity[row.id] && !isReImportRow) {
+          return 'quantity-out-timeout-highlight'
+        }
+
         if (!!rowCompleteTime && Moment(rowCompleteTime).isAfter(totalPlanCompleteTime)) {
           return 'timeout-highlight'
         }
+
+        let id = this.tableEditData[row.id].order;
+        if (row.unscheduledQuantity < this.currentOrderQuantity[id] && !isReImportRow) {
+          return 'quantity-out-highlight'
+        }
+
       },
 
+      setExistHighlight({row, index}){
+        if (this.existOrders.indexOf(row.id) >= 0) {
+          return 'exist-highlight'
+        }
+      }
 
     }
   }
@@ -533,7 +729,7 @@
     max-width: 180px;
   }
 
-  .order-setting-comp.__text {
+  .order-setting-comp.__text, .order-setting-comp .el-select {
     width: 128px;
   }
 
@@ -580,4 +776,52 @@
     color: #ff6953;
     font-weight: bold;
   }
+  .el-table /deep/ .exist-highlight {
+    box-shadow: inset 0 0 20px 8px #e7ff86;
+    font-weight: bold;
+  }
+
+  .el-table /deep/ .quantity-out-highlight {
+    box-shadow: inset 0 0 11px 0 #ff6953;
+  }
+  .el-table /deep/ .quantity-out-timeout-highlight {
+    box-shadow: inset 0 0 11px 0 #ff6953;
+    color: #ff6953;
+    font-weight: bold;
+  }
+
+  .insert-tips, .import-order-tips{
+    margin-top: 5px;
+    height: 24px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    cursor: default;
+  }
+
+  .insert-tips-container, .import-tips-container {
+    width: 40px;
+    height: 20px;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    margin-right: 4px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .insert-tips-container.exist-highlight {
+    box-shadow: inset 0 0 5px 3px #e7ff86;
+  }
+
+  .import-tips-container.timeout {
+    color: #ff6953;
+    font-weight: bold;
+  }
+  .import-tips-container.quantity-out {
+    box-shadow: inset 0 0 5px 0 #ff6953;
+    margin-left: 10px;
+  }
+
 </style>

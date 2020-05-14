@@ -131,14 +131,14 @@
               <el-tooltip content="编辑" placement="top">
                 <el-button
                     type="text"
-                    :disabled="scope.row.schedulingPlanStatus === 3"
+                    :disabled="scope.row.schedulingPlanStatus === 4 || scope.row.schedulingPlanStatus === 5"
                     @click="editData(scope.row)"
                     icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
               <el-tooltip content="状态" placement="top">
                 <el-button
                     type="text"
-                    :disabled="scope.row.schedulingPlanStatus === 3"
+                    :disabled="scope.row.schedulingPlanStatus === 4 || scope.row.schedulingPlanStatus === 5"
                     @click="openStatusEditDialog(scope.row)"
                     icon="el-icon-more"></el-button>
               </el-tooltip>
@@ -212,7 +212,7 @@
 
 
     <el-dialog
-        title="导入未排产订单"
+        :title="reImportingOrderData.length === 0 ? '导入未排产订单' : '重排已排产订单'"
         :visible.sync="isOrderImporting"
         :close-on-click-modal="false"
         :close-on-press-escape="false"
@@ -221,9 +221,9 @@
 
       <el-table
           class="order-import-table"
-          border
+          borderi
           size="small"
-          :data="importingOrderData"
+          :data="reImportingOrderData.length === 0 ? importingOrderData : reImportingOrderData"
           max-height="560"
           ref="importtablecomponent"
           @selection-change="orderImportSelectionChange">
@@ -244,17 +244,6 @@
         </el-table-column>
 
       </el-table>
-      <div class="order-import-stash-group"
-           v-if="importingOrderSettingAll.length > 0">
-        <div class="order-import-stash-title">待导入订单:</div>
-        <el-tag
-            v-for="(item, index) in importingOrderSettingAll"
-            :key="item.order"
-            closable
-            @close="spliceOrderSetting(index)">
-          {{item.orderName}}
-        </el-tag>
-      </div>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" type="info" @click="isOrderImporting = false">取消</el-button>
         <el-button size="small" type="primary" @click="setOrderImportOptions">配置</el-button>
@@ -266,90 +255,10 @@
           :importing-orders="importingOrderSelection"
           :active-process-group="activeProcessGroup"
           :line-group="lineSelectGroup"
+          :src-orders="importingOrderData"
+          :order-columns="importingOrderColumns"
+          :is-re-import="isReImport"
           v-on:reload="partlyReload"/>
-<!--      <el-dialog
-          title="设置"
-          :visible.sync="isOrderImportingSetting"
-          :close-on-click-modal="false"
-          :close-on-press-escape="false"
-          @closed="resetOrderImportSettingDialog"
-          width="500px"
-          append-to-body>
-        <div class="order-setting-group">
-          <div class="order-setting-title">
-            <span>排产数量*</span>
-            <span>产能*</span>
-            <span>产线*</span>
-          </div>
-          <div class="order-setting-item" v-for="(item, index) in importingOrderSettingGroup">
-            <span>#{{index + 1}}</span>
-            <el-input v-model.number="item.schedulingQuantity" placeholder="请填写排产数量" size="small"></el-input>
-            <el-input v-model.number="item.capacity" placeholder="请填写产能" size="small"></el-input>
-            <el-select v-model="item.line" placeholder="请选择产线" size="small">
-              <el-option v-for="listItem in lineSelectGroup"
-                         :key="listItem.id"
-                         :value="listItem.id"
-                         :label="listItem.lineName"></el-option>
-            </el-select>
-
-          </div>
-          <div class="order-setting-btn-group">
-            <el-tooltip content="删除最后一条" placement="top">
-              <el-button type="info" circle icon="el-icon-minus" size="mini"
-                         @click="orderImportCountControl('minus')"></el-button>
-            </el-tooltip>
-            <el-tooltip content="新增计划" placement="top">
-              <el-button type="primary" circle icon="el-icon-plus" size="mini"
-                         @click="orderImportCountControl('plus')"></el-button>
-            </el-tooltip>
-          </div>
-          <div class="divider"></div>
-          <div class="order-setting-time">
-            <div class="order-setting-time-item">
-              <label for="order-setting-plan-start-time">预计开始时间:* </label>
-              <el-date-picker
-                  id="order-setting-plan-start-time"
-                  v-model="importingOrderSettingStartTime"
-                  type="datetime"
-                  size="small"
-                  prefix-icon="el-icon-date"
-                  default-time="08:00:00"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  autocomplete="off">
-              </el-date-picker>
-            </div>
-            <div class="order-setting-time-item">
-              <label for="order-setting-plan-complete-time">预计结束时间:* </label>
-              <el-date-picker
-                  id="order-setting-plan-complete-time"
-                  v-model="importingOrderSettingCompleteTime"
-                  type="datetime"
-                  size="small"
-                  prefix-icon="el-icon-date"
-                  default-time="08:00:00"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  autocomplete="off">
-              </el-date-picker>
-            </div>
-
-          </div>
-          <div class="order-setting-plan-remark">
-            <label for="order-setting-plan-remark">备注</label>
-            <el-input type="textarea"
-                      id="order-setting-plan-remark"
-                      :rows="4"
-                      clearable
-                      autocomplete="off"
-                      v-model="importingOrderSettingRemark">
-            </el-input>
-          </div>
-        </div>
-        <span slot="footer" class="dialog-footer">
-          <el-button size="small" type="info" @click="isOrderImportingSetting = false">取消</el-button>
-          <el-button size="small" type="primary" @click="stashOrderSetting">保存</el-button>
-      </span>
-
-      </el-dialog>-->
     </el-dialog>
 
     <!--状态编辑-->
@@ -363,7 +272,7 @@
       <div class="edit-status">
         <el-select size="small" v-model="orderEditStatus" placeholder="请选择状态">
           <el-option :value="1" label="进行"
-                     v-if="planEditRow.schedulingPlanStatus === 4 || planEditRow.schedulingPlanStatus === 1"></el-option>
+                     v-if="planEditRow.schedulingPlanStatus === 3 || planEditRow.schedulingPlanStatus === 1"></el-option>
           <!--<el-option :value="2" label="完成"></el-option>-->
           <el-option :value="3" label="暂停"
                      v-if="planEditRow.schedulingPlanStatus === 2 && permissionControl(['schedulingJMPMC'])"></el-option>
@@ -486,20 +395,10 @@
         isOrderImportingSettingShowing: false, //已暂存的订单详情显示控制
         showingStashImportingSetting: {}, //显示暂存的订单详情
         importingOrderData: [],
+        reImportingOrderData: [], //重排订单
         importingOrderDataTemp: [], //用于临时存放已配置的数据
         importingOrderColumns: orderUnscheduledTableColumns,
         importingOrderSelection: [],
-        importingOrderSettingGroup: [
-          {
-            schedulingQuantity: '',
-            capacity: '',
-            line: ''
-          }
-        ],
-        importingOrderSettingRemark: '',
-        importingOrderSettingStartTime: '',
-        importingOrderSettingCompleteTime: '',
-        importingOrderSettingAll: [],
         //编辑计划
         totallyEditing: false,
         planEditRow: {},
@@ -519,7 +418,10 @@
 
 
         //切换查询栏伸缩
-        isQueryCompHidden: false
+        isQueryCompHidden: false,
+
+        //是否重排订单
+        isReImport:false
       }
     },
     watch: {
@@ -535,8 +437,10 @@
       }
     },
     async created() {
+      this.$openLoading();
       this.initQueryOptions();
       await this.dataPreload();
+      this.$closeLoading();
       //加载表格
       this.activeProcessGroup = this.processGroupSelectGroup[0].id;
       this.fetchData();
@@ -765,7 +669,11 @@
           }).then(response => {
             if (response.data.result === 200) {
               this.importingOrderData = response.data.data;
-              this.isOrderImporting = true;
+              if (this.importingOrderData && this.importingOrderData.length !== 0) {
+                this.isOrderImporting = true;
+              } else {
+                this.$alertInfo('当前工序组下无可排产订单')
+              }
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -791,13 +699,13 @@
             this.$alertInfo('存在未排产数量为0的订单');
             return;
           }
-          /*let noCapacityArray = this.importingOrderSelection.filter(item => {
+          let noCapacityArray = this.importingOrderSelection.filter(item => {
             return item.capacity === 0
           });
           if (noCapacityArray.length > 0) {
             this.$alertInfo('存在产能为0的订单，请前往产能管理模块添加信息');
             return;
-          }*/
+          }
 
           this.isOrderImportingSetting = true
         } else {
@@ -806,131 +714,14 @@
 
       },
 
-      /*控制分产线计划数量的增减*/
-      orderImportCountControl: function (type) {
-        if (type === 'plus') {
-          this.importingOrderSettingGroup.push({
-            schedulingQuantity: '',
-            capacity: '',
-            line: ''
-          })
-        } else if (type === 'minus') {
-          if (this.importingOrderSettingGroup.length > 1) {
-            this.importingOrderSettingGroup.pop();
-          }
-        }
-      },
-
-      /*暂存已编辑配置*/
-      stashOrderSetting: function () {
-        if (!this.isPending) {
-          this.isPending = true;
-          let mark = false;
-          let dataGroup = {
-            schedulingQuantity: [],
-            capacity: [],
-            line: [],
-          };
-          this.importingOrderSettingGroup.forEach(item => {
-            Object.keys(item).forEach(i => {
-              if (!item[i] && item[i] !== 0) {
-                mark = true
-              } else {
-                dataGroup[i].push(item[i])
-              }
-            })
-          });
-
-          if (!this.importingOrderSettingStartTime || !this.importingOrderSettingCompleteTime) {
-            mark = true
-          } else {
-            if (new Date(this.importingOrderSettingCompleteTime) - new Date(this.importingOrderSettingStartTime) < 0) {
-              mark = true
-            }
-          }
-
-          dataGroup.schedulingQuantity.forEach(item => {
-            let regx = new RegExp("^[1-9]\\d*$");
-            if (!regx.test(item)) {
-              mark = true;
-            }
-          });
-
-          if (mark) {
-            this.$alertInfo("导入设置有误");
-            this.isPending = false;
-            return
-          }
-
-          let quantitySummary = 0;
-          dataGroup.schedulingQuantity.forEach(item => {
-            quantitySummary += item
-          });
-
-          if (quantitySummary > this.importingOrderSelection.unscheduledQuantity) {
-            this.$alertInfo("排产数量大于未排产数量");
-            this.isPending = false;
-            return
-          }
-
-          this.isOrderImportingSetting = false;
-          this.importingOrderSettingAll.push({
-            order: this.importingOrderSelection.id,
-            orderName: this.importingOrderSelection.zhidan,
-            processGroup: this.activeProcessGroup,
-            schedulingQuantity: dataGroup.schedulingQuantity.toString(),
-            capacity: dataGroup.capacity.toString(),
-            line: dataGroup.line.toString(),
-            remark: this.importingOrderSettingRemark,
-            planStartTime: this.importingOrderSettingStartTime,
-            planCompleteTime: this.importingOrderSettingCompleteTime
-          });
-
-          let index = 0;
-          this.importingOrderData.forEach((itm, idx) => {
-            if (itm.id === this.importingOrderSelection.id) {
-              index = idx;
-            }
-          });
-          this.importingOrderDataTemp.push(this.importingOrderData[index]);
-          this.importingOrderData.splice(index, 1);
-          this.isPending = false;
-        }
-      },
-
-      /*删除已暂存配置，回滚列表*/
-      spliceOrderSetting: function (index) {
-        let tempIndex = 0;
-        this.importingOrderDataTemp.forEach((itm, idx) => {
-          if (itm.id === this.importingOrderSettingAll[index].order) {
-            tempIndex = idx;
-          }
-        });
-        this.importingOrderData.unshift(this.importingOrderDataTemp[tempIndex]);
-        this.importingOrderDataTemp.splice(tempIndex, 1);
-        this.importingOrderSettingAll.splice(index, 1);
-      },
 
 
       resetOrderImportDialog: function () {
         this.importingOrderData = [];
         this.importingOrderDataTemp = [];
+        this.reImportingOrderData = [];
+        this.isReImport = false;
         this.importingOrderSelection = null;
-        this.importingOrderSettingAll = [];
-        this.resetOrderImportSettingDialog()
-      },
-
-      resetOrderImportSettingDialog: function () {
-        this.importingOrderSettingGroup = [
-          {
-            schedulingQuantity: '',
-            capacity: '',
-            line: ''
-          }
-        ];
-        this.importingOrderSettingRemark = '';
-        this.importingOrderSettingStartTime = '';
-        this.importingOrderSettingCompleteTime = '';
       },
 
       editData: function (val) {
@@ -1145,13 +936,15 @@
 
       /*重排已排产*/
       showOrderPlannedImport() {
-        this.importingOrderData = this.tableData.filter(item => item.statusName === '已排产');
-        if (this.importingOrderData.length !== 0) {
-          this.importingOrderData.map(item => {
+        this.reImportingOrderData = this.tableData.filter(item => item.statusName === '已排产');
+        if (this.reImportingOrderData.length !== 0) {
+          this.reImportingOrderData.map(item => {
             item.unscheduledQuantity = item.schedulingQuantity;
             return item
           });
-          this.isOrderImporting = true;
+          this.isReImport = true;
+          /*获取子页面插单功能的列表源*/
+          this.showOrderImport();
         } else {
           this.$alertInfo('当前工序组不存在已排产订单');
         }

@@ -111,6 +111,7 @@ export const planDetailsSelectUrl = url + '/production/selectPlan'; //查询
 export const planDetailsDeleteUrl = url + '/production/deletePlan'; //删除
 export const planDetailsEditUrl = url + '/production/editPlan'; //修改
 export const planDetailsAddUrl = url + '/production/addPlan'; //新增
+export const planDetailsReAddUrl = url + '/production/reSchedulingPlan'; //新增重排
 export const planDetailsStatusEditUrl = url + '/production/editPlanStatus'; //修改状态
 export const planDetailsExportUrl = url + '/production/exportPlan'; //导出计划
 export const planDetailsGanttGetUrl = url + '/production/getPlanGantt'; //获取甘特图数据
