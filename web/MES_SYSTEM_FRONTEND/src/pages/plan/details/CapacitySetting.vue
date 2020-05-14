@@ -62,6 +62,18 @@
           </el-table-column>
 
           <el-table-column
+            label="删除"
+            width="100"
+            fixed="right"
+            v-if="permissionControl(['engineer'])"
+          >
+            <template slot-scope="scope">
+              <el-tooltip content="删除" placement="top">
+                <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column
             label="操作"
             width="100"
             fixed="right"
@@ -69,22 +81,10 @@
           >
             <template slot-scope="scope">
               <el-tooltip content="编辑" placement="top">
-                <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
+                <el-button type="text" @click="copyCapacity('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top">
-                <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="复制"
-            width="100"
-            fixed="right"
-            v-if="permissionControl(['engineer'])"
-          >
-            <template slot-scope="scope">
               <el-tooltip content="复制" placement="top">
-                <el-button type="text" @click="copyCapacity(scope.row)" icon="el-icon-t-copy"></el-button>
+                <el-button type="text" @click="copyCapacity('add',scope.row)" icon="el-icon-t-copy"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
@@ -312,8 +312,9 @@
 
         mergeData: {},//合并行的记录
         mergePos: {},//mergeData中每项的索引
-        mergeProp: ['softModel','customerNumber','customerName'],
-        mergeKeys: ['softModel','customerNumber','customerName'],
+        // mergeProp: ['softModel','customerNumber','customerName'],
+        mergeProp: ['softModel'],
+        mergeKeys: ['softModel'],
       }
     },
     computed: {
@@ -500,6 +501,13 @@
             if (response.data.result === 200) {
               this.getSpanArr(response.data.data.list, this.mergeKeys);
               this.tableData = response.data.data.list;
+              this.tableData.forEach(item=>{      //取数据的时候  没数据就显示为空 避免 0 undefind  的情况
+                Object.keys(item).forEach(con => {
+                  if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === ""){
+                    item[con] = null
+                  }
+                })
+              })
               this.paginationOptions.currentPage = response.data.data.pageNumber;
               this.paginationOptions.total = response.data.data.totalRow;
             } else {
@@ -547,7 +555,8 @@
           this.$set(this.capacityEditOptionsData, 'process', val.process);
           this.$set(this.capacityEditOptionsData, 'id', val.id);
 
-          this.isCapacityEditing = true;
+          // this.isCapacityEditing = true;
+          this.isCapacityAdd = true;
         } else if (type === 'add') {
           this.processGroupSelectGroup.forEach((item,i)=>{
             let arr ={processGroup:""}
@@ -564,16 +573,20 @@
       },
 
       //复制产能信息
-      copyCapacity(val){
+      copyCapacity(type,val){
         this.fetchCustomer();
-        this.capacityEditType = 'add';
-        this.isCapacityAdd = true;
+        if(type === 'add'){
+          this.capacityEditType = 'add';
+        }else if(type === 'edit'){
+          this.capacityEditType = 'edit';
+        }
         let tempData = JSON.parse(JSON.stringify(this.tableData))
         tempData.forEach(item=>{
           if(item.customerNumber === val.customerNumber && item.softModel === val.softModel){
             this.sameGroupDatas.push(item)
           }
         })
+        this.isCapacityAdd = true;
       },
 
       closeEditCapacityPanel: function () {
@@ -581,14 +594,26 @@
         this.sameGroupDatas=[];
         this.isCapacityAdd =false;
       },
+      //单条编辑
       submitEditCapacity: function () {
         this.sameGroupDatas.forEach(item=>{
-          item.customerNumber= this.capacityEditOptionsData.customerNumber;
+          item.customerNumber= this.capacityEditOptionsData.customerNumber.toString();
           item.customerName= this.customerNames;
           item.softModel= this.capacityEditOptionsData.softModel;
           item.customerModel= this.capacityEditOptionsData.customerModel;
+          item.capacity = Number(item.capacity)
+          item.processPeopleQuantity = Number(item.processPeopleQuantity)
+          item.transferLineTime = Number(item.transferLineTime)
+          item.rhythm = Number(item.rhythm)
+          if(item.capacity <= 0 || item.processPeopleQuantity <= 0){
+            this.Parameter = false
+          }
         })
-
+        if(!this.Parameter){
+          this.$alertWarning('设置数量有误')
+          this.$closeLoading()
+          return
+        }
         this.$refs['capacityEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
@@ -601,28 +626,18 @@
             };
             if (this.capacityEditType === 'edit') {
               options.url = planCapacityEditUrl
-              options.data= this.capacityEditOptionsData
+              // options.data= this.capacityEditOptionsData  //只编辑单条产能
             } else if (this.capacityEditType === 'add') {
-              this.sameGroupDatas.forEach(item=>{
-                item.customerNumber = item.customerNumber.toString()
-                item.capacity = Number(item.capacity)
-                item.processPeopleQuantity = Number(item.processPeopleQuantity)
-                item.transferLineTime = Number(item.transferLineTime)
-                item.rhythm = Number(item.rhythm)
-                console.log(item)
-                if(item.capacity <= 0 || item.processPeopleQuantity <= 0){
-                  this.Parameter = false
-                }
-              })
-              if(!this.Parameter){
-                this.$alertWarning('设置数量有误')
-                this.$closeLoading()
-                return
-              }
-              options.data.modelCapacityString= JSON.stringify(this.sameGroupDatas)
               options.url = planCapacityAddUrl
             }
-            console.log(this.sameGroupDatas)
+            this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
+              Object.keys(item).forEach(con => {
+                if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === ""){
+                  item[con] = null
+                }
+              })
+            })
+            options.data.modelCapacityString= JSON.stringify(this.sameGroupDatas)
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
                 this.resetEditCapacityForm();
@@ -631,7 +646,6 @@
                 this.partlyReload();
               }
               else {
-
                 this.$alertWarning(response.data.data)
               }
             }).catch(err => {
@@ -729,14 +743,14 @@
             rowspan: _row,
             colspan: _col
           }
-          if(column.property === "copy"){
-            const _row = this.mergeData[column.property][rowIndex];
-            const _col = _row > 0 ? 1 : 0;
-            return {
-              rowspan: _row,
-              colspan: _col
-            }
-          }
+          // if(column.property === "copy"){
+          //   const _row = this.mergeData[column.property][rowIndex];
+          //   const _col = _row > 0 ? 1 : 0;
+          //   return {
+          //     rowspan: _row,
+          //     colspan: _col
+          //   }
+          // }
         }
 
       },

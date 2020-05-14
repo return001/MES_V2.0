@@ -86,10 +86,10 @@
           };
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
-              let random1 = Math.floor(Math.random()*3+1)
-              console.log(random1)
+              let random1 = Math.floor(Math.random()*2+1)
               sessionStorage.setItem('factory', random1);//人员和所属工厂（假）
-
+              // sessionStorage.setItem('factory', res.data.data["factory"]);//人员和所属工厂（假）
+              // this.setFactory(sessionStorage.getItem('factory'));
               sessionStorage.setItem('token', res.data.data["#TOKEN#"]);
               this.setLoginToken(sessionStorage.getItem('token'));
               sessionStorage.setItem('UserType', res.data.data["typeName"]);
