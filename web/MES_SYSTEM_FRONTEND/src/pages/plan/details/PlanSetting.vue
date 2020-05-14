@@ -588,23 +588,7 @@
 
       switchTag: function (item) {
         this.activeProcessGroup = item.id;
-        switch (item.groupName) {
-          case '组装':
-            this.activeProcessGroupType = 0;
-            break;
-          case '测试':
-            this.activeProcessGroupType = 1;
-            break;
-          case '包装':
-            this.activeProcessGroupType = 2;
-            break;
-          case '贴片':
-            this.activeProcessGroupType = 3;
-            break;
-          case 'smt':
-            this.activeProcessGroupType = 4;
-            break;
-        }
+        this.activeProcessGroupType = item.id - 1;
         this.initQueryOptions();
         this.queryData();
       },
