@@ -259,7 +259,7 @@
     capacityEditOptions,
     capacityEditOptionsRules,
     capacityEditTableColumns,
-    capacityAddOptions
+    capacityAddOptions, sessionFactory
   } from "../../../config/planConfig";
   import {
     planCapacityAddUrl,
@@ -489,6 +489,7 @@
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
+              factory:sessionFactory
             }
           };
 

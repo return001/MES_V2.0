@@ -524,7 +524,7 @@
     orderEditOptions,
     orderEditOptionsRules,
     orderReworkOptions,
-    orderDetailsTableColumns
+    orderDetailsTableColumns, sessionFactory
   } from "../../../config/planConfig";
   import {FactoryTableColumns} from "../../../config/settingConfig";
   import {
@@ -889,7 +889,8 @@
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
               // descBy: 'orderDate',
-              isRework: this.isRework
+              isRework: this.isRework,
+              factory:sessionFactory
             }
           };
           Object.keys(this.thisQueryOptions).forEach(item => {
@@ -960,7 +961,8 @@
           axiosFetch({
             url: planOrderDetailsSelectUrl,
             data: {
-              id: val.id
+              id: val.id,
+              factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
