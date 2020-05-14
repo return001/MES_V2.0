@@ -237,6 +237,7 @@
               // factory:sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
+              factory:sessionFactory,
             }
           };
           Object.keys(this.thisQueryOptions).forEach(item => {
@@ -293,6 +294,7 @@
             this.$openLoading();
             let options = {
               url: '',
+              factory:sessionFactory,
               data: this.processGroupEditOptionsData
             };
             if (this.processGroupEditType === 'edit') {
