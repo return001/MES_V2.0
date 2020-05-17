@@ -5,7 +5,6 @@
  **@method: generateArray
  **@params: 长度, 填充值
  */
-import de from "element-ui/src/locale/lang/de";
 
 const generateArray = function (length, fillValue) {
   return new Array(length).fill(fillValue)
@@ -159,109 +158,109 @@ const getCharactersFuncList = function () {
   return {
     'basic': {
       'basic': {
-        'factory': generateArray(5, 0),
-        'workshop': generateArray(5, 0),
-        'process_group': generateArray(5, 0),
-        'process': generateArray(5, 0),
-        'line': generateArray(5, 0),
-        'site': generateArray(5, 0),
-        'customer': generateArray(5, 0),
-        'model': generateArray(5, 0),
-        'product': generateArray(5, 0),
-        'capacity': generateArray(5, 0),
-        // 'file_type': generateArray(5, 0),
+        'factory': generateArray(5, false),
+        'workshop': generateArray(5, false),
+        'process_group': generateArray(5, false),
+        'process': generateArray(5, false),
+        'line': generateArray(5, false),
+        'site': generateArray(5, false),
+        'customer': generateArray(5, false),
+        'model': generateArray(5, false),
+        'product': generateArray(5, false),
+        'capacity': generateArray(5, false),
+        // 'file_type': generateArray(5, false),
       },
     },
     'plan': {
       'plan': {
-        'order': generateArray(8, 0),
-        'detail': generateArray(8, 0),
-        'process_group': generateArray(5, 0),
-        'process': generateArray(5, 0),
-        'line': generateArray(5, 0),
-        'capacity': generateArray(5, 0),
+        'order': generateArray(8, false),
+        'detail': generateArray(8, false),
+        'process_group': generateArray(5, false),
+        'process': generateArray(5, false),
+        'line': generateArray(5, false),
+        'capacity': generateArray(5, false),
       }
     },
     'order': {
       'order': {
-        'order': generateArray(7, 0)
+        'order': generateArray(7, false)
       }
     },
     'test': {
       'smt_test': {
-        'func': generateArray(4, 0)
+        'func': generateArray(4, false)
       },
       'zz_test': {
-        'func': generateArray(4, 0),
-        'couple': generateArray(4, 0)
+        'func': generateArray(4, false),
+        'couple': generateArray(4, false)
       },
       'yf_test': {
-        'func': generateArray(4, 0),
-        'couple': generateArray(4, 0)
+        'func': generateArray(4, false),
+        'couple': generateArray(4, false)
       },
       'oqc_test': {
-        'oqc': generateArray(4, 0)
+        'oqc': generateArray(4, false)
       }
     },
     'func': {
       'mac': {
-        'mac': generateArray(3, 0)
+        'mac': generateArray(3, false)
       },
       'imei': {
-        'imei': generateArray(6, 0)
+        'imei': generateArray(6, false)
       }
     },
     'esop': {
       'file': {
-        'file': generateArray(8, 0),
-        'notice': generateArray(8, 0),
-        'site': generateArray(8, 0),
-        'assign': generateArray(3, 0),
-        'action_log': generateArray(1, 0),
-        'confirm_log': generateArray(1, 0),
-        'notice_log': generateArray(1, 0),
+        'file': generateArray(8, false),
+        'notice': generateArray(8, false),
+        'site': generateArray(8, false),
+        'assign': generateArray(3, false),
+        'action_log': generateArray(1, false),
+        'confirm_log': generateArray(1, false),
+        'notice_log': generateArray(1, false),
       },
       'client': {
-        'login_log': generateArray(1, 0),
-        'count_log': generateArray(1, 0)
+        'login_log': generateArray(1, false),
+        'count_log': generateArray(1, false)
       }
     },
     'redtea': {
       'redtea': {
-        'redtea': generateArray(1, 0)
+        'redtea': generateArray(1, false)
       }
     },
     'table': {
       'table': {
-        'DataRelativeSheet': generateArray(6, 0),
-        'DataRelativeUnique': generateArray(6, 0),
-        'DataRelativeUpdate': generateArray(6, 0),
-        'Gps_AutoTest_Result': generateArray(6, 0),
-        'Gps_AutoTest_Result2': generateArray(6, 0),
-        'Gps_AutoTest_Result3': generateArray(6, 0),
-        'Gps_CartonBoxTwenty_Result': generateArray(6, 0),
-        'Gps_CoupleTest_Result': generateArray(6, 0),
-        'Gps_ManuCpParam': generateArray(6, 0),
-        'Gps_ManuPrintParam': generateArray(6, 0),
-        'NetMarkIMEI': generateArray(6, 0),
-        'GPSOQC_Result': generateArray(6, 0),
-        'Gps_ManuSimDataParam': generateArray(6, 0),
-        'LTestLogMessage': generateArray(6, 0),
-        'Gps_TestResult': generateArray(6, 0),
+        'DataRelativeSheet': generateArray(6, false),
+        'DataRelativeUnique': generateArray(6, false),
+        'DataRelativeUpdate': generateArray(6, false),
+        'Gps_AutoTest_Result': generateArray(6, false),
+        'Gps_AutoTest_Result2': generateArray(6, false),
+        'Gps_AutoTest_Result3': generateArray(6, false),
+        'Gps_CartonBoxTwenty_Result': generateArray(6, false),
+        'Gps_CoupleTest_Result': generateArray(6, false),
+        'Gps_ManuCpParam': generateArray(6, false),
+        'Gps_ManuPrintParam': generateArray(6, false),
+        'NetMarkIMEI': generateArray(6, false),
+        'GPSOQC_Result': generateArray(6, false),
+        'Gps_ManuSimDataParam': generateArray(6, false),
+        'LTestLogMessage': generateArray(6, false),
+        'Gps_TestResult': generateArray(6, false),
       },
       'multi': {
-        'multi': generateArray(6, 0),
+        'multi': generateArray(6, false),
       },
       'backup': {
-        'backups': generateArray(6, 0)
+        'backups': generateArray(6, false)
       }
     },
     'user': {
       'user': {
-        'dept': generateArray(8, 0),
-        'char': generateArray(8, 0),
-        'users': generateArray(8, 0),
-        'action_log': generateArray(8, 0),
+        'dept': generateArray(8, false),
+        'char': generateArray(8, false),
+        'users': generateArray(8, false),
+        'action_log': generateArray(8, false),
       }
     }
   }
@@ -289,7 +288,7 @@ const initCharactersFuncMap = function (srcMap, authorities) {
     let moduleList = new Set();
     authorities.forEach(item => {
       /*根据哈希表匹配到具体功能项*/
-      Obj.map[funcNameMap[item.system]][moduleNameMap[item.model]][pageNameMap[item.page]][permissionIndexMap[item.operation]] = 1;
+      Obj.map[funcNameMap[item.system]][moduleNameMap[item.model]][pageNameMap[item.page]][permissionIndexMap[item.operation]] = true;
       /*建立以"模块-类别-页面"组成的列表*/
       pageList.add(`${funcNameMap[item.system]}-${moduleNameMap[item.model]}-${pageNameMap[item.page]}`);
       /*同时将一级路由页面插入列表中以便匹配*/
