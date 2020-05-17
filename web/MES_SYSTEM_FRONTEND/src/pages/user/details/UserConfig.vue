@@ -556,8 +556,6 @@
   .user-config {
     position: relative;
     height: 100%;
-    width: calc(100% - 100px);
-    padding: 20px 20px 20px 80px;
   }
 
   .form-area {

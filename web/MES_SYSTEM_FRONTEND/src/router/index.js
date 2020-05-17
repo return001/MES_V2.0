@@ -12,6 +12,7 @@ const OrderManage = () => import ('../pages/order/details/OrderManage');
 /*用户管理*/
 const UserMain = () => import('../pages/user/UserMain');
 const UserConfig = () => import ('../pages/user/details/UserConfig');
+const UserDept = () => import ('../pages/user/details/DeptMain');
 /*红茶*/
 const RedTea = () => import ('../pages/redtea/RedTeaMain');
 /*测试配置*/
@@ -58,6 +59,8 @@ const EditPassword = () => import('../pages/user/details/EditPassword');
 /*函数*/
 import {permissionList} from "../utils/utils";
 import {getModulePermission} from "../config/charactersFunc";
+import DeptMain from "../pages/user/details/DeptMain";
+import CharMain from "../pages/user/details/CharMain";
 
 Vue.use(Router);
 
@@ -261,6 +264,14 @@ const index = new Router({
               path: 'users',
               component: UserConfig
             },
+            {
+              path: 'dept',
+              component: DeptMain
+            },
+            {
+              path: 'char',
+              component: CharMain
+            }
           ]
         },
         {

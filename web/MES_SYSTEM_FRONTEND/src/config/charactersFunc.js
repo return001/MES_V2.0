@@ -25,6 +25,7 @@ const funcNameMap = {
   '测试': 'test',
   'ESOP': 'esop',
   '功能': 'func',
+  '红茶': 'redtea',
   '报表': 'table',
   '用户': 'user'
 };
@@ -75,7 +76,7 @@ const pageNameMap = {
   '系列机型': 'model',
   '产品型号': 'product',
   '标准产能设置': 'capacity',
-  '订单相关文件类型': 'type',
+  // '订单相关文件类型': 'file_type',
   '订单管理': 'order',
   '排产计划': 'detail',
   '功能测试': 'func',
@@ -135,6 +136,16 @@ const permissionIndexMap = {
   '审核': 6,
   '其他': 7
 };
+const reversePermissionIndexMap = {
+  '0': '查询',
+  '1': '新增',
+  '2': '修改',
+  '3': '删除',
+  '4': '上传',
+  '5': '下载',
+  '6': '审核',
+  '7': '其他'
+};
 
 
 /**
@@ -158,7 +169,7 @@ const getCharactersFuncList = function () {
         'model': generateArray(5, 0),
         'product': generateArray(5, 0),
         'capacity': generateArray(5, 0),
-        'file_type': generateArray(5, 0),
+        // 'file_type': generateArray(5, 0),
       },
     },
     'plan': {
@@ -436,5 +447,6 @@ export {
   initCharactersFuncMap,
   getModulePermission,
   permissionIndexMap,
+  reversePermissionIndexMap,
   getFunctionPermission
 };

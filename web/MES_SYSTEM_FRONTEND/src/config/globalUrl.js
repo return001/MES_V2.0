@@ -15,6 +15,17 @@ export const userQueryUrl = url + '/user/select';
 export const getUserTypeUrl = url + '/user/getUserType';
 export const getUserUrl = url + '/user/getUserIdAndName';
 export const editUserPasswordUrl = url + '/user/updatePassword';
+export const deptAddUrl = url + '/department/add';
+export const deptDeleteUrl = url + '/department/delete';
+export const deptEditUrl = url + '/department/update';
+export const selectDeptUrl = url + '/department/get';
+export const charAddUrl = url + '/role/add';
+export const charDeleteUrl = url + '/role/delete';
+export const charUpdateUrl = url + '/role/update';
+export const selectCharUrl = url + '/role/select';
+export const getAuthorities = url + '/role/getAuthority';
+export const setTypicalChar = url + '/setAtypicalRoleUser';
+
 export const redTeaUrl = url + '/redTea/findCId';
 
 export const tableDownloadUrl = url + '/report/download';
