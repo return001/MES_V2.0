@@ -27,7 +27,9 @@
               default-time="08:00:00"
               autocomplete="off"
               size="mini"
-              prefix-icon="el-icon-date" :disabled="!isAuto"
+              prefix-icon="el-icon-date"
+              :disabled="!isAuto"
+              @change="checkIsInSchedule($event, clearPlanStartTime)"
           >
           </el-date-picker>
         </el-form-item>
@@ -42,61 +44,45 @@
               autocomplete="off"
           ></el-input>
         </el-form-item>
-        <el-form-item
-            size="mini"
-            label="一天可排产时长(小时)"
-            prop="planTimePerDay"
-            class="order-setting-comp __text">
-          <el-input
-              type="text"
-              v-model="planOptions.planTimePerDay"
-              autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item
-            size="mini"
-            label="工作间休息时长(小时)"
-            prop="restTime"
-            class="order-setting-comp __text">
-          <el-input
-              type="text"
-              v-model="planOptions.restTime"
-              autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item
-            size="mini"
-            label="每天生产开始时间"
-            prop="startTimePerDay"
-            class="order-setting-comp">
-          <el-time-picker
-              v-model="planOptions.startTimePerDay"
-              autocomplete="off"
-              size="mini"
-              :picker-options="{
-                selectableRange: '00:00:00 - 23:59:59'
-              }"
-              :default-value="new Date('1970.01.01 08:00:00')"
-              prefix-icon="el-icon-alarm-clock"
-          >
-          </el-time-picker>
-        </el-form-item>
-
-        <el-form-item
-            size="mini"
-            label="产线"
-            prop="line"
-            class="order-setting-comp"
-        >
-            <el-select
-                v-model="planOptions.line"
-                placeholder="请选择产线">
-              <el-option v-for="listItem in lineGroup"
-                         :key="listItem.id"
-                         :value="listItem.id"
-                         :label="listItem.lineName"></el-option>
-            </el-select>
-        </el-form-item>
+        <!-- <el-form-item
+             size="mini"
+             label="一天可排产时长(小时)"
+             prop="planTimePerDay"
+             class="order-setting-comp __text">
+           <el-input
+               type="text"
+               v-model="planOptions.planTimePerDay"
+               autocomplete="off"
+           ></el-input>
+         </el-form-item>
+         <el-form-item
+             size="mini"
+             label="工作间休息时长(小时)"
+             prop="restTime"
+             class="order-setting-comp __text">
+           <el-input
+               type="text"
+               v-model="planOptions.restTime"
+               autocomplete="off"
+           ></el-input>
+         </el-form-item>
+         <el-form-item
+             size="mini"
+             label="每天生产开始时间"
+             prop="startTimePerDay"
+             class="order-setting-comp">
+           <el-time-picker
+               v-model="planOptions.startTimePerDay"
+               autocomplete="off"
+               size="mini"
+               :picker-options="{
+                 selectableRange: '00:00:00 - 23:59:59'
+               }"
+               :default-value="new Date('1970.01.01 08:00:00')"
+               prefix-icon="el-icon-alarm-clock"
+           >
+           </el-time-picker>
+         </el-form-item>-->
         <el-switch
             size="mini"
             v-model="isAuto"
@@ -130,6 +116,23 @@
               <el-checkbox
                   :disabled="!isOptionsEditable"
                   v-model="tableEditData[scope.row.id].isUrgent"></el-checkbox>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="产线"
+              width="120"
+          >
+            <template slot-scope="scope">
+              <el-select
+                  size="mini"
+                  v-model="tableEditData[scope.row.id].line"
+                  :disabled="!isOptionsEditable"
+                  placeholder="请选择产线">
+                <el-option v-for="listItem in lineGroup"
+                           :key="listItem.id"
+                           :value="listItem.id"
+                           :label="listItem.lineName"></el-option>
+              </el-select>
             </template>
           </el-table-column>
           <el-table-column
@@ -191,7 +194,7 @@
                   default-time="08:00:00"
                   class="table-column-date"
                   :disabled="!isOptionsEditable"
-                  @change="manualCalcCompleteTime(scope.$index)"
+                  @change="manualCalcCompleteTime($event, scope.$index)"
               >
               </el-date-picker>
               <span v-else>{{tableEditData[scope.row.id].planStartTime}}</span>
@@ -214,6 +217,7 @@
                   v-if="!isAuto"
                   class="table-column-date"
                   :disabled="!isOptionsEditable"
+                  @change="checkIsInSchedule($event, clearDataItemEndTime, scope.$index)"
               >
               </el-date-picker>
               <span v-else>{{tableEditData[scope.row.id].planCompleteTime}}</span>
@@ -249,6 +253,13 @@
       <p>预计时间异常</p>
       <div class="import-tips-container quantity-out"></div>
       <p>排产数量超额(不计算重排订单)</p>
+    </div>
+
+    <div class="import-working-schedule">
+      <div class="schedule-title">排班表:</div>
+      <div v-for="(val, key) in workingSchedule" class="schedule-item">{{scheduleMap[key] + ': ' + (!!val ? val :
+        '未设置')}}
+      </div>
     </div>
     <span slot="footer" class="dialog-footer">
           <el-button size="small" type="success" @click="calcOptions">解析</el-button>
@@ -302,13 +313,13 @@
 
 <script>
   import Moment from 'moment'
-  import {planDetailsAddUrl, planDetailsReAddUrl} from "../../../../config/globalUrl";
+  import {planDetailsAddUrl, planDetailsReAddUrl, getWorkingScheduleUrl} from "../../../../config/globalUrl";
   import {axiosFetch} from "../../../../utils/fetchData";
   import {MessageBox} from "element-ui";
 
   export default {
     name: "EditImportingOrderComp",
-    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup','lineGroup', 'srcOrders', 'orderColumns', 'isReImport'],
+    props: ['isOrderImportingSetting', 'importingOrders', 'activeProcessGroup', 'lineGroup', 'srcOrders', 'orderColumns', 'isReImport'],
     data() {
       return {
         planOptions: {
@@ -316,8 +327,8 @@
           planDays: null,
           planTimePerDay: null,
           // restTime: null,
-          startTimePerDay: '',
-          line: null
+          //startTimePerDay: '',
+          // line: null
         },
         planOptionsRules: {
           'planStartTime': [
@@ -326,15 +337,15 @@
           'planDays': [
             {required: true, message: '请输入预排产天数', trigger: 'blur'}
           ],
-          'planTimePerDay': [
+          /*'planTimePerDay': [
             {required: true, message: '请输入一天可排产时长', trigger: 'blur'}
           ],
-          /*'restTime': [
+          'restTime': [
             {required: true, message: '请输入工作间休息时长', trigger: 'blur'}
-          ],*/
+          ],
           'startTimePerDay': [
             {required: true, message: '请输入生产开始时间', trigger: 'blur'}
-          ],
+          ],*/
           'line': [
             {required: true, message: '请选择产线', trigger: 'blur'}
           ],
@@ -358,7 +369,6 @@
         tableEditData: {},
         isOptionsEditable: false,
         isAuto: true,
-        planStartTime: null,
         isImportable: false,
         isPending: false,
         insertingPosition: null,
@@ -366,6 +376,23 @@
         insertingOrder: undefined,
         existOrders: [],
         currentOrderQuantity: undefined,
+        workingSchedule: {},
+        scheduleMap: {
+          "0": "白班上班时间",
+          "1": "白班下班时间",
+          "2": "中午上班时间",
+          "3": "下午下班时间",
+          "4": "夜班上班时间",
+          "5": "夜间下班时间",
+          "6": "夜间上班时间",
+          "7": "夜班下班时间",
+        },
+        timeIntervalMinutes: {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+        }
       }
     },
     watch: {
@@ -377,7 +404,7 @@
               order: this.isReImport ? item.orders : item.id,
               remark: null,
               schedulingQuantity: item.unscheduledQuantity,
-              line: null,
+              line: item.line || this.lineGroup[0].id,
               capacity: item.capacity,
               processGroup: this.activeProcessGroup,
               planStartTime: '',
@@ -422,7 +449,10 @@
       }
     },
     computed: {},
-    mounted() {
+    async mounted() {
+      this.$openLoading();
+      this.workingSchedule = await this.getWorkingSchedule();
+      this.planOptions.planTimePerDay = this.calcWorkingTimePerDay();
       this.tableData = this.importingOrders.map(item => {
         //仅重排单拥有id
         this.$set(this.tableEditData, item.id, {
@@ -430,7 +460,7 @@
           order: this.isReImport ? item.orders : item.id,
           remark: null,
           schedulingQuantity: item.unscheduledQuantity,
-          line: null,
+          line: item.line || this.lineGroup[0].id,
           capacity: item.capacity,
           processGroup: this.activeProcessGroup,
           planStartTime: '',
@@ -442,7 +472,8 @@
           isUrgent: Boolean(item.isUrgent)
         });
         return item
-      })
+      });
+      this.$closeLoading()
     },
 
     methods: {
@@ -455,6 +486,68 @@
       cancelEdit() {
         this.$emit('update:isOrderImportingSetting', false);
         this.initAll();
+      },
+
+      getWorkingSchedule() {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: getWorkingScheduleUrl
+          }).then(response => {
+            if (response.data.result === 200) {
+              let data = {};
+              Object.keys(response.data.data).forEach(key => {
+                data[parseInt(key) - 1] = response.data.data[key]
+              });
+              resolve(data);
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取排班时间失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
+
+      /*检查所选时间是否在排班日期内*/
+      checkIsInSchedule(date, callback, cbParams) {
+        const calcTime = (val) => {
+          let group = val.split(':');
+          return group[0] * 60 + parseInt(group[1])
+        };
+        let _date = calcTime(Moment(date).format('HH:mm'));
+        let timeGroup = [];
+        Object.keys(this.workingSchedule).forEach(key => {
+          if (this.workingSchedule[key] !== null) {
+            timeGroup.push(calcTime(this.workingSchedule[key]))
+          }
+        });
+        for (let i = 0; i < timeGroup.length; i = i + 2) {
+          if (_date >= timeGroup[i] && _date <= timeGroup[i + 1]) {
+            return true
+          }
+        }
+        if (callback) callback(cbParams)
+      },
+
+      calcWorkingTimePerDay() {
+        let calcInterval = (st, et) => {
+          let _st = st.split(':');
+          let _et = et.split(':');
+          let h = parseInt(_et[0]) - parseInt(_st[0]);
+          let m = parseInt(_et[1]) - parseInt(_st[1]);
+          return h * 60 + m
+        };
+        let interval = 0;
+        for (let i = 0; i < Object.keys(this.workingSchedule).length; i = i + 2) {
+          if (this.workingSchedule[i] && this.workingSchedule[i + 1]) {
+            let t = calcInterval(this.workingSchedule[i], this.workingSchedule[i + 1]);
+            interval += t;
+            this.timeIntervalMinutes[(i / 2).toString()] = t;
+          }
+        }
+        return interval;
       },
 
       /*计算*/
@@ -474,9 +567,6 @@
             this.calcPredictTime();
 
             if (this.isAuto) {
-              let startTime = Moment(this.planOptions.planStartTime).add(this.tableEditData[this.tableData[0].id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss');
-              this.$set(this.tableEditData[this.tableData[0].id], 'planStartTime', startTime);
-              this.planStartTime = startTime;
               this.calcTotalPredictStartEndTime();
             } else {
 
@@ -498,7 +588,10 @@
         })
       },
       /*手动模式根据预计开始时间计算结束时间*/
-      manualCalcCompleteTime(index) {
+      manualCalcCompleteTime(time, index) {
+        if (!this.checkIsInSchedule(time, this.clearDataItemStartTime, index)) {
+          return;
+        }
         let item = this.tableEditData[this.tableData[index].id];
         if (!item.planInterval) {
           this.$set(item, 'planStartTime', '');
@@ -506,34 +599,126 @@
           return
         }
 
-        item.planCompleteTime = Moment(item.planStartTime).add(Math.floor(item.planInterval / this.planOptions.planTimePerDay) * 24 + (item.planInterval % this.planOptions.planTimePerDay), 'h').format('YYYY-MM-DD HH:mm:ss')
+        item.planCompleteTime = this.calcCompleteEndTime(time, this.tableEditData[this.tableData[index].id].planInterval)
       },
 
       /*根据首日时间及预计时长计算排产周期*/
       calcTotalPredictStartEndTime() {
-        let firstItemId = this.tableData[0].id;
-        let e = this.tableEditData;
-        let o = this.planOptions;
-        if (e[firstItemId].planStartTime) {
-          this.tableData.forEach((item, index) => {
-            let timeAdd = Math.floor(e[item.id].planInterval / o.planTimePerDay) * 24 + (e[item.id].planInterval % o.planTimePerDay);
-            if (index === 0) {
-              e[item.id].planCompleteTime = Moment(e[item.id].planStartTime).add(timeAdd, 'h').format('YYYY-MM-DD HH:mm:ss')
-            } else {
-              e[item.id].planStartTime = Moment(e[this.tableData[index - 1].id].planCompleteTime).add(e[item.id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss');
-              e[item.id].planCompleteTime = Moment(e[item.id].planStartTime).add(timeAdd, 'h').format('YYYY-MM-DD HH:mm:ss')
+        this.tableData.forEach((item, index) => {
+          let startTime;
+          if (index === 0) {
+            startTime = Moment(this.planOptions.planStartTime).add(this.tableEditData[this.tableData[index].id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss')
+          } else {
+            startTime = Moment(this.tableEditData[this.tableData[index - 1].id].planCompleteTime).add(this.tableEditData[this.tableData[index].id].lineChangeTime, 'm').format('YYYY-MM-DD HH:mm:ss')
+          }
+          this.$set(this.tableEditData[this.tableData[index].id], 'planStartTime', startTime);
+          this.$set(this.tableEditData[this.tableData[index].id], 'planCompleteTime', this.calcCompleteEndTime(startTime, this.tableEditData[this.tableData[index].id].planInterval));
+        })
+      },
+
+      /*计算首日开始时间距离当日下班时间时长 返回 分钟数*/
+      calcStartTimeToOffWork(startTime) {
+        const stObj = new Date(startTime);
+        const mins = stObj.getHours() * 60 + stObj.getMinutes();
+        const calcTime = (val) => {
+          let group = val.split(':');
+          return group[0] * 60 + parseInt(group[1])
+        };
+        const findKey = (val, valB, key) => {
+          return val < valB ? key : undefined;
+        };
+        let scheduleKey = undefined;
+        let s = Object.keys(this.workingSchedule);
+        for (let i = 0; i < s.length; i++) {
+          let key = s[i];
+          if (this.workingSchedule[key]) {
+            scheduleKey = findKey(mins, calcTime(this.workingSchedule[key]), key);
+            if (scheduleKey || scheduleKey === 0) {
+              break
             }
-          })
+          }
+        }
+        let minsFromStart;
+        switch (parseInt(scheduleKey)) {
+          case 1:
+            minsFromStart = mins - calcTime(this.workingSchedule[0]);
+            break;
+          case 3:
+            minsFromStart = mins - calcTime(this.workingSchedule[2]) + this.timeIntervalMinutes[0];
+            break;
+          case 5:
+            minsFromStart = mins - calcTime(this.workingSchedule[4]) + this.timeIntervalMinutes[0] + this.timeIntervalMinutes[1];
+            break;
+          case 7:
+            minsFromStart = mins - calcTime(this.workingSchedule[6]) + this.timeIntervalMinutes[0] + this.timeIntervalMinutes[1] + this.timeIntervalMinutes[2];
+            break;
+        }
+        return this.planOptions.planTimePerDay - minsFromStart;
+      },
+
+      /*根据最后一天的分钟数计算结束时间点 返回 时间字符串*/
+      calcEndTime(lastDateTime) {
+        let generateTime = (st, interaval) => {
+          let _st = st.split(':');
+          let _h = Math.floor(interaval / 60);
+          let _m = interaval % 60;
+          return {
+            'h': (parseInt(_st[0]) + _h),
+            'm': (parseInt(_st[1]) + _m)
+          };
+        };
+        if (lastDateTime > 0) {
+          if (lastDateTime < this.timeIntervalMinutes[0]) {
+            return generateTime(this.workingSchedule[0], lastDateTime)
+          }
+
+          if (lastDateTime < this.timeIntervalMinutes[0] + this.timeIntervalMinutes[1]) {
+            return generateTime(this.workingSchedule[2], lastDateTime - this.timeIntervalMinutes[0])
+          }
+
+          if (lastDateTime < this.timeIntervalMinutes[0] + this.timeIntervalMinutes[1] + this.timeIntervalMinutes[2]) {
+            return generateTime(this.workingSchedule[4], lastDateTime - this.timeIntervalMinutes[0] - this.timeIntervalMinutes[1])
+          }
+
+          if (lastDateTime < this.timeIntervalMinutes[0] + this.timeIntervalMinutes[1] + this.timeIntervalMinutes[2] + this.timeIntervalMinutes[3]) {
+            return generateTime(this.workingSchedule[6], lastDateTime - this.timeIntervalMinutes[0] - this.timeIntervalMinutes[1] - this.timeIntervalMinutes[2])
+          }
+
+        } else {
+          return generateTime(this.workingSchedule[0], 0)
         }
       },
 
-      /*修改条目数量*/
-      changeQuantity(value, index) {
 
-
-        this.clearPredictTime();
+      /*根据开始时间与生产时长生成结束的完整时间
+      * 开始时间  预计生产时间*/
+      calcCompleteEndTime(startTime, planInterval) {
+        let intervalMin = planInterval * 60;
+        let firstDayInterval = this.calcStartTimeToOffWork(startTime);
+        /*排除当天就能完成的情况*/
+        if (firstDayInterval <= intervalMin) {
+          let intervalDaysWithoutFirstEnd = Math.floor((intervalMin - firstDayInterval) / this.planOptions.planTimePerDay);
+          let lastDayIntervalMin = (intervalMin - firstDayInterval) % this.planOptions.planTimePerDay;
+          let etObj = this.calcEndTime(lastDayIntervalMin);
+          return Moment(startTime).second(0).minute(0).hour(0).add(1, 'd').add(intervalDaysWithoutFirstEnd, 'd').set({
+            'h': etObj.h,
+            'm': etObj.m
+          }).format('YYYY-MM-DD HH:mm:ss');
+        } else {
+          let etObj = this.calcEndTime(intervalMin + (this.planOptions.planTimePerDay - this.calcStartTimeToOffWork(startTime)));
+          console.log(intervalMin, (this.planOptions.planTimePerDay - this.calcStartTimeToOffWork(startTime)))
+          return Moment(startTime).second(0).minute(0).hour(0).set({
+            'h': etObj.h,
+            'm': etObj.m
+          }).format('YYYY-MM-DD HH:mm:ss');
+        }
       },
 
+
+      /*修改条目数量*/
+      changeQuantity(value, index) {
+        this.clearPredictTime();
+      },
 
 
       /*当执行某些操作时清空现各订单的预计起始时间*/
@@ -592,13 +777,13 @@
         let isExist = checkIdInGroup(this.tableData, item.id);
         let tempId = item.id;
         if (isExist) {
-          item.id = item.id + '-' + Math.floor(Math.random()* 100000);
+          item.id = item.id + '-' + Math.floor(Math.random() * 100000);
         }
         this.$set(this.tableEditData, item.id, {
           order: tempId,
           remark: null,
           schedulingQuantity: isExist ? 0 : item.unscheduledQuantity,
-          line: null,
+          line: item.line || this.lineGroup[0].id,
           capacity: item.capacity,
           processGroup: this.activeProcessGroup,
           planStartTime: '',
@@ -653,7 +838,6 @@
             }
           };
           let settingArray = Object.keys(this.tableEditData).map(key => {
-            this.tableEditData[key].line = this.planOptions.line;
             return this.tableEditData[key]
           });
           options.data.settings = JSON.stringify(settingArray);
@@ -700,12 +884,25 @@
 
       },
 
-      setExistHighlight({row, index}){
+      setExistHighlight({row, index}) {
         if (this.existOrders.indexOf(row.id) >= 0) {
           return 'exist-highlight'
         }
-      }
+      },
 
+      clearPlanStartTime () {
+        this.planOptions.planStartTime = '';
+        this.$alertInfo('请选择在排班时间内的日期')
+      },
+
+      clearDataItemStartTime() {
+        this.tableEditData[this.tableData[index]].planStartTime = '';
+        this.$alertInfo('请选择在排班时间内的日期')
+      },
+      clearDataItemEndTime(index) {
+        this.tableEditData[this.tableData[index]].planCompleteTime = '';
+        this.$alertInfo('请选择在排班时间内的日期')
+      }
     }
   }
 </script>
@@ -776,6 +973,7 @@
     color: #ff6953;
     font-weight: bold;
   }
+
   .el-table /deep/ .exist-highlight {
     box-shadow: inset 0 0 20px 8px #e7ff86;
     font-weight: bold;
@@ -784,13 +982,14 @@
   .el-table /deep/ .quantity-out-highlight {
     box-shadow: inset 0 0 11px 0 #ff6953;
   }
+
   .el-table /deep/ .quantity-out-timeout-highlight {
     box-shadow: inset 0 0 11px 0 #ff6953;
     color: #ff6953;
     font-weight: bold;
   }
 
-  .insert-tips, .import-order-tips{
+  .insert-tips, .import-order-tips {
     margin-top: 5px;
     height: 24px;
     font-size: 12px;
@@ -811,6 +1010,7 @@
     justify-content: center;
     align-items: center;
   }
+
   .insert-tips-container.exist-highlight {
     box-shadow: inset 0 0 5px 3px #e7ff86;
   }
@@ -819,9 +1019,43 @@
     color: #ff6953;
     font-weight: bold;
   }
+
   .import-tips-container.quantity-out {
     box-shadow: inset 0 0 5px 0 #ff6953;
     margin-left: 10px;
+  }
+
+  .import-working-schedule {
+    border-radius: 5px;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #e6e6e6;
+    margin-bottom: -60px;
+    margin-top: 10px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding-top: 20px;
+    color: #7c8088;
+    box-shadow: 0 0 8px 0 #eaeaea;
+  }
+
+  .import-working-schedule .schedule-title {
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 2px;
+    left: 5px;
+  }
+
+  .import-working-schedule .schedule-item {
+    line-height: 18px;
+    width: 140px;
   }
 
 </style>
