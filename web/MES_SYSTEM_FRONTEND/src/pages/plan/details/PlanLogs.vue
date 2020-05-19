@@ -77,7 +77,7 @@
 <script>
   import {
     logsQueryOptions,
-    logsTableColumns,
+    logsTableColumns, sessionFactory,
 
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
@@ -233,6 +233,7 @@
           });
           options.data.startTime = options.data.orderDate[0]
           options.data.endTime = options.data.orderDate[1]
+          options.data.factory = sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;

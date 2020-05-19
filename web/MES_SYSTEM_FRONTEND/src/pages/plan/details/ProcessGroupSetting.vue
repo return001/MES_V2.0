@@ -234,12 +234,14 @@
           let options = {
             url: planProcessGroupSelectUrl,
             data: {
-              // factory:sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
               factory:sessionFactory,
             }
           };
+          // if(sessionFactory !== "null"){
+          //   options.data.factory=sessionFactory
+          // }
           Object.keys(this.thisQueryOptions).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
           });
@@ -292,17 +294,19 @@
           if (isValid && !this.isPending) {
             this.isPending = true;
             this.$openLoading();
+            this.processGroupEditOptionsData.factory = sessionFactory
             let options = {
               url: '',
-              factory:sessionFactory,
-              data: this.processGroupEditOptionsData
+              data: this.processGroupEditOptionsData,
             };
+            // if(sessionFactory !== "null"){
+            //   options.data.factory=sessionFactory
+            // }
+
             if (this.processGroupEditType === 'edit') {
               options.url = planProcessGroupEditUrl
-              options.data.factory = sessionFactory;
             } else if (this.processGroupEditType === 'add') {
               options.url = planProcessGroupAddUrl
-              options.data.factory = sessionFactory;
             }
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {

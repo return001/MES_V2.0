@@ -268,9 +268,9 @@
           if (this.queryString !== '') {
             options.data.filter = this.queryString;
           }
+          options.data.factory=sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data.data.list)
               this.tableData = response.data.data.list;
               this.paginationOptions.currentPage = response.data.data.pageNumber;
               this.paginationOptions.total = response.data.data.totalRow;
@@ -340,13 +340,14 @@
           if(isValid){
             this.isPending = true;
             this.$openLoading();
+            this.fileTypeOptionsData.factory = sessionFactory
             let options= {
               url:"",
               data: this.fileTypeOptionsData
             }
+
             if(this.fileTypeTitle === "edit"){
               options.url = planFileTypeEditUrl
-              console.log(this.fileTypeOptionsData)
             }else if (this.fileTypeTitle === 'add'){
               options.url = planFileTypeAddUrl
             }

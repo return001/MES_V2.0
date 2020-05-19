@@ -86,13 +86,9 @@
           };
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
-              console.log(res.data.data)
-              // let random1 = Math.floor(Math.random()*2+1)
-              // sessionStorage.setItem('factory', random1);//人员和所属工厂（假）
+              sessionStorage.setItem('factory', res.data.data["Factory"]);//人员的所属工厂
 
-              sessionStorage.setItem('factory', res.data.data["Factory"]);//人员和所属工厂（假）
-
-              // this.setFactory(sessionStorage.getItem('factory'));
+              // this.setFactory(sessionStorage.getItem('Factory'));
               sessionStorage.setItem('token', res.data.data["#TOKEN#"]);
               this.setLoginToken(sessionStorage.getItem('token'));
               sessionStorage.setItem('UserType', res.data.data["typeName"]);

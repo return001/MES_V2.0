@@ -138,7 +138,7 @@
     processQueryOptions,
     processTableColumns,
     processEditOptions,
-    processEditOptionsRules
+    processEditOptionsRules, sessionFactory
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -251,7 +251,15 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              this.processGroupSelectGroup = response.data.data.list;
+              if(sessionFactory ==='0'){
+                this.processGroupSelectGroup = response.data.data.list;
+              }else{
+                response.data.data.list.forEach(item=>{
+                  if(item.factoryId === Number(sessionFactory)){
+                    this.processGroupSelectGroup.push(item)
+                  }
+                })
+              }
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -282,6 +290,7 @@
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
+              factory:sessionFactory,
             }
           };
           Object.keys(this.thisQueryOptions).forEach(item => {
@@ -345,6 +354,7 @@
             } else if (this.processEditType === 'add') {
               options.url = planProcessAddUrl
             }
+            options.data.factory = sessionFactory;
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
                 this.$alertSuccess('操作成功');

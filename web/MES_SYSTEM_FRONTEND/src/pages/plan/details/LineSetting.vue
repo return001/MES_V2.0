@@ -320,7 +320,13 @@
     eSopWorkshopSelectUrl,
     eSopFactorySelectUrl,
   } from "../../../config/globalUrl";
-  import {lineTableColumns, lineQueryOptions, lineEditOptions, lineEditOptionsRules} from "../../../config/planConfig";
+  import {
+    lineTableColumns,
+    lineQueryOptions,
+    lineEditOptions,
+    lineEditOptionsRules,
+    sessionFactory
+  } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from 'element-ui'
 
@@ -519,7 +525,16 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              this.asyncSelectGroup.processGroup.list = response.data.data.list;
+              if(sessionFactory === '0'){
+                this.asyncSelectGroup.processGroup.list = response.data.data.list;
+              }else{
+                response.data.data.list.forEach(item=>{
+                  if(item.factoryId ===Number(sessionFactory)){
+                    this.asyncSelectGroup.processGroup.list.push(item)
+                  }
+                })
+              }
+
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -563,7 +578,15 @@
             }
           }).then(response => {
             if (response.data.result === 200) {
-              this.asyncSelectGroup.workshopId.list = response.data.data.list;
+              if(sessionFactory === '0'){
+                this.asyncSelectGroup.workshopId.list = response.data.data.list;
+              }else{
+              response.data.data.list.forEach(item=>{
+                if(item.factoryId === Number(sessionFactory)){
+                  this.asyncSelectGroup.workshopId.list.push(item)
+                }
+              })
+              }
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -601,6 +624,7 @@
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
+          options.data.factoryId = sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;

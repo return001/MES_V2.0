@@ -11,7 +11,7 @@
                       autocomplete="off"></el-input>
           </div>
           <!--选择器-->
-          <div class="query-comp-select" v-else-if="item.key === 'factoryId'">
+          <div class="query-comp-select" v-else-if="item.key === 'factoryId' && sessionFactory === '0'" >
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
@@ -22,7 +22,7 @@
                          :label="listItem.abbreviation"></el-option>
             </el-select>
           </div>
-          <div class="query-comp-select" v-else-if="item.type === 'select'">
+          <div class="query-comp-select" v-else-if="item.type === 'select' && item.key !=='factoryId'">
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
@@ -168,6 +168,7 @@
           class="order-edit-form-comp-select"
           label="所属工厂"
           prop="factory"
+          v-if="sessionFactory === '0'"
         >
           <el-select v-model="orderEditOptionsData['factory']" class="line-edit-form-comp-text"
                       placeholder="请选择工厂"
@@ -552,6 +553,7 @@
     inject: ['reload'],
     data() {
       return {
+        sessionFactory:sessionFactory,
         queryOptions: orderQueryOptions,
         thisQueryOptions: {}, //将queryOptions中的键值对提取作为该对象元素
         tableData: [],
@@ -602,7 +604,7 @@
         isOrderEditing: false,
         orderEditType: '',
         orderEditOptionsData: {
-          factory: undefined
+          factory: sessionFactory
         },
         uploadAble:true,
         reworkOrder:"",
@@ -851,7 +853,8 @@
         this.paginationOptions.currentPage = 1;
         this.paginationOptions.total = 0;
         this.createQueryString();
-        this.fetchData();
+        let type = "query"
+        this.fetchData(type);
       },
 
 
@@ -862,7 +865,8 @@
             url: eSopFactorySelectUrl,
             data: {
               pageNo: this.paginationOptions.currentPage,
-              pageSize: this.paginationOptions.pageSize
+              pageSize: this.paginationOptions.pageSize,
+              // factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -879,7 +883,7 @@
         });
       },
 
-      fetchData: function () {
+      fetchData: function (type) {
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
@@ -890,19 +894,26 @@
               pageSize: this.paginationOptions.pageSize,
               // descBy: 'orderDate',
               isRework: this.isRework,
-              factory:sessionFactory
             }
           };
+          let queryFactoryId= this.thisQueryOptions.factoryId.value
           Object.keys(this.thisQueryOptions).forEach(item => {
+            if(sessionFactory === '0') {    //超级管理员的话  不需要工厂id（查询）
+              if (type === 'query') {
+                this.thisQueryOptions.factoryId.value = queryFactoryId //人员的工厂id 和 查询时上传的工厂id 区分
+              } else {
+              this.thisQueryOptions.factoryId.value = ""
+              }
+            }else{
+              this.thisQueryOptions.factoryId.value = sessionFactory
+            }
+
             options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
           });
           options.data['deliveryDateFrom'] = options.data['deliveryDate'][0]
           options.data['deliveryDateTo'] = options.data['deliveryDate'][1]
           options.data['orderDateFrom'] = options.data['orderDate'][0]
           options.data['orderDateTo'] = options.data['orderDate'][1]
-          // if (this.queryString !== '') {
-            // options.data.filter = this.queryString;
-          // }
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
@@ -962,7 +973,7 @@
             url: planOrderDetailsSelectUrl,
             data: {
               id: val.id,
-              factory:sessionFactory
+              // factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -1057,8 +1068,11 @@
             this.$openLoading();
             let options = {
               url: '',
-              data: this.orderEditOptionsData
+              data: this.orderEditOptionsData,
             };
+            // if(sessionFactory !== "null"){
+            //   options.data.factory=sessionFactory
+            // }
             if (this.orderEditType === 'edit') {
               options.url = planOrderEditUrl
               options.data.isRework = this.isRework
@@ -1066,6 +1080,7 @@
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
+                options.data.factory = sessionFactory;
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1090,7 +1105,7 @@
               this.$closeLoading();
               this.isReworkEdit = false;
               this.$set(this.orderEditOptionsData,'factory',undefined)
-              //this.reload();
+              // this.reload();
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -1546,6 +1561,7 @@
         this.$refs.orderDetailsUpload.submit();
         this.uploadFileData.append('type', this.orderDetailsType);
         this.uploadFileData.append('id', this.showingItem.id);
+        this.uploadFileData.append('factory', sessionFactory);
         this.uploadFileData.append('#TOKEN#', this.$store.state.token);
         let config = {
           header: {

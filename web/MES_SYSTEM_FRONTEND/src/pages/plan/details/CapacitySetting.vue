@@ -107,10 +107,20 @@
         label-position="top"
         @submit.native.prevent
         :rules="capacityEditOptionsRules">
+<!--          <el-form-item size="small" class="capacity-edit-form-comp" label="选择工厂" prop="factory" v-if="sessionFactory === '0'">-->
+<!--          <el-select v-model="getGroupInfoFactoryId" id="factory01"-->
+<!--                     autocomplete="off"-->
+<!--                     @change="changeGroupList"-->
+<!--                     placeholder="请选择工厂" size="small">-->
+<!--            <el-option v-for="listItem in factoryList"-->
+<!--                       :key="listItem.id"-->
+<!--                       :value="listItem.id"-->
+<!--                       :label="listItem.abbreviation"></el-option>-->
+<!--          </el-select>-->
+<!--          </el-form-item>-->
         <el-form-item size="small" class="capacity-edit-form-comp" label="客户编号" prop="customerNumber">
           <el-select v-model="capacityEditOptionsData.customerNumber" placeholder="请选择客户编号" class="capacity-edit-form-comp-text"
-                     @change="choiceCustomer"
-                     :disabled="processGroupSelectGroup.length === 0">
+                     @change="choiceCustomer">
             <el-option v-for="listItem in customerDatas"
                        :key="listItem.id"
                        :value="listItem.customerNumber"
@@ -249,6 +259,17 @@
         <el-button size="small" @click="submitEditCapacity('edit')" type="primary">保存</el-button>
       </span>
     </el-dialog>
+    <el-pagination
+      background
+      :current-page.sync="paginationOptions.currentPage"
+      :page-sizes="[18, 36, 54 ]"
+      :page-size.sync="paginationOptions.pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="paginationOptions.total"
+      @current-change="pageChange"
+      @size-change="queryData"
+      class="page-pagination">
+    </el-pagination>
   </div>
 </template>
 
@@ -268,7 +289,7 @@
     planCapacitySelectUrl,
     planProcessGroupGetUrl,
     planProcessGetUrl,
-    eSopCustomerSelectUrl
+    eSopCustomerSelectUrl, eSopFactorySelectUrl
   } from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from "element-ui"
@@ -279,6 +300,7 @@
     inject: ['reload'],
     data() {
       return {
+        sessionFactory:sessionFactory,
         queryOptions: capacityQueryOptions,
         thisQueryOptions: {},
         processSelectGroupSrc: [], //工序信息 源
@@ -288,13 +310,14 @@
         customerNames:"",
         tableData: [],
         tableColumns: capacityTableColumns,
-
+        getGroupInfoFactoryId:"",//超级管理员用来 选择给哪个工厂增加产能的  工厂id
         paginationOptions: {
           currentPage: 1,
-          pageSize: 65535,
+          pageSize: 18,
           total: 0
         },
         /*编辑新增产能信息*/
+        factoryList:[],  //工厂
         isCapacityEditing: false,
         sameGroupDatas:[],  //点击复制后信息存储
         capacityAddOptions: capacityAddOptions,
@@ -348,7 +371,7 @@
           this.queryData();
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectGroupSrc', 'processGroupSelectGroup',  ])
+        _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectGroupSrc', 'processGroupSelectGroup'])
       },
 
       /**
@@ -452,10 +475,19 @@
       fetchProcessGroup: function () {
         return new Promise(resolve => {
           axiosFetch({
-            url: planProcessGroupGetUrl
+            url: planProcessGroupGetUrl,
+
           }).then(response => {
             if (response.data.result === 200) {
-              this.processGroupSelectGroup = response.data.data.list;
+              if(sessionFactory === '0'){
+                this.processGroupSelectGroup = response.data.data.list
+              }else {
+                response.data.data.list.forEach(item => {
+                  if (item.factoryId === Number(this.getGroupInfoFactoryId)) {
+                    this.processGroupSelectGroup.push(item)
+                  }
+                })
+              }
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -465,6 +497,41 @@
             resolve();
           })
         });
+      },
+
+      //获取工厂
+      fetchFactory: function () {
+        return new Promise(resolve => {
+          axiosFetch({
+            url: eSopFactorySelectUrl,
+            data: {
+              pageNo: this.paginationOptions.currentPage,
+              pageSize: this.paginationOptions.pageSize,
+              // factory:sessionFactory
+            }
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.factoryList = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            console.log(err)
+            this.$alertDanger('获取工厂信息失败，请刷新重试');
+          }).finally(() => {
+            resolve();
+          })
+        });
+      },
+
+      // 翻页  条件查询
+      pageChange: function () {
+        this.fetchData();
+      },
+
+      //工厂更改  工序组即更改
+      changeGroupList(){
+        this.fetchProcessGroup()
       },
 
       indexMethod: function (index) {
@@ -478,26 +545,28 @@
       },
 
       fetchData: function () {
+
         if (!this.isPending) {
+          this.getGroupInfoFactoryId = sessionFactory
           this.isPending = true;
           this.$openLoading();
           this.tableData = [];
           this.mergeData = {};
           this.mergePos = {};
+          // this.fetchProcessGroup()
           let options = {
             url: planCapacitySelectUrl,
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
-              factory:sessionFactory
             }
           };
-
           Object.keys(this.thisQueryOptions).forEach(item => {
             if (this.thisQueryOptions[item].value !== "") {
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
+          options.data.factory = sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.getSpanArr(response.data.data.list, this.mergeKeys);
@@ -533,8 +602,12 @@
        */
       editData: function (type, val) {
         this.fetchCustomer()
+        this.fetchFactory()
         if (!!this.$refs['capacityEditForm']) {
           this.$refs['capacityEditForm'].clearValidate();
+        }
+        if(sessionFactory === '0'){
+          this.getGroupInfoFactoryId =""
         }
         if (type === 'edit') {
           this.capacityEditType = 'edit';
@@ -562,6 +635,7 @@
           this.processGroupSelectGroup.forEach((item,i)=>{
             let arr ={processGroup:""}
             this.sameGroupDatas.push(arr)
+
             this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
             this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
           })
@@ -631,6 +705,7 @@
             } else if (this.capacityEditType === 'add') {
               options.url = planCapacityAddUrl
             }
+            options.data.factory = sessionFactory
             this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
               Object.keys(item).forEach(con => {
                 if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === ""){
@@ -667,6 +742,9 @@
         this.sameGroupDatas=[];
         this.customerNames ="";
         this.isCapacityAdd =false;
+        // this.processGroupSelectGroup =[];
+        this.factoryList=[];
+        this.getGroupInfoFactoryId= "";
         this.$refs['capacityEditForm'].clearValidate();
         this.initEditOptions();
       },

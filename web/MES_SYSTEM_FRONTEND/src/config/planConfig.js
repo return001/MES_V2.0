@@ -683,7 +683,8 @@ export const capacityEditOptions = [{
 ]
 
 
-export const capacityAddOptions = [{
+export const capacityAddOptions = [
+  {
         type: 'text',
         label: '机型',
         key: 'softModel'
@@ -693,6 +694,11 @@ export const capacityAddOptions = [{
         label: '客户型号',
         key: 'customerModel'
     },
+  // {
+  //   type: 'select',
+  //   label: '选择工厂',
+  //   key: 'factory'
+  // },
 ];
 
 export const capacityEditOptionsRules = {
@@ -723,6 +729,12 @@ export const capacityTableColumns = [{
         'key': 'customerName',
         'min-width': '100px'
     },
+    {
+        'label': '所属工厂',
+        'key': 'abbreviation',
+        'min-width': '100px'
+    },
+
     {
         'label': '客户型号/料号',
         'key': 'customerModel',
@@ -795,7 +807,9 @@ export const capacityEditTableColumns = [
 ];
 
 /*工序组信息*/
-export const processGroupQueryOptions = [{
+export const processGroupQueryOptions = [
+
+    {
         type: 'text',
         label: '工序组编号',
         key: 'groupNo'
@@ -807,7 +821,8 @@ export const processGroupQueryOptions = [{
     },
 ];
 
-export const processGroupEditOptions = [{
+export const processGroupEditOptions = [
+    {
         type: 'text',
         label: '工序组编号',
         key: 'groupNo'
@@ -830,7 +845,13 @@ export const processGroupEditOptionsRules = {
     'groupName': [{ required: true, message: '请填写工序组名称', trigger: 'blur' }],
 };
 
-export const processGroupTableColumns = [{
+export const processGroupTableColumns = [
+    {
+        'label': '所属工厂',
+        'key': 'abbreviation',
+        'min-width': '100px'
+    },
+    {
         'label': '工序组编号',
         'key': 'groupNo',
         'min-width': '100px'
@@ -883,7 +904,14 @@ export const processEditOptionsRules = {
     'processName': [{ required: true, message: '请填写工序名称', trigger: 'blur' }],
 };
 
-export const processTableColumns = [{
+export const processTableColumns = [
+
+    {
+      'label': '所属工厂',
+      'key': 'abbreviation',
+      'min-width': '100px'
+    },
+    {
         'label': '工序组',
         'key': 'groupName',
         'min-width': '100px'

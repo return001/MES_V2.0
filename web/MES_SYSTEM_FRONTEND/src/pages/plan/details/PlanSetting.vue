@@ -304,7 +304,7 @@
     planTableExtraOrderColumns,
     planTableExtraUserColumns,
     orderTableColumns,
-    orderUnscheduledTableColumns
+    orderUnscheduledTableColumns, sessionFactory
   } from "../../../config/planConfig";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {
@@ -561,10 +561,20 @@
       fetchProcessGroup: function () {
         return new Promise(resolve => {
           axiosFetch({
-            url: planProcessGroupGetUrl
+            url: planProcessGroupGetUrl,
+            factory:sessionFactory,
           }).then(response => {
             if (response.data.result === 200) {
-              this.processGroupSelectGroup = response.data.data.list;
+              if(sessionFactory ==='0'){
+                this.processGroupSelectGroup = response.data.data.list;
+              }else{
+              response.data.data.list.forEach((item,i)=>{
+                if(item.factoryId === Number(sessionFactory)){
+                  this.processGroupSelectGroup.push(item)
+                }
+              })
+              }
+              // this.processGroupSelectGroup = response.data.data.list;
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -600,6 +610,7 @@
           let options = {
             url: planDetailsSelectUrl,
             data: {
+              factory:sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
             }
@@ -615,6 +626,7 @@
             }
           });
           options.data.processGroup = this.activeProcessGroup;
+          options.data.factory = sessionFactory;
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
@@ -648,7 +660,8 @@
           axiosFetch({
             url: url === 'rework' ? planDetailsReworkSelectUrl : planDetailsUnscheduledSelectUrl,
             data: {
-              type: this.activeProcessGroupType //track
+              type: this.activeProcessGroupType, //track
+              factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
