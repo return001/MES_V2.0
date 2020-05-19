@@ -1268,11 +1268,13 @@
         this.$refs.orderUpload.submit();
         this.uploadFileData.append('isRework', this.isReworkUpload);
         this.uploadFileData.append('#TOKEN#', this.$store.state.token);
+        this.uploadFileData.append('factory', 2);
         let config = {
           header: {
             'Content-Type': 'multipart/form-data'
           },
         };
+        // this.uploadFileData.factory = 2
         this.$axios.post(planOrderImportUrl, this.uploadFileData, config).then(response => {
           if (response.data.result === 200) {
             this.$alertSuccess(response.data.data);
