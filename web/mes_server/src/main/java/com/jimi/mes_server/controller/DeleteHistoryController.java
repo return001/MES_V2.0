@@ -1,3 +1,4 @@
+
 package com.jimi.mes_server.controller;
 
 import java.io.File;
@@ -10,7 +11,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import com.jfinal.core.Controller;
-import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.service.DeleteHistoryService;
 import com.jimi.mes_server.util.ResultUtil;
 
@@ -34,7 +34,7 @@ public class DeleteHistoryController extends Controller {
 	 * @param descBy
 	 * @param filter
 	 */
-	@Access({ "operator", "engineer" })
+	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		renderJson(ResultUtil.succeed(deleteHistoryService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
@@ -44,7 +44,7 @@ public class DeleteHistoryController extends Controller {
 	 * 下载删除记录备份
 	 * @param id
 	 */
-	@Access({ "operator", "engineer" })
+	
 	public void download(String id) {
 		File file = deleteHistoryService.download(id);
 		HttpServletResponse response = getResponse();

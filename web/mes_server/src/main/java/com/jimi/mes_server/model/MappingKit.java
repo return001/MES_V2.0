@@ -17,11 +17,13 @@ public class MappingKit {
 	
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("action_log", "id", ActionLog.class);
+		arp.addMapping("authority", "id", Authority.class);
 		arp.addMapping("dashboard", "id", Dashboard.class);
 		arp.addMapping("dashboard_for_customer", "id", DashboardForCustomer.class);
 		arp.addMapping("DataRelativeSheet", "IMEI1", DataRelativeSheet.class);
 		arp.addMapping("DataRelativeUnique", "DATA1", DataRelativeUnique.class);
 		arp.addMapping("DataRelativeUpdate", "RelativeNum", DataRelativeUpdate.class);
+		arp.addMapping("department", "id", Department.class);
 		arp.addMapping("file_type", "id", FileType.class);
 		arp.addMapping("Gps_AutoTest_AntiDup", "SN", GpsAutotestAntidup.class);
 		arp.addMapping("Gps_AutoTest_Result", "Id", GpsAutotestResult.class);
@@ -46,6 +48,8 @@ public class MappingKit {
 		arp.addMapping("package_log", "id", PackageLog.class);
 		arp.addMapping("process", "id", Process.class);
 		arp.addMapping("process_group", "id", ProcessGroup.class);
+		arp.addMapping("role", "id", Role.class);
+		arp.addMapping("role_authority", "id", RoleAuthority.class);
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
 		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
 		arp.addMapping("sop_confirm_log", "id", SopConfirmLog.class);
@@ -66,6 +70,7 @@ public class MappingKit {
 		arp.addMapping("sop_site", "id", SopSite.class);
 		arp.addMapping("sop_site_display", "id", SopSiteDisplay.class);
 		arp.addMapping("sop_workshop", "id", SopWorkshop.class);
+		arp.addMapping("user_action_log", "id", UserActionLog.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 	}
 }

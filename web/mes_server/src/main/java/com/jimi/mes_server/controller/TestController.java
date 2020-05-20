@@ -3,7 +3,6 @@ package com.jimi.mes_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
-import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
@@ -27,7 +26,7 @@ public class TestController extends Controller {
 	public static final String OQC_TEST_TABLE_NAME = "TestSystemSettingOqc";
 
 
-	@Access({ "operator", "engineer", "oqcManager", "configurationManager", "developConfigurator" })
+	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
 		if (type != null) {
 			if (type.equals(0) || type.equals(1) || type.equals(3)) {
@@ -45,7 +44,7 @@ public class TestController extends Controller {
 	}
 
 
-	@Access({ "engineer", "oqcManager", "configurationManager", "developConfigurator" })
+	
 	public void copy(String oldKey, Integer type, String newKey) {
 		if (testService.copy(oldKey, type, newKey)) {
 			renderJson(ResultUtil.succeed());
@@ -55,7 +54,7 @@ public class TestController extends Controller {
 	}
 
 
-	@Access({ "engineer", "oqcManager", "configurationManager", "developConfigurator" })
+	
 	public void create(@Para("") TestSystemSetting coupleSetTing, @Para("") TestSystemSettingFunc functionSetTing, @Para("") TestSystemSettingOqc oqcSetTing, Integer type) {
 		if (testService.create(coupleSetTing, functionSetTing, oqcSetTing, type)) {
 			renderJson(ResultUtil.succeed());
@@ -65,7 +64,7 @@ public class TestController extends Controller {
 	}
 
 
-	@Access({ "engineer", "oqcManager", "configurationManager", "developConfigurator" })
+	
 	public void cancel(String key, Integer type) {
 		if (testService.cancel(key, type)) {
 			renderJson(ResultUtil.succeed());
@@ -75,7 +74,7 @@ public class TestController extends Controller {
 	}
 
 
-	@Access({ "engineer", "oqcManager", "configurationManager", "developConfigurator" })
+	
 	public void update(@Para("") TestSystemSetting coupleSetTing, @Para("") TestSystemSettingFunc functionSetTing, @Para("") TestSystemSettingOqc oqcSetTing, Integer type) {
 		if (testService.update(coupleSetTing, functionSetTing, oqcSetTing, type)) {
 			renderJson(ResultUtil.succeed());

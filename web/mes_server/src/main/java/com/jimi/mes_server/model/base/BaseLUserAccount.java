@@ -162,4 +162,31 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return get("IsOnline");
 	}
 
+	public M setRole(java.lang.Integer Role) {
+		set("Role", Role);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getRole() {
+		return getInt("Role");
+	}
+
+	public M setIPAddress(java.lang.String IPAddress) {
+		set("IPAddress", IPAddress);
+		return (M)this;
+	}
+	
+	public java.lang.String getIPAddress() {
+		return getStr("IPAddress");
+	}
+
+	public M setDelete(java.lang.Boolean Delete) {
+		set("Delete", Delete);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getDelete() {
+		return get("Delete");
+	}
+
 }

@@ -1,8 +1,13 @@
 package com.jimi.mes_server.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.jimi.mes_server.controller.UserController;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
 
 import cc.darhao.dautils.api.MD5Util;
 
@@ -16,6 +21,8 @@ public class TokenBox {
 
 	// TokenId字段名
 	public static final String TOKEN_ID_KEY_NAME = "#TOKEN#";
+	
+	public static final String USER_KEY_NAME = "#USER#";
 
 	// 上次访问时间字段名
 	private static final String LAST_ACCESS_TIME_KEY_NAME = "#LAST_ACCESS_TIME#";
@@ -29,6 +36,8 @@ public class TokenBox {
 	// 会话合集
 	private static Map<String, Map<String, Object>> sessions;
 
+	//用户与token映射Map
+	private static Map<String, List<String>> userTokenMap;
 	// 超时检查线程
 	private static Thread timeoutThread;
 
@@ -38,6 +47,7 @@ public class TokenBox {
 	 */
 	public static void start(int timeoutTime) {
 		sessions = new HashMap<>();
+		userTokenMap = new HashMap<>();
 		if (timeoutTime != 0) {
 			timeoutThread = new Thread(() -> {
 				try {
@@ -53,6 +63,13 @@ public class TokenBox {
 							// 去掉超时session
 							for (Entry<String, Map<String, Object>> session : sessionsCopy.entrySet()) {
 								if (now - ((long) (session.getValue().get(LAST_ACCESS_TIME_KEY_NAME))) > timeoutTime * 60 * 60 * 1000) {
+									LUserAccountVO lUserAccount = (LUserAccountVO) session.getValue().get(UserController.SESSION_KEY_LOGIN_USER);
+									if (lUserAccount != null) {
+										List<String> tokens = userTokenMap.get(lUserAccount.getName());
+										if (tokens != null) {
+											tokens.remove(session.getKey());
+										}
+									}
 									sessions.remove(session.getKey());
 								}
 							}
@@ -92,6 +109,70 @@ public class TokenBox {
 		session.put(key, value);
 	}
 
+
+	/**
+	 * 
+	 * <p>Description: 添加用户与token的绑定关系<p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年4月24日
+	 */
+	public static void putUserToken(String username, String tokenId) {
+		
+		List<String> tokens = userTokenMap.get(username);
+		if (tokens == null) {
+			tokens = new ArrayList<String>();
+		}
+		tokens.add(tokenId);
+		userTokenMap.put(username, tokens);
+	}
+	
+	/**
+	 * 
+	 * <p>Description: 删除用户与所有token的绑定关系<p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年4月24日
+	 */
+	public static void removeUserTokenByUsername(String username) {
+		synchronized (lock) {
+			List<String> tokens = userTokenMap.get(username);
+			if (tokens == null) {
+				userTokenMap.remove(username);
+			}
+			for (String tokenId : tokens) {
+				sessions.remove(tokenId);
+			}
+		}
+	}
+	
+	
+	/**
+	 * 
+	 * <p>Description: 删除用户与token的绑定关系<p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年4月24日
+	 */
+	public static void removeUserTokenByUserNameAndToken(String username, String token) {
+		synchronized (lock) {
+			List<String> tokens = userTokenMap.get(username);
+			if (tokens == null) {
+				userTokenMap.remove(username);
+			}
+			for (String tokenId : tokens) {
+				if (tokenId.equals(token)) {
+					
+					sessions.remove(tokenId);
+				}
+			}
+			userTokenMap.get(username).remove(token);
+		}
+	}
+	
 
 	/**
 	 * 根据tokenId和key获取值

@@ -1,12 +1,15 @@
 package com.jimi.mes_server.controller;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
-import com.jimi.mes_server.annotation.Access;
-import com.jimi.mes_server.entity.WebUserType;
+import com.jimi.mes_server.annotation.PermissionPass;
+import com.jimi.mes_server.annotation.UserLog;
+import com.jimi.mes_server.entity.vo.AuthorityVO;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -28,19 +31,22 @@ public class UserController extends Controller {
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
-
-	@Access({ "operator", "administration" })
-	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Integer type) {
-		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter, type)));
-	}
-
-
-	public void login(String name, String password) {
-		System.out.println("a" + name + password);
-		LUserAccountVO userVO = userService.login(name, password, true);
-		if (WebUserType.CASUALWORKER.getName().equals(userVO.getTypeName())) {
-			throw new ParameterException("当前角色无法登陆");
+	
+	public void select(Integer pageNo, Integer pageSize, String name, String userDes, String otherProcess, Boolean inService, String mainProcess, String proficiency, String lineName, Integer company, Integer department, String roleName) {
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码与页容量不能为空");
 		}
+		if (pageNo <= 0 || pageSize <= 0 ) {
+			throw new ParameterException("页码与页容量需大于0");
+		}
+		renderJson(ResultUtil.succeed(userService.select(pageNo, pageSize, name, userDes, otherProcess, inService, mainProcess, proficiency, lineName, company, department, roleName)));
+	}
+	
+
+	@PermissionPass
+	@UserLog("用户工号：{name}，进行登录")
+	public void login(String name, String password) {
+		LUserAccountVO userVO = userService.login(name, password, true);
 		// 判断重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if (tokenId != null) {
@@ -50,12 +56,13 @@ public class UserController extends Controller {
 			}
 		}
 		tokenId = TokenBox.createTokenId();
-		userVO.put(TokenBox.TOKEN_ID_KEY_NAME, tokenId);
+		userVO.setToken(tokenId);
 		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, userVO);
+		TokenBox.putUserToken(userVO.getName(), tokenId);
 		renderJson(ResultUtil.succeed(userVO));
 	}
 
-
+	
 	public void logout() {
 		// 判断是否未登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -64,6 +71,7 @@ public class UserController extends Controller {
 			throw new ParameterException("未登录时无需退出");
 		}
 		TokenBox.remove(tokenId);
+		TokenBox.removeUserTokenByUserNameAndToken(userVO.getName(), tokenId);
 		renderJson(ResultUtil.succeed());
 	}
 
@@ -78,23 +86,26 @@ public class UserController extends Controller {
 	}
 
 
-	@Access({ "administration" })
+	/**
+	 * 
+	 * <p>Description: 用户添加<p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年4月22日
+	 */
+	@UserLog("添加用户：{user}")
 	public void add(@Para("") LUserAccount user) {
-		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccountVO tokenUser = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (userService.add(user, tokenUser)) {
+		if (userService.add(user)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 
-
-	@Access({ "administration" })
+	@UserLog("修改用户：{user}")
 	public void update(@Para("") LUserAccount user) {
-		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-		LUserAccountVO tokenUser = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (userService.update(user, tokenUser)) {
+		if (userService.update(user)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -106,22 +117,21 @@ public class UserController extends Controller {
 	 * 获取用户角色
 	 * @date 2019年5月15日 下午2:48:40
 	 */
-	@Access({ "administration", "engineer" })
+	/*@Access({ "administration", "engineer" })
 	public void getUserType() {
 		renderJson(userService.getUserType());
 	}
-
+	*/
 
 	/**@author HCJ
 	 * 校验传入的参数与内存中记录的TOKEN是否一致
 	 * @date 2019年5月14日 下午5:19:31
 	 */
-	@Access({ "administration", "engineer" })
 	public void validate(String name, String password) {
-		userService.validate(name, password);
+		LUserAccount user = userService.validate(name, password);
 		String token = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(token, SESSION_KEY_LOGIN_USER);
-		if (userVO == null || !userVO.getName().equalsIgnoreCase(name) || !userVO.getPassword().equalsIgnoreCase(password)) {
+		if (userVO == null || !user.getId().equals(userVO.getId())) {
 			throw new OperationException("用户校验失败");
 		}
 		renderJson(ResultUtil.succeed());
@@ -144,7 +154,7 @@ public class UserController extends Controller {
 	 * @param curPwd 新密码
 	 * @date 2020年4月13日 下午5:21:13
 	 */
-	@Access({ "engineer", "SuperAdmin", "operator", "administration", "schedulingSZPC", "schedulingJMPMC", "SopManager", "SopReviewer", "SopQcConfirmer", "oqcManager", "oqcConfigurator", "oqcTester", "oqcCustomer", "configurationManager", "developConfigurator", "ordinaryUser" })
+	@UserLog("修改用户密码}")
 	public void updatePassword(String orgPwd, String curPwd) {
 		if (StringUtils.isAnyBlank(orgPwd, curPwd)) {
 			throw new ParameterException("参数不能为空");
@@ -154,14 +164,19 @@ public class UserController extends Controller {
 		if (userVO == null) {
 			throw new OperationException("用户未登录");
 		}
-		if (!userVO.getPassword().equals(orgPwd)) {
-			throw new OperationException("当前用户原始密码输入错误");
-		}
 		if (userService.updatePassword(orgPwd, curPwd, userVO.getId())) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
-
+	}
+	
+	
+	public void getAuthority(Integer user) {
+		if (user == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		List<AuthorityVO> authorityVOs = userService.getAuthority(user);
+		renderJson(ResultUtil.succeed(authorityVOs));
 	}
 }

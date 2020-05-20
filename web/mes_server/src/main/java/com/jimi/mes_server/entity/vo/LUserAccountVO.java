@@ -1,34 +1,135 @@
 package com.jimi.mes_server.entity.vo;
 
+import java.util.Date;
+import java.util.List;
+
+import com.jimi.mes_server.model.Authority;
 import com.jimi.mes_server.model.LUserAccount;
+import com.jimi.mes_server.model.Role;
 
-public class LUserAccountVO extends LUserAccount {
+/**
+ * 
+ * <p>Title: LUserAccountVO</p>  
+ * <p>Description: 用户信息表-显示层</p>  
+ * <p>Copyright: Copyright (c) 2019</p>  
+ * <p>Company: 惠州市几米物联技术有限公司</p>  
+ * @author trjie  
+ * @date 2020年4月22日
+ *
+ */
+public class LUserAccountVO{
+	
+	private Integer id;
+	
+	private Boolean inService;
+	
+	private Integer loginStatus;
+	
+	private Date loginTime;
+	
+	private String name;
+	
+	private String userDes;
+	
+	private RoleVO roleVO;
+	
+	private String token;
+	
+	private List<AuthorityVO> authorities;
+	
+	
+	
 
-	private static final long serialVersionUID = 5451131369780221420L;
-
-
-	public String getTypeName() {
-		return this.getStr("typeName");
+	public Integer getId() {
+		return id;
 	}
 
-
-	public void setTypeName(String typeName) {
-		this.set("typeName", typeName);
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
+	public Boolean getInService() {
+		return inService;
+	}
 
-	public LUserAccountVO(LUserAccount user, String typeName) {
-		this.setDeletePermission(user.getDeletePermission());
-		this.setInService(user.getInService());
-		this.setLoginStatus(user.getLoginStatus());
-		this.setLoginTime(user.getLoginTime());
-		this.setName(user.getName());
-		this.setPassword(user.getPassword());
-		this.setUserDes(user.getUserDes());
-		this.setUserType(user.getUserType());
-		this.setWebUserType(user.getWebUserType());
-		this.setTypeName(typeName);
-		this.setId(user.getId());
+	public void setInService(Boolean inService) {
+		this.inService = inService;
+	}
+
+	public Integer getLoginStatus() {
+		return loginStatus;
+	}
+
+	public void setLoginStatus(Integer loginStatus) {
+		this.loginStatus = loginStatus;
+	}
+
+	public Date getLoginTime() {
+		return loginTime;
+	}
+
+	public void setLoginTime(Date loginTime) {
+		this.loginTime = loginTime;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getUserDes() {
+		return userDes;
+	}
+
+	public void setUserDes(String userDes) {
+		this.userDes = userDes;
+	}
+
+	public RoleVO getRoleVO() {
+		return roleVO;
+	}
+
+	public void setRoleVO(RoleVO roleVO) {
+		this.roleVO = roleVO;
+	}
+
+	public List<AuthorityVO> getAuthorities() {
+		return authorities;
+	}
+
+	public void setAuthorities(List<AuthorityVO> authorities) {
+		this.authorities = authorities;
+	}
+	
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public static LUserAccountVO filLUserAccountVO(LUserAccount user, Role role, List<Authority> authorities) {
+		LUserAccountVO lUserAccountVO = new LUserAccountVO();
+		lUserAccountVO.setInService(user.getInService());
+		lUserAccountVO.setLoginStatus(user.getLoginStatus());
+		lUserAccountVO.setLoginTime(user.getLoginTime());
+		lUserAccountVO.setName(user.getName());
+		lUserAccountVO.setUserDes(user.getUserDes());
+		lUserAccountVO.setId(user.getId());
+		if (authorities != null) {
+			lUserAccountVO.setAuthorities(AuthorityVO.fillList(authorities));
+		}
+		if (role != null) {
+			lUserAccountVO.setRoleVO(RoleVO.fillRoleVO(role, null));
+		}
+		
+		return lUserAccountVO;
+		
 	}
 
 }

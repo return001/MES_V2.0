@@ -15,8 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
@@ -40,6 +38,7 @@ import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.SopSQL;
+import com.jimi.mes_server.entity.vo.AuthorityVO;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
@@ -52,6 +51,7 @@ import com.jimi.mes_server.model.OrderFile;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
+import com.jimi.mes_server.model.Role;
 import com.jimi.mes_server.model.SchedulingPlan;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.model.SopWorkshop;
@@ -612,12 +612,16 @@ public class ProductionService {
 	}
 
 
+	/**
+	 * 
+	 * <p>Description: 查询订单，需要权限“/production/selectOrder:withCustomer”才可以查询到客户名<p>
+	 * @return
+	 * @exception 
+	 * @author trjie
+	 * @Time 2020年4月22日
+	 */
 	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter, Boolean isRework, LUserAccountVO userVO) {
 		Page<Record> page = new Page<>();
-		Boolean isOperator = false;
-		if (Constant.SUPER_OPERATOR_USERTYPE.equals(userVO.getWebUserType())) {
-			isOperator = true;
-		}
 		if (!isRework) {
 			String reworkSql = "AND is_rework = 0 ";
 			if (StrKit.isBlank(filter)) {
@@ -633,9 +637,13 @@ public class ProductionService {
 				page = daoService.select(SQL.SELECT_ORDER + reworkSql + " AND ", pageNo, pageSize, ascBy, descBy, filter);
 			}
 		}
-		return formatOrderDateAndCustomer(page, isOperator);
+		for (AuthorityVO authorityVO : userVO.getAuthorities()) {
+			if (authorityVO.getUrls().contains("/production/selectOrder:withCustomer")) {
+				return formatOrderDateAndCustomer(page, false);
+			}
+		}
+		return formatOrderDateAndCustomer(page, true);
 	}
-
 
 	public OrderDetail selectOrderDetail(Integer id) {
 		OrderDetail detail = new OrderDetail();
@@ -849,8 +857,17 @@ public class ProductionService {
 		if (orderFile == null) {
 			throw new OperationException("文件记录不存在");
 		}
-		if (Constant.ENGINEER_USERTYPE.equals(userVO.getWebUserType()) && !Constant.SOP_FILETYPE.equals(orderFile.getFileType())) {
-			throw new OperationException("工程及生产只能删除SOP表");
+		for (AuthorityVO authorityVO : userVO.getAuthorities()) {
+			if (authorityVO.getUrls().contains("/production/deleteOrderTable:deleteAll")) {
+				File file = new File(orderFile.getPath());
+				if (file.exists()) {
+					file.delete();
+				}
+				return orderFile.delete();
+			}
+		}
+		if (!Constant.SOP_FILETYPE.equals(orderFile.getFileType())) {
+			throw new OperationException("用户仅有权限删除SOP表");
 		}
 		File file = new File(orderFile.getPath());
 		if (file.exists()) {
@@ -1607,8 +1624,12 @@ public class ProductionService {
 	 */
 	private void checkOrderUserType(LUserAccountVO userVO, Orders order) {
 		LUserAccount user = LUserAccount.dao.findById(order.getOrderCreator());
-		if (user != null && user.getWebUserType() != null) {
-			if (!userVO.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE) && !user.getWebUserType().equals(userVO.getWebUserType())) {
+		if (user.getRole() == null) {
+			throw new OperationException("当前角色无法操作此订单");
+		}
+		Role role = Role.dao.findById(user.getRole());
+		if (user != null && role != null) {
+			if (!role.getName().equals(userVO.getName())) {
 				throw new OperationException("当前角色无法操作此订单");
 			}
 		}
