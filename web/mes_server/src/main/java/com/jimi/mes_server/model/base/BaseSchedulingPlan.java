@@ -225,4 +225,22 @@ public abstract class BaseSchedulingPlan<M extends BaseSchedulingPlan<M>> extend
 		return getInt("production_confirmer");
 	}
 
+	public M setPersonNumber(java.lang.Integer personNumber) {
+		set("person_number", personNumber);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getPersonNumber() {
+		return getInt("person_number");
+	}
+
+	public M setRhythm(java.math.BigDecimal rhythm) {
+		set("rhythm", rhythm);
+		return (M)this;
+	}
+	
+	public java.math.BigDecimal getRhythm() {
+		return get("rhythm");
+	}
+
 }

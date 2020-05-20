@@ -72,4 +72,58 @@ public abstract class BaseOrderFile<M extends BaseOrderFile<M>> extends Model<M>
 		return get("upload_time");
 	}
 
+	public M setIsNormal(java.lang.Boolean isNormal) {
+		set("is_normal", isNormal);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getIsNormal() {
+		return get("is_normal");
+	}
+
+	public M setConfirmPerson(java.lang.Integer confirmPerson) {
+		set("confirm_person", confirmPerson);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getConfirmPerson() {
+		return getInt("confirm_person");
+	}
+
+	public M setConfirmTime(java.util.Date confirmTime) {
+		set("confirm_time", confirmTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getConfirmTime() {
+		return get("confirm_time");
+	}
+
+	public M setDeletePerson(java.lang.Integer deletePerson) {
+		set("delete_person", deletePerson);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getDeletePerson() {
+		return getInt("delete_person");
+	}
+
+	public M setDeleteTime(java.util.Date deleteTime) {
+		set("delete_time", deleteTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getDeleteTime() {
+		return get("delete_time");
+	}
+
+	public M setDeleteReason(java.lang.String deleteReason) {
+		set("delete_reason", deleteReason);
+		return (M)this;
+	}
+	
+	public java.lang.String getDeleteReason() {
+		return getStr("delete_reason");
+	}
+
 }

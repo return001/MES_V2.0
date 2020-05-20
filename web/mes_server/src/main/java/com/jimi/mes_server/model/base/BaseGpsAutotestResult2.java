@@ -117,4 +117,13 @@ public abstract class BaseGpsAutotestResult2<M extends BaseGpsAutotestResult2<M>
 		return getStr("Remark");
 	}
 
+	public M setMaskFromV2(byte[] MaskFromV2) {
+		set("_MASK_FROM_V2", MaskFromV2);
+		return (M)this;
+	}
+	
+	public byte[] getMaskFromV2() {
+		return get("_MASK_FROM_V2");
+	}
+
 }

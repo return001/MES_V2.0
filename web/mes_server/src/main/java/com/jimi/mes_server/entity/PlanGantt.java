@@ -1,5 +1,7 @@
 package com.jimi.mes_server.entity;
 
+import java.util.Map;
+
 /**排产计划甘特图类
  * @author   HCJ
  * @date     2019年8月20日 上午10:01:50
@@ -39,6 +41,21 @@ public class PlanGantt {
 	 * completionQuantity : 完成数量
 	 */
 	private String completionQuantity;
+	
+	
+	private Map<String, Integer> dailyCapacity;
+
+
+	
+	public Map<String, Integer> getDailyCapacity() {
+		return dailyCapacity;
+	}
+
+
+	
+	public void setDailyCapacity(Map<String, Integer> dailyCapacity) {
+		this.dailyCapacity = dailyCapacity;
+	}
 
 
 	public Integer getId() {

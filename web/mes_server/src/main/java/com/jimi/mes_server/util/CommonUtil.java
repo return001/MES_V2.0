@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,7 +97,7 @@ public class CommonUtil {
 	 * @date 2019年10月21日 下午3:20:57
 	 */
 	public static boolean isPositiveInteger(String input) {
-		String regex = "^[1-9]\\d*|0$";
+		String regex = "^[1-9]\\d*$";
 		return match(regex, input);
 	}
 
@@ -193,6 +195,32 @@ public class CommonUtil {
 		} catch (IOException e) {
 			throw new OperationException("文件下载出错");
 		}
+	}
+
+
+	/**
+	 * 分割集合
+	 * @param source 源集合
+	 * @param n 每个集合的大小
+	 * @date 2020年5月12日 上午11:14:53
+	 */
+	public static <T> List<List<T>> averageAssign(List<T> source, int n) {
+		List<List<T>> result = new ArrayList<List<T>>();
+		int remaider = source.size() % n; // (先计算出余数)
+		int number = source.size() / n; // 然后是商
+		int offset = 0;// 偏移量
+		for (int i = 0; i < n; i++) {
+			List<T> value = null;
+			if (remaider > 0) {
+				value = source.subList(i * number + offset, (i + 1) * number + offset + 1);
+				remaider--;
+				offset++;
+			} else {
+				value = source.subList(i * number + offset, (i + 1) * number + offset);
+			}
+			result.add(value);
+		}
+		return result;
 	}
 
 

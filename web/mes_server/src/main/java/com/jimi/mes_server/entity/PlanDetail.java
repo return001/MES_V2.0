@@ -1,5 +1,7 @@
 package com.jimi.mes_server.entity;
 
+import java.util.Map;
+
 import com.jfinal.plugin.activerecord.Record;
 
 /**计划详情类
@@ -17,6 +19,20 @@ public class PlanDetail {
 	 * order : 订单详情
 	 */
 	private Record order;
+	
+	private Map<String, String> picture;
+
+
+	
+	public Map<String, String> getPicture() {
+		return picture;
+	}
+
+
+	
+	public void setPicture(Map<String, String> picture) {
+		this.picture = picture;
+	}
 
 
 	public Record getPlanUser() {

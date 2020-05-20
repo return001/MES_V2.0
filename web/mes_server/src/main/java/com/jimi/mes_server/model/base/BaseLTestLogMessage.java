@@ -126,6 +126,78 @@ public abstract class BaseLTestLogMessage<M extends BaseLTestLogMessage<M>> exte
 		return getStr("CategoryNum4");
 	}
 
+	public M setErrorMessage5(java.lang.String ErrorMessage5) {
+		set("ErrorMessage5", ErrorMessage5);
+		return (M)this;
+	}
+	
+	public java.lang.String getErrorMessage5() {
+		return getStr("ErrorMessage5");
+	}
+
+	public M setCategoryNum5(java.lang.String CategoryNum5) {
+		set("CategoryNum5", CategoryNum5);
+		return (M)this;
+	}
+	
+	public java.lang.String getCategoryNum5() {
+		return getStr("CategoryNum5");
+	}
+
+	public M setErrorMessage6(java.lang.String ErrorMessage6) {
+		set("ErrorMessage6", ErrorMessage6);
+		return (M)this;
+	}
+	
+	public java.lang.String getErrorMessage6() {
+		return getStr("ErrorMessage6");
+	}
+
+	public M setCategoryNum6(java.lang.String CategoryNum6) {
+		set("CategoryNum6", CategoryNum6);
+		return (M)this;
+	}
+	
+	public java.lang.String getCategoryNum6() {
+		return getStr("CategoryNum6");
+	}
+
+	public M setErrorMessage7(java.lang.String ErrorMessage7) {
+		set("ErrorMessage7", ErrorMessage7);
+		return (M)this;
+	}
+	
+	public java.lang.String getErrorMessage7() {
+		return getStr("ErrorMessage7");
+	}
+
+	public M setCategoryNum7(java.lang.String CategoryNum7) {
+		set("CategoryNum7", CategoryNum7);
+		return (M)this;
+	}
+	
+	public java.lang.String getCategoryNum7() {
+		return getStr("CategoryNum7");
+	}
+
+	public M setErrorMessage8(java.lang.String ErrorMessage8) {
+		set("ErrorMessage8", ErrorMessage8);
+		return (M)this;
+	}
+	
+	public java.lang.String getErrorMessage8() {
+		return getStr("ErrorMessage8");
+	}
+
+	public M setCategoryNum8(java.lang.String CategoryNum8) {
+		set("CategoryNum8", CategoryNum8);
+		return (M)this;
+	}
+	
+	public java.lang.String getCategoryNum8() {
+		return getStr("CategoryNum8");
+	}
+
 	public M setComputer(java.lang.String Computer) {
 		set("Computer", Computer);
 		return (M)this;
@@ -162,15 +234,6 @@ public abstract class BaseLTestLogMessage<M extends BaseLTestLogMessage<M>> exte
 		return getStr("Computer4");
 	}
 
-	public M setTestTime(java.util.Date TestTime) {
-		set("TestTime", TestTime);
-		return (M)this;
-	}
-	
-	public java.util.Date getTestTime() {
-		return get("TestTime");
-	}
-
 	public M setComputer5(java.lang.String Computer5) {
 		set("Computer5", Computer5);
 		return (M)this;
@@ -180,22 +243,49 @@ public abstract class BaseLTestLogMessage<M extends BaseLTestLogMessage<M>> exte
 		return getStr("Computer5");
 	}
 
-	public M setErrorMessage5(java.lang.String ErrorMessage5) {
-		set("ErrorMessage5", ErrorMessage5);
+	public M setComputer6(java.lang.String Computer6) {
+		set("Computer6", Computer6);
 		return (M)this;
 	}
 	
-	public java.lang.String getErrorMessage5() {
-		return getStr("ErrorMessage5");
+	public java.lang.String getComputer6() {
+		return getStr("Computer6");
 	}
 
-	public M setCategoryNum5(java.lang.String CategoryNum5) {
-		set("CategoryNum5", CategoryNum5);
+	public M setComputer7(java.lang.String Computer7) {
+		set("Computer7", Computer7);
 		return (M)this;
 	}
 	
-	public java.lang.String getCategoryNum5() {
-		return getStr("CategoryNum5");
+	public java.lang.String getComputer7() {
+		return getStr("Computer7");
+	}
+
+	public M setComputer8(java.lang.String Computer8) {
+		set("Computer8", Computer8);
+		return (M)this;
+	}
+	
+	public java.lang.String getComputer8() {
+		return getStr("Computer8");
+	}
+
+	public M setTestTime(java.util.Date TestTime) {
+		set("TestTime", TestTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getTestTime() {
+		return get("TestTime");
+	}
+
+	public M setMaskFromV2(byte[] MaskFromV2) {
+		set("_MASK_FROM_V2", MaskFromV2);
+		return (M)this;
+	}
+	
+	public byte[] getMaskFromV2() {
+		return get("_MASK_FROM_V2");
 	}
 
 }

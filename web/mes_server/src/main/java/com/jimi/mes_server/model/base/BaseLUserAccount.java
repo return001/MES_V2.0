@@ -45,15 +45,6 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return get("_MASK_FROM_V2");
 	}
 
-	public M setId(java.lang.Integer Id) {
-		set("Id", Id);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getId() {
-		return getInt("Id");
-	}
-
 	public M setLoginTime(java.util.Date LoginTime) {
 		set("LoginTime", LoginTime);
 		return (M)this;
@@ -108,6 +99,15 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return getInt("WebUserType");
 	}
 
+	public M setId(java.lang.Integer Id) {
+		set("Id", Id);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getId() {
+		return getInt("Id");
+	}
+
 	public M setLineName(java.lang.String LineName) {
 		set("LineName", LineName);
 		return (M)this;
@@ -160,6 +160,24 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 	
 	public java.lang.Boolean getIsOnline() {
 		return get("IsOnline");
+	}
+
+	public M setFactory(java.lang.Integer Factory) {
+		set("Factory", Factory);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getFactory() {
+		return getInt("Factory");
+	}
+
+	public M setPhoneNumber(java.lang.String PhoneNumber) {
+		set("PhoneNumber", PhoneNumber);
+		return (M)this;
+	}
+	
+	public java.lang.String getPhoneNumber() {
+		return getStr("PhoneNumber");
 	}
 
 }

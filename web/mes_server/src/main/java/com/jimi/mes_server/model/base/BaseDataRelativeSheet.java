@@ -153,6 +153,15 @@ public abstract class BaseDataRelativeSheet<M extends BaseDataRelativeSheet<M>> 
 		return get("TestTime");
 	}
 
+	public M setMaskFromV2(byte[] MaskFromV2) {
+		set("_MASK_FROM_V2", MaskFromV2);
+		return (M)this;
+	}
+	
+	public byte[] getMaskFromV2() {
+		return get("_MASK_FROM_V2");
+	}
+
 	public M setSimEffectiveDate(java.lang.String SimEffectiveDate) {
 		set("SimEffectiveDate", SimEffectiveDate);
 		return (M)this;
@@ -178,15 +187,6 @@ public abstract class BaseDataRelativeSheet<M extends BaseDataRelativeSheet<M>> 
 	
 	public java.lang.String getIMEI14() {
 		return getStr("IMEI14");
-	}
-
-	public M setMaskFromV2(byte[] MaskFromV2) {
-		set("_MASK_FROM_V2", MaskFromV2);
-		return (M)this;
-	}
-	
-	public byte[] getMaskFromV2() {
-		return get("_MASK_FROM_V2");
 	}
 
 }

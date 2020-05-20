@@ -24,43 +24,35 @@ public class Constant {
 
 	public final static String FILE_TABLE_PATH = "mes_document" + File.separator + "tables" + File.separator;
 
+	public final static String FILE_DELETE_TABLE_PATH = "mes_document" + File.separator + "delete_tables" + File.separator;
+
 	public final static String SOP_FILE_PATH = "mes_document" + File.separator + "sop_files" + File.separator;
 
 	public final static String SOP_PICTURE_PATH = "mes_document" + File.separator + "sop_pictures" + File.separator;
 
-	public static final Integer UNSCHEDULED_ORDERSTATUS = 1;
+	public static final Integer WAIT_CONFIRM_ORDERSTATUS = 1;
 
-	public static final Integer SCHEDULED_ORDERSTATUS = 2;
+	public static final Integer UNSCHEDULED_ORDERSTATUS = 2;
 
-	public static final Integer COMPLETED_ORDERSTATUS = 3;
+	public static final Integer SCHEDULED_ORDERSTATUS = 3;
 
-	public static final Integer DELETED_ORDERSTATUS = 4;
+	public static final Integer ONGOING_ORDERSTATUS = 4;
 
-	public static final Integer INFORMATION_FILETYPE = 1;
+	public static final Integer WAIT_NOTICE__ORDERSTATUS = 5;
 
-	public static final Integer BOM_FILETYPE = 2;
+	public static final Integer COMPLETED_ORDERSTATUS = 6;
 
-	public static final Integer SOP_FILETYPE = 3;
+	public static final Integer ABNORMAL_END_ORDERSTATUS = 7;
 
 	public static final Integer SCHEDULED_PLANSTATUS = 1;
 
 	public static final Integer WORKING_PLANSTATUS = 2;
 
-	public static final Integer COMPLETED_PLANSTATUS = 3;
+	public static final Integer WAIT_NOTIFICATION_PLANSTATUS = 3;
 
-	public static final Integer WAIT_NOTIFICATION_PLANSTATUS = 4;
+	public static final Integer COMPLETED_PLANSTATUS = 4;
 
-	public static final String TABLE_PROCESS = "process";
-
-	public static final String TABLE_PROCESS_GROUP = "process_group";
-
-	public static final String TABLE_LINE = "line";
-
-	public static final String TABLE_ORDERS = "orders";
-
-	public static final String TABLE_SCHEDULING_PLAN = "scheduling_plan";
-
-	public static final String TABLE_MODEL_CAPACITY = "model_capacity";
+	public static final Integer ABNORMAL_END_PLANSTATUS = 5;
 
 	public static final Integer DEFAULT_PAGE_NUM = 1;
 
@@ -72,13 +64,19 @@ public class Constant {
 
 	public static final Integer PACKING_PROCESS_GROUP = 3;
 
-	public static final String DEFAULT_LINE_CHANGE_TIME = "0.5";
+	public static final Integer PATCH_PROCESS_GROUP = 4;
+
+	public static final Integer SMT_PROCESS_GROUP = 5;
 
 	public static final Integer AUTOTEST_LINEID = 0;
 
 	public static final Integer COUPLETEST_LINEID = 1;
 
 	public static final Integer CARTONTEST_LINEID = 2;
+
+	public static final Integer PATCH_LINEID = 3;
+
+	public static final Integer SMT_LINEID = 4;
 
 	public static final String SMT_TEST = "SMT功能测试位";
 
@@ -90,7 +88,7 @@ public class Constant {
 
 	public static final String CARTON_TEST = "卡通箱测试";
 
-	public static final Integer DEFAULT_MAX_PROCESSGROUP_ID = 3;
+	public static final Integer DEFAULT_MAX_PROCESSGROUP_ID = 5;
 
 	public static final Integer INTEGER_ZERO = 0;
 
@@ -111,6 +109,12 @@ public class Constant {
 	public static final String CLIENT_LOGIN = "登录";
 
 	public static final String CLIENT_LOGOUT = "退出登录";
+
+	public static final Integer SCHEDULING_ABOUT = 1;
+
+	public static final String DEFAULT_CUSTOMERNUMBER = "JMWL";
+
+	public static final String DEFAULT_CUSTOMERNAME = "几米物联";
 
 
 	public static void setSopPictureUrl(String value) {

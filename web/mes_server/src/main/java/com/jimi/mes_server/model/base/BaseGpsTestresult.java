@@ -135,6 +135,15 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 		return getInt("SMTIQCResult");
 	}
 
+	public M setWeightResult(java.lang.Integer WeightResult) {
+		set("WeightResult", WeightResult);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getWeightResult() {
+		return getInt("WeightResult");
+	}
+
 	public M setOtherTestSign(java.lang.String OtherTestSign) {
 		set("OtherTestSign", OtherTestSign);
 		return (M)this;
@@ -180,15 +189,6 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 		return getInt("CPResult");
 	}
 
-	public M setWeightResult(java.lang.Integer WeightResult) {
-		set("WeightResult", WeightResult);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getWeightResult() {
-		return getInt("WeightResult");
-	}
-
 	public M setOQCResult01(java.lang.Integer OQCResult01) {
 		set("OQCResult01", OQCResult01);
 		return (M)this;
@@ -223,15 +223,6 @@ public abstract class BaseGpsTestresult<M extends BaseGpsTestresult<M>> extends 
 	
 	public java.lang.Integer getNBCouResult() {
 		return getInt("NBCouResult");
-	}
-
-	public M setRfidResult(java.lang.Integer RfidResult) {
-		set("RfidResult", RfidResult);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getRfidResult() {
-		return getInt("RfidResult");
 	}
 
 }

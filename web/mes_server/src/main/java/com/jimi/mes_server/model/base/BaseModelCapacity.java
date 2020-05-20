@@ -45,15 +45,6 @@ public abstract class BaseModelCapacity<M extends BaseModelCapacity<M>> extends 
 		return getInt("process_group");
 	}
 
-	public M setProcess(java.lang.Integer process) {
-		set("process", process);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getProcess() {
-		return getInt("process");
-	}
-
 	public M setProcessPeopleQuantity(java.lang.Integer processPeopleQuantity) {
 		set("process_people_quantity", processPeopleQuantity);
 		return (M)this;
@@ -81,15 +72,6 @@ public abstract class BaseModelCapacity<M extends BaseModelCapacity<M>> extends 
 		return getStr("remark");
 	}
 
-	public M setPosition(java.lang.Integer position) {
-		set("position", position);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getPosition() {
-		return getInt("position");
-	}
-
 	public M setRhythm(java.math.BigDecimal rhythm) {
 		set("rhythm", rhythm);
 		return (M)this;
@@ -97,6 +79,33 @@ public abstract class BaseModelCapacity<M extends BaseModelCapacity<M>> extends 
 	
 	public java.math.BigDecimal getRhythm() {
 		return get("rhythm");
+	}
+
+	public M setTransferLineTime(java.lang.Integer transferLineTime) {
+		set("transfer_line_time", transferLineTime);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getTransferLineTime() {
+		return getInt("transfer_line_time");
+	}
+
+	public M setCustomerNumber(java.lang.String customerNumber) {
+		set("customer_number", customerNumber);
+		return (M)this;
+	}
+	
+	public java.lang.String getCustomerNumber() {
+		return getStr("customer_number");
+	}
+
+	public M setCustomerName(java.lang.String customerName) {
+		set("customer_name", customerName);
+		return (M)this;
+	}
+	
+	public java.lang.String getCustomerName() {
+		return getStr("customer_name");
 	}
 
 }

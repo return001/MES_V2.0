@@ -45,6 +45,34 @@ public class PlanQueryCriteria {
 	private String softModel;
 
 	private String productNo;
+	
+	private String alias;
+	
+	private String customerMaterialNo  ;
+
+
+	
+	public String getAlias() {
+		return alias;
+	}
+
+
+	
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
+
+	
+	public String getCustomerMaterialNo() {
+		return customerMaterialNo;
+	}
+
+
+	
+	public void setCustomerMaterialNo(String customerMaterialNo) {
+		this.customerMaterialNo = customerMaterialNo;
+	}
 
 
 	public Integer getPageNo() {

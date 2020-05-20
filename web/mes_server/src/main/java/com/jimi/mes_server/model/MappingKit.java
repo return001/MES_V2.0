@@ -46,6 +46,7 @@ public class MappingKit {
 		arp.addMapping("package_log", "id", PackageLog.class);
 		arp.addMapping("process", "id", Process.class);
 		arp.addMapping("process_group", "id", ProcessGroup.class);
+		arp.addMapping("production_action_log", "id", ProductionActionLog.class);
 		arp.addMapping("scheduling_plan", "id", SchedulingPlan.class);
 		arp.addMapping("scheduling_plan_status", "id", SchedulingPlanStatus.class);
 		arp.addMapping("sop_confirm_log", "id", SopConfirmLog.class);
@@ -67,6 +68,7 @@ public class MappingKit {
 		arp.addMapping("sop_site_display", "id", SopSiteDisplay.class);
 		arp.addMapping("sop_workshop", "id", SopWorkshop.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
+		arp.addMapping("working_schedule", "id", WorkingSchedule.class);
 	}
 }
 

@@ -124,10 +124,10 @@ public class SaveDataTask implements Runnable {
 			for (Record record : records) {
 				Dashboard dashboard = new Dashboard();
 				Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, record.getStr("ZhiDan"));
-				if (order == null || StrKit.isBlank(order.getRemark())) {
+				if (order == null || StrKit.isBlank(order.getPcRemarks())) {
 					dashboard.setRemark("-");
 				} else {
-					dashboard.setRemark(order.getRemark());
+					dashboard.setRemark(order.getPcRemarks());
 				}
 				Double completionRate = genRandomNum() / 100.0;
 				dashboard.setCompletionRate(BigDecimal.valueOf(completionRate));
@@ -177,10 +177,10 @@ public class SaveDataTask implements Runnable {
 				}
 				DashboardForCustomer dashboard = new DashboardForCustomer();
 				Orders order = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN, record.getStr("ZhiDan"));
-				if (order == null || StrKit.isBlank(order.getRemark())) {
+				if (order == null || StrKit.isBlank(order.getPcRemarks())) {
 					dashboard.setRemark("-");
 				} else {
-					dashboard.setRemark(order.getRemark());
+					dashboard.setRemark(order.getPcRemarks());
 				}
 				Double completionRate = genRandomNumForCustomer(98.5, 100) / 100.0;
 				dashboard.setCompletionRate(BigDecimal.valueOf(completionRate).setScale(4, BigDecimal.ROUND_DOWN));

@@ -29,6 +29,7 @@ public class LUserAccountVO extends LUserAccount {
 		this.setWebUserType(user.getWebUserType());
 		this.setTypeName(typeName);
 		this.setId(user.getId());
+		this.setFactory(user.getFactory());
 	}
 
 }

@@ -54,4 +54,13 @@ public abstract class BaseProcessGroup<M extends BaseProcessGroup<M>> extends Mo
 		return getInt("position");
 	}
 
+	public M setFactory(java.lang.Integer factory) {
+		set("factory", factory);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getFactory() {
+		return getInt("factory");
+	}
+
 }

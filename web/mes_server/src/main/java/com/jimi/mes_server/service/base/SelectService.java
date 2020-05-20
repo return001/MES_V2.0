@@ -188,7 +188,6 @@ public class SelectService {
 		if (pageNo == null && pageSize == null) {
 			return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
 		} else {
-			System.out.println(sql.toString());
 			return Db.paginate(pageNo, pageSize, resultSet.substring(0, resultSet.indexOf("FROM")), sql.toString(), questionValues.toArray());
 		}
 	}

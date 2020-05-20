@@ -29,6 +29,7 @@ import com.jimi.mes_server.interceptor.AccessInterceptor;
 import com.jimi.mes_server.interceptor.ActionLogInterceptor;
 import com.jimi.mes_server.interceptor.CORSInterceptor;
 import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
+import com.jimi.mes_server.interceptor.ProductionActionLogInterceptor;
 import com.jimi.mes_server.model.MappingKit;
 import com.jimi.mes_server.model.NetMarkIMEI;
 import com.jimi.mes_server.model.TestSystemSetting;
@@ -80,6 +81,7 @@ public class MesConfig extends JFinalConfig {
 		me.addGlobalActionInterceptor(new CORSInterceptor());
 		me.addGlobalActionInterceptor(new AccessInterceptor());
 		me.addGlobalActionInterceptor(new ActionLogInterceptor());
+		me.addGlobalActionInterceptor(new ProductionActionLogInterceptor());
 		me.addGlobalServiceInterceptor(new Tx());
 	}
 

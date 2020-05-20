@@ -27,4 +27,13 @@ public abstract class BaseFileType<M extends BaseFileType<M>> extends Model<M> i
 		return getStr("type_name");
 	}
 
+	public M setTypeRemarks(java.lang.String typeRemarks) {
+		set("type_remarks", typeRemarks);
+		return (M)this;
+	}
+	
+	public java.lang.String getTypeRemarks() {
+		return getStr("type_remarks");
+	}
+
 }

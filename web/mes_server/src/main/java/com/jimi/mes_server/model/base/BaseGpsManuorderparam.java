@@ -441,15 +441,6 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		return getStr("Equipment_digits");
 	}
 
-	public M setPlanProduct(java.lang.Integer PlanProduct) {
-		set("PlanProduct", PlanProduct);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getPlanProduct() {
-		return getInt("PlanProduct");
-	}
-
 	public M setRfidStart(java.lang.String rfidStart) {
 		set("RFID_Start", rfidStart);
 		return (M)this;
@@ -535,7 +526,7 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		set("RFID_Area", rfidArea);
 		return (M)this;
 	}
-
+	
 	public java.lang.String getRfidArea() {
 		return getStr("RFID_Area");
 	}
@@ -544,7 +535,7 @@ public abstract class BaseGpsManuorderparam<M extends BaseGpsManuorderparam<M>> 
 		set("PlanProduction", PlanProduction);
 		return (M)this;
 	}
-
+	
 	public java.lang.Integer getPlanProduction() {
 		return getInt("PlanProduction");
 	}

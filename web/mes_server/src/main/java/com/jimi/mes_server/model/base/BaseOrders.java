@@ -108,15 +108,6 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return get("delivery_date");
 	}
 
-	public M setRemark(java.lang.String remark) {
-		set("remark", remark);
-		return (M)this;
-	}
-	
-	public java.lang.String getRemark() {
-		return getStr("remark");
-	}
-
 	public M setOrderStatus(java.lang.Integer orderStatus) {
 		set("order_status", orderStatus);
 		return (M)this;
@@ -126,13 +117,76 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return getInt("order_status");
 	}
 
-	public M setDeleteReason(java.lang.String deleteReason) {
-		set("delete_reason", deleteReason);
+	public M setIsRework(java.lang.Boolean isRework) {
+		set("is_rework", isRework);
 		return (M)this;
 	}
 	
-	public java.lang.String getDeleteReason() {
-		return getStr("delete_reason");
+	public java.lang.Boolean getIsRework() {
+		return get("is_rework");
+	}
+
+	public M setFactory(java.lang.Integer factory) {
+		set("factory", factory);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getFactory() {
+		return getInt("factory");
+	}
+
+	public M setCustomerMaterialNo(java.lang.String customerMaterialNo) {
+		set("customer_material_no", customerMaterialNo);
+		return (M)this;
+	}
+	
+	public java.lang.String getCustomerMaterialNo() {
+		return getStr("customer_material_no");
+	}
+
+	public M setReworkZhidan(java.lang.String reworkZhidan) {
+		set("rework_zhidan", reworkZhidan);
+		return (M)this;
+	}
+	
+	public java.lang.String getReworkZhidan() {
+		return getStr("rework_zhidan");
+	}
+
+	public M setReworkQuantity(java.lang.Integer reworkQuantity) {
+		set("rework_quantity", reworkQuantity);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getReworkQuantity() {
+		return getInt("rework_quantity");
+	}
+
+	public M setScheduledQuantity(java.lang.Integer scheduledQuantity) {
+		set("scheduled_quantity", scheduledQuantity);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getScheduledQuantity() {
+		return getInt("scheduled_quantity");
+	}
+
+	public M setProducedQuantity(java.lang.Integer producedQuantity) {
+		set("produced_quantity", producedQuantity);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getProducedQuantity() {
+		return getInt("produced_quantity");
+	}
+
+	public M setUnfinishedReason(java.lang.String unfinishedReason) {
+		set("unfinished_reason", unfinishedReason);
+		return (M)this;
+	}
+	
+	public java.lang.String getUnfinishedReason() {
+		return getStr("unfinished_reason");
 	}
 
 	public M setOrderCreator(java.lang.Integer orderCreator) {
@@ -171,31 +225,166 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return get("order_modify_time");
 	}
 
-	public M setIsRework(java.lang.Boolean isRework) {
-		set("is_rework", isRework);
+	public M setAbnormalEndPerson(java.lang.Integer abnormalEndPerson) {
+		set("abnormal_end_person", abnormalEndPerson);
 		return (M)this;
 	}
 	
-	public java.lang.Boolean getIsRework() {
-		return get("is_rework");
+	public java.lang.Integer getAbnormalEndPerson() {
+		return getInt("abnormal_end_person");
 	}
 
-	public M setDeletePerson(java.lang.Integer deletePerson) {
-		set("delete_person", deletePerson);
+	public M setAbnormalEndTime(java.util.Date abnormalEndTime) {
+		set("abnormal_end_time", abnormalEndTime);
 		return (M)this;
 	}
 	
-	public java.lang.Integer getDeletePerson() {
-		return getInt("delete_person");
+	public java.util.Date getAbnormalEndTime() {
+		return get("abnormal_end_time");
 	}
 
-	public M setDeleteTime(java.util.Date deleteTime) {
-		set("delete_time", deleteTime);
+	public M setAbnormalEndReason(java.lang.String abnormalEndReason) {
+		set("abnormal_end_reason", abnormalEndReason);
 		return (M)this;
 	}
 	
-	public java.util.Date getDeleteTime() {
-		return get("delete_time");
+	public java.lang.String getAbnormalEndReason() {
+		return getStr("abnormal_end_reason");
+	}
+
+	public M setPc(java.lang.String pc) {
+		set("pc", pc);
+		return (M)this;
+	}
+	
+	public java.lang.String getPc() {
+		return getStr("pc");
+	}
+
+	public M setPcRemarks(java.lang.String pcRemarks) {
+		set("pc_remarks", pcRemarks);
+		return (M)this;
+	}
+	
+	public java.lang.String getPcRemarks() {
+		return getStr("pc_remarks");
+	}
+
+	public M setPcRemarksTime(java.util.Date pcRemarksTime) {
+		set("pc_remarks_time", pcRemarksTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getPcRemarksTime() {
+		return get("pc_remarks_time");
+	}
+
+	public M setPmc(java.lang.String pmc) {
+		set("pmc", pmc);
+		return (M)this;
+	}
+	
+	public java.lang.String getPmc() {
+		return getStr("pmc");
+	}
+
+	public M setPmcRemarks (java.lang.String pmcRemarks ) {
+		set("pmc_remarks ", pmcRemarks );
+		return (M)this;
+	}
+	
+	public java.lang.String getPmcRemarks () {
+		return getStr("pmc_remarks ");
+	}
+
+	public M setPmcRemarksTime(java.util.Date pmcRemarksTime) {
+		set("pmc_remarks_time", pmcRemarksTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getPmcRemarksTime() {
+		return get("pmc_remarks_time");
+	}
+
+	public M setEngineer(java.lang.String engineer) {
+		set("engineer", engineer);
+		return (M)this;
+	}
+	
+	public java.lang.String getEngineer() {
+		return getStr("engineer");
+	}
+
+	public M setEngineerRemarks(java.lang.String engineerRemarks) {
+		set("engineer_remarks", engineerRemarks);
+		return (M)this;
+	}
+	
+	public java.lang.String getEngineerRemarks() {
+		return getStr("engineer_remarks");
+	}
+
+	public M setEngineerRemarksTime(java.util.Date engineerRemarksTime) {
+		set("engineer_remarks_time", engineerRemarksTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getEngineerRemarksTime() {
+		return get("engineer_remarks_time");
+	}
+
+	public M setProducer(java.lang.String producer) {
+		set("producer", producer);
+		return (M)this;
+	}
+	
+	public java.lang.String getProducer() {
+		return getStr("producer");
+	}
+
+	public M setProducerRemarks(java.lang.String producerRemarks) {
+		set("producer_remarks", producerRemarks);
+		return (M)this;
+	}
+	
+	public java.lang.String getProducerRemarks() {
+		return getStr("producer_remarks");
+	}
+
+	public M setProducerRemarksTime(java.util.Date producerRemarksTime) {
+		set("producer_remarks_time", producerRemarksTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getProducerRemarksTime() {
+		return get("producer_remarks_time");
+	}
+
+	public M setQc(java.lang.String qc) {
+		set("qc", qc);
+		return (M)this;
+	}
+	
+	public java.lang.String getQc() {
+		return getStr("qc");
+	}
+
+	public M setQcRemarks(java.lang.String qcRemarks) {
+		set("qc_remarks", qcRemarks);
+		return (M)this;
+	}
+	
+	public java.lang.String getQcRemarks() {
+		return getStr("qc_remarks");
+	}
+
+	public M setQcRemarksTime(java.util.Date qcRemarksTime) {
+		set("qc_remarks_time", qcRemarksTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getQcRemarksTime() {
+		return get("qc_remarks_time");
 	}
 
 }

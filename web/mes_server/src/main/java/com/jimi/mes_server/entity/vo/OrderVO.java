@@ -29,11 +29,36 @@ public class OrderVO extends Orders {
 	public void setUnscheduledQuantity(Integer unscheduledQuantity) {
 		this.set("unscheduledQuantity", unscheduledQuantity);
 	}
+	
+	public Integer getProcessPeopleQuantity() {
+		return this.getInt("processPeopleQuantity");
+	}
 
 
-	public OrderVO(Orders order, Integer unscheduledQuantity, Integer capacity) {
-		this.setUnscheduledQuantity(unscheduledQuantity);
-		this.setCapacity(capacity);
+	public void setProcessPeopleQuantity(Integer processPeopleQuantity) {
+		this.set("processPeopleQuantity", processPeopleQuantity);
+	}
+	
+	public Integer getTransferLineTime () {
+		return this.getInt("transferLineTime");
+	}
+
+
+	public void setTransferLineTime (Integer transferLineTime ) {
+		this.set("transferLineTime", transferLineTime );
+	}
+	
+	public Double getRhythm () {
+		return this.getDouble("rhythm");
+	}
+
+
+	public void setRhythm (Double rhythm ) {
+		this.set("rhythm", rhythm );
+	}
+
+
+	public OrderVO(Orders order) {
 		this.set("alias", order.getAlias());
 		this.set("orderDate", order.getOrderDate());
 		this.set("customerName", order.getCustomerName());
@@ -42,8 +67,9 @@ public class OrderVO extends Orders {
 		this.set("id", order.getId());
 		this.set("productNo", order.getProductNo());
 		this.set("quantity", order.getQuantity());
-		this.set("remark", order.getRemark());
+		this.set("remark", order.getPcRemarks());
 		this.set("softModel", order.getSoftModel());
 		this.set("zhidan", order.getZhidan());
+		this.set("customerMaterialNo", order.getCustomerMaterialNo());
 	}
 }

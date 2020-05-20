@@ -10,68 +10,29 @@ import com.jimi.mes_server.util.ExcelHelper.Excel;
  */
 public class OrderItem {
 
-	@Excel(col = 0, head = "订单号")
-	private String zhidan;
-
-	@Excel(col = 1, head = "内部替换号")
-	private String alias;
-
-	@Excel(col = 2, head = "机型")
-	private String softModel;
-
-	@Excel(col = 3, head = "成品编码")
+	@Excel(col = 3, head = "产品编码")
 	private String productNo;
 
-	@Excel(col = 4, head = "版本")
-	private String version;
+	@Excel(col = 5, head = "制单号")
+	private String zhidan;
 
-	@Excel(col = 5, head = "客户编号")
-	private String customerNumber;
-
-	@Excel(col = 6, head = "客户名称")
-	private String customerName;
-
-	@Excel(col = 7, head = "订单日期")
-	private Date orderDate;
-
-	@Excel(col = 8, head = "订单数量")
+	@Excel(col = 6, head = "计划数量")
 	private Integer quantity;
 
-	@Excel(col = 9, head = "交货日期")
+	@Excel(col = 7, head = "开始日期")
+	private Date orderDate;
+
+	@Excel(col = 8, head = "预计完成日")
 	private Date deliveryDate;
 
-	@Excel(col = 10, head = "备注")
+	@Excel(col = 13, head = "机型")
+	private String softModel;
+
+	@Excel(col = 15, head = "bom版本")
+	private String version;
+
+	@Excel(col = 24, head = "备注")
 	private String remark;
-
-
-	public String getZhidan() {
-		return zhidan;
-	}
-
-
-	public void setZhidan(String zhidan) {
-		this.zhidan = zhidan;
-	}
-
-
-	public String getAlias() {
-		return alias;
-	}
-
-
-	public void setAlias(String alias) {
-		this.alias = alias;
-	}
-
-
-	public String getSoftModel() {
-		return softModel;
-	}
-
-
-	public void setSoftModel(String softModel) {
-		this.softModel = softModel;
-	}
 
 
 	public String getProductNo() {
@@ -84,43 +45,13 @@ public class OrderItem {
 	}
 
 
-	public String getVersion() {
-		return version;
+	public String getZhidan() {
+		return zhidan;
 	}
 
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
-
-	public String getCustomerNumber() {
-		return customerNumber;
-	}
-
-
-	public void setCustomerNumber(String customerNumber) {
-		this.customerNumber = customerNumber;
-	}
-
-
-	public String getCustomerName() {
-		return customerName;
-	}
-
-
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
-	}
-
-
-	public Date getOrderDate() {
-		return orderDate;
-	}
-
-
-	public void setOrderDate(Date orderDate) {
-		this.orderDate = orderDate;
+	public void setZhidan(String zhidan) {
+		this.zhidan = zhidan;
 	}
 
 
@@ -134,6 +65,16 @@ public class OrderItem {
 	}
 
 
+	public Date getOrderDate() {
+		return orderDate;
+	}
+
+
+	public void setOrderDate(Date orderDate) {
+		this.orderDate = orderDate;
+	}
+
+
 	public Date getDeliveryDate() {
 		return deliveryDate;
 	}
@@ -141,6 +82,26 @@ public class OrderItem {
 
 	public void setDeliveryDate(Date deliveryDate) {
 		this.deliveryDate = deliveryDate;
+	}
+
+
+	public String getSoftModel() {
+		return softModel;
+	}
+
+
+	public void setSoftModel(String softModel) {
+		this.softModel = softModel;
+	}
+
+
+	public String getVersion() {
+		return version;
+	}
+
+
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 
@@ -156,7 +117,7 @@ public class OrderItem {
 
 	@Override
 	public String toString() {
-		return "OrderItem [zhidan=" + zhidan + ", alias=" + alias + ", softModel=" + softModel + ", productNo=" + productNo + ", version=" + version + ", customerNumber=" + customerNumber + ", customerName=" + customerName + ", orderDate=" + orderDate + ", quantity=" + quantity + ", deliveryDate=" + deliveryDate + ", remark=" + remark + "]";
+		return "OrderItem [productNo=" + productNo + ", zhidan=" + zhidan + ", quantity=" + quantity + ", orderDate=" + orderDate + ", deliveryDate=" + deliveryDate + ", softModel=" + softModel + ", version=" + version + ", remark=" + remark + "]";
 	}
 
 }
