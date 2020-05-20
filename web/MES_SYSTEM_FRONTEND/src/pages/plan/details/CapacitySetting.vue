@@ -545,7 +545,6 @@
       },
 
       fetchData: function () {
-
         if (!this.isPending) {
           this.getGroupInfoFactoryId = sessionFactory
           this.isPending = true;
