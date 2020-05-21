@@ -71,5 +71,7 @@ public class OrderVO extends Orders {
 		this.set("softModel", order.getSoftModel());
 		this.set("zhidan", order.getZhidan());
 		this.set("customerMaterialNo", order.getCustomerMaterialNo());
+		this.set("reworkZhidan", order.getReworkZhidan());
+		this.set("reworkQuantity", order.getReworkQuantity());
 	}
 }

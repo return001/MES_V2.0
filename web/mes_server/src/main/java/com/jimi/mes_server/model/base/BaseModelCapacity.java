@@ -108,4 +108,40 @@ public abstract class BaseModelCapacity<M extends BaseModelCapacity<M>> extends 
 		return getStr("customer_name");
 	}
 
+	public M setModelCapacityStatus(java.lang.Integer modelCapacityStatus) {
+		set("model_capacity_status", modelCapacityStatus);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getModelCapacityStatus() {
+		return getInt("model_capacity_status");
+	}
+
+	public M setReviewRemark(java.lang.String reviewRemark) {
+		set("review_remark", reviewRemark);
+		return (M)this;
+	}
+	
+	public java.lang.String getReviewRemark() {
+		return getStr("review_remark");
+	}
+
+	public M setReviewer(java.lang.Integer reviewer) {
+		set("reviewer", reviewer);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getReviewer() {
+		return getInt("reviewer");
+	}
+
+	public M setReviewTime(java.util.Date reviewTime) {
+		set("review_time", reviewTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getReviewTime() {
+		return get("review_time");
+	}
+
 }

@@ -544,6 +544,32 @@ public class ProductionController extends Controller {
 
 
 	/**@author HCJ
+	 * 审核机型产能
+	 * @param softModel 机型
+	 * @param customerNumber 客户编号
+	 * @param customerModel 客户型号
+	 * @param reviewRemark 审核备注
+	 * @param statusId 状态ID
+	 * @param factoryId 工厂ID
+	 * @date 2020年5月21日 上午11:29:18
+	 */
+	@ProductionLog("审核机型产能")
+	@Access({ "engineer" })
+	public void reviewCapacity(String softModel, String customerNumber, String customerModel, String reviewRemark, Integer statusId, Integer factoryId) {
+		if (StringUtils.isAnyBlank(softModel) || statusId == null || factoryId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
+		if (productionService.reviewCapacity(softModel, customerNumber, customerModel, reviewRemark, statusId, factoryId, userVO)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
+
+	/**@author HCJ
 	 * 添加文件类型
 	 * @param typeName 名称
 	 * @param typeRemarks 备注

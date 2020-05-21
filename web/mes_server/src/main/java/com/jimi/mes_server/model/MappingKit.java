@@ -40,6 +40,7 @@ public class MappingKit {
 		arp.addMapping("LTestLogMessage", "SN,SoftModel,Version", LTestLogMessage.class);
 		arp.addMapping("LUserAccount", "Id", LUserAccount.class);
 		arp.addMapping("model_capacity", "id", ModelCapacity.class);
+		arp.addMapping("model_capacity_status", "id", ModelCapacityStatus.class);
 		arp.addMapping("order_file", "id", OrderFile.class);
 		arp.addMapping("order_status", "id", OrderStatus.class);
 		arp.addMapping("orders", "id", Orders.class);

@@ -116,6 +116,12 @@ public class Constant {
 
 	public static final String DEFAULT_CUSTOMERNAME = "几米物联";
 
+	public static final Integer TO_BE_CONFIRMED_MODELCAPACITY_STATUS = 1;
+
+	public static final Integer FAIL_MODELCAPACITY_STATUS = 2;
+
+	public static final Integer PASS_MODELCAPACITY_STATUS = 3;
+
 
 	public static void setSopPictureUrl(String value) {
 		SOP_PICTURE_URL = value;
