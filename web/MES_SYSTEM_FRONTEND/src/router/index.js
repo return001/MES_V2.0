@@ -321,6 +321,9 @@ const index = new Router({
     ]
 });
 
+if (sessionStorage.getItem('factory')) {
+  store.commit('setSessionFactory', sessionStorage.getItem('factory'))
+}
 if (sessionStorage.getItem('UserType')) {
     store.commit('setUserType', sessionStorage.getItem('UserType'))
 }

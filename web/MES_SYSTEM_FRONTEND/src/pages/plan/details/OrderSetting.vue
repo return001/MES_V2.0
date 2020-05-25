@@ -1274,7 +1274,6 @@
             'Content-Type': 'multipart/form-data'
           },
         };
-        // this.uploadFileData.factory = 2
         this.$axios.post(planOrderImportUrl, this.uploadFileData, config).then(response => {
           if (response.data.result === 200) {
             this.$alertSuccess(response.data.data);
