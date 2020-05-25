@@ -9,7 +9,7 @@
       <div class="form-group-btn">
         <el-button size="small" type="primary" @click="thisFetch">查询</el-button>
       </div>
-      <div class="form-group-btn" v-if="$store.state.userType === 'SuperAdmin'">
+      <div class="form-group-btn">
         <el-button size="small" type="primary" @click="addOrder">新增</el-button>
       </div>
     </div>

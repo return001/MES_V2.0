@@ -31,3 +31,7 @@ export const setDelPermission = ({commit}, list) => {
 export const setTableDeleteGroup = ({commit}, object) => {
   commit('setTableDeleteGroup', object)
 };
+
+export const setCharactersFuncMap = ({commit}, object) => {
+  commit('setCharactersFuncMap', object)
+};

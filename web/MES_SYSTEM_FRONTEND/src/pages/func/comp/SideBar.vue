@@ -5,32 +5,63 @@
     class="sidebar-container"
     :default-active="activeItem"
     :router="true">
-    <el-submenu index="1">
+    <el-submenu :index="index.toString()" v-for="(item, index) in linkListValidated">
       <template slot="title">
-        <span>MAC返工</span>
+        <span>{{item.title}}</span>
       </template>
       <el-menu-item-group>
-        <el-menu-item index="/func/mac">MAC返工</el-menu-item>
-      </el-menu-item-group>
-    </el-submenu>
-    <el-submenu index="2">
-      <template slot="title">
-        <span>IMEI查询</span>
-      </template>
-      <el-menu-item-group>
-        <el-menu-item index="/func/imei">查询未使用的IMEI</el-menu-item>
+        <el-menu-item :index="subItem.path"
+                      v-for="subItem in item.subList">{{subItem.name}}</el-menu-item>
       </el-menu-item-group>
     </el-submenu>
   </el-menu>
-  <!--</div>-->
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
 
   export default {
     data() {
       return {
-
+        linkList: [
+          {
+            title: 'MAC返工',
+            moduleName: 'mac',
+            subList: [
+              {
+                activeKey: 'mac',
+                name: 'MAC返工',
+                path: '/func/mac',
+                type: 'mac'
+              }
+            ]
+          },
+          {
+            title: 'IMEI查询',
+            moduleName: 'imei',
+            subList: [
+              {
+                activeKey: 'imei',
+                name: '备份查询',
+                path: '/func/imei',
+                type: 'imei'
+              }
+            ]
+          },
+          {
+            title: '红茶',
+            moduleName: 'redtea',
+            subList: [
+              {
+                activeKey: 'redtea',
+                name: '红茶查询',
+                path: '/func/redtea',
+                type: 'redtea'
+              }
+            ]
+          }
+        ],
+        linkListValidated: [],
         //控制列表active状态，当前已激活的项目
         activeItem: ""
 
@@ -40,6 +71,24 @@
       $route: function (val) {
         this.activeItem = val.path
       }
+    },
+    computed: {
+      ...mapGetters([
+        'charactersFuncMap'
+      ]),
+    },
+    beforeMount() {
+      /*根据权限初始化页面列表*/
+      const pageList = this.charactersFuncMap.pageList;
+      this.linkListValidated = this.linkList.map(item => {
+        let _subList = item.subList.filter(subItem => {
+          return pageList.indexOf(`func-${item.moduleName}-${subItem.type}`) >= 0;
+        });
+        if (_subList.length > 0) {
+          item.subList = _subList;
+          return item
+        }
+      }).filter(item => item !== undefined);
     },
     mounted: function () {
       this.activeItem = this.$route.path

@@ -17,7 +17,6 @@
         @selection-change="handleSelectionChange"
         stripe>
         <el-table-column
-          v-if="_permissionControl(['SopManager', 'SopQcConfirmer'])"
           type="selection"
           width="55">
         </el-table-column>
@@ -42,16 +41,13 @@
           fixed="right"
         >
           <template slot-scope="scope">
-            <el-tooltip content="预览" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopReviewer', 'SopQcConfirmer'])">
+            <el-tooltip content="预览" placement="top">
               <el-button type="text" @click="previewSite(scope.row)" icon="el-icon-picture-outline"></el-button>
             </el-tooltip>
-            <el-tooltip content="停止播放" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopQcConfirmer'])">
+            <el-tooltip content="停止播放" placement="top">
               <el-button type="text" @click="showStopPlayingPanel(scope.row.id)" icon="el-icon-video-pause"></el-button>
             </el-tooltip>
-            <el-tooltip content="状态" placement="top"
-                        v-if="_permissionControl(['SopQcConfirmer'])">
+            <el-tooltip content="状态" placement="top">
               <el-button type="text"
                          @click="editStatus(scope.row)"
                          icon="el-icon-more"></el-button>
@@ -219,14 +215,13 @@
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
-      if (this._permissionControl(['SopManager', 'SopQcConfirmer'])) {
-        this.buttonGroup.push(
-          {
-            label: '停播',
-            size: 'small',
-            callback: this.stopGroupPlaying
-          })
-      }
+      this.buttonGroup.push(
+        {
+          label: '停播',
+          size: 'small',
+          callback: this.stopGroupPlaying
+        });
+
       this._queryData();
     },
     methods: {

@@ -46,7 +46,6 @@
             label="操作"
             width="80"
             fixed="right"
-            v-if="_permissionControl(['SopManager'])"
         >
           <template slot-scope="scope">
             <el-tooltip content="指派" placement="top">

@@ -16,8 +16,7 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl(['engineer'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
         </div>
       </div>
@@ -48,7 +47,6 @@
           label="操作"
           width="160"
           fixed="right"
-          v-if="permissionControl(['engineer'])"
         >
           <template slot-scope="scope">
 <!--            <el-tooltip content="上移" placement="top">-->
@@ -163,20 +161,6 @@
       this.fetchData()
     },
     methods: {
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
-      },
-
       initQueryOptions: function () {
         this.queryOptions = JSON.parse(JSON.stringify(processGroupQueryOptions));
         this.queryOptions.forEach(item => {

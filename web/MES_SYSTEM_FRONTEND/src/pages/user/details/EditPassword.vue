@@ -36,8 +36,8 @@
 </template>
 
 <script>
-  import {axiosFetch} from "../../utils/fetchData";
-  import {editUserPasswordUrl} from "../../config/globalUrl";
+  import {axiosFetch} from "../../../utils/fetchData";
+  import {editUserPasswordUrl} from "../../../config/globalUrl";
 
   export default {
     name: "EditPassword",

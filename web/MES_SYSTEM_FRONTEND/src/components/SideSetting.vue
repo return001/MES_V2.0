@@ -60,7 +60,7 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')"  v-if="accessPermission('setting')">
+        <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')"  v-if="accessPermission('basic')">
           <div class="setting-icon">
             <i class="el-icon-t-setting" style="color: #fff;"></i>
           </div>
@@ -72,8 +72,8 @@
       <!--<div class="setting-icon"></div>-->
       <!--</div>-->
       <div class="system-comp">
-        <div class="icon-container " :class="activeItem === 'users' ? 'icon-active' : ''"
-             @click="initData('users')"  v-if="accessPermission('users')">
+        <div class="icon-container " :class="activeItem === 'user' ? 'icon-active' : ''"
+             @click="initData('user')"  v-if="accessPermission('user')">
           <div class="setting-icon">
             <i class="el-icon-t-user" style="color: #fff;"></i>
           </div>
@@ -101,7 +101,7 @@
     name: "SideSetting",
     data() {
       return {
-        activeItem: 'table' //活动项目
+        activeItem: '' //活动项目
       }
     },
     watch: {
@@ -114,6 +114,8 @@
           } else {
             this.activeItem = tempPath
           }
+        } else {
+          this.activeItem = ''
         }
       }
     },
@@ -126,10 +128,12 @@
         } else {
           this.activeItem = tempPath
         }
+      } else {
+        this.activeItem = ''
       }
     },
     computed: {
-      ...mapGetters(['routerIn', 'token', 'userType']),
+      ...mapGetters(['routerIn', 'token', 'userType', 'charactersFuncMap']),
     },
     methods: {
       ...mapActions(['setLoginToken']),
@@ -158,14 +162,11 @@
         };
         axiosFetch(options).then(res => {
           if (res.data.result === 200 || res.data.result === 400) {
-            // location.reload();
             this.setLoginToken('');
             sessionStorage.removeItem('token');
             sessionStorage.removeItem('factory');
             window.location.href = '/mes_system/#/login';
-
             this.$alertSuccess("登出成功");
-
           } else {
             errHandler(res.data.result)
           }
@@ -175,8 +176,8 @@
 
       },
       accessPermission: function (path) {
-        return checkAccessPermission(path)
-      },
+        return this.charactersFuncMap.moduleList.indexOf(path) >= 0
+      }
     }
   }
 </script>
@@ -222,7 +223,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    margin: 20px 0;
+    margin: 10px 0;
     padding: 5px 0;
     cursor: pointer;
     width: 100%;

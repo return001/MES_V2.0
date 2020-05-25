@@ -33,8 +33,7 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl(['engineer', 'SopManager'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
         </div>
       </div>
@@ -65,20 +64,20 @@
           label="操作"
           width="160"
           fixed="right"
-          v-if="permissionControl(['engineer', 'SopManager'])"
+          v-if="_getFunctionPermission(2) || _getFunctionPermission(3)"
         >
           <template slot-scope="scope">
             <el-tooltip content="上移" placement="top">
-              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>
+              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up" v-if="_getFunctionPermission(2)"></el-button>
             </el-tooltip>
             <el-tooltip content="下移" placement="top">
-              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>
+              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down" v-if="_getFunctionPermission(2)"></el-button>
             </el-tooltip>
             <el-tooltip content="编辑" placement="top">
-              <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
+              <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline" v-if="_getFunctionPermission(2)"></el-button>
             </el-tooltip>
             <el-tooltip content="删除" placement="top">
-              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
+              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete" v-if="_getFunctionPermission(3)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -152,7 +151,7 @@
 
   export default {
     name: "ProcessSetting",
-    inject: ['reload'],
+    inject: ['reload', '_getFunctionPermission'],
     data() {
       return {
         queryOptions: processQueryOptions,
@@ -210,19 +209,6 @@
         _partlyReload(['thisQueryOptions', 'processEditOptionsData',  'processGroupSelectGroup',  ])
       },
 
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
-      },
 
       initQueryOptions: function () {
         this.queryOptions.forEach(item => {

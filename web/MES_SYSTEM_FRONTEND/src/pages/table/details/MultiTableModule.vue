@@ -44,7 +44,7 @@
           <el-button size="small" type="primary" @click="exportTable">导出报表</el-button>
         </div>
         <div class="form-group-btn"
-             v-if="isLocked && ($store.state.userType === 'SuperAdmin' || $store.state.userType === 'engineer')">
+             v-if="isLocked">
           <el-button size="small" type="warning" @click="showValidateDialog">删除数据</el-button>
         </div>
       </div>

@@ -31,7 +31,7 @@ export const getFactoryList = function getFactoryList() {
 };
 
 export default {
-  inject: ['reload'],
+  inject: ['reload', '_getFunctionPermission'],
   data() {
     return {
       isPending: false,
@@ -208,10 +208,5 @@ export default {
       this.isEditing = false;
     },
 
-    /*权限控制*/
-    _permissionControl: function (userArray) {
-      let thisUser = this.$store.state.userType;
-      return userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin';
-    },
   }
 }

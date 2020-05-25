@@ -37,35 +37,30 @@
           fixed="right"
         >
           <template slot-scope="scope">
-            <el-tooltip content="状态" placement="top"
-                        v-if="_permissionControl(['SopReviewer'])">
+            <el-tooltip content="状态" placement="top">
               <el-button type="text"
                          @click="editStatus(scope.row)"
                          icon="el-icon-more"
                          :disabled="scope.row.state !== '待审核'"></el-button>
             </el-tooltip>
-            <el-tooltip content="发放" placement="top"
-                        v-if="_permissionControl(['SopManager'])">
+            <el-tooltip content="发放" placement="top">
               <el-button type="text"
                          @click="preloadDispatching(scope.row.id)"
                          icon="el-icon-upload2"
                          :disabled="scope.row.state === '已作废' || scope.row.state === '待审核'"></el-button>
             </el-tooltip>
-            <el-tooltip content="日志" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopReviewer', 'SopQcConfirmer'])">
+            <el-tooltip content="日志" placement="top">
               <el-button type="text"
                          @click="showDispatchingLog(scope.row.id)"
                          icon="el-icon-document"></el-button>
             </el-tooltip>
-            <el-tooltip content="下载" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopReviewer'])">
+            <el-tooltip content="下载" placement="top">
               <el-button type="text"
                          @click="downloadSop(scope.row.id)"
                          icon="el-icon-download"
                          :disabled="scope.row.state === '已作废'"></el-button>
             </el-tooltip>
-            <el-tooltip content="作废" placement="top"
-                        v-if="_permissionControl(['SopManager', 'SopReviewer'])">
+            <el-tooltip content="作废" placement="top">
               <el-button type="text"
                          @click="_deleteData(scope.row)"
                          icon="el-icon-delete"
@@ -555,17 +550,16 @@
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
-      if (this._permissionControl(['SopManager'])) {
-        this.buttonGroup.push(
-          {
-            label: '上传',
-            size: 'small',
-            type: 'primary',
-            callback: () => {
-              this.isUploading = true
-            }
-          });
-      }
+      this.buttonGroup.push(
+        {
+          label: '上传',
+          size: 'small',
+          type: 'primary',
+          callback: () => {
+            this.isUploading = true
+          }
+        });
+
 
       this.historyQueryButtonGroup[0].callback = this.initHistoryQueryOptions;
       this.historyQueryButtonGroup[1].callback = this.queryHistoryDataBtn;

@@ -95,14 +95,12 @@
 <style scoped>
   .redTea {
     position: absolute;
-    height: 100%;
-    width: 100%;
+    box-sizing: border-box;
   }
 
   .form-area {
     position: relative;
-    width: calc(100% - 140px);
-    padding: 20px 60px 20px 80px;
+    width: 100% ;
   }
 
   .options-area {

@@ -3,7 +3,7 @@
   <div id="test-sidebar">
     <div class="sidebar-items">
       <!--订单配置-->
-      <div v-for="item in linkList">
+      <div v-for="item in linkListValidated">
         <div class="sidebar-title">
           <span class="subtitle" draggable="false">{{item.title}}</span>
         </div>
@@ -28,53 +28,60 @@
         linkList: [
           {
             title: 'SMT测试',
+            moduleName: 'smt_test',
             subList: [
               {
                 type: '0',
-                name: '功能测试'
+                name: '功能测试',
+                typeName: 'func'
               },
             ],
-            hideIn: ['oqcManager','developConfigurator']
           },
           {
             title: '组装测试',
+            moduleName: 'zz_test',
             subList: [
               {
                 type: '1',
-                name: '功能测试'
+                name: '功能测试',
+                typeName: 'func'
               },
               {
                 type: '2',
-                name: '耦合测试'
+                name: '耦合测试',
+                typeName: 'couple'
               }
             ],
-            hideIn: ['oqcManager','developConfigurator']
           },
           {
             title: '研发测试',
+            moduleName: 'yf_test',
             subList: [
               {
                 type: '3',
-                name: '功能测试'
+                name: '功能测试',
+                typeName: 'func'
               },
               {
                 type: '4',
-                name: '耦合测试'
+                name: '耦合测试',
+                typeName: 'couple'
               }
             ],
-            hideIn: ['oqcManager']
           },
           {
             title: 'OQC',
+            moduleName: 'oqc_test',
             subList: [
               {
                 type: '5',
-                name: 'OQC'
+                name: 'OQC',
+                typeName: 'oqc'
               }
             ],
-            hideIn: ['developConfigurator']
           }
         ],
+        linkListValidated: [],
         //控制列表active状态，当前已激活的项目
         activeItem: ""
 
@@ -86,18 +93,25 @@
       }
     },
     beforeMount() {
-      this.linkList = this.linkList.filter(item => {
-        if (item.hideIn.indexOf(this.$store.state.userType) < 0) {
+      /*根据权限初始化页面列表*/
+      const pageList = this.charactersFuncMap.pageList;
+      this.linkListValidated = this.linkList.map(item => {
+        let _subList = item.subList.filter(subItem => {
+          return pageList.indexOf(`test-${item.moduleName}-${subItem.typeName}`) >= 0;
+        });
+        if (_subList.length > 0) {
+          item.subList = _subList;
           return item
         }
-      });
+      }).filter(item => item !== undefined);
     },
     mounted: function () {
       this.toggleState(this.testType)
     },
     computed: {
       ...mapGetters([
-        'testType'
+        'testType',
+        'charactersFuncMap'
       ]),
     },
     methods: {

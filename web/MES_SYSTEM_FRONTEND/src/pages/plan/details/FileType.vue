@@ -19,7 +19,7 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container" v-if="permissionControl(['schedulingSZPC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('add')">新增文件类型</el-button>
         </div>
       </div>
@@ -49,15 +49,12 @@
           label="操作"
           width="140"
           fixed="right"
-          v-if="permissionControl(['engineer','schedulingJMPMC'])"
         >
           <template slot-scope="scope">
-            <el-tooltip content="编辑订单" placement="top"
-                        v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+            <el-tooltip content="编辑订单" placement="top">
               <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
             </el-tooltip>
-            <el-tooltip content="删除" placement="top"
-                        v-if="permissionControl(['schedulingJMPMC'])">
+            <el-tooltip content="删除" placement="top">
               <el-button
                 type="text"
                 @click="deleteFileType(scope.row)"
@@ -183,20 +180,6 @@
       this.fetchData()
     },
     methods: {
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
-      },
-
       initQueryOptions: function () {
         this.fileTypeQueryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {

@@ -28,57 +28,27 @@
       return {
         linkList: [
           {
-            title: '订单',
-            moduleName: 'order',
-            subList: [
-              // {
-              //   type: 'file_type',
-              //   name: '文件类型'
-              // },
-              {
-                type: 'order',
-                name: '订单管理'
-              },
-              // {
-              //   type: 'process_group',
-              //   name: '工序组设置'
-              // },
-              // {
-              //   type: 'process',
-              //   name: '工序设置'
-              // },
-              // {
-              //   type: 'line',
-              //   name: '产线设置'
-              // },
-              // {
-              //   type: 'capacity',
-              //   name: '产能管理'
-              // },
-              {
-                type: 'detail',
-                name: '排产计划'
-              },
-              {
-                type: 'log',
-                name: '排产日志'
-              }
-            ]
-          },{
-            title: '排产计划',
-            moduleName: 'plan',
+            title: '用户管理',
+            moduleName: 'user',
             subList: [
               {
-                type: 'detail',
-                name: '排产计划'
+                type: 'dept',
+                name: '部门管理'
+              },
+              {
+                type: 'char',
+                name: '角色管理'
+              },
+              {
+                type: 'users',
+                name: '用户管理'
               },
               {
                 type: 'action_log',
-                name: '操作日志'
-              }
+                name: '日志'
+              },
             ]
-          },
-
+          }
         ],
         linkListValidated: [],
         activeItem: '',
@@ -104,7 +74,7 @@
       const pageList = this.charactersFuncMap.pageList;
       this.linkListValidated = this.linkList.map(item => {
         let _subList = item.subList.filter(subItem => {
-          return pageList.indexOf(`plan-${item.moduleName}-${subItem.type}`) >= 0;
+          return pageList.indexOf(`user-${item.moduleName}-${subItem.type}`) >= 0;
         });
         if (_subList.length > 0) {
           item.subList = _subList;
@@ -126,10 +96,10 @@
       },
       linkTo: function (val) {
         let routerState = this.$route.path.split('/');
-        if (!!routerState[2] || val !== routerState[2]) {
+        if (!routerState[2] || val !== routerState[2]) {
           //this.$openLoading();
           this.$router.push({
-            path: '/plan/' + val
+            path: '/user/' + val
           })
         }
       }

@@ -34,7 +34,7 @@
         </el-button>
       </div>
       <div class="form-group-btn"
-           v-if="$route.query.type !== 'LTestLogMessage' && $route.query.type !== 'Gps_ManuCpParam' && !isReferred && checkDelPermission && isDataExist">
+           v-if="$route.query.type !== 'LTestLogMessage' && $route.query.type !== 'Gps_ManuCpParam' && !isReferred && isDataExist">
         <el-button size="small" type="warning" @click="validateVisible = true">删除所有</el-button>
         <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
       </div>
@@ -72,7 +72,6 @@
   import {setRouterConfig, tableSelectUrl, getRequestUrl} from "../../../../config/tableApiConfig";
   import {tableDownloadUrl, tableDeleteUrl, validateUrl, tableCartonDownloadUrl} from "../../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../../utils/fetchData";
-  import {checkDelPermission} from "../../../../utils/utils";
   import {saveAs} from 'file-saver'
 
 
@@ -203,9 +202,7 @@
           return '是否关联关联表'
         }
       },
-      checkDelPermission: function () {
-        return checkDelPermission(this.$route.query.type)
-      },
+
       isDataExist: function () {
         return this.dataCount > 0;
       }

@@ -60,13 +60,13 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container" v-if="permissionControl(['schedulingSZPC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="isOrderUploading = true">导入订单</el-button>
         </div>
-        <div class="query-comp-container" v-if="permissionControl(['schedulingSZPC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('add')">新增订单</el-button>
         </div>
-        <div class="query-comp-container" v-if="permissionControl(['schedulingSZPC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('rework',reworkOrder)" v-if="reworkOrder !== ''">返工</el-button>
           <el-button type="info" @click="unselected" size="small" v-else>返工</el-button>
         </div>
@@ -83,7 +83,6 @@
                            :key="index"
                            :prop="item.key"
                            :label="item.label"
-                           v-if="$store.state.userType !== item.notShowTo"
                            :min-width="item['min-width']"
                            :formatter="item.formatter">
           </el-table-column>
@@ -99,27 +98,21 @@
             label="操作"
             width="155"
             fixed="right"
-            v-if="$store.state.userType !== 'operator'"
           >
             <template slot-scope="scope">
-              <el-tooltip content="订单详情" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'engineer','schedulingJMPMC'])">
+              <el-tooltip content="订单详情" placement="top">
                 <el-button type="text" icon="el-icon-t-table" @click="showDetails(scope.row)"></el-button>
               </el-tooltip>
-              <el-tooltip content="编辑订单" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+              <el-tooltip content="编辑订单" placement="top">
                 <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit" :disabled="scope.row.editable === false"></el-button>
               </el-tooltip>
-              <el-tooltip content="复制订单" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+              <el-tooltip content="复制订单" placement="top">
                 <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
               </el-tooltip>
-              <el-tooltip content="异常结单" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+              <el-tooltip content="异常结单" placement="top">
                 <el-button type="text" @click="abnormalEndData(scope.row)" icon="el-icon-t-delete" :disabled="scope.row.abnoable === false"></el-button>
               </el-tooltip>
-              <el-tooltip content="确认订单" placement="top"
-                          v-if="permissionControl(['schedulingSZPC', 'schedulingJMPMC'])">
+              <el-tooltip content="确认订单" placement="top">
                 <el-button type="text" @click="confirmOrder(scope.row)" icon="el-icon-check" :disabled="scope.row.orderConfirm === false"></el-button>
               </el-tooltip>
 
@@ -460,8 +453,7 @@
         <div style="display: inline-block;width: 40px;"></div>
         <el-button size="small" @click="submitFileStatus()" type="primary">提交</el-button>
       </el-dialog>
-      <span slot="footer" class="dialog-footer"
-            v-if="permissionControl(['schedulingSZPC', 'engineer'])">
+      <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="isOrderDetailsUploading = true" type="primary" :disabled="uploadAble === false">上传</el-button>
       </span>
 
@@ -487,15 +479,6 @@
                          :label="listItem.typeName"></el-option>
             </el-select>
 
-
-<!--          <el-select v-model="orderDetailsType" placeholder="请选择类型" autocomplete="off" size="small">-->
-<!--            <el-option :value="0" label="信息表"-->
-<!--                       v-if="permissionControl(['schedulingSZPC'])"></el-option>-->
-<!--            <el-option :value="1" label="BOM表"-->
-<!--                       v-if="permissionControl(['schedulingSZPC'])"></el-option>-->
-<!--            <el-option :value="2" label="SOP表"-->
-<!--                       v-if="permissionControl(['engineer','schedulingSZPC'])"></el-option>-->
-<!--          </el-select>-->
         </div>
         <el-upload
           :disabled="orderDetailsType === ''"
@@ -787,19 +770,6 @@
           this.$store.commit('setStashData', {});
         };
         _partlyReload(['thisQueryOptions'])
-      },
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
       },
 
       initQueryOptions: function () {

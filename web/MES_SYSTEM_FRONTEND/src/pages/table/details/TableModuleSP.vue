@@ -64,7 +64,7 @@
         <div class="form-group-btn"  v-if="paginationOptions.total > 0">
           <el-button size="small" type="primary" @click="downloadData">下载报表</el-button>
         </div>
-        <div class="form-group-btn" v-if="checkDelPermission && paginationOptions.total > 0">
+        <div class="form-group-btn" v-if="paginationOptions.total > 0">
           <!--<el-button type="warning" @click="deleteAll">删除所有</el-button>-->
           <el-button size="small" type="warning" @click="callValidate('all')">删除所有</el-button>
         </div>
@@ -79,8 +79,7 @@
         @selection-change="selectionChangeHandler">
         <el-table-column
           type="selection"
-          width="30"
-          v-if="checkDelPermission">
+          width="30">
         </el-table-column>
         <el-table-column v-for="(item, index) in tableColumns"
                          :key="index"
@@ -150,7 +149,6 @@
   } from "../../../config/globalUrl";
   import {getRequestUrl, setRouterConfigSP} from "../../../config/tableApiConfig";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
-  import {checkDelPermission} from "../../../utils/utils";
   import {saveAs} from 'file-saver'
 
   export default {
@@ -219,9 +217,6 @@
       tableColumns: function () {
         return setRouterConfigSP(this.$route.query.type).data.dataColumns;
       },
-      checkDelPermission: function () {
-        return checkDelPermission(this.$route.query.type)
-      }
     },
     methods: {
       init: function () {

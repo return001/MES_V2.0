@@ -144,20 +144,6 @@
       this.fetchData()
     },
     methods: {
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
-      },
-
       initQueryOptions: function () {
         this.queryOptions.forEach(item => {
           this.$set(this.thisQueryOptions, item.key, {

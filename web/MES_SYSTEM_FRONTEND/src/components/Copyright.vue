@@ -38,6 +38,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    bottom: 10px;
   }
 
   .text-container {

@@ -61,20 +61,16 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl(['schedulingJMPMC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="showOrderImport">导入订单</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl([])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="exportPlan">导出计划</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl(['schedulingJMPMC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="showOrderImport('rework')">导入待返工单</el-button>
         </div>
-        <div class="query-comp-container"
-             v-if="permissionControl(['schedulingJMPMC'])">
+        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="showOrderPlannedImport">重排已排产</el-button>
         </div>
 
@@ -112,7 +108,6 @@
               label="甘特图"
               width="80"
               fixed="right"
-              v-if="permissionControl(['engineer', 'schedulingJMPMC'])"
           >
             <template slot-scope="scope">
               <el-button type="text" icon="el-icon-picture-outline-round" @click="showGantt(scope.row)"></el-button>
@@ -122,7 +117,6 @@
               label="操作"
               width="140"
               fixed="right"
-              v-if="permissionControl(['engineer','schedulingJMPMC'])"
           >
             <template slot-scope="scope">
               <el-tooltip content="详细" placement="top">
@@ -142,8 +136,7 @@
                     @click="openStatusEditDialog(scope.row)"
                     icon="el-icon-more"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top"
-                          v-if="permissionControl(['schedulingJMPMC'])">
+              <el-tooltip content="删除" placement="top">
                 <el-button
                     type="text"
                     @click="deleteData(scope.row)"
@@ -275,7 +268,7 @@
                      v-if="planEditRow.schedulingPlanStatus === 3 || planEditRow.schedulingPlanStatus === 1"></el-option>
           <!--<el-option :value="2" label="完成"></el-option>-->
           <el-option :value="3" label="暂停"
-                     v-if="planEditRow.schedulingPlanStatus === 2 && permissionControl(['schedulingJMPMC'])"></el-option>
+                     v-if="planEditRow.schedulingPlanStatus === 2"></el-option>
         </el-select>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -486,19 +479,6 @@
           this.$store.commit('setStashData', {});
         };
         _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc', 'lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup'])
-      },
-      /**
-       **@description: 权限控制-显示隐藏
-       **@date: 2019/8/13 11:39
-       **@author: DarkNin
-       **@method: permissionControl
-       **@params: Array[] 可显示的用户
-       */
-      permissionControl: function (userArray) {
-        let thisUser = this.$store.state.userType;
-        if (userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin') {
-          return true
-        }
       },
 
       initQueryOptions: function () {

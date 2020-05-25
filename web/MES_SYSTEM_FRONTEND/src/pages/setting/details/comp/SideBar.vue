@@ -2,7 +2,7 @@
   <div id="plan-sidebar">
     <nav>
       <div class="sidebar-items">
-        <div v-for="item in linkList">
+        <div v-for="item in linkListValidated">
           <div class="sidebar-title">
             <span class="subtitle" draggable="false">{{item.title}}</span>
           </div>
@@ -20,6 +20,7 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
 
   export default {
     name: "SideBar",
@@ -28,6 +29,7 @@
         linkList: [
           {
             title: '基础设置',
+            moduleName: 'basic',
             subList: [
               {
                 type: 'factory',
@@ -65,9 +67,18 @@
                 type: 'product',
                 name: '产品型号'
               },
+              {
+                type: 'file_type',
+                name: '文件类型'
+              },
+              {
+                type: 'capacity',
+                name: '产能设置'
+              },
             ]
           }
         ],
+        linkListValidated: [],
         activeItem: '',
       }
     },
@@ -80,6 +91,24 @@
           this.toggleState('')
         }
       }
+    },
+    computed: {
+      ...mapGetters([
+        'charactersFuncMap'
+      ]),
+    },
+    beforeMount() {
+      /*根据权限初始化页面列表*/
+      const pageList = this.charactersFuncMap.pageList;
+      this.linkListValidated = this.linkList.map(item => {
+        let _subList = item.subList.filter(subItem => {
+          return pageList.indexOf(`basic-${item.moduleName}-${subItem.type}`) >= 0;
+        });
+        if (_subList.length > 0) {
+          item.subList = _subList;
+          return item
+        }
+      }).filter(item => item !== undefined);
     },
     mounted() {
       let routerState = this.$route.path.split('/');

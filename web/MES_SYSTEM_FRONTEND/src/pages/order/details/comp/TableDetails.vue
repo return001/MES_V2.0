@@ -25,7 +25,6 @@
         label="操作"
         width="110"
         fixed="left"
-        v-if="$store.state.userType === 'SuperAdmin'"
       >
         <template slot-scope="scope">
           <el-button type="text" class="el-icon-t-edit" @click="editOrder('edit', scope.row)">

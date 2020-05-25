@@ -96,12 +96,6 @@ export default {
       }).catch(() => {
 
       })
-    },
-
-    /*权限控制*/
-    _permissionControl: function (userArray) {
-      let thisUser = this.$store.state.userType;
-      return userArray.indexOf(thisUser) !== -1 || thisUser === 'SuperAdmin';
-    },
+    }
   }
 }

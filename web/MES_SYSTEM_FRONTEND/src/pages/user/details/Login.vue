@@ -32,11 +32,12 @@
 </template>
 
 <script>
-  import PageHeader from '../../components/PageHeader'
-  import {axiosFetch} from "../../utils/fetchData";
-  import {loginUrl} from "../../config/globalUrl";
+  import PageHeader from '../../../components/PageHeader'
+  import {axiosFetch} from "../../../utils/fetchData";
+  import {loginUrl} from "../../../config/globalUrl";
   import {mapActions} from "vuex";
-  import {errHandler} from "../../utils/errorHandler";
+  import {errHandler} from "../../../utils/errorHandler";
+  import {initCharactersFuncMap, getCharactersFuncList} from "../../../config/charactersFunc";
 
   export default {
     name: "Login",
@@ -70,7 +71,7 @@
       })
     },
     methods: {
-      ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission']),
+      ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission', 'setCharactersFuncMap']),
       pageHeightCalc: function () {
         this.pageHeight = (document.body.clientHeight > 460) ? document.body.clientHeight - 200 : 260;
       },
@@ -86,28 +87,32 @@
           };
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
-              sessionStorage.setItem('factory', res.data.data["Factory"]);//人员的所属工厂
+              sessionStorage.setItem('factory', res.data.data['roleVO']['company']);//人员的所属工厂
 
               // this.setFactory(sessionStorage.getItem('Factory'));
-              sessionStorage.setItem('token', res.data.data["#TOKEN#"]);
+              sessionStorage.setItem('token', res.data.data["token"]);
               this.setLoginToken(sessionStorage.getItem('token'));
-              sessionStorage.setItem('UserType', res.data.data["typeName"]);
-              this.setUserType(sessionStorage.getItem('UserType'));
-              sessionStorage.setItem('delPermission', res.data.data['DeletePermission']);
-              this.setDelPermission(sessionStorage.getItem('delPermission').split(','));
-              sessionStorage.setItem('UserName', res.data.data['Name']);
+              sessionStorage.setItem('UserName', res.data.data['name']);
+
+
+              /*生成权限列表*/
+              let map = new getCharactersFuncList();
+              let funcList = initCharactersFuncMap(map, res.data.data['webAuthorities']);
+              this.setCharactersFuncMap(funcList);
+              sessionStorage.setItem('charactersFuncMap', JSON.stringify(funcList));
+
               this.$router.replace('/');
             } else if (res.data.result === 412) {
               this.$alertWarning("请检查用户名或密码")
             } else if (res.data.result === 400) {
               this.$alertWarning("请勿重复登录");
-              this.$router.replace('/order')
+              this.$router.replace('/')
             } else {
               errHandler(res.data.result)
             }
           }).catch(err => {
             this.isPending = false;
-            console.log(JSON.stringify(err));
+            console.log(err);
             this.$alertDanger(err);
           }).finally(() => {
             this.$closeLoading();

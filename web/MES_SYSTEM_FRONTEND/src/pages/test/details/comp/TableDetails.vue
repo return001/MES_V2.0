@@ -22,11 +22,6 @@
       </el-table-column>
 
       <el-table-column
-        v-if="$store.state.userType === 'SuperAdmin'
-           || $store.state.userType === 'engineer'
-           || $store.state.userType === 'oqcManager'
-           || $store.state.userType === 'configurationManager'
-           || $store.state.userType === 'developConfigurator' "
         label="操作"
         width="120"
         fixed="left"

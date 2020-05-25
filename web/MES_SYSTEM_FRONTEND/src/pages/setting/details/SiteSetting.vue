@@ -35,7 +35,6 @@
           label="操作"
           width="80"
           fixed="right"
-          v-if="_permissionControl(['SopManager'])"
         >
           <template slot-scope="scope">
             <el-tooltip content="编辑" placement="top">
@@ -141,7 +140,7 @@
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
-      if (this._permissionControl(['SopManager'])) {
+      if (this._getFunctionPermission(1)) {
         this.buttonGroup.push(
           {
             label: '新增',
