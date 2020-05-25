@@ -706,7 +706,7 @@ export const capacityEditOptionsRules = {
     'process': [{ required: true, message: '请选择工序', trigger: 'change' }],
     'softModel': [{ required: true, message: '请填写机型', trigger: 'blur' }],
     // 'customerModel': [{required: true, message: '请填写客户型号', trigger: 'blur'}],
-    'customerNumber': [{ required: true, message: '请选择客户编号', trigger: 'change' }],
+    // 'customerNumber': [{ required: true, message: '请选择客户编号', trigger: 'change' }],
     // 'rhythm': [{ required: true, message: '请填写节拍', trigger: 'blur' }],
     'processPeopleQuantity': [{ required: true, message: '请填写人数', trigger: 'blur' },
         { pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur' }
@@ -734,7 +734,6 @@ export const capacityTableColumns = [{
         'key': 'abbreviation',
         'min-width': '100px'
     },
-
     {
         'label': '客户型号/料号',
         'key': 'customerModel',
@@ -764,6 +763,26 @@ export const capacityTableColumns = [{
         'label': '转线时长(分钟)',
         'key': 'transferLineTime',
         'min-width': '60px'
+    },
+    {
+      'label': '状态',
+      'key': 'statusName',
+      'min-width': '100px'
+    },
+    {
+      'label': '审核说明',
+      'key': 'reviewRemark',
+      'min-width': '100px'
+    },
+    {
+      'label': '审核人',
+      'key': 'reviewerName',
+      'min-width': '100px'
+    },
+    {
+      'label': '审核时间',
+      'key': 'reviewTime',
+      'min-width': '100px'
     },
     {
         'label': '备注',

@@ -19,7 +19,7 @@
               id="process-query-item"
               placeholder="请选择工序"
               size="small">
-              <el-option v-for="listItem in processGroupSelectGroup"
+              <el-option v-for="listItem in processGroupSelectGroupWait"
                          :key="listItem.id"
                          :value="listItem.id"
                          :label="listItem.groupName"></el-option>
@@ -78,16 +78,48 @@
           >
             <template slot-scope="scope">
               <el-tooltip content="编辑" placement="top">
-                <el-button type="text" @click="copyCapacity('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
+                <el-button type="text" @click="editCapacity('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
               <el-tooltip content="复制" placement="top">
-                <el-button type="text" @click="copyCapacity('add',scope.row)" icon="el-icon-t-copy"></el-button>
+                <el-button type="text" @click="editCapacity('copy',scope.row)" icon="el-icon-t-copy"></el-button>
               </el-tooltip>
+<!--              <el-tooltip content="审核" placement="top">-->
+<!--                <el-button type="text" @click="checkCapacity(scope.row)" icon="el-icon-check" :disabled="scope.row.statusId !== 1 && scope.row.statusId !== null"></el-button>-->
+<!--              </el-tooltip>-->
             </template>
           </el-table-column>
         </el-table>
       </div>
     </div>
+
+    <!-- 审核 -->
+    <el-dialog
+      title="产能审核"
+      :visible.sync="isCapacityCheck"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @closed="closeCapacityCheckPanel"
+      width="400px">
+<!--      closeDeleteOrderPanel-->
+<!--      <div class="order-delete-msg-title">正在审核产能<span>{{deletingItem.zhidan}}</span></div>-->
+      <div class="order-delete-msg-content">
+        <template>
+          <el-radio v-model="checkResult" :label= 3>通过</el-radio>
+          <el-radio v-model="checkResult" :label= 2>拒绝</el-radio>
+        </template>
+        <div style="height: 15px"></div>
+        <el-input type="textarea"
+                  :rows="3"
+                  autocomplete="off"
+                  placeholder="审核备注"
+                  v-model="capacityCheckReason">
+        </el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="closeCapacityCheckPanel" type="info">取消</el-button>
+        <el-button size="small" @click="submitCheckCapacity" type="warning">保存</el-button>
+      </span>
+    </el-dialog>
 
     <!--dialog component (新增和复制）-->
     <el-dialog
@@ -104,17 +136,18 @@
         label-position="top"
         @submit.native.prevent
         :rules="capacityEditOptionsRules">
-<!--          <el-form-item size="small" class="capacity-edit-form-comp" label="选择工厂" prop="factory" v-if="sessionFactory === '0'">-->
-<!--          <el-select v-model="getGroupInfoFactoryId" id="factory01"-->
-<!--                     autocomplete="off"-->
-<!--                     @change="changeGroupList"-->
-<!--                     placeholder="请选择工厂" size="small">-->
-<!--            <el-option v-for="listItem in factoryList"-->
-<!--                       :key="listItem.id"-->
-<!--                       :value="listItem.id"-->
-<!--                       :label="listItem.abbreviation"></el-option>-->
-<!--          </el-select>-->
-<!--          </el-form-item>-->
+          <el-form-item size="small" class="capacity-edit-form-comp" label="选择工厂" prop="factory" v-if="sessionFactory === '0' && capacityEditType === 'add'">
+          <el-select v-model="getGroupInfoFactoryId" id="factory01"
+                     autocomplete="off"
+                     @change="changeGroupList"
+                     placeholder="请选择工厂" size="small"
+          >
+            <el-option v-for="listItem in factoryList"
+                       :key="listItem.id"
+                       :value="listItem.id"
+                       :label="listItem.abbreviation"></el-option>
+          </el-select>
+          </el-form-item>
         <el-form-item size="small" class="capacity-edit-form-comp" label="客户编号" prop="customerNumber">
           <el-select v-model="capacityEditOptionsData.customerNumber" placeholder="请选择客户编号" class="capacity-edit-form-comp-text"
                      @change="choiceCustomer">
@@ -286,7 +319,10 @@
     planCapacitySelectUrl,
     planProcessGroupGetUrl,
     planProcessGetUrl,
-    eSopCustomerSelectUrl, eSopFactorySelectUrl
+    eSopCustomerSelectUrl,
+    eSopFactorySelectUrl,
+    planOrderTableDeleteUrl,
+    planCapacityCheckUrl,
   } from "../../../config/globalUrl";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from "element-ui"
@@ -303,6 +339,7 @@
         processSelectGroupSrc: [], //工序信息 源
         processSelectGroup: [], //工序信息
         processGroupSelectGroup: [], //工序组信息
+        processGroupSelectGroupWait:[], // factory=0的情况下 新增页面必须选择工厂才能显示工序组，先存到这
         customerDatas:[], //客户信息
         customerNames:"",
         tableData: [],
@@ -313,6 +350,12 @@
           pageSize: 18,
           total: 0
         },
+        /*审核产能*/
+        checkItem:[],  //点击审核的行信息
+        isCapacityCheck:false,
+        capacityCheckReason:"",
+        checkResult:1,
+
         /*编辑新增产能信息*/
         factoryList:[],  //工厂
         isCapacityEditing: false,
@@ -343,6 +386,8 @@
           return '编辑'
         } else if (this.capacityEditType === 'add') {
           return '新增'
+        }else if (this.capacityEditType === 'copy') {
+          return '复制'
         }
       },
     },
@@ -460,14 +505,14 @@
         return new Promise(resolve => {
           axiosFetch({
             url: planProcessGroupGetUrl,
-
           }).then(response => {
             if (response.data.result === 200) {
               if(sessionFactory === '0'){
-                this.processGroupSelectGroup = response.data.data.list
+                this.processGroupSelectGroupWait = response.data.data.list
               }else {
                 response.data.data.list.forEach(item => {
                   if (item.factoryId === Number(this.getGroupInfoFactoryId)) {
+                    this.processGroupSelectGroupWait.push(item)
                     this.processGroupSelectGroup.push(item)
                   }
                 })
@@ -514,8 +559,22 @@
       },
 
       //工厂更改  工序组即更改
-      changeGroupList(){
-        this.fetchProcessGroup()
+      changeGroupList(val){
+
+        this.processGroupSelectGroup = []
+        this.sameGroupDatas = []
+          this.processGroupSelectGroupWait.forEach(item=>{
+            if(item.factoryId === val){
+              console.log(item)
+              this.processGroupSelectGroup.push(item)
+            }
+          })
+        this.processGroupSelectGroup.forEach((item,i)=>{
+          let arr ={processGroup:""}
+          this.sameGroupDatas.push(arr)
+          this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
+          this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
+        })
       },
 
       indexMethod: function (index) {
@@ -529,7 +588,6 @@
       },
 
       fetchData: function () {
-
         if (!this.isPending) {
           this.getGroupInfoFactoryId = sessionFactory
           this.isPending = true;
@@ -587,6 +645,7 @@
       editData: function (type, val) {
         this.fetchCustomer()
         this.fetchFactory()
+        this.fetchProcessGroup()
         if (!!this.$refs['capacityEditForm']) {
           this.$refs['capacityEditForm'].clearValidate();
         }
@@ -619,25 +678,82 @@
           this.processGroupSelectGroup.forEach((item,i)=>{
             let arr ={processGroup:""}
             this.sameGroupDatas.push(arr)
-
+            console.log(this.sameGroupDatas)
             this.$set(this.sameGroupDatas[i],'groupName' , item.groupName);
             this.$set(this.sameGroupDatas[i],'processGroup' , item.id);
+            console.log(this.sameGroupDatas)
           })
-
-          // this.sameGroupDatas= 654
-          // this.processGroupSelectGroup =457
           this.capacityEditType = 'add';
           this.isCapacityAdd = true;
         }
       },
 
+      //审核产能
+      checkCapacity(val){
+        this.isCapacityCheck = true;
+        this.checkItem = val
+      },
+
+      closeCapacityCheckPanel(){
+        this.isCapacityCheck = false;
+        this.checkResult = '';
+        this.capacityCheckReason ="";
+      },
+
+      submitCheckCapacity(){
+        if(this.checkResult === 1){
+          this.$alertInfo('请对产能进行审核');
+          return;
+        }
+        MessageBox.confirm('将对产能进行审核操作，是否继续?', '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            this.$openLoading();
+            this.isPending = true;
+            axiosFetch({
+              url: planCapacityCheckUrl,
+              data: {
+                softModel:this.checkItem.softModel,
+                customerNumber:this.checkItem.customerNumber,
+                factoryId:this.checkItem.factoryId,
+                // factory:sessionFactory,
+                customerModel:this.checkItem.customerModel,
+                reviewRemark: this.capacityCheckReason,
+                statusId:this.checkResult,
+              }
+            }).then(response => {
+              if (response.data.result === 200) {
+                this.$alertSuccess('操作成功');
+                this.partlyReload();
+                this.isCapacityCheck = false;
+              } else {
+                this.$alertWarning(response.data.data)
+              }
+            }).catch(err => {
+              this.$alertDanger("未知错误")
+            })
+            .finally(() => {
+              this.$closeLoading();
+              this.isPending = false;
+            })
+          })
+      },
+
       //复制产能信息
-      copyCapacity(type,val){
+      editCapacity(type,val){
         this.fetchCustomer();
         if(type === 'add'){
           this.capacityEditType = 'add';
+          this.isCapacityAdd = true;
+
         }else if(type === 'edit'){
           this.capacityEditType = 'edit';
+          this.isCapacityAdd = true;
+        }else if(type === 'copy'){
+          this.capacityEditType = 'copy';
+          this.isCapacityAdd = true;
         }
         let tempData = JSON.parse(JSON.stringify(this.tableData))
         tempData.forEach(item=>{
@@ -645,16 +761,24 @@
             this.sameGroupDatas.push(item)
           }
         })
-        this.isCapacityAdd = true;
+        console.log(this.sameGroupDatas)
+        this.$set(this.capacityEditOptionsData,'customerNumber',this.sameGroupDatas[0].customerNumber)
+        this.$set(this.capacityEditOptionsData,'softModel',this.sameGroupDatas[0].softModel)
+        this.$set(this.capacityEditOptionsData,'customerModel',this.sameGroupDatas[0].customerModel)
+        this.customerNames= this.sameGroupDatas[0].customerName
+        console.log(this.sameGroupDatas)
       },
+
+
 
       closeEditCapacityPanel: function () {
         this.isCapacityEditing = false;
         this.sameGroupDatas=[];
         this.isCapacityAdd =false;
       },
-      //单条编辑
+      //新增、编辑、复制
       submitEditCapacity: function () {
+        console.log(this.sameGroupDatas)
         this.sameGroupDatas.forEach(item=>{
           item.customerNumber= this.capacityEditOptionsData.customerNumber.toString();
           item.customerName= this.customerNames;
@@ -664,10 +788,21 @@
           item.processPeopleQuantity = Number(item.processPeopleQuantity)
           item.transferLineTime = Number(item.transferLineTime)
           item.rhythm = Number(item.rhythm)
-          if(item.capacity <= 0 || item.processPeopleQuantity <= 0){
+          console.log(item.capacity,"++++",item.processPeopleQuantity)
+          //人数 和 产能是必填字段
+          if(isNaN(item.processPeopleQuantity) || item.processPeopleQuantity <= 0){
+            item.processPeopleQuantity = ""
             this.Parameter = false
           }
+          if(isNaN(item.capacity) || item.capacity <= 0){
+            item.capacity = ""
+            console.log(item.capacity)
+            this.Parameter = false
+          } else{
+            this.Parameter = true;
+          }
         })
+        console.log(this.Parameter)
         if(!this.Parameter){
           this.$alertWarning('设置数量有误')
           this.$closeLoading()
@@ -686,13 +821,17 @@
             if (this.capacityEditType === 'edit') {
               options.url = planCapacityEditUrl
               // options.data= this.capacityEditOptionsData  //只编辑单条产能
-            } else if (this.capacityEditType === 'add') {
+            } else if (this.capacityEditType === 'add' || this.capacityEditType === 'copy') {
               options.url = planCapacityAddUrl
             }
-            options.data.factory = sessionFactory
+            if(this.getGroupInfoFactoryId){
+              options.data.factory = this.getGroupInfoFactoryId
+            }else{
+              options.data.factory = sessionFactory
+            }
             this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
               Object.keys(item).forEach(con => {
-                if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === ""){
+                if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === "" || item[con] === "0"){
                   item[con] = null
                 }
               })
@@ -713,6 +852,7 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
+              this.sameGroupDatas =[];
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -721,6 +861,7 @@
       },
 
       resetEditCapacityForm: function () {
+        this.processGroupSelectGroup = []
         this.processSelectGroup = [];
         this.capacityEditOptionsData = {};
         this.sameGroupDatas=[];

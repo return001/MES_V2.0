@@ -3,6 +3,9 @@ import {deepCopy} from "../utils/utils";
 export const setLoginToken = (state, token) => {
   state.token = token;
 };
+export const setSessionFactory = (state, factory) => {
+  state.factory = factory;
+};
 
 export const setRouter = (state, routerIn) => {
   state.routerIn = routerIn

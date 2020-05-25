@@ -357,7 +357,7 @@
           }
         } else if (direction === 'down') {
           if (val.$index < (this.tableData.length - 1)) {
-            position = this.tableData[val.$index + 1].id
+            position = this.tableData[val.$index + 1].groupId
           } else {
             return
           }

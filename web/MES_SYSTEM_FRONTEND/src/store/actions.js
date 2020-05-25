@@ -1,6 +1,9 @@
 export const setLoginToken = ({commit}, token) => {
   commit('setLoginToken', token)
 };
+export const setSessionFactory = ({commit}, factory) => {
+  commit('setSessionFactory', factory)
+};
 
 export const setRouter = ({commit}, routerIn) => {
   commit('setRouter', routerIn)

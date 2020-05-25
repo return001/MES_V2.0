@@ -71,7 +71,7 @@
       })
     },
     methods: {
-      ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission', 'setCharactersFuncMap']),
+      ...mapActions(['setLoginToken', 'setUserType', 'setDelPermission', 'setCharactersFuncMap','setSessionFactory']),
       pageHeightCalc: function () {
         this.pageHeight = (document.body.clientHeight > 460) ? document.body.clientHeight - 200 : 260;
       },
@@ -88,8 +88,7 @@
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
               sessionStorage.setItem('factory', res.data.data['roleVO']['company']);//人员的所属工厂
-
-              // this.setFactory(sessionStorage.getItem('Factory'));
+              // this.setSessionFactory(sessionStorage.getItem('factory'));
               sessionStorage.setItem('token', res.data.data["token"]);
               this.setLoginToken(sessionStorage.getItem('token'));
               sessionStorage.setItem('UserName', res.data.data['name']);
