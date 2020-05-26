@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsManuorderparam;
  */
 @SuppressWarnings("serial")
 public class GpsManuorderparam extends BaseGpsManuorderparam<GpsManuorderparam> {
+
 	public static final GpsManuorderparam dao = new GpsManuorderparam().dao();
 }

@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseFileType;
  */
 @SuppressWarnings("serial")
 public class FileType extends BaseFileType<FileType> {
+
 	public static final FileType dao = new FileType().dao();
 }

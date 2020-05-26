@@ -19,17 +19,15 @@ public class PlanDetail {
 	 * order : 订单详情
 	 */
 	private Record order;
-	
+
 	private Map<String, String> picture;
 
 
-	
 	public Map<String, String> getPicture() {
 		return picture;
 	}
 
 
-	
 	public void setPicture(Map<String, String> picture) {
 		this.picture = picture;
 	}

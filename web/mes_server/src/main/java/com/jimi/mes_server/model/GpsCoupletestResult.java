@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsCoupletestResult;
  */
 @SuppressWarnings("serial")
 public class GpsCoupletestResult extends BaseGpsCoupletestResult<GpsCoupletestResult> {
+
 	public static final GpsCoupletestResult dao = new GpsCoupletestResult().dao();
 }

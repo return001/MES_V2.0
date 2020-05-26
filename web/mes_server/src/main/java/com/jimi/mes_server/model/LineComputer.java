@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseLineComputer;
  */
 @SuppressWarnings("serial")
 public class LineComputer extends BaseLineComputer<LineComputer> {
+
 	public static final LineComputer dao = new LineComputer().dao();
 }

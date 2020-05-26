@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopProductModel;
  */
 @SuppressWarnings("serial")
 public class SopProductModel extends BaseSopProductModel<SopProductModel> {
+
 	public static final SopProductModel dao = new SopProductModel().dao();
 }

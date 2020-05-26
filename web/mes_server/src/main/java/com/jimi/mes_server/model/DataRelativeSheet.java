@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseDataRelativeSheet;
  */
 @SuppressWarnings("serial")
 public class DataRelativeSheet extends BaseDataRelativeSheet<DataRelativeSheet> {
+
 	public static final DataRelativeSheet dao = new DataRelativeSheet().dao();
 }

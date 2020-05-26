@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopNoticeHistory;
  */
 @SuppressWarnings("serial")
 public class SopNoticeHistory extends BaseSopNoticeHistory<SopNoticeHistory> {
+
 	public static final SopNoticeHistory dao = new SopNoticeHistory().dao();
 }

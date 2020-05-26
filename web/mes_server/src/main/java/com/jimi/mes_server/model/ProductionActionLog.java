@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseProductionActionLog;
  */
 @SuppressWarnings("serial")
 public class ProductionActionLog extends BaseProductionActionLog<ProductionActionLog> {
+
 	public static final ProductionActionLog dao = new ProductionActionLog().dao();
 }

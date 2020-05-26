@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseLUserAccount;
  */
 @SuppressWarnings("serial")
 public class LUserAccount extends BaseLUserAccount<LUserAccount> {
+
 	public static final LUserAccount dao = new LUserAccount().dao();
 }

@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopWorkshop;
  */
 @SuppressWarnings("serial")
 public class SopWorkshop extends BaseSopWorkshop<SopWorkshop> {
+
 	public static final SopWorkshop dao = new SopWorkshop().dao();
 }

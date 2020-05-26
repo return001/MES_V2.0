@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopCountLog;
  */
 @SuppressWarnings("serial")
 public class SopCountLog extends BaseSopCountLog<SopCountLog> {
+
 	public static final SopCountLog dao = new SopCountLog().dao();
 }

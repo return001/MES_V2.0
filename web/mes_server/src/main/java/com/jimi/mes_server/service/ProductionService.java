@@ -40,6 +40,7 @@ import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.SopSQL;
+import com.jimi.mes_server.entity.vo.AuthorityVO;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
 import com.jimi.mes_server.exception.OperationException;
@@ -53,6 +54,7 @@ import com.jimi.mes_server.model.OrderFile;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
+import com.jimi.mes_server.model.Role;
 import com.jimi.mes_server.model.SchedulingPlan;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopSite;
@@ -680,11 +682,16 @@ public class ProductionService {
 	}
 
 
+	/**
+	 * 
+	 * <p>Description: 查询订单，需要权限“/production/selectOrder:withCustomer”才可以查询到客户名<p>
+	 * @return
+	 * @exception 
+	 * @author trjie
+	 * @Time 2020年4月22日
+	 */
 	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, Integer factoryId, Integer status, String zhidan, String alias, String softModel, String productNo, String customerNumber, String customerName, String orderDateFrom, String orderDateTo, String deliveryDateFrom, String deliveryDateTo, Boolean isRework, String customerMaterialNo, String reworkZhidan, LUserAccountVO userVO) {
-		Boolean isOperator = false;
-		if (Constant.SUPER_OPERATOR_USERTYPE.equals(userVO.getWebUserType())) {
-			isOperator = true;
-		}
+
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SQL.SELECT_ORDER);
 		if (factoryId != null) {
@@ -734,7 +741,12 @@ public class ProductionService {
 		}
 		sql.append(" ORDER BY order_status ASC,delivery_date ASC");
 		sqlPara.setSql(sql.toString());
-		return formatOrderDateAndCustomer(Db.paginate(pageNo, pageSize, sqlPara), isOperator);
+		for (AuthorityVO authorityVO : userVO.getWebAuthorities()) {
+			if (authorityVO.getUrls().contains("/production/selectOrder:withCustomer")) {
+				return formatOrderDateAndCustomer(Db.paginate(pageNo, pageSize, sqlPara), false);
+			}
+		}
+		return formatOrderDateAndCustomer(Db.paginate(pageNo, pageSize, sqlPara), true);
 	}
 
 
@@ -744,17 +756,6 @@ public class ProductionService {
 			throw new OperationException("订单不存在");
 		}
 		List<Record> orderFiles = Db.find(SQL.SELECT_ORDERFILE_BY_ORDER, id);
-		/*Map<String, List<Record>> map = new HashMap<>();
-		for (Record orderFile : orderFiles) {
-			String typeName = orderFile.getStr("typeName");
-			if (!map.containsKey(typeName)) {
-				List<Record> records = new ArrayList<>();
-				records.add(orderFile);
-				map.put(typeName, records);
-			} else {
-				map.get(typeName).add(orderFile);
-			}
-		}*/
 		Record record = new Record();
 		record.set("orderUser", selectOrderUser(id));
 		record.set("orderFileInfo", orderFiles);
@@ -1024,7 +1025,7 @@ public class ProductionService {
 		} else {
 			filePath = PropKit.get("linuxFlagPath");
 		}
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日删除");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日HH时mm分ss秒删除");
 		String newFileName = orderFile.getFileName().replace(".", "_" + dateFormat.format(new Date()) + ".");
 		String newFilePath = filePath + Constant.FILE_DELETE_TABLE_PATH + newFileName;
 		if (file.exists()) {
@@ -1980,8 +1981,12 @@ public class ProductionService {
 	 */
 	private void checkOrderUserType(LUserAccountVO userVO, Orders order) {
 		LUserAccount user = LUserAccount.dao.findById(order.getOrderCreator());
-		if (user != null && user.getWebUserType() != null) {
-			if (!userVO.getWebUserType().equals(Constant.SUPER_ADMIN_USERTYPE) && !user.getWebUserType().equals(userVO.getWebUserType())) {
+		if (user.getRole() == null || userVO == null || userVO.getRoleVO() == null) {
+			throw new OperationException("当前角色无法操作此订单");
+		}
+		Role role = Role.dao.findById(user.getRole());
+		if (user != null && role != null) {
+			if (!role.getName().equals(userVO.getRoleVO().getName())) {
 				throw new OperationException("当前角色无法操作此订单");
 			}
 		}

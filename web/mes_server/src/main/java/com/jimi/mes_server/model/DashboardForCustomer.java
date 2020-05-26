@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseDashboardForCustomer;
  */
 @SuppressWarnings("serial")
 public class DashboardForCustomer extends BaseDashboardForCustomer<DashboardForCustomer> {
+
 	public static final DashboardForCustomer dao = new DashboardForCustomer().dao();
 }

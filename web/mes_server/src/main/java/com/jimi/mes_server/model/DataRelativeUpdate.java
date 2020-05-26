@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseDataRelativeUpdate;
  */
 @SuppressWarnings("serial")
 public class DataRelativeUpdate extends BaseDataRelativeUpdate<DataRelativeUpdate> {
+
 	public static final DataRelativeUpdate dao = new DataRelativeUpdate().dao();
 }

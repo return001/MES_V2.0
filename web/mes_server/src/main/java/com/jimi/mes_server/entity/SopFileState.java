@@ -6,10 +6,7 @@ package com.jimi.mes_server.entity;
  */
 public enum SopFileState {
 
-	WAITREVIEW_STATE(0, "待审核"), 
-	REVIEWED_STATE(1, "已审核"), 
-	PLAYING_STATE(2, "播放中"), 
-	INVALID_STATE(3, "已作废");
+	WAITREVIEW_STATE(0, "待审核"), REVIEWED_STATE(1, "已审核"), PLAYING_STATE(2, "播放中"), INVALID_STATE(3, "已作废");
 
 	private Integer id;
 

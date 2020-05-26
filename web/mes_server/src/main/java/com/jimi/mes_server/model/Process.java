@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseProcess;
  */
 @SuppressWarnings("serial")
 public class Process extends BaseProcess<Process> {
+
 	public static final Process dao = new Process().dao();
 }

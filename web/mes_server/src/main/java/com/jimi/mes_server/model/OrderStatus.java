@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseOrderStatus;
  */
 @SuppressWarnings("serial")
 public class OrderStatus extends BaseOrderStatus<OrderStatus> {
+
 	public static final OrderStatus dao = new OrderStatus().dao();
 }

@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopCustomer;
  */
 @SuppressWarnings("serial")
 public class SopCustomer extends BaseSopCustomer<SopCustomer> {
+
 	public static final SopCustomer dao = new SopCustomer().dao();
 }

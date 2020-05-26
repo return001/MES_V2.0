@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsManusimdataparam;
  */
 @SuppressWarnings("serial")
 public class GpsManusimdataparam extends BaseGpsManusimdataparam<GpsManusimdataparam> {
+
 	public static final GpsManusimdataparam dao = new GpsManusimdataparam().dao();
 }

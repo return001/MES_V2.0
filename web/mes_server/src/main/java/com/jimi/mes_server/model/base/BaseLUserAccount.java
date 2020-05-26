@@ -162,15 +162,6 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return get("IsOnline");
 	}
 
-	public M setFactory(java.lang.Integer Factory) {
-		set("Factory", Factory);
-		return (M)this;
-	}
-	
-	public java.lang.Integer getFactory() {
-		return getInt("Factory");
-	}
-
 	public M setPhoneNumber(java.lang.String PhoneNumber) {
 		set("PhoneNumber", PhoneNumber);
 		return (M)this;
@@ -179,5 +170,22 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 	public java.lang.String getPhoneNumber() {
 		return getStr("PhoneNumber");
 	}
+
+    public M setRole(java.lang.Integer Role) {
+        set("Role", Role);
+        return (M)this;
+    }
+    
+    public java.lang.Integer getRole() {
+        return getInt("Role");
+    }
+    public M setDelete(java.lang.Boolean Delete) {
+        set("Delete", Delete);
+        return (M)this;
+    }
+    
+    public java.lang.Boolean getDelete() {
+        return get("Delete");
+    }
 
 }

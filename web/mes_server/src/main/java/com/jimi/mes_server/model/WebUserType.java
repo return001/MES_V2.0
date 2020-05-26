@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseWebUserType;
  */
 @SuppressWarnings("serial")
 public class WebUserType extends BaseWebUserType<WebUserType> {
+
 	public static final WebUserType dao = new WebUserType().dao();
 }

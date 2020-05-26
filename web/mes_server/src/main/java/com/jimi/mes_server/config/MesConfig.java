@@ -16,13 +16,16 @@ import com.jfinal.plugin.cron4j.Cron4jPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
 import com.jimi.mes_server.controller.DeleteHistoryController;
+import com.jimi.mes_server.controller.DepartmentController;
 import com.jimi.mes_server.controller.OrderController;
 import com.jimi.mes_server.controller.ProductionController;
 import com.jimi.mes_server.controller.RedTeaController;
 import com.jimi.mes_server.controller.ReportController;
 import com.jimi.mes_server.controller.ReworkController;
+import com.jimi.mes_server.controller.RoleController;
 import com.jimi.mes_server.controller.SopController;
 import com.jimi.mes_server.controller.TestController;
+import com.jimi.mes_server.controller.UserActionLogController;
 import com.jimi.mes_server.controller.UserController;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.interceptor.AccessInterceptor;
@@ -30,6 +33,7 @@ import com.jimi.mes_server.interceptor.ActionLogInterceptor;
 import com.jimi.mes_server.interceptor.CORSInterceptor;
 import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
 import com.jimi.mes_server.interceptor.ProductionActionLogInterceptor;
+import com.jimi.mes_server.interceptor.UserActionLogInterceptor;
 import com.jimi.mes_server.model.MappingKit;
 import com.jimi.mes_server.model.NetMarkIMEI;
 import com.jimi.mes_server.model.TestSystemSetting;
@@ -79,6 +83,7 @@ public class MesConfig extends JFinalConfig {
 	public void configInterceptor(Interceptors me) {
 		me.addGlobalActionInterceptor(new ErrorLogInterceptor());
 		me.addGlobalActionInterceptor(new CORSInterceptor());
+		me.addGlobalActionInterceptor(new UserActionLogInterceptor());
 		me.addGlobalActionInterceptor(new AccessInterceptor());
 		me.addGlobalActionInterceptor(new ActionLogInterceptor());
 		me.addGlobalActionInterceptor(new ProductionActionLogInterceptor());
@@ -160,6 +165,9 @@ public class MesConfig extends JFinalConfig {
 		me.add("/rework", ReworkController.class);
 		me.add("/production", ProductionController.class);
 		me.add("/sop", SopController.class);
+		me.add("/role", RoleController.class);
+		me.add("/department", DepartmentController.class);
+		me.add("/log", UserActionLogController.class);
 	}
 
 

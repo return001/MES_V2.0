@@ -41,18 +41,15 @@ public class PlanGantt {
 	 * completionQuantity : 完成数量
 	 */
 	private String completionQuantity;
-	
-	
+
 	private Map<String, Integer> dailyCapacity;
 
 
-	
 	public Map<String, Integer> getDailyCapacity() {
 		return dailyCapacity;
 	}
 
 
-	
 	public void setDailyCapacity(Map<String, Integer> dailyCapacity) {
 		this.dailyCapacity = dailyCapacity;
 	}

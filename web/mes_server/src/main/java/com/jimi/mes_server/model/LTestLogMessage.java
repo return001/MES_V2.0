@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseLTestLogMessage;
  */
 @SuppressWarnings("serial")
 public class LTestLogMessage extends BaseLTestLogMessage<LTestLogMessage> {
+
 	public static final LTestLogMessage dao = new LTestLogMessage().dao();
 }

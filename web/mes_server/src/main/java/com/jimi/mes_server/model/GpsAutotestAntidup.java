@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsAutotestAntidup;
  */
 @SuppressWarnings("serial")
 public class GpsAutotestAntidup extends BaseGpsAutotestAntidup<GpsAutotestAntidup> {
+
 	public static final GpsAutotestAntidup dao = new GpsAutotestAntidup().dao();
 }

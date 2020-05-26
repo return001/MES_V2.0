@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopPositionAssignment;
  */
 @SuppressWarnings("serial")
 public class SopPositionAssignment extends BaseSopPositionAssignment<SopPositionAssignment> {
+
 	public static final SopPositionAssignment dao = new SopPositionAssignment().dao();
 }

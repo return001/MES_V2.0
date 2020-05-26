@@ -23,7 +23,6 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
-import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.annotation.ProductionLog;
 import com.jimi.mes_server.entity.AddPlanInfo;
 import com.jimi.mes_server.entity.Constant;
@@ -51,7 +50,6 @@ public class ProductionController extends Controller {
 	 * 获取工序组ID和名称
 	 * @date 2019年8月8日 下午3:38:32
 	 */
-	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcessGroup() {
 		renderJson(ResultUtil.succeed(productionService.getProcessGroup()));
 	}
@@ -61,7 +59,6 @@ public class ProductionController extends Controller {
 	 * 获取工序ID和名称
 	 * @date 2019年8月8日 下午3:39:02
 	 */
-	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getProcess() {
 		renderJson(ResultUtil.succeed(productionService.getProcess()));
 	}
@@ -71,7 +68,6 @@ public class ProductionController extends Controller {
 	 * 获取产线ID和名称
 	 * @date 2019年8月8日 下午3:39:25
 	 */
-	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getLine() {
 		renderJson(ResultUtil.succeed(productionService.getLine()));
 	}
@@ -81,7 +77,6 @@ public class ProductionController extends Controller {
 	 * 获取订单状态ID和名称
 	 * @date 2019年8月8日 下午3:39:41
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getOrderStatus() {
 		renderJson(ResultUtil.succeed(productionService.getOrderStatus()));
 	}
@@ -91,7 +86,6 @@ public class ProductionController extends Controller {
 	 * 获取排产计划状态的ID和名称
 	 * @date 2019年8月8日 下午3:40:29
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void getSchedulingPlanStatus() {
 		renderJson(ResultUtil.succeed(productionService.getSchedulingPlanStatus()));
 	}
@@ -101,13 +95,11 @@ public class ProductionController extends Controller {
 	 * 获取文件类型的ID和名称
 	 * @date 2020年5月15日 下午2:46:59
 	 */
-	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getFileType() {
 		renderJson(ResultUtil.succeed(productionService.getFileType()));
 	}
 
 
-	@Access({ "administration", "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void getWorkingSchedule() {
 		renderJson(ResultUtil.succeed(productionService.getWorkingSchedule()));
 	}
@@ -122,7 +114,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:47:31
 	 */
 	@ProductionLog("添加工序组")
-	@Access({ "engineer", "SopManager" })
 	public void addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory) {
 		if (StringUtils.isAnyBlank(groupNo, groupName)) {
 			throw new ParameterException("参数不能为空");
@@ -144,7 +135,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:41:54
 	 */
 	@ProductionLog("删除工序组")
-	@Access({ "engineer", "SopManager" })
 	public void deleteProcessGroup(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -168,7 +158,6 @@ public class ProductionController extends Controller {
 	 * @param factory 工厂ID
 	 * @date 2020年5月15日 下午2:48:04
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectProcessGroup(String groupNo, String groupName, Integer factory) {
 		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(groupNo, groupName, factory));
 		renderJson(result);
@@ -185,7 +174,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:43:47
 	 */
 	@ProductionLog("修改工序组")
-	@Access({ "engineer", "SopManager" })
 	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer factory) {
 		if (id == null || factory == null) {
 			throw new ParameterException("参数不能为空");
@@ -216,7 +204,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:48:57
 	 */
 	@ProductionLog("添加产线")
-	@Access({ "engineer", "SopManager" })
 	public void addLine(String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer timeLength) {
 		if (StringUtils.isAnyBlank(lineNo, lineName) || timeLength == null) {
 			throw new ParameterException("参数不能为空");
@@ -238,7 +225,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:48:38
 	 */
 	@ProductionLog("删除产线")
-	@Access({ "engineer", "SopManager" })
 	public void deleteLine(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -263,7 +249,6 @@ public class ProductionController extends Controller {
 	 * @param lineQc 产线品质
 	 * @date 2020年5月15日 下午2:50:08
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectLine(String lineNo, String lineName, Integer processGroup, Integer workshopId, Integer factoryId, String lineDirector, String lineEngineer, String lineQc) {
 		renderJson(ResultUtil.succeed(productionService.selectLine(lineNo, lineName, processGroup, workshopId, factoryId, lineDirector, lineEngineer, lineQc)));
 	}
@@ -285,7 +270,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:51:16
 	 */
 	@ProductionLog("修改产线")
-	@Access({ "engineer", "SopManager" })
 	public void editLine(Integer id, String lineNo, String lineName, String lineRemark, Integer lineDirector, Integer lineEngineer, Integer lineQc, Integer processGroup, Integer workshopId, Integer factoryId, Integer timeLength) {
 		if (id == null || timeLength == null) {
 			throw new ParameterException("参数不能为空");
@@ -310,7 +294,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:50:40
 	 */
 	@ProductionLog("添加工序")
-	@Access({ "engineer", "SopManager" })
 	public void addProcess(Integer processNo, String processName, String processRemark, Integer processGroup) {
 		if (StrKit.isBlank(processName) || processNo == null) {
 			throw new ParameterException("参数不能为空");
@@ -329,7 +312,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:51:08
 	 */
 	@ProductionLog("删除工序")
-	@Access({ "engineer", "SopManager" })
 	public void deleteProcess(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -349,7 +331,6 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2019年8月8日 下午3:51:20
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopReviewer", "SopManager", "SopQcConfirmer" })
 	public void selectProcess(Integer processNo, String processName, Integer processGroup) {
 		renderJson(ResultUtil.succeed(productionService.selectProcess(processNo, processName, processGroup)));
 	}
@@ -365,7 +346,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:52:31
 	 */
 	@ProductionLog("修改工序")
-	@Access({ "engineer", "SopManager" })
 	public void editProcess(Integer id, Integer processNo, String processName, String processRemark, Integer processGroup, Integer position) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -386,7 +366,6 @@ public class ProductionController extends Controller {
 	 * @param line 产线ID
 	 * @date 2019年8月8日 下午3:53:07
 	 */
-	@Access({ "engineer", "SopManager" })
 	public void addComputer(String ip, String computerName, String remark, Integer line) {
 		if (line == null || StrKit.isBlank(ip)) {
 			throw new ParameterException("参数不能为空");
@@ -407,7 +386,6 @@ public class ProductionController extends Controller {
 	 * @param id 产线电脑ID
 	 * @date 2019年8月8日 下午3:53:37
 	 */
-	@Access({ "engineer", "SopManager" })
 	public void deleteComputer(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -425,7 +403,6 @@ public class ProductionController extends Controller {
 	 * @param lineId 产线电脑ID
 	 * @date 2019年8月8日 下午3:53:53
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator", "SopManager" })
 	public void selectComputer(Integer lineId) {
 		if (lineId == null) {
 			throw new ParameterException("参数不能为空");
@@ -442,7 +419,6 @@ public class ProductionController extends Controller {
 	 * @param remark 备注
 	 * @date 2019年8月8日 下午3:54:13
 	 */
-	@Access({ "engineer", "SopManager" })
 	public void editComputer(Integer id, String ip, String computerName, String remark) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -464,7 +440,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:52:28
 	 */
 	@ProductionLog("添加机型产能")
-	@Access({ "engineer" })
 	public void addCapacity(String modelCapacityString) {
 		if (StringUtils.isBlank(modelCapacityString)) {
 			throw new ParameterException("参数不能为空");
@@ -490,7 +465,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:55:32
 	 */
 	@ProductionLog("删除机型产能")
-	@Access({ "engineer" })
 	public void deleteCapacity(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -512,7 +486,6 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2020年5月15日 下午2:52:58
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory) {
 		renderJson(ResultUtil.succeed(productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, processGroup, factory)));
 	}
@@ -524,7 +497,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:53:24
 	 */
 	@ProductionLog("修改机型产能")
-	@Access({ "engineer" })
 	public void editCapacity(String modelCapacityString) {
 		if (StringUtils.isBlank(modelCapacityString)) {
 			throw new ParameterException("参数不能为空");
@@ -554,7 +526,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月21日 上午11:29:18
 	 */
 	@ProductionLog("审核机型产能")
-	@Access({ "engineer" })
 	public void reviewCapacity(String softModel, String customerNumber, String customerModel, String reviewRemark, Integer statusId, Integer factoryId) {
 		if (StringUtils.isAnyBlank(softModel) || statusId == null || factoryId == null) {
 			throw new ParameterException("参数不能为空");
@@ -576,7 +547,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:53:54
 	 */
 	@ProductionLog("添加文件类型")
-	@Access({ "engineer", "SopManager" })
 	public void addFileType(String typeName, String typeRemarks) {
 		if (StrKit.isBlank(typeName)) {
 			throw new ParameterException("参数不能为空");
@@ -595,7 +565,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:53:54
 	 */
 	@ProductionLog("删除文件类型")
-	@Access({ "engineer", "SopManager" })
 	public void deleteFileType(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -613,7 +582,6 @@ public class ProductionController extends Controller {
 	 * @param filter 查询条件
 	 * @date 2020年5月15日 下午2:53:54
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectFileType(String filter) {
 		ResultUtil result = ResultUtil.succeed(productionService.selectFileType(filter));
 		renderJson(result);
@@ -628,7 +596,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:54:50
 	 */
 	@ProductionLog("修改文件类型")
-	@Access({ "engineer", "SopManager" })
 	public void editFileType(Integer id, String typeName, String typeRemarks) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -647,7 +614,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:57:34
 	 */
 	@ProductionLog("添加订单")
-	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void addOrder(@Para("") Orders order) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -681,7 +647,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:57:52
 	 */
 	@ProductionLog("订单异常结单")
-	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void abnormalEndOrder(Integer id, String abnormalEndReason) {
 		if (id == null || StrKit.isBlank(abnormalEndReason)) {
 			throw new ParameterException("参数不能为空");
@@ -717,7 +682,6 @@ public class ProductionController extends Controller {
 	 * @param reworkZhidan 返工订单号
 	 * @date 2020年5月15日 下午2:55:34
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectOrder(Integer pageNo, Integer pageSize, Integer factoryId, Integer status, String zhidan, String alias, String softModel, String productNo, String customerNumber, String customerName, String orderDateFrom, String orderDateTo, String deliveryDateFrom, String deliveryDateTo, Boolean isRework, String customerMaterialNo, String reworkZhidan) {
 		if (isRework == null) {
 			throw new ParameterException("是否为返工订单的参数不能为空");
@@ -733,7 +697,6 @@ public class ProductionController extends Controller {
 	 * @param id 订单ID
 	 * @date 2019年8月8日 下午3:58:57
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectOrderDetail(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -748,7 +711,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:59:13
 	 */
 	@ProductionLog("修改订单")
-	@Access({ "schedulingSZPC", "schedulingJMPMC" })
 	public void editOrder(@Para("") Orders order) {
 		if (order == null) {
 			throw new ParameterException("参数不能为空");
@@ -781,7 +743,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:57:48
 	 */
 	@ProductionLog("导入订单")
-	@Access({ "schedulingSZPC" })
 	public void importOrder(UploadFile uploadFile, Boolean isRework, Integer factory) {
 		uploadFile = getFile();
 		if (uploadFile == null || isRework == null || factory == null) {
@@ -806,7 +767,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午4:00:12
 	 */
 	@ProductionLog("导入订单相关表格")
-	@Access({ "schedulingSZPC", "engineer" })
 	public void importOrderTable() {
 		List<UploadFile> uploadFiles = getFiles();
 		if (uploadFiles == null || uploadFiles.isEmpty()) {
@@ -845,7 +805,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午4:00:40
 	 */
 	@ProductionLog("下载订单相关文件")
-	@Access({ "schedulingSZPC", "engineer", "schedulingJMPMC" })
 	public void downloadOrderTable(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -888,7 +847,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:58:37
 	 */
 	@ProductionLog("修改订单文件的相关信息")
-	@Access({ "schedulingSZPC", "engineer" })
 	public void editOrderTable(Integer id, Boolean isNormal) {
 		if (id == null || isNormal == null) {
 			throw new ParameterException("参数不能为空");
@@ -910,7 +868,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:59:00
 	 */
 	@ProductionLog("删除订单相关文件")
-	@Access({ "schedulingSZPC", "engineer" })
 	public void deleteOrderTable(Integer id, String deleteReason) {
 		if (id == null || StrKit.isBlank(deleteReason)) {
 			throw new ParameterException("参数不能为空");
@@ -930,7 +887,6 @@ public class ProductionController extends Controller {
 	 * @param type
 	 * @date 2019年8月16日 上午11:42:33
 	 */
-	@Access({ "schedulingJMPMC" })
 	public void selectUnscheduledPlan(Integer type, Integer factory) {
 		if (type == null || factory == null) {
 			throw new ParameterException("参数不能为空");
@@ -954,7 +910,6 @@ public class ProductionController extends Controller {
 	 * @param type
 	 * @date 2019年8月16日 上午11:42:55
 	 */
-	@Access({ "schedulingJMPMC" })
 	public void selectReworkPlan(Integer type, Integer factory) {
 		if (type == null || factory == null) {
 			throw new ParameterException("参数不能为空");
@@ -979,7 +934,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:59:39
 	 */
 	@ProductionLog("添加排产计划")
-	@Access({ "schedulingJMPMC" })
 	public void addPlan(String settings) {
 		List<AddPlanInfo> addPlanInfos = JSONObject.parseArray(settings, AddPlanInfo.class);
 		if (addPlanInfos == null || addPlanInfos.isEmpty()) {
@@ -1001,7 +955,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月16日 上午11:47:46
 	 */
 	@ProductionLog("删除排产计划")
-	@Access({ "schedulingJMPMC" })
 	public void deletePlan(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -1019,7 +972,6 @@ public class ProductionController extends Controller {
 	 * @param planQueryCriteria 查询条件类
 	 * @date 2019年8月16日 上午11:47:58
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		renderJson(ResultUtil.succeed(productionService.selectPlan(planQueryCriteria)));
 	}
@@ -1030,7 +982,6 @@ public class ProductionController extends Controller {
 	 * @param id 计划ID
 	 * @date 2019年8月16日 上午11:48:07
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectPlanDetail(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -1060,7 +1011,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午3:00:19
 	 */
 	@ProductionLog("修改排产计划")
-	@Access({ "schedulingJMPMC", "engineer" })
 	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber, Integer personNumber, Double rhythm) {
 		if (lineChangeTime != null) {
 			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > Constant.MAX_LINECHANGETIME_LENGTH) {
@@ -1097,7 +1047,6 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午3:00:52
 	 */
 	@ProductionLog("重新排产计划")
-	@Access({ "schedulingJMPMC", "engineer" })
 	public void reSchedulingPlan(String settings) {
 		List<AddPlanInfo> addPlanInfos = JSONObject.parseArray(settings, AddPlanInfo.class);
 		if (addPlanInfos == null || addPlanInfos.isEmpty()) {
@@ -1120,7 +1069,6 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月16日 上午11:50:05
 	 */
 	@ProductionLog("修改计划状态")
-	@Access({ "schedulingJMPMC", "engineer" })
 	public void editPlanStatus(Integer id, Integer type) {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
@@ -1156,7 +1104,6 @@ public class ProductionController extends Controller {
 	 * @param id 计划ID
 	 * @date 2019年8月16日 上午11:50:51
 	 */
-	@Access({ "schedulingJMPMC", "engineer" })
 	public void selectPlanProducedQuantity(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -1172,7 +1119,6 @@ public class ProductionController extends Controller {
 	 * @param id 计划ID
 	 * @date 2019年8月16日 上午11:51:11
 	 */
-	@Access({ "schedulingJMPMC" })
 	public void getPlanGantt(Integer id) {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
@@ -1186,7 +1132,6 @@ public class ProductionController extends Controller {
 	 * @param planQueryCriteria 查询条件类
 	 * @date 2019年8月16日 上午11:51:25
 	 */
-	@Access({ "schedulingJMPMC" })
 	public void exportPlan(@Para("") PlanQueryCriteria planQueryCriteria) {
 		OutputStream output = null;
 		planQueryCriteria.setPageNo(Constant.DEFAULT_PAGE_NUM);
@@ -1221,7 +1166,6 @@ public class ProductionController extends Controller {
 	 * @param capacity 产能
 	 * @date 2019年8月16日 上午11:51:43
 	 */
-	@Access({ "schedulingJMPMC" })
 	public void checkCompleteTime(Integer schedulingQuantity, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity) {
 		if (schedulingQuantity == null || planStartTime == null || planCompleteTime == null || capacity == null || lineChangeTime == null) {
 			throw new ParameterException("参数不能为空");
@@ -1248,13 +1192,12 @@ public class ProductionController extends Controller {
 	 * @param pageSize 页大小
 	 * @param startTime 开始时间
 	 * @param endTime 结束时间
-	 * @param userName 用户工号
+	 * @param userName 用户名称
 	 * @param address 访问者IP
 	 * @param zhidan 订单号
 	 * @param alias 内部替换号
 	 * @date 2020年5月15日 下午3:02:21
 	 */
-	@Access({ "schedulingSZPC", "schedulingJMPMC", "engineer", "operator" })
 	public void selectProductionLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String address, String zhidan, String alias) {
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");

@@ -9,19 +9,7 @@ package com.jimi.mes_server.entity;
  */
 public enum DeleteTable {
 
-	DataRelativeSheet("DataRelativeSheet", 0), 
-	DataRelativeUnique("DataRelativeUnique", 1), 
-	DataRelativeUpdate("DataRelativeUpdate", 2), 
-	GpsAutoTestResult("Gps_AutoTest_Result", 3), 
-	GpsAutoTestResult2("Gps_AutoTest_Result2", 4), 
-	GpsAutoTestResult3("Gps_AutoTest_Result3", 5), 
-	GpsCartonBoxTwentyResult("Gps_CartonBoxTwenty_Result", 6), 
-	GpsCoupleTestResult("Gps_CoupleTest_Result", 7), 
-	GpsManuPrintParam("Gps_ManuPrintParam", 8), 
-	GpsTestResult("Gps_TestResult", 9), 
-	NetMarkIMEI("NetMarkIMEI", 10), 
-	GpsManuSimDataParam("Gps_ManuSimDataParam", 11), 
-	GpsOqcResult("GPSOQC_Result", 12);
+	DataRelativeSheet("DataRelativeSheet", 0), DataRelativeUnique("DataRelativeUnique", 1), DataRelativeUpdate("DataRelativeUpdate", 2), GpsAutoTestResult("Gps_AutoTest_Result", 3), GpsAutoTestResult2("Gps_AutoTest_Result2", 4), GpsAutoTestResult3("Gps_AutoTest_Result3", 5), GpsCartonBoxTwentyResult("Gps_CartonBoxTwenty_Result", 6), GpsCoupleTestResult("Gps_CoupleTest_Result", 7), GpsManuPrintParam("Gps_ManuPrintParam", 8), GpsTestResult("Gps_TestResult", 9), NetMarkIMEI("NetMarkIMEI", 10), GpsManuSimDataParam("Gps_ManuSimDataParam", 11), GpsOqcResult("GPSOQC_Result", 12);
 
 	private String name;
 

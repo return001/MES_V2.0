@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseDashboard;
  */
 @SuppressWarnings("serial")
 public class Dashboard extends BaseDashboard<Dashboard> {
+
 	public static final Dashboard dao = new Dashboard().dao();
 }

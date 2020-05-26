@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopPictureHistory;
  */
 @SuppressWarnings("serial")
 public class SopPictureHistory extends BaseSopPictureHistory<SopPictureHistory> {
+
 	public static final SopPictureHistory dao = new SopPictureHistory().dao();
 }

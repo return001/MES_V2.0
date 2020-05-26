@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsAutotestResult3;
  */
 @SuppressWarnings("serial")
 public class GpsAutotestResult3 extends BaseGpsAutotestResult3<GpsAutotestResult3> {
+
 	public static final GpsAutotestResult3 dao = new GpsAutotestResult3().dao();
 }

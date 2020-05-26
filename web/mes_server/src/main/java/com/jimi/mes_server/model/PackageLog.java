@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BasePackageLog;
  */
 @SuppressWarnings("serial")
 public class PackageLog extends BasePackageLog<PackageLog> {
+
 	public static final PackageLog dao = new PackageLog().dao();
 }

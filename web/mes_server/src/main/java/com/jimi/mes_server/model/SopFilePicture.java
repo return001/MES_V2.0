@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopFilePicture;
  */
 @SuppressWarnings("serial")
 public class SopFilePicture extends BaseSopFilePicture<SopFilePicture> {
+
 	public static final SopFilePicture dao = new SopFilePicture().dao();
 }

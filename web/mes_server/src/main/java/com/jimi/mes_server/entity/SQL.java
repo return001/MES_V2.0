@@ -4,8 +4,6 @@ public class SQL {
 
 	public final static String SELECT_USER_BY_NAME_PASSWORD = "SELECT * FROM LUserAccount where Name = ? and Password = ?";
 
-	public final static String SELECT_WEBUSERTYPE = "SELECT * FROM WebUserType where TypeId <> 4";
-
 	public final static String SELECT_TYPENAME_BY_TYPEID = "SELECT * FROM WebUserType where TypeId = ?";
 
 	public final static String SELECT_AUTOTEST_ANTIDUP_SQL_FRAGMENT = "SELECT * FROM Gps_AutoTest_AntiDup where ";
@@ -303,4 +301,7 @@ public class SQL {
 	public final static String SELECT_WORKINGSCHEDULE = "SELECT * FROM working_schedule";
 
 	public final static String SELECT_MODELCAPACITY_BY_COLUMNS = "SELECT * FROM model_capacity WHERE model_capacity.process_group IN (SELECT process_group.id FROM process_group WHERE process_group.factory = ?) AND soft_model = ? ";
+
+	public final static String SELECT_USER_ROLE = "SELECT * FROM role where role.is_typical = 0";
+
 }

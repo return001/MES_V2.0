@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseTestSystemSettingFunc;
  */
 @SuppressWarnings("serial")
 public class TestSystemSettingFunc extends BaseTestSystemSettingFunc<TestSystemSettingFunc> {
+
 	public static final TestSystemSettingFunc dao = new TestSystemSettingFunc().dao();
 }

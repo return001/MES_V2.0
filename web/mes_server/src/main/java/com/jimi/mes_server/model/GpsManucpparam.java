@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsManucpparam;
  */
 @SuppressWarnings("serial")
 public class GpsManucpparam extends BaseGpsManucpparam<GpsManucpparam> {
+
 	public static final GpsManucpparam dao = new GpsManucpparam().dao();
 }

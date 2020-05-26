@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopLoginLog;
  */
 @SuppressWarnings("serial")
 public class SopLoginLog extends BaseSopLoginLog<SopLoginLog> {
+
 	public static final SopLoginLog dao = new SopLoginLog().dao();
 }

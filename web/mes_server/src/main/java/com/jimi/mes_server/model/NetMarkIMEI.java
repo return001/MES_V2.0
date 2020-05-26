@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseNetMarkIMEI;
  */
 @SuppressWarnings("serial")
 public class NetMarkIMEI extends BaseNetMarkIMEI<NetMarkIMEI> {
+
 	public static final NetMarkIMEI dao = new NetMarkIMEI().dao();
 }

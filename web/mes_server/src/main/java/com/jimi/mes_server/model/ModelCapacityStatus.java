@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseModelCapacityStatus;
  */
 @SuppressWarnings("serial")
 public class ModelCapacityStatus extends BaseModelCapacityStatus<ModelCapacityStatus> {
+
 	public static final ModelCapacityStatus dao = new ModelCapacityStatus().dao();
 }

@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseOrderFile;
  */
 @SuppressWarnings("serial")
 public class OrderFile extends BaseOrderFile<OrderFile> {
+
 	public static final OrderFile dao = new OrderFile().dao();
 }

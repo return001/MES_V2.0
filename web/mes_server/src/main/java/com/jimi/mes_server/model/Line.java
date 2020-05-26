@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseLine;
  */
 @SuppressWarnings("serial")
 public class Line extends BaseLine<Line> {
+
 	public static final Line dao = new Line().dao();
 }

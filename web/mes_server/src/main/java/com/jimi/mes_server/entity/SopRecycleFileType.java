@@ -6,9 +6,7 @@ package com.jimi.mes_server.entity;
  */
 public enum SopRecycleFileType {
 
-	FILE(0, "文件"), 
-	NOTICE(1, "通知"), 
-	FILE_AND_NOTICE(2, "文件和通知");
+	FILE(0, "文件"), NOTICE(1, "通知"), FILE_AND_NOTICE(2, "文件和通知");
 
 	private Integer id;
 

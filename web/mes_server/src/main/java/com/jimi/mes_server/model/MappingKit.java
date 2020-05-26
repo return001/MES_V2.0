@@ -14,7 +14,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
  * </pre>
  */
 public class MappingKit {
-	
+
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("action_log", "id", ActionLog.class);
 		arp.addMapping("dashboard", "id", Dashboard.class);
@@ -70,6 +70,11 @@ public class MappingKit {
 		arp.addMapping("sop_workshop", "id", SopWorkshop.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 		arp.addMapping("working_schedule", "id", WorkingSchedule.class);
+		arp.addMapping("authority", "id", Authority.class);
+		arp.addMapping("department", "id", Department.class);
+		arp.addMapping("role", "id", Role.class);
+		arp.addMapping("role_authority", "id", RoleAuthority.class);
+		arp.addMapping("user_action_log", "id", UserActionLog.class);
+
 	}
 }
-

@@ -1,12 +1,9 @@
 package com.jimi.mes_server.controller;
 
 import java.io.IOException;
-
 import org.apache.http.client.ClientProtocolException;
-
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
-import com.jimi.mes_server.annotation.Access;
 import com.jimi.mes_server.service.RedTeaService;
 import com.jimi.mes_server.util.ResultUtil;
 
@@ -15,7 +12,6 @@ public class RedTeaController extends Controller {
 	private static RedTeaService redTeaService = Enhancer.enhance(RedTeaService.class);
 
 
-	@Access({ "operator", "engineer" })
 	public void findCId(String sn, String imei, String deviceModel) {
 		System.out.println(sn + imei + deviceModel);
 		String resonp = "";

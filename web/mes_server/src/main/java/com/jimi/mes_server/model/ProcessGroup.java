@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseProcessGroup;
  */
 @SuppressWarnings("serial")
 public class ProcessGroup extends BaseProcessGroup<ProcessGroup> {
+
 	public static final ProcessGroup dao = new ProcessGroup().dao();
 }

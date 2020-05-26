@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopConfirmLog;
  */
 @SuppressWarnings("serial")
 public class SopConfirmLog extends BaseSopConfirmLog<SopConfirmLog> {
+
 	public static final SopConfirmLog dao = new SopConfirmLog().dao();
 }

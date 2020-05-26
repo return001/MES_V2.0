@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseGpsCartonboxtwentyResult;
  */
 @SuppressWarnings("serial")
 public class GpsCartonboxtwentyResult extends BaseGpsCartonboxtwentyResult<GpsCartonboxtwentyResult> {
+
 	public static final GpsCartonboxtwentyResult dao = new GpsCartonboxtwentyResult().dao();
 }

@@ -1,15 +1,12 @@
 package com.jimi.mes_server.entity;
 
-
 /**SOP站点状态枚举类
  * @author   HCJ
  * @date     2019年11月14日 下午4:49:14
  */
 public enum SopSiteState {
 
-	UNCONFIRMED(0, "未确认"), 
-	PASS(1, "审核通过"), 
-	FAIL(2, "审核不通过");
+	UNCONFIRMED(0, "未确认"), PASS(1, "审核通过"), FAIL(2, "审核不通过");
 
 	private Integer id;
 

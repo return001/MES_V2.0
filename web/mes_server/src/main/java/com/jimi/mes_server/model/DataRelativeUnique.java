@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseDataRelativeUnique;
  */
 @SuppressWarnings("serial")
 public class DataRelativeUnique extends BaseDataRelativeUnique<DataRelativeUnique> {
+
 	public static final DataRelativeUnique dao = new DataRelativeUnique().dao();
 }

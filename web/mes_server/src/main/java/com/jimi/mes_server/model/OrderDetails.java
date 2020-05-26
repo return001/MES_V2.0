@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseOrderDetails;
  */
 @SuppressWarnings("serial")
 public class OrderDetails extends BaseOrderDetails<OrderDetails> {
+
 	public static final OrderDetails dao = new OrderDetails().dao();
 }

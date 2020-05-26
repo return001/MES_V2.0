@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSchedulingPlan;
  */
 @SuppressWarnings("serial")
 public class SchedulingPlan extends BaseSchedulingPlan<SchedulingPlan> {
+
 	public static final SchedulingPlan dao = new SchedulingPlan().dao();
 }

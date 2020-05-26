@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopFile;
  */
 @SuppressWarnings("serial")
 public class SopFile extends BaseSopFile<SopFile> {
+
 	public static final SopFile dao = new SopFile().dao();
 }

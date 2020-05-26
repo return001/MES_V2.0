@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopFactory;
  */
 @SuppressWarnings("serial")
 public class SopFactory extends BaseSopFactory<SopFactory> {
+
 	public static final SopFactory dao = new SopFactory().dao();
 }

@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopSite;
  */
 @SuppressWarnings("serial")
 public class SopSite extends BaseSopSite<SopSite> {
+
 	public static final SopSite dao = new SopSite().dao();
 }

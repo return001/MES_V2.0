@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseWorkingSchedule;
  */
 @SuppressWarnings("serial")
 public class WorkingSchedule extends BaseWorkingSchedule<WorkingSchedule> {
+
 	public static final WorkingSchedule dao = new WorkingSchedule().dao();
 }

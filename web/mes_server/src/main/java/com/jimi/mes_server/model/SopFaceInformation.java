@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopFaceInformation;
  */
 @SuppressWarnings("serial")
 public class SopFaceInformation extends BaseSopFaceInformation<SopFaceInformation> {
+
 	public static final SopFaceInformation dao = new SopFaceInformation().dao();
 }

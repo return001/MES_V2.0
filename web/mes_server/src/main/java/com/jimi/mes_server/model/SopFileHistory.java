@@ -7,5 +7,6 @@ import com.jimi.mes_server.model.base.BaseSopFileHistory;
  */
 @SuppressWarnings("serial")
 public class SopFileHistory extends BaseSopFileHistory<SopFileHistory> {
+
 	public static final SopFileHistory dao = new SopFileHistory().dao();
 }
