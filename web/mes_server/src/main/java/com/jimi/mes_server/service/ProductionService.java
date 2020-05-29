@@ -9,9 +9,11 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,8 +40,14 @@ import com.jimi.mes_server.entity.OrderItem;
 import com.jimi.mes_server.entity.PlanDetail;
 import com.jimi.mes_server.entity.PlanGantt;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
+import com.jimi.mes_server.entity.PlanResult;
+import com.jimi.mes_server.entity.CalculatePlanResultParam;
 import com.jimi.mes_server.entity.SQL;
+import com.jimi.mes_server.entity.SchedulingProgress;
 import com.jimi.mes_server.entity.SopSQL;
+import com.jimi.mes_server.entity.Task;
+import com.jimi.mes_server.entity.WorkTime;
+import com.jimi.mes_server.entity.WorkTimes;
 import com.jimi.mes_server.entity.vo.AuthorityVO;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.entity.vo.OrderVO;
@@ -533,7 +541,7 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory) {
+	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory, Integer statusId) {
 		StringBuilder filter = new StringBuilder();
 		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
@@ -549,6 +557,9 @@ public class ProductionService {
 		}
 		if (factory != null && factory > 0) {
 			filter.append(" AND sop_factory.id = " + factory);
+		}
+		if (statusId != null) {
+			filter.append(" AND model_capacity_status.id =  " + statusId);
 		}
 		String orderBy = "ORDER BY soft_model";
 		SqlPara sqlPara = new SqlPara();
@@ -1664,6 +1675,168 @@ public class ProductionService {
 	}
 
 
+	public Page<Record> selectProductionLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String address, String zhidan, String alias) {
+		SqlPara sqlPara = new SqlPara();
+		StringBuilder sql = new StringBuilder(SQL.SELECT_PRODUCTION_ACTION_LOG);
+		sql.append(" WHERE 1 = 1 ");
+		if (!StrKit.isBlank(userName)) {
+			sql.append(" AND uid like '").append(userName).append("%'");
+		}
+		if (!StrKit.isBlank(zhidan)) {
+			sql.append(" AND zhidan like '").append(zhidan).append("%'");
+		}
+		if (!StrKit.isBlank(alias)) {
+			sql.append(" AND alias like '").append(alias).append("%'");
+		}
+		if (!StrKit.isBlank(address)) {
+			sql.append(" AND address like '").append(address).append("%'");
+		}
+		if (!StrKit.isBlank(startTime)) {
+			sql.append(" AND time >= '").append(startTime).append(" 00:00:00'");
+		}
+		if (!StrKit.isBlank(endTime)) {
+			sql.append(" AND time <= '").append(endTime).append(" 23:59:59'");
+		}
+		if (StringUtils.endsWith(sql, "WHERE 1 = 1 ")) {
+			sql.substring(0, sql.lastIndexOf("WHERE"));
+		}
+		sql.append(" order by id desc");
+		sqlPara.setSql(sql.toString());
+		return Db.paginate(pageNo, pageSize, sqlPara);
+	}
+
+
+	public boolean setDefaultWorkTimeByExecutorId(Integer executorId, List<WorkTime> times) {
+		Line line = Line.dao.findById(executorId);
+		if (line == null) {
+			throw new OperationException("当前产线不存在");
+		}
+		StringBuilder defaultWorkTime = new StringBuilder();
+		for (WorkTime workTime : times) {
+			defaultWorkTime.append(workTime.getStartTime()).append("-").append(workTime.getEndTime()).append(",");
+		}
+		if (StringUtils.contains(defaultWorkTime, ",")) {
+			defaultWorkTime.deleteCharAt(defaultWorkTime.lastIndexOf(","));
+		}
+		return line.setDefaultWorkTime(defaultWorkTime.toString()).update();
+	}
+
+
+	public Object getDefaultWorkTimeByExecutorId(Integer executorId) {
+		Line line = Line.dao.findById(executorId);
+		if (line == null) {
+			throw new OperationException("当前产线不存在");
+		}
+		if (!StrKit.isBlank(line.getDefaultWorkTime())) {
+			List<WorkTime> workTimes = new ArrayList<>();
+			String[] WorkTimeStrings = line.getDefaultWorkTime().split(",");
+			for (String WorkTimeString : WorkTimeStrings) {
+				WorkTime workTime = new WorkTime();
+				workTime.setStartTime(WorkTimeString.split("-")[0]);
+				workTime.setEndTime(WorkTimeString.split("-")[1]);
+				workTimes.add(workTime);
+			}
+			return workTimes;
+		}
+		return Collections.EMPTY_LIST;
+	}
+
+
+	public List<PlanResult> calculatePlanResult(CalculatePlanResultParam calculatePlanResultParam) throws Exception {
+		// 存储产线ID和工作进度的MAP
+		Map<Integer, SchedulingProgress> map = new LinkedHashMap<>();
+		for (WorkTimes workTimes : calculatePlanResultParam.getWorkTimes()) {
+			SchedulingProgress schedulingProgress = new SchedulingProgress();
+			schedulingProgress.setWorkSchedule(workTimes.getWorkTime());
+			map.put(workTimes.getExecutorId(), schedulingProgress);
+		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat dateAndHourFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		List<PlanResult> planResults = new ArrayList<>();
+		for (Entry<Integer, SchedulingProgress> entry : map.entrySet()) {
+			for (Task task : calculatePlanResultParam.getTasks()) {
+				if (task.getExecutorId().equals(entry.getKey())) {
+					// 预计生产时长
+					double planProductionHour = BigDecimal.valueOf((double) task.getPlanQuantity() / (double) task.getStandardCapacity() + (double) task.getSwitchConsumingTime() / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+					// 预计开始时间
+					String planStartTime = null;
+					// 预计结束时间
+					String planEndTime = null;
+					// 预计生产时长的毫秒数
+					long planProductionMillisecond = (long) (planProductionHour * 60 * 60 * 1000);
+					// 上一个订单预计结束时间对应工作时间表的下标
+					Integer index = entry.getValue().getPreviousOrderPlanEndTimeIndex();
+					// 上一个订单预计结束时间
+					Date time = entry.getValue().getPreviousOrderPlanEndTime();
+					// 工作时间表
+					List<WorkTime> workTimes = entry.getValue().getWorkSchedule();
+					if (index >= workTimes.size()) {
+						planStartTime = "超出预期";
+						planEndTime = "超出预期";
+					} else {
+						WorkTime workTimeFirst = workTimes.get(index);
+						if (time == null) {
+							// 不存在上一个订单时
+							planStartTime = dateFormat.format(workTimeFirst.getDate()) + " " + workTimeFirst.getStartTime();
+						} else {
+							// 存在上一个订单时
+							planStartTime = dateAndHourFormat.format(time);
+						}
+						if (index < workTimes.size()) {
+							// 遍历时间表然后将预计需要花费的时间分散到时间表的各个时间段
+							while (index < workTimes.size()) {
+								WorkTime workTimeSecond = workTimes.get(index);
+								String tempStartTime;
+								String tempEndTime;
+								// 获取当前订单对应时间表上可用的开始时间
+								if (time == null) {
+									tempStartTime = dateFormat.format(workTimeSecond.getDate()) + " " + workTimeSecond.getStartTime();
+								} else {
+									tempStartTime = dateAndHourFormat.format(time);
+									time = null;
+								}
+								// 获取当前订单对应时间表上可用的结束时间
+								tempEndTime = dateFormat.format(workTimeSecond.getDate()) + " " + workTimeSecond.getEndTime();
+								// 判断间隔时间是否满足所需要花费的时间
+								if (dateAndHourFormat.parse(tempEndTime).getTime() - dateAndHourFormat.parse(tempStartTime).getTime() < planProductionMillisecond) {
+									// 计算还需要多少时间才能完成
+									planProductionMillisecond = planProductionMillisecond - (dateAndHourFormat.parse(tempEndTime).getTime() - dateAndHourFormat.parse(tempStartTime).getTime());
+									// 时间表的下一个可用时间段
+									index++;
+								} else {
+									// 间隔时间满足所需要花费的时间所以直接使用开始时间和花费的时间
+									planEndTime = dateAndHourFormat.format(new Date((dateAndHourFormat.parse(tempStartTime).getTime() + planProductionMillisecond)));
+									break;
+								}
+							}
+							if (index >= workTimes.size()) {
+								planEndTime = "超出预期";
+							}
+						} else {
+							planEndTime = "超出预期";
+						}
+					}
+					// 存储上一个订单的预计结束时间
+					if (!"超出预期".equals(planEndTime)) {
+						entry.getValue().setPreviousOrderPlanEndTime(dateAndHourFormat.parse(planEndTime));
+					}
+					// 存储上一个订单使用到的时间段对应时间表上的序号
+					entry.getValue().setPreviousOrderPlanEndTimeIndex(index);
+					// 存储订单对应的计算结果
+					PlanResult planResult = new PlanResult();
+					planResult.setExecutorId(task.getExecutorId());
+					planResult.setOrderId(task.getOrderId());
+					planResult.setEstimatedProductionTime(planProductionHour);
+					planResult.setEstimatedStartTime(planStartTime);
+					planResult.setEstimatedEndTime(planEndTime);
+					planResults.add(planResult);
+				}
+			}
+		}
+		return planResults;
+	}
+
+
 	/**@author HCJ
 	 * 生成甘特图
 	 * @param index 位置
@@ -2009,37 +2182,6 @@ public class ProductionService {
 			}
 		}
 		return orderVOs;
-	}
-
-
-	public Page<Record> selectProductionLog(Integer pageNo, Integer pageSize, String startTime, String endTime, String userName, String address, String zhidan, String alias) {
-		SqlPara sqlPara = new SqlPara();
-		StringBuilder sql = new StringBuilder(SQL.SELECT_PRODUCTION_ACTION_LOG);
-		sql.append(" WHERE 1 = 1 ");
-		if (!StrKit.isBlank(userName)) {
-			sql.append(" AND uid like '").append(userName).append("%'");
-		}
-		if (!StrKit.isBlank(zhidan)) {
-			sql.append(" AND zhidan like '").append(zhidan).append("%'");
-		}
-		if (!StrKit.isBlank(alias)) {
-			sql.append(" AND alias like '").append(alias).append("%'");
-		}
-		if (!StrKit.isBlank(address)) {
-			sql.append(" AND address like '").append(address).append("%'");
-		}
-		if (!StrKit.isBlank(startTime)) {
-			sql.append(" AND time >= '").append(startTime).append(" 00:00:00'");
-		}
-		if (!StrKit.isBlank(endTime)) {
-			sql.append(" AND time <= '").append(endTime).append(" 23:59:59'");
-		}
-		if (StringUtils.endsWith(sql, "WHERE 1 = 1 ")) {
-			sql.substring(0, sql.lastIndexOf("WHERE"));
-		}
-		sql.append(" order by id desc");
-		sqlPara.setSql(sql.toString());
-		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
 }

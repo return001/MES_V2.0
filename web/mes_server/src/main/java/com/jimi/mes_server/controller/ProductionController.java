@@ -23,11 +23,14 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.annotation.PermissionPass;
 import com.jimi.mes_server.annotation.ProductionLog;
 import com.jimi.mes_server.entity.AddPlanInfo;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.ModelCapacityInfo;
 import com.jimi.mes_server.entity.PlanQueryCriteria;
+import com.jimi.mes_server.entity.CalculatePlanResultParam;
+import com.jimi.mes_server.entity.WorkTime;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
 import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
@@ -100,6 +103,7 @@ public class ProductionController extends Controller {
 	}
 
 
+	@PermissionPass
 	public void getWorkingSchedule() {
 		renderJson(ResultUtil.succeed(productionService.getWorkingSchedule()));
 	}
@@ -486,8 +490,8 @@ public class ProductionController extends Controller {
 	 * @param processGroup 工序组ID
 	 * @date 2020年5月15日 下午2:52:58
 	 */
-	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory) {
-		renderJson(ResultUtil.succeed(productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, processGroup, factory)));
+	public void selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory, Integer statusId) {
+		renderJson(ResultUtil.succeed(productionService.selectCapacity(pageNo, pageSize, softModel, customerModel, processGroup, factory, statusId)));
 	}
 
 
@@ -1206,6 +1210,67 @@ public class ProductionController extends Controller {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
 		renderJson(ResultUtil.succeed(productionService.selectProductionLog(pageNo, pageSize, startTime, endTime, userName, address, zhidan, alias)));
+	}
+
+
+	/**@author HCJ
+	 * 设置产线默认工作时间
+	 * @param executorId 产线ID
+	 * @param workTimes 工作时间集合
+	 * @date 2020年5月28日 下午6:17:08
+	 */
+	public void setDefaultWorkTimeByExecutorId(Integer executorId, String workTimes) {
+		if (StrKit.isBlank(workTimes) || executorId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		List<WorkTime> times;
+		try {
+			times = JSONObject.parseArray(workTimes, WorkTime.class);
+		} catch (Exception e) {
+			throw new ParameterException("参数格式出错");
+		}
+		if (productionService.setDefaultWorkTimeByExecutorId(executorId, times)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+
+
+	/**@author HCJ
+	 * 获取产线默认工作时间
+	 * @param executorId 产线ID
+	 * @date 2020年5月28日 下午6:17:36
+	 */
+	public void getDefaultWorkTimeByExecutorId(Integer executorId) {
+		if (executorId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(productionService.getDefaultWorkTimeByExecutorId(executorId)));
+	}
+
+
+	/**@author HCJ
+	 * 计算排产计划的预计时间
+	 * @param details json串信息
+	 * @date 2020年5月28日 下午6:17:55
+	 */
+	public void calculatePlanResult(String details) {
+		if (StrKit.isBlank(details)) {
+			throw new ParameterException("参数不能为空");
+		}
+		CalculatePlanResultParam calculatePlanResultParam;
+		try {
+			calculatePlanResultParam = JSONObject.parseObject(details, CalculatePlanResultParam.class);
+		} catch (Exception e) {
+			throw new ParameterException("参数格式出错");
+		}
+		try {
+			renderJson(ResultUtil.succeed(productionService.calculatePlanResult(calculatePlanResultParam)));
+		} catch (Exception e) {
+			e.printStackTrace();
+			renderJson(ResultUtil.failed("计算出错"));
+		}
 	}
 
 }

@@ -18,22 +18,13 @@ public abstract class BaseAuthority<M extends BaseAuthority<M>> extends Model<M>
 		return getInt("id");
 	}
 
-	public M setOperation(java.lang.String operation) {
-		set("operation", operation);
+	public M setSystem(java.lang.String system) {
+		set("system", system);
 		return (M)this;
 	}
 	
-	public java.lang.String getOperation() {
-		return getStr("operation");
-	}
-
-	public M setPage(java.lang.String page) {
-		set("page", page);
-		return (M)this;
-	}
-	
-	public java.lang.String getPage() {
-		return getStr("page");
+	public java.lang.String getSystem() {
+		return getStr("system");
 	}
 
 	public M setModel(java.lang.String model) {
@@ -45,13 +36,22 @@ public abstract class BaseAuthority<M extends BaseAuthority<M>> extends Model<M>
 		return getStr("model");
 	}
 
-	public M setSystem(java.lang.String system) {
-		set("system", system);
+	public M setPage(java.lang.String page) {
+		set("page", page);
 		return (M)this;
 	}
 	
-	public java.lang.String getSystem() {
-		return getStr("system");
+	public java.lang.String getPage() {
+		return getStr("page");
+	}
+
+	public M setOperation(java.lang.String operation) {
+		set("operation", operation);
+		return (M)this;
+	}
+	
+	public java.lang.String getOperation() {
+		return getStr("operation");
 	}
 
 	public M setUrls(java.lang.String urls) {

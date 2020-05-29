@@ -99,4 +99,13 @@ public abstract class BaseLine<M extends BaseLine<M>> extends Model<M> implement
 		return getInt("time_length");
 	}
 
+	public M setDefaultWorkTime(java.lang.String defaultWorkTime) {
+		set("default_work_time", defaultWorkTime);
+		return (M)this;
+	}
+	
+	public java.lang.String getDefaultWorkTime() {
+		return getStr("default_work_time");
+	}
+
 }

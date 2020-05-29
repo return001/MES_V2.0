@@ -171,21 +171,31 @@ public abstract class BaseLUserAccount<M extends BaseLUserAccount<M>> extends Mo
 		return getStr("PhoneNumber");
 	}
 
-    public M setRole(java.lang.Integer Role) {
-        set("Role", Role);
-        return (M)this;
-    }
-    
-    public java.lang.Integer getRole() {
-        return getInt("Role");
-    }
-    public M setDelete(java.lang.Boolean Delete) {
-        set("Delete", Delete);
-        return (M)this;
-    }
-    
-    public java.lang.Boolean getDelete() {
-        return get("Delete");
-    }
+	public M setRole(java.lang.Integer Role) {
+		set("Role", Role);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getRole() {
+		return getInt("Role");
+	}
+
+	public M setDelete(java.lang.Boolean Delete) {
+		set("Delete", Delete);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getDelete() {
+		return get("Delete");
+	}
+
+	public M setFactory(java.lang.Integer Factory) {
+		set("Factory", Factory);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getFactory() {
+		return getInt("Factory");
+	}
 
 }
