@@ -1214,13 +1214,14 @@ public class ProductionController extends Controller {
 
 
 	/**@author HCJ
-	 * 设置产线默认工作时间
+	 * 设置产线工作时间表
 	 * @param executorId 产线ID
-	 * @param workTimes 工作时间集合
-	 * @date 2020年5月28日 下午6:17:08
+	 * @param workTimes 工作时间集合的字符串
+	 * @param isDefault 是否为设置默认工作时间表
+	 * @date 2020年6月1日 上午10:54:42
 	 */
-	public void setDefaultWorkTimeByExecutorId(Integer executorId, String workTimes) {
-		if (StrKit.isBlank(workTimes) || executorId == null) {
+	public void setWorkTimeByExecutorId(Integer executorId, String workTimes, Boolean isDefault) {
+		if (StrKit.isBlank(workTimes) || executorId == null || isDefault == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		List<WorkTime> times;
@@ -1229,7 +1230,7 @@ public class ProductionController extends Controller {
 		} catch (Exception e) {
 			throw new ParameterException("参数格式出错");
 		}
-		if (productionService.setDefaultWorkTimeByExecutorId(executorId, times)) {
+		if (productionService.setWorkTimeByExecutorId(executorId, times, isDefault)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -1238,15 +1239,16 @@ public class ProductionController extends Controller {
 
 
 	/**@author HCJ
-	 * 获取产线默认工作时间
+	 * 获取产线工作时间表
 	 * @param executorId 产线ID
-	 * @date 2020年5月28日 下午6:17:36
+	 * @param isDefault 是否获取默认工作时间表
+	 * @date 2020年6月1日 上午10:56:14
 	 */
-	public void getDefaultWorkTimeByExecutorId(Integer executorId) {
-		if (executorId == null) {
+	public void getWorkTimeByExecutorId(Integer executorId, Boolean isDefault) {
+		if (executorId == null || isDefault == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		renderJson(ResultUtil.succeed(productionService.getDefaultWorkTimeByExecutorId(executorId)));
+		renderJson(ResultUtil.succeed(productionService.getWorkTimeByExecutorId(executorId, isDefault)));
 	}
 
 
@@ -1271,6 +1273,19 @@ public class ProductionController extends Controller {
 			e.printStackTrace();
 			renderJson(ResultUtil.failed("计算出错"));
 		}
+	}
+
+
+	/**@author HCJ
+	 * 根据订单ID获取排产计划信息
+	 * @param orderId 订单ID
+	 * @date 2020年6月1日 上午10:56:37
+	 */
+	public void getPlanByOrder(Integer orderId) {
+		if (orderId == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		renderJson(ResultUtil.succeed(productionService.getPlanByOrder(orderId)));
 	}
 
 }

@@ -1706,37 +1706,58 @@ public class ProductionService {
 	}
 
 
-	public boolean setDefaultWorkTimeByExecutorId(Integer executorId, List<WorkTime> times) {
+	public boolean setWorkTimeByExecutorId(Integer executorId, List<WorkTime> times, Boolean isDefault) {
 		Line line = Line.dao.findById(executorId);
 		if (line == null) {
 			throw new OperationException("当前产线不存在");
 		}
-		StringBuilder defaultWorkTime = new StringBuilder();
-		for (WorkTime workTime : times) {
-			defaultWorkTime.append(workTime.getStartTime()).append("-").append(workTime.getEndTime()).append(",");
+		StringBuilder workTimeSb = new StringBuilder();
+		if (isDefault) {
+			for (WorkTime workTime : times) {
+				workTimeSb.append(workTime.getStartTime()).append("@").append(workTime.getEndTime()).append(",");
+			}
+			if (StringUtils.contains(workTimeSb, ",")) {
+				workTimeSb.deleteCharAt(workTimeSb.lastIndexOf(","));
+			}
+			return line.setDefaultWorkTime(workTimeSb.toString()).update();
+		} else {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			for (WorkTime workTime : times) {
+				workTimeSb.append(dateFormat.format(workTime.getDate()) + "@" + workTime.getStartTime()).append("@").append(workTime.getEndTime()).append(",");
+			}
+			if (StringUtils.contains(workTimeSb, ",")) {
+				workTimeSb.deleteCharAt(workTimeSb.lastIndexOf(","));
+			}
+			return line.setWorkTime(workTimeSb.toString()).update();
 		}
-		if (StringUtils.contains(defaultWorkTime, ",")) {
-			defaultWorkTime.deleteCharAt(defaultWorkTime.lastIndexOf(","));
-		}
-		return line.setDefaultWorkTime(defaultWorkTime.toString()).update();
 	}
 
 
-	public Object getDefaultWorkTimeByExecutorId(Integer executorId) {
+	public Object getWorkTimeByExecutorId(Integer executorId, Boolean isDefault) {
 		Line line = Line.dao.findById(executorId);
 		if (line == null) {
 			throw new OperationException("当前产线不存在");
 		}
-		if (!StrKit.isBlank(line.getDefaultWorkTime())) {
-			List<WorkTime> workTimes = new ArrayList<>();
-			String[] WorkTimeStrings = line.getDefaultWorkTime().split(",");
-			for (String WorkTimeString : WorkTimeStrings) {
-				WorkTime workTime = new WorkTime();
-				workTime.setStartTime(WorkTimeString.split("-")[0]);
-				workTime.setEndTime(WorkTimeString.split("-")[1]);
-				workTimes.add(workTime);
+		List<Record> records = new ArrayList<>();
+		if (isDefault && !StrKit.isBlank(line.getDefaultWorkTime())) {
+			String[] defaultWorkTimeStrings = line.getDefaultWorkTime().split(",");
+			for (String WorkTimeString : defaultWorkTimeStrings) {
+				Record record = new Record();
+				record.set("startTime", WorkTimeString.split("@")[0]);
+				record.set("endTime", WorkTimeString.split("@")[1]);
+				records.add(record);
 			}
-			return workTimes;
+			return records;
+		} else if (!isDefault && !StrKit.isBlank(line.getWorkTime())) {
+			String[] workTimeStrings = line.getWorkTime().split(",");
+			for (String WorkTimeString : workTimeStrings) {
+				Record record = new Record();
+				record.set("date", WorkTimeString.split("@")[0]);
+				record.set("startTime", WorkTimeString.split("@")[1]);
+				record.set("endTime", WorkTimeString.split("@")[2]);
+				records.add(record);
+			}
+			return records;
 		}
 		return Collections.EMPTY_LIST;
 	}
@@ -1834,6 +1855,14 @@ public class ProductionService {
 			}
 		}
 		return planResults;
+	}
+
+
+	public List<Record> getPlanByOrder(Integer orderId) {
+		if (Orders.dao.findById(orderId) == null) {
+			throw new OperationException("当前订单不存在");
+		}
+		return Db.find(SQL.SELECT_PLAN_INFO_BY_ORDER, orderId);
 	}
 
 
