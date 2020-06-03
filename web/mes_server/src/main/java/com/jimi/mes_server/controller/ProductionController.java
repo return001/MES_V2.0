@@ -747,9 +747,9 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:57:48
 	 */
 	@ProductionLog("导入订单")
-	public void importOrder(UploadFile uploadFile, Boolean isRework, Integer factory) {
+	public void importOrder(UploadFile uploadFile, Boolean isRework) {
 		uploadFile = getFile();
-		if (uploadFile == null || isRework == null || factory == null) {
+		if (uploadFile == null || isRework == null) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (!uploadFile.getOriginalFileName().endsWith(".xls") && !uploadFile.getOriginalFileName().endsWith(".xlsx")) {
@@ -757,7 +757,7 @@ public class ProductionController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		String result = productionService.importOrder(uploadFile.getFile(), userVO, isRework, factory);
+		String result = productionService.importOrder(uploadFile.getFile(), userVO, isRework);
 		if ("导入成功".equals(result)) {
 			renderJson(ResultUtil.succeed());
 		} else {

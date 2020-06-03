@@ -878,7 +878,7 @@ public class ProductionService {
 	}
 
 
-	public String importOrder(File file, LUserAccountVO userVO, Boolean isRework, Integer factory) {
+	public String importOrder(File file, LUserAccountVO userVO, Boolean isRework) {
 		String resultString = "导入成功";
 		ExcelHelper helper;
 		int indexOfOrderItem = 2;
@@ -890,14 +890,32 @@ public class ProductionService {
 			if (orderItems == null) {
 				throw new OperationException("表格无有效数据或者表格格式不正确！");
 			}
+			List<Record> factories = Db.find(SopSQL.SELECT_FACTORY);
 			for (OrderItem orderItem : orderItems) {
 				String zhidan = orderItem.getZhidan();
 				String softModel = orderItem.getSoftModel();
 				boolean isDateExist = orderItem.getOrderDate() != null && orderItem.getDeliveryDate() != null;
 				boolean isQuantityExist = orderItem.getQuantity() != null;
-				if (StringUtils.isAnyBlank(zhidan, softModel) || !isDateExist || !isQuantityExist) {
-					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号和机型为空或者订单日期、交货日期和订单数量格式错误！";
+				String abbreviation = orderItem.getAbbreviation();
+				Orders order = new Orders();
+				if (StringUtils.isAnyBlank(zhidan, softModel, abbreviation) || !isDateExist || !isQuantityExist) {
+					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号和机型和生产部门为空或者订单日期、交货日期和订单数量格式错误！";
 					return resultString;
+				}
+				if (factories != null && !factories.isEmpty()) {
+					Record factory = null;
+					for (Record record : factories) {
+						if (abbreviation.equals(record.getStr("abbreviation"))) {
+							factory = record;
+							break;
+						}
+					}
+					if (factory == null) {
+						resultString = "导入失败，表格第" + indexOfOrderItem + "行的生产部门不存在，请进行配置！";
+						return resultString;
+					} else {
+						order.setFactory(factory.getInt("id"));
+					}
 				}
 				if (!isRework) {
 					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, orderItem.getZhidan());
@@ -915,12 +933,10 @@ public class ProductionService {
 					}
 				}
 				zhidanMap.put(zhidan, indexOfOrderItem);
-				Orders order = new Orders();
 				order.setZhidan(zhidan).setSoftModel(softModel).setVersion(orderItem.getVersion());
 				order.setCustomerName(Constant.DEFAULT_CUSTOMERNAME).setCustomerNumber(Constant.DEFAULT_CUSTOMERNUMBER);
 				order.setProductNo(orderItem.getProductNo()).setOrderDate(orderItem.getOrderDate());
 				order.setQuantity(orderItem.getQuantity()).setDeliveryDate(orderItem.getDeliveryDate());
-				order.setFactory(factory);
 				if (!StrKit.isBlank(orderItem.getRemark())) {
 					order.setPcRemarks(orderItem.getRemark()).setPc(userVO.getUserDes()).setPcRemarksTime(new Date());
 				}

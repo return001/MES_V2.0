@@ -14,7 +14,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
  * </pre>
  */
 public class MappingKit {
-	
+
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("action_log", "id", ActionLog.class);
 		arp.addMapping("authority", "id", Authority.class);
@@ -77,4 +77,3 @@ public class MappingKit {
 		arp.addMapping("working_schedule", "id", WorkingSchedule.class);
 	}
 }
-

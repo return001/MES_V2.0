@@ -31,6 +31,9 @@ public class OrderItem {
 	@Excel(col = 15, head = "bom版本")
 	private String version;
 
+	@Excel(col = 18, head = "生产部门")
+	private String abbreviation;
+
 	@Excel(col = 24, head = "备注")
 	private String remark;
 
@@ -115,9 +118,19 @@ public class OrderItem {
 	}
 
 
+	public String getAbbreviation() {
+		return abbreviation;
+	}
+
+
+	public void setAbbreviation(String abbreviation) {
+		this.abbreviation = abbreviation;
+	}
+
+
 	@Override
 	public String toString() {
-		return "OrderItem [productNo=" + productNo + ", zhidan=" + zhidan + ", quantity=" + quantity + ", orderDate=" + orderDate + ", deliveryDate=" + deliveryDate + ", softModel=" + softModel + ", version=" + version + ", remark=" + remark + "]";
+		return "OrderItem [productNo=" + productNo + ", zhidan=" + zhidan + ", quantity=" + quantity + ", orderDate=" + orderDate + ", deliveryDate=" + deliveryDate + ", softModel=" + softModel + ", version=" + version + ", abbreviation=" + abbreviation + ", remark=" + remark + "]";
 	}
 
 }
