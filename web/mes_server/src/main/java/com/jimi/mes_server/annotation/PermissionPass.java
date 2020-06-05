@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 标记该注解方法需要指定用户才可以访问
+ * 无需权限即可访问
  * <br>
  * <b>2018年5月21日</b>
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>

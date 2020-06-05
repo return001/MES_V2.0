@@ -234,7 +234,7 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULED_REWORK_ORDER_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan INNER JOIN orders ON scheduling_plan.orders = orders.id WHERE process_group = ? AND orders.order_status = 2 AND is_rework = 1 AND orders = ? ";
 
-	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND orders = ? ";
+	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND orders = ? AND scheduling_plan_status != ?";
 
 	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and is_rework = 0 and (order_status = ? or order_status = ? or order_status = ? ) GROUP BY orders";
 

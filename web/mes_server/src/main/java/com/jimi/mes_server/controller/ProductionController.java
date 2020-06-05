@@ -1230,10 +1230,14 @@ public class ProductionController extends Controller {
 		} catch (Exception e) {
 			throw new ParameterException("参数格式出错");
 		}
-		if (productionService.setWorkTimeByExecutorId(executorId, times, isDefault)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
+		try {
+			if (productionService.setWorkTimeByExecutorId(executorId, times, isDefault)) {
+				renderJson(ResultUtil.succeed());
+			} else {
+				renderJson(ResultUtil.failed());
+			}
+		} catch (Exception e) {
+			throw new ParameterException("时间格式错误，请重新输入");
 		}
 	}
 

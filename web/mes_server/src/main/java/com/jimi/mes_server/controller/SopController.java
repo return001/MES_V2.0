@@ -13,6 +13,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
 import com.jimi.mes_server.annotation.Log;
+import com.jimi.mes_server.annotation.PermissionPass;
 import com.jimi.mes_server.entity.Constant;
 import com.jimi.mes_server.entity.SopFileState;
 import com.jimi.mes_server.entity.SopRecycleFileType;
@@ -789,6 +790,7 @@ public class SopController extends Controller {
 	 * @param feature 人脸特征
 	 * @date 2019年10月24日 下午2:35:29
 	 */
+	@PermissionPass
 	public void addFaceInformation(String userName, String feature) {
 		if (StringUtils.isAnyBlank(userName, feature)) {
 			throw new OperationException("用户名和人脸特征不能为空");
@@ -805,6 +807,7 @@ public class SopController extends Controller {
 	 * 获取人脸信息，客户端调用
 	 * @date 2019年10月24日 下午2:35:54
 	 */
+	@PermissionPass
 	public void getFaceInformation() {
 		renderJson(ResultUtil.succeed(sopService.getFaceInformation()));
 	}

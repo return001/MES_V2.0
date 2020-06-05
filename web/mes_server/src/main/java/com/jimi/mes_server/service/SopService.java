@@ -421,7 +421,7 @@ public class SopService extends SelectService {
 		if (!StrKit.isBlank(customerNumber)) {
 			sql.append(" AND c.customer_number LIKE '%").append(customerNumber).append("%'");
 		}
-		if (factoryId != null) {
+		if (factoryId != null && factoryId > 0) {
 			sql.append(" AND c.factory_id = ").append(factoryId);
 		}
 		sqlPara.setSql(sql.toString());

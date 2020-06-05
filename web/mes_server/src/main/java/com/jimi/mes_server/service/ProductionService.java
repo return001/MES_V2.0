@@ -7,9 +7,11 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -686,7 +688,7 @@ public class ProductionService {
 		if (order == null) {
 			throw new OperationException("异常结单失败，订单不存在");
 		}
-		checkOrderUserType(userVO, order);
+		/*checkOrderUserType(userVO, order);*/
 		order.setAbnormalEndReason(abnormalEndReason).setOrderStatus(Constant.ABNORMAL_END_ORDERSTATUS);
 		order.setAbnormalEndPerson(userVO.getId()).setAbnormalEndTime(new Date());
 		return order.update();
@@ -815,7 +817,7 @@ public class ProductionService {
 		if (temp == null) {
 			throw new OperationException("订单不存在");
 		}
-		checkOrderUserType(userVO, temp);
+		/*checkOrderUserType(userVO, temp);*/
 		Orders zhidan = null;
 		Orders alias = null;
 		if (order.getIsRework()) {
@@ -1316,115 +1318,117 @@ public class ProductionService {
 		Integer scheduledQuantity = 0;
 		List<Record> scheduledQuantities = null;
 		String lineNameParam = "'" + line.getLineName() + "%'";
-		// 查询产线和订单各工序组对应产量
-		if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-			sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
-		} else if (Constant.TESTING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-			sql = SQL.SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY;
-		} else if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-			sql = SQL.SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY;
-		} else if (Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-			sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
-		}
-		String planStartTime = dateFormat.format(schedulingPlan.getPlanStartTime());
-		String zhidan;
-		if (order.getIsRework()) {
-			zhidan = order.getReworkZhidan();
-		} else {
-			zhidan = order.getZhidan();
-		}
-		if (sql != null) {
-			planProducedQuantity = Db.queryInt(sql, zhidan, lineNameParam, planStartTime);
-		}
-		// 最后一个工序组订单已排产数量
-		scheduledQuantities = Db.find(SQL.SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY, order.getId(), order.getId());
-		if (scheduledQuantities != null && !scheduledQuantities.isEmpty()) {
-			for (Record scheduledQuantityRecord : scheduledQuantities) {
-				if (scheduledQuantityRecord.getInt("scheduled_quantity") != null) {
-					scheduledQuantity = scheduledQuantityRecord.getInt("scheduled_quantity");
-					break;
-				}
+		if (!Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
+			// 查询产线和订单各工序组对应产量
+			if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+				sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+			} else if (Constant.TESTING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+				sql = SQL.SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+			} else if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+				sql = SQL.SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+			} else if (Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+				sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
 			}
-		}
-		order.setScheduledQuantity(scheduledQuantity);
-		// 进行中状态
-		if (Constant.SCHEDULED_ORDERSTATUS.equals(order.getOrderStatus()) && planProducedQuantity > 0) {
-			order.setOrderStatus(Constant.ONGOING_ORDERSTATUS);
-		}
-		// 最后一个段的生产数量和未完成原因
-		if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup()) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-			Integer zhidanPlanProducedQuantity = 0;
-			if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-				zhidanPlanProducedQuantity = Db.queryInt(SQL.SELECT_PACKING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY, zhidan);
-			} else {
-				zhidanPlanProducedQuantity = Db.queryInt(SQL.SELECT_ASSEMBLING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY, zhidan);
-			}
-			order.setProducedQuantity(zhidanPlanProducedQuantity);
-			order.setUnfinishedReason(schedulingPlan.getRemainingReason());
-			// 已完成
+			String planStartTime = dateFormat.format(schedulingPlan.getPlanStartTime());
+			String zhidan;
 			if (order.getIsRework()) {
-				if (zhidanPlanProducedQuantity >= order.getReworkQuantity()) {
-					order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
-				}
+				zhidan = order.getReworkZhidan();
 			} else {
-				if (zhidanPlanProducedQuantity >= order.getQuantity()) {
-					order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+				zhidan = order.getZhidan();
+			}
+			if (sql != null) {
+				planProducedQuantity = Db.queryInt(sql, zhidan, lineNameParam, planStartTime);
+			}
+			// 最后一个工序组订单已排产数量
+			scheduledQuantities = Db.find(SQL.SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY, order.getId(), order.getId());
+			if (scheduledQuantities != null && !scheduledQuantities.isEmpty()) {
+				for (Record scheduledQuantityRecord : scheduledQuantities) {
+					if (scheduledQuantityRecord.getInt("scheduled_quantity") != null) {
+						scheduledQuantity = scheduledQuantityRecord.getInt("scheduled_quantity");
+						break;
+					}
 				}
 			}
-			// 待通知
-			if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
-				order.setOrderStatus(Constant.WAIT_NOTICE__ORDERSTATUS);
+			order.setScheduledQuantity(scheduledQuantity);
+			// 进行中状态
+			if (Constant.SCHEDULED_ORDERSTATUS.equals(order.getOrderStatus()) && planProducedQuantity > 0) {
+				order.setOrderStatus(Constant.ONGOING_ORDERSTATUS);
 			}
-		}
-		if (record != null) {
-			Integer processGroup = record.getInt("processGroup");
-			// 开始时间
-			if (StrKit.isBlank(record.getStr("startTime"))) {
-				Record startTime = null;
-				if (Constant.ASSEMBLING_PROCESS_GROUP.equals(processGroup) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-					startTime = Db.findFirst(SQL.SELECT_ASSEMBLING_START_TIME, zhidan, lineNameParam);
-				} else if (Constant.TESTING_PROCESS_GROUP.equals(processGroup)) {
-					startTime = Db.findFirst(SQL.SELECT_TESTING_START_TIME, zhidan, lineNameParam);
-				} else if (Constant.PACKING_PROCESS_GROUP.equals(processGroup)) {
-					startTime = Db.findFirst(SQL.SELECT_PACKING_START_TIME, zhidan, lineNameParam);
-				}
-				if (startTime != null) {
-					record.set("startTime", startTime.getStr("TestTime"));
-					schedulingPlan.setStartTime(startTime.getDate("TestTime"));
-				}
-			}
-			// 完成时间和未完成量
-			if (StrKit.isBlank(record.getStr("completeTime"))) {
-				Record lastTime = null;
-				if (Constant.ASSEMBLING_PROCESS_GROUP.equals(processGroup) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
-					lastTime = Db.findFirst(SQL.SELECT_ASSEMBLING_LAST_TIME, zhidan, lineNameParam);
-				} else if (Constant.TESTING_PROCESS_GROUP.equals(processGroup)) {
-					lastTime = Db.findFirst(SQL.SELECT_TESTING_LAST_TIME, zhidan, lineNameParam);
-				} else if (Constant.PACKING_PROCESS_GROUP.equals(processGroup)) {
-					lastTime = Db.findFirst(SQL.SELECT_PACKING_LAST_TIME, zhidan, lineNameParam);
-				}
-				if (planProducedQuantity >= schedulingPlan.getSchedulingQuantity() && lastTime != null) {
-					record.set("completeTime", lastTime.getStr("TestTime"));
-					schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
-					schedulingPlan.setCompleteTime(lastTime.getDate("TestTime"));
-					schedulingPlan.setRemainingQuantity(0);
+			// 最后一个段的生产数量和未完成原因
+			if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup()) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+				Integer zhidanPlanProducedQuantity = 0;
+				if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+					zhidanPlanProducedQuantity = Db.queryInt(SQL.SELECT_PACKING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY, zhidan);
 				} else {
-					record.set("remainingQuantity", schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
-					schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
+					zhidanPlanProducedQuantity = Db.queryInt(SQL.SELECT_ASSEMBLING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY, zhidan);
 				}
-				schedulingPlan.setProducedQuantity(planProducedQuantity);
+				order.setProducedQuantity(zhidanPlanProducedQuantity);
+				order.setUnfinishedReason(schedulingPlan.getRemainingReason());
+				// 已完成
+				if (order.getIsRework()) {
+					if (zhidanPlanProducedQuantity >= order.getReworkQuantity()) {
+						order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+					}
+				} else {
+					if (zhidanPlanProducedQuantity >= order.getQuantity()) {
+						order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+					}
+				}
+				// 待通知
+				if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
+					order.setOrderStatus(Constant.WAIT_NOTICE__ORDERSTATUS);
+				}
 			}
+			if (record != null) {
+				Integer processGroup = record.getInt("processGroup");
+				// 开始时间
+				if (StrKit.isBlank(record.getStr("startTime"))) {
+					Record startTime = null;
+					if (Constant.ASSEMBLING_PROCESS_GROUP.equals(processGroup) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+						startTime = Db.findFirst(SQL.SELECT_ASSEMBLING_START_TIME, zhidan, lineNameParam);
+					} else if (Constant.TESTING_PROCESS_GROUP.equals(processGroup)) {
+						startTime = Db.findFirst(SQL.SELECT_TESTING_START_TIME, zhidan, lineNameParam);
+					} else if (Constant.PACKING_PROCESS_GROUP.equals(processGroup)) {
+						startTime = Db.findFirst(SQL.SELECT_PACKING_START_TIME, zhidan, lineNameParam);
+					}
+					if (startTime != null) {
+						record.set("startTime", startTime.getStr("TestTime"));
+						schedulingPlan.setStartTime(startTime.getDate("TestTime"));
+					}
+				}
+				// 完成时间和未完成量
+				if (StrKit.isBlank(record.getStr("completeTime"))) {
+					Record lastTime = null;
+					if (Constant.ASSEMBLING_PROCESS_GROUP.equals(processGroup) || Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+						lastTime = Db.findFirst(SQL.SELECT_ASSEMBLING_LAST_TIME, zhidan, lineNameParam);
+					} else if (Constant.TESTING_PROCESS_GROUP.equals(processGroup)) {
+						lastTime = Db.findFirst(SQL.SELECT_TESTING_LAST_TIME, zhidan, lineNameParam);
+					} else if (Constant.PACKING_PROCESS_GROUP.equals(processGroup)) {
+						lastTime = Db.findFirst(SQL.SELECT_PACKING_LAST_TIME, zhidan, lineNameParam);
+					}
+					if (planProducedQuantity >= schedulingPlan.getSchedulingQuantity() && lastTime != null) {
+						record.set("completeTime", lastTime.getStr("TestTime"));
+						schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+						schedulingPlan.setCompleteTime(lastTime.getDate("TestTime"));
+						schedulingPlan.setRemainingQuantity(0);
+					} else {
+						record.set("remainingQuantity", schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
+						schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
+					}
+					schedulingPlan.setProducedQuantity(planProducedQuantity);
+				}
+			}
+
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					order.update();
+					schedulingPlan.update();
+				}
+			};
+			executorService.execute(runnable);
 		}
-
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				order.update();
-				schedulingPlan.update();
-			}
-		};
-		executorService.execute(runnable);
 		Record quantity = new Record();
 		quantity.set("planProducedQuantity", planProducedQuantity);
 		return quantity;
@@ -1546,9 +1550,9 @@ public class ProductionService {
 		if (Constant.WORKING_PLANSTATUS.equals(planStatus) && !type.equals(Constant.COMPLETED_PLANSTATUS - 1) && !type.equals(Constant.WAIT_NOTIFICATION_PLANSTATUS - 1)) {
 			throw new OperationException("进行中的排产计划只能修改为待通知或已完成");
 		}
-		if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus) && !type.equals(Constant.WORKING_PLANSTATUS - 1)) {
+		/*if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus) && !type.equals(Constant.WORKING_PLANSTATUS - 1)) {
 			throw new OperationException("待通知的排产计划只能修改为进行中");
-		}
+		}*/
 		switch (type) {
 		case 0:
 			schedulingPlan.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
@@ -1565,7 +1569,21 @@ public class ProductionService {
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			break;
 		case 3:
-			schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+			// 将排产计划拆分为已完成的和未完成的
+			if (schedulingPlan.getProducedQuantity() > 0 && schedulingPlan.getProducedQuantity() < schedulingPlan.getSchedulingQuantity()) {
+				SchedulingPlan producedPlan = new SchedulingPlan();
+				producedPlan._setAttrs(schedulingPlan);
+				producedPlan.setCompleteTime(new Date());
+				producedPlan.setSchedulingQuantity(schedulingPlan.getProducedQuantity());
+				producedPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+				producedPlan.setRemainingQuantity(0);
+				producedPlan.remove("id");
+
+				schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+				return producedPlan.save() && schedulingPlan.update();
+			} else {
+				schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+			}
 			break;
 		default:
 			break;
@@ -1722,13 +1740,26 @@ public class ProductionService {
 	}
 
 
-	public boolean setWorkTimeByExecutorId(Integer executorId, List<WorkTime> times, Boolean isDefault) {
+	public boolean setWorkTimeByExecutorId(Integer executorId, List<WorkTime> times, Boolean isDefault) throws Exception {
 		Line line = Line.dao.findById(executorId);
 		if (line == null) {
 			throw new OperationException("当前产线不存在");
 		}
 		StringBuilder workTimeSb = new StringBuilder();
 		if (isDefault) {
+			Collections.sort(times, new Comparator<WorkTime>() {
+
+				@Override
+				public int compare(WorkTime o1, WorkTime o2) {
+					if (o1.getStartTime().compareTo(o2.getStartTime()) > 0) {
+						return 1;
+					} else if (o1.getStartTime().compareTo(o2.getStartTime()) < 0) {
+						return -1;
+					} else {
+						return 0;
+					}
+				}
+			});
 			for (WorkTime workTime : times) {
 				workTimeSb.append(workTime.getStartTime()).append("@").append(workTime.getEndTime()).append(",");
 			}
@@ -1738,6 +1769,28 @@ public class ProductionService {
 			return line.setDefaultWorkTime(workTimeSb.toString()).update();
 		} else {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			SimpleDateFormat dateAndHourFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			Collections.sort(times, new Comparator<WorkTime>() {
+
+				@Override
+				public int compare(WorkTime o1, WorkTime o2) {
+					Date time1 = null;
+					Date time2 = null;
+					try {
+						time1 = dateAndHourFormat.parse(dateFormat.format(o1.getDate()) + " " + o1.getStartTime());
+						time2 = dateAndHourFormat.parse(dateFormat.format(o2.getDate()) + " " + o2.getStartTime());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					if (time1.getTime() > time2.getTime()) {
+						return 1;
+					} else if (time1.getTime() < time2.getTime()) {
+						return -1;
+					} else {
+						return 0;
+					}
+				}
+			});
 			for (WorkTime workTime : times) {
 				workTimeSb.append(dateFormat.format(workTime.getDate()) + "@" + workTime.getStartTime()).append("@").append(workTime.getEndTime()).append(",");
 			}
@@ -2108,39 +2161,54 @@ public class ProductionService {
 		Record capacityRecord = null;
 		Integer scheduledQuantity = null;
 		if (type == Constant.AUTOTEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
 			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
 			} else {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+				if (capacityRecord == null) {
+					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
+				}
 			}
 		} else if (type == Constant.COUPLETEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
 			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
 			} else {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+				if (capacityRecord == null) {
+					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
+				}
 			}
 		} else if (type == Constant.CARTONTEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
 			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
 			} else {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+				if (capacityRecord == null) {
+					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
+				}
 			}
 		} else if (type == Constant.PATCH_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PATCH_PROCESS_GROUP, order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PATCH_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
 			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PATCH_PROCESS_GROUP, order.getSoftModel());
 			} else {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PATCH_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+				if (capacityRecord == null) {
+					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PATCH_PROCESS_GROUP, order.getSoftModel());
+				}
 			}
 		} else if (type == Constant.SMT_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.SMT_PROCESS_GROUP, order.getId());
+			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.SMT_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
 			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.SMT_PROCESS_GROUP, order.getSoftModel());
 			} else {
 				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.SMT_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+				if (capacityRecord == null) {
+					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.SMT_PROCESS_GROUP, order.getSoftModel());
+				}
 			}
 		}
 		if (scheduledQuantity == null) {
