@@ -1490,9 +1490,9 @@ public class ProductionService {
 		}
 		schedulingPlan.setPersonNumber(personNumber);
 		if (isCompleted != null && isCompleted) {
-			if (schedulingPlan.getProducedQuantity() < schedulingQuantity) {
+			/*if (schedulingPlan.getProducedQuantity() < schedulingQuantity) {
 				throw new OperationException("无法完成此排产计划，已生产数量未达到排产数量");
-			}
+			}*/
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			schedulingPlan.setCompleteTime(new Date());
 			Integer quantity = 0;
@@ -2034,10 +2034,10 @@ public class ProductionService {
 	private void checkUserById(Integer id) {
 		LUserAccount user = LUserAccount.dao.findById(id);
 		if (user == null) {
-			throw new OperationException("此用户不存在");
+			throw new OperationException("产线用户不存在，请重新配置");
 		}
 		if (!user.getInService()) {
-			throw new OperationException("此用户未启用");
+			throw new OperationException("产线用户未启用，请重新配置");
 		}
 	}
 
