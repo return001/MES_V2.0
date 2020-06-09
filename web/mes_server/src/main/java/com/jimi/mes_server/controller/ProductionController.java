@@ -23,7 +23,6 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
-import com.jimi.mes_server.annotation.PermissionPass;
 import com.jimi.mes_server.annotation.ProductionLog;
 import com.jimi.mes_server.entity.AddPlanInfo;
 import com.jimi.mes_server.entity.Constant;
@@ -32,7 +31,6 @@ import com.jimi.mes_server.entity.PlanQueryCriteria;
 import com.jimi.mes_server.entity.CalculatePlanResultParam;
 import com.jimi.mes_server.entity.WorkTime;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
-import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.service.ProductionService;
@@ -103,12 +101,6 @@ public class ProductionController extends Controller {
 	}
 
 
-	@PermissionPass
-	public void getWorkingSchedule() {
-		renderJson(ResultUtil.succeed(productionService.getWorkingSchedule()));
-	}
-
-
 	/**@author HCJ
 	 * 添加工序组
 	 * @param groupNo 工序组编号
@@ -143,10 +135,6 @@ public class ProductionController extends Controller {
 		if (id == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (id <= Constant.DEFAULT_MAX_PROCESSGROUP_ID) {
-			throw new OperationException("无法操作");
-		}
-
 		if (productionService.deleteProcessGroup(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -162,8 +150,8 @@ public class ProductionController extends Controller {
 	 * @param factory 工厂ID
 	 * @date 2020年5月15日 下午2:48:04
 	 */
-	public void selectProcessGroup(String groupNo, String groupName, Integer factory) {
-		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(groupNo, groupName, factory));
+	public void selectProcessGroup(String groupNo, String groupName, Integer factory, Integer parentGroup) {
+		ResultUtil result = ResultUtil.succeed(productionService.selectProcessGroup(groupNo, groupName, factory, parentGroup));
 		renderJson(result);
 	}
 
@@ -182,10 +170,6 @@ public class ProductionController extends Controller {
 		if (id == null || factory == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (id <= Constant.DEFAULT_MAX_PROCESSGROUP_ID) {
-			throw new OperationException("无法操作");
-		}
-
 		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark, factory)) {
 			renderJson(ResultUtil.succeed());
 		} else {
@@ -888,47 +872,29 @@ public class ProductionController extends Controller {
 
 	/**@author HCJ
 	 * 查询未排产普通订单
-	 * @param type
-	 * @date 2019年8月16日 上午11:42:33
+	 * @param processGroupId 工序组ID
+	 * @param factory 工厂ID
+	 * @date 2020年6月9日 下午2:19:14
 	 */
-	public void selectUnscheduledPlan(Integer type, Integer factory) {
-		if (type == null || factory == null) {
+	public void selectUnscheduledPlan(Integer processGroupId, Integer factory) {
+		if (processGroupId == null || factory == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		switch (type) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			break;
-		default:
-			throw new OperationException("无法识别的类型");
-		}
-		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(type, factory)));
+		renderJson(ResultUtil.succeed(productionService.selectUnscheduledPlan(processGroupId, factory)));
 	}
 
 
 	/**@author HCJ
 	 * 查询未排产返工订单
-	 * @param type
-	 * @date 2019年8月16日 上午11:42:55
+	 * @param processGroupId 工序组ID
+	 * @param factory 工厂ID
+	 * @date 2020年6月9日 下午2:19:39
 	 */
-	public void selectReworkPlan(Integer type, Integer factory) {
-		if (type == null || factory == null) {
+	public void selectReworkPlan(Integer processGroupId, Integer factory) {
+		if (processGroupId == null || factory == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		switch (type) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			break;
-		default:
-			throw new OperationException("无法识别的类型");
-		}
-		renderJson(ResultUtil.succeed(productionService.selectReworkPlan(type, factory)));
+		renderJson(ResultUtil.succeed(productionService.selectReworkPlan(processGroupId, factory)));
 	}
 
 

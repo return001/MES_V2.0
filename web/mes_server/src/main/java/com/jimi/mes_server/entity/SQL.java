@@ -142,7 +142,7 @@ public class SQL {
 
 	public final static String SELECT_ORDER = " SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, order_status AS orderStatus, order_status.status_name AS statusName, sop_factory.abbreviation,sop_factory.id as factoryId, customer_material_no as customerMaterialNo, rework_quantity as reworkQuantity, rework_zhidan as reworkZhidan, scheduled_quantity as scheduledQuantity, produced_quantity as producedQuantity, unfinished_reason as unfinishedReason,is_rework as isRework FROM orders LEFT JOIN order_status ON orders.order_status = order_status.id LEFT JOIN sop_factory ON sop_factory.id = orders.factory WHERE 1 = 1 ";
 
-	public final static String SELECT_PROCESSGROUP = "SELECT process_group.id as groupId,group_no as groupNo,group_name as groupName,group_remark as groupRemark,abbreviation,sop_factory.id as factoryId FROM process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id where 1 =1 ";
+	public final static String SELECT_PROCESSGROUP = "SELECT process_group.id AS groupId, process_group.group_no AS groupNo, process_group.group_name AS groupName, process_group.group_remark AS groupRemark, abbreviation, sop_factory.id AS factoryId, process_group.parent_group AS parentGroup, a.group_name AS parentGroupName FROM process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id LEFT JOIN process_group a ON a.id = process_group.parent_group WHERE 1 = 1 ";
 
 	public final static String SELECT_LINECOMPUTER_BY_LINE = "SELECT id,computer_name as computerName,remark,line,ip from line_computer WHERE line = ? ";
 
@@ -284,7 +284,7 @@ public class SQL {
 
 	public final static String UPDATE_SCHEDULING_STATUS_BY_ZHIDAN = "UPDATE scheduling_plan SET scheduling_plan_status = ? WHERE orders = ? ";
 
-	public final static String SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = 3 AND orders = ? UNION ALL SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = 5 AND orders = ?";
+	public final static String SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND orders = ? UNION ALL SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND orders = ?";
 
 	public final static String SELECT_ASSEMBLING_START_TIME = "SELECT TOP 1 TestTime FROM Gps_AutoTest_Result WHERE ZhiDan = ?  and Computer like ? ORDER BY Id ASC";
 

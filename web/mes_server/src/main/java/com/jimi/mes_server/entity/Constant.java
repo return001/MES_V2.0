@@ -72,8 +72,6 @@ public class Constant {
 
 	public static final String CARTON_TEST = "卡通箱测试";
 
-	public static final Integer DEFAULT_MAX_PROCESSGROUP_ID = 5;
-
 	public static final Integer INTEGER_ZERO = 0;
 
 	public static final Integer MAX_LINECHANGETIME_LENGTH = 8;

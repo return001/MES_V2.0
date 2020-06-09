@@ -69,7 +69,6 @@ import com.jimi.mes_server.model.SchedulingPlan;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.model.SopWorkshop;
-import com.jimi.mes_server.model.WorkingSchedule;
 import com.jimi.mes_server.service.base.SelectService;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.ExcelHelper;
@@ -127,16 +126,6 @@ public class ProductionService {
 	}
 
 
-	public Map<Integer, String> getWorkingSchedule() {
-		List<WorkingSchedule> workingSchedules = WorkingSchedule.dao.find(SQL.SELECT_WORKINGSCHEDULE);
-		Map<Integer, String> map = new HashMap<>();
-		for (WorkingSchedule workingSchedule : workingSchedules) {
-			map.put(workingSchedule.getId(), workingSchedule.getTime());
-		}
-		return map;
-	}
-
-
 	public boolean addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory) {
 		if (SopFactory.dao.findById(factory) == null) {
 			throw new OperationException("当前工厂不存在");
@@ -155,9 +144,6 @@ public class ProductionService {
 
 
 	public boolean deleteProcessGroup(Integer id) {
-		if (id <= 5) {
-			throw new OperationException("删除失败，无法删除当前工序组");
-		}
 		ProcessGroup processGroup = ProcessGroup.dao.findById(id);
 		if (processGroup == null) {
 			throw new OperationException("删除失败，工序组不存在");
@@ -166,19 +152,22 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectProcessGroup(String groupNo, String groupName, Integer factory) {
+	public Page<Record> selectProcessGroup(String groupNo, String groupName, Integer factory, Integer parentGroup) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SQL.SELECT_PROCESSGROUP);
 		if (!StrKit.isBlank(groupNo)) {
-			sql.append(" and group_no like '%").append(groupNo).append("%'");
+			sql.append(" and process_group.group_no like '%").append(groupNo).append("%'");
 		}
 		if (!StrKit.isBlank(groupName)) {
-			sql.append(" and group_name like '%").append(groupName).append("%'");
+			sql.append(" and process_group.group_name like '%").append(groupName).append("%'");
 		}
 		if (factory != null && factory > 0) {
 			sql.append(" and process_group.factory = ").append(factory);
 		}
-		sql.append(" order by position");
+		if (parentGroup != null) {
+			sql.append(" and process_group.parent_group = ").append(parentGroup);
+		}
+		sql.append(" order by process_group.position");
 		sqlPara.setSql(sql.toString());
 		return Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 	}
@@ -1075,12 +1064,37 @@ public class ProductionService {
 	}
 
 
-	public List<OrderVO> selectUnscheduledPlan(Integer type, Integer factory) {
+	public List<OrderVO> selectUnscheduledPlan(Integer processGroupId, Integer factory) {
+		if (ProcessGroup.dao.findById(processGroupId) == null) {
+			throw new OperationException("当前工序组不存在");
+		}
 		List<OrderVO> orderVOs = new ArrayList<>();
 		List<Record> orderRecords = new ArrayList<>();
 		Integer rework = 0;
-		switch (type) {
-		case 0:
+		switch (processGroupId) {
+		// 测试段
+		case 2:
+			if (factory > 0) {
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			} else {
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			}
+			if (orderRecords == null || orderRecords.isEmpty()) {
+				throw new OperationException("不存在前置工序组已排产的订单");
+			}
+			break;
+		// 包装段
+		case 3:
+			if (factory > 0) {
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			} else {
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			}
+			if (orderRecords == null || orderRecords.isEmpty()) {
+				throw new OperationException("不存在前置工序组已排产的订单");
+			}
+			break;
+		default:
 			List<Orders> orders;
 			if (factory > 0) {
 				orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
@@ -1091,56 +1105,22 @@ public class ProductionService {
 				throw new OperationException("不存在可排产的订单");
 			}
 			for (Orders order : orders) {
-				orderVOs.add(genOrderVO(order, type));
+				orderVOs.add(genOrderVO(order, processGroupId));
 			}
 			return removeScheduledOrder(orderVOs);
-		case 1:
-			if (factory > 0) {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			} else {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			}
-			if (orderRecords == null || orderRecords.isEmpty()) {
-				throw new OperationException("不存在前置工序组已排产的订单");
-			}
-			break;
-		case 2:
-			if (factory > 0) {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			} else {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			}
-			if (orderRecords == null || orderRecords.isEmpty()) {
-				throw new OperationException("不存在前置工序组已排产的订单");
-			}
-			break;
-		case 3:
-		case 4:
-			List<Orders> list = null;
-			if (factory > 0) {
-				list = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			} else {
-				list = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
-			}
-			if (list == null || list.isEmpty()) {
-				throw new OperationException("不存在可排产的订单");
-			}
-			for (Orders order : list) {
-				orderVOs.add(genOrderVO(order, type));
-			}
-			return removeScheduledOrder(orderVOs);
-		default:
-			break;
 		}
 		for (Record orderRecord : orderRecords) {
 			Orders order = Orders.dao.findById(orderRecord.getInt("orders"));
-			orderVOs.add(genOrderVO(order, type));
+			orderVOs.add(genOrderVO(order, processGroupId));
 		}
 		return removeScheduledOrder(orderVOs);
 	}
 
 
-	public List<OrderVO> selectReworkPlan(Integer type, Integer factory) {
+	public List<OrderVO> selectReworkPlan(Integer processGroupId, Integer factory) {
+		if (ProcessGroup.dao.findById(processGroupId) == null) {
+			throw new OperationException("当前工序组不存在");
+		}
 		List<OrderVO> orderVOs = new ArrayList<>();
 		Integer rework = 1;
 		List<Orders> orders = null;
@@ -1153,7 +1133,7 @@ public class ProductionService {
 			throw new OperationException("不存在返工订单");
 		}
 		for (Orders order : orders) {
-			orderVOs.add(genOrderVO(order, type));
+			orderVOs.add(genOrderVO(order, processGroupId));
 		}
 		return removeScheduledOrder(orderVOs);
 	}
@@ -1298,7 +1278,8 @@ public class ProductionService {
 	 * 查询计划已生产数量并且更新信息
 	 * @param id 排产计划ID
 	 * @param record 排产计划显示记录
-	 * @date 2020年5月6日 下午4:15:52
+	 * @param dateFormat 日期格式化参数
+	 * @date 2020年6月9日 下午2:21:38
 	 */
 	public Record selectPlanProducedQuantityAndUpdate(Integer id, Record record, SimpleDateFormat dateFormat) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
@@ -1340,7 +1321,7 @@ public class ProductionService {
 				planProducedQuantity = Db.queryInt(sql, zhidan, lineNameParam, planStartTime);
 			}
 			// 最后一个工序组订单已排产数量
-			scheduledQuantities = Db.find(SQL.SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY, order.getId(), order.getId());
+			scheduledQuantities = Db.find(SQL.SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId(), Constant.SMT_PROCESS_GROUP, order.getId());
 			if (scheduledQuantities != null && !scheduledQuantities.isEmpty()) {
 				for (Record scheduledQuantityRecord : scheduledQuantities) {
 					if (scheduledQuantityRecord.getInt("scheduled_quantity") != null) {
@@ -1746,7 +1727,9 @@ public class ProductionService {
 			throw new OperationException("当前产线不存在");
 		}
 		StringBuilder workTimeSb = new StringBuilder();
+		// 设置默认工作时间表
 		if (isDefault) {
+			// 根据时间对集合进行正向排序
 			Collections.sort(times, new Comparator<WorkTime>() {
 
 				@Override
@@ -1768,8 +1751,10 @@ public class ProductionService {
 			}
 			return line.setDefaultWorkTime(workTimeSb.toString()).update();
 		} else {
+			// 设置工作时间表
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			SimpleDateFormat dateAndHourFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			// 根据时间对集合进行正向排序
 			Collections.sort(times, new Comparator<WorkTime>() {
 
 				@Override
@@ -1919,6 +1904,7 @@ public class ProductionService {
 					planResult.setEstimatedProductionTime(planProductionHour);
 					planResult.setEstimatedStartTime(planStartTime);
 					planResult.setEstimatedEndTime(planEndTime);
+					planResult.setTagId(task.getTagId());
 					planResults.add(planResult);
 				}
 			}
@@ -2153,62 +2139,20 @@ public class ProductionService {
 	/**@author HCJ
 	 * 生成OrderVO
 	 * @param order 订单
-	 * @param type 类型
+	 * @param processGroupId 类型
 	 * @date 2019年8月16日 下午12:01:26
 	 */
-	private OrderVO genOrderVO(Orders order, Integer type) {
+	private OrderVO genOrderVO(Orders order, Integer processGroupId) {
 		OrderVO orderVO = new OrderVO(order);
 		Record capacityRecord = null;
 		Integer scheduledQuantity = null;
-		if (type == Constant.AUTOTEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.ASSEMBLING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-			} else {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
-				if (capacityRecord == null) {
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.ASSEMBLING_PROCESS_GROUP, order.getSoftModel());
-				}
-			}
-		} else if (type == Constant.COUPLETEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.TESTING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
-			} else {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.TESTING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
-				if (capacityRecord == null) {
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.TESTING_PROCESS_GROUP, order.getSoftModel());
-				}
-			}
-		} else if (type == Constant.CARTONTEST_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
-			} else {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PACKING_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
-				if (capacityRecord == null) {
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PACKING_PROCESS_GROUP, order.getSoftModel());
-				}
-			}
-		} else if (type == Constant.PATCH_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.PATCH_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PATCH_PROCESS_GROUP, order.getSoftModel());
-			} else {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.PATCH_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
-				if (capacityRecord == null) {
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.PATCH_PROCESS_GROUP, order.getSoftModel());
-				}
-			}
-		} else if (type == Constant.SMT_LINEID) {
-			scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, Constant.SMT_PROCESS_GROUP, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
-			if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.SMT_PROCESS_GROUP, order.getSoftModel());
-			} else {
-				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, Constant.SMT_PROCESS_GROUP, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
-				if (capacityRecord == null) {
-					capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, Constant.SMT_PROCESS_GROUP, order.getSoftModel());
-				}
+		scheduledQuantity = Db.queryInt(SQL.SELECT_SCHEDULED_ORDER_QUANTITY, processGroupId, order.getId(), Constant.WAIT_NOTIFICATION_PLANSTATUS);
+		if (StringUtils.isAnyBlank(order.getCustomerNumber(), order.getCustomerName())) {
+			capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, processGroupId, order.getSoftModel());
+		} else {
+			capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL_PROCESSGROUP, processGroupId, order.getSoftModel(), order.getCustomerNumber(), order.getCustomerName());
+			if (capacityRecord == null) {
+				capacityRecord = Db.findFirst(SQL.SELECT_PEOPLE_CAPACITY_BY_SOFTMODEL, processGroupId, order.getSoftModel());
 			}
 		}
 		if (scheduledQuantity == null) {

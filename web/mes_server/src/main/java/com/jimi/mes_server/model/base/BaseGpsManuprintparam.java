@@ -342,4 +342,22 @@ public abstract class BaseGpsManuprintparam<M extends BaseGpsManuprintparam<M>> 
 		return get("TestTime");
 	}
 
+	public M setChReprintstate(java.lang.Integer chReprintstate) {
+		set("CH_RePrintState", chReprintstate);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getChReprintstate() {
+		return getInt("CH_RePrintState");
+	}
+
+	public M setJsReprintstate(java.lang.Integer jsReprintstate) {
+		set("JS_RePrintState", jsReprintstate);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getJsReprintstate() {
+		return getInt("JS_RePrintState");
+	}
+
 }
