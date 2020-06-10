@@ -77,7 +77,7 @@
 <script>
   import {
     logsQueryOptions,
-    logsTableColumns, sessionFactory,
+    logsTableColumns,
 
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
@@ -89,6 +89,7 @@
     inject: ['reload'],
     data() {
       return {
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: logsQueryOptions,
         thisQueryOptions: {},
         tableData: [],
@@ -219,7 +220,7 @@
           });
           options.data.startTime = options.data.orderDate[0]
           options.data.endTime = options.data.orderDate[1]
-          options.data.factory = sessionFactory
+          options.data.factory = this.sessionFactory ==='1'? '0':this.sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;

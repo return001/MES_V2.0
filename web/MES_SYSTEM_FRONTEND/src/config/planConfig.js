@@ -1,4 +1,3 @@
-export const sessionFactory = sessionStorage.getItem('factory');
 
 /*排产计划订单相关*/
 export const orderQueryOptions = [{
@@ -124,6 +123,11 @@ export const orderEditOptions = [{
         key: 'productNo'
     },
     {
+      type: 'text',
+      label: '客户料号',
+      key: 'customerMaterialNo'
+    },
+    {
         type: 'text',
         label: '客户编号',
         key: 'customerNumber'
@@ -133,11 +137,7 @@ export const orderEditOptions = [{
         label: '客户名称',
         key: 'customerName'
     },
-    {
-        type: 'text',
-        label: '客户料号',
-        key: 'customerMaterialNo'
-    },
+
     {
         type: 'text',
         label: '订单数量',
@@ -638,7 +638,27 @@ export const lineTableColumns = [{
 ];
 
 /*产能设置*/
-export const capacityQueryOptions = [{
+export const capacityQueryOptions = [
+    {
+      type: 'select',
+      label: '状态',
+      key: 'statusId',
+      list: [
+        {
+          value: 1,
+          label: '待确认'
+        },
+        {
+          value: 2,
+          label: '未通过'
+        },
+        {
+          value: 3,
+          label: '已通过'
+        },
+      ]
+    },
+    {
         type: 'text',
         label: '机型',
         key: 'softModel'
@@ -1060,6 +1080,16 @@ export const planTableColumns = [
     'min-width': '100px'
   },
   {
+    'label': '预计开始时间',
+    'key': 'planStartTime',
+    'min-width': '170px'
+  },
+  {
+    'label': '预计结束时间',
+    'key': 'planCompleteTime',
+    'min-width': '170px'
+  },
+  {
     'label': '客户料号',
     'key': 'customerMaterialNo',
     'min-width': '120px'
@@ -1113,16 +1143,6 @@ export const planTableColumns = [
     'label': '生产计划单号',
     'key': 'productionPlanningNumber',
     'min-width': '100px'
-  },
-  {
-    'label': '预计开始时间',
-    'key': 'planStartTime',
-    'min-width': '170px'
-  },
-  {
-    'label': '预计结束时间',
-    'key': 'planCompleteTime',
-    'min-width': '170px'
   },
   {
     'label': '开始时间',
@@ -1302,3 +1322,63 @@ export const logsTableColumns = [{
         'min-width': '70px'
     },
 ];
+export const planOrderDetail = [
+  {
+    'label': '状态',
+    'key': 'statusName',
+    'min-width': '60px'
+  },
+  {
+    'label': '订单号',
+    'key': 'zhidan',
+    'min-width': '120px'
+  },
+  {
+    'label': '机型',
+    'key': 'softModel',
+    'min-width': '100px'
+  },
+  {
+    'label': '订单数量',
+    'key': 'quantity',
+    'min-width': '100px'
+  },
+
+  {
+    'label': '产线',
+    'key': 'lineName',
+    'min-width': '100px'
+  },
+  {
+    'label': '排产数量',
+    'key': 'schedulingQuantity',
+    'min-width': '100px'
+  },
+  {
+    'label': '未排产数量',
+    'key': 'unSchedulingQuantity',
+    'min-width': '100px'
+  },
+  {
+    'label': '预计开始时间',
+    'key': 'planStartTime',
+    'min-width': '120px'
+  },
+  {
+    'label': '预计结束时间',
+    'key': 'planCompleteTime',
+    'min-width': '120px'
+  },{
+    'label': '完成数量',
+    'key': 'producedQuantity',
+    'min-width': '70px'
+  },{
+    'label': '生产开始时间',
+    'key': 'startTime',
+    'min-width': '120px'
+  },{
+    'label': '生产结束时间',
+    'key': 'completeTime',
+    'min-width': '120px'
+  },
+  ]

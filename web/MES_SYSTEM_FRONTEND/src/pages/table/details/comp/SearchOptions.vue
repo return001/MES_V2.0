@@ -240,9 +240,9 @@
             switch (item.type) {
               case 'text':
                   if (index === 0) {
-                    this.queryString += (item.id + "#like#" + item.model)
+                    this.queryString += (item.id + "#=#" + item.model)
                   } else {
-                    this.queryString += ("#&#" + item.id + "#like#" + item.model)
+                    this.queryString += ("#&#" + item.id + "#=#" + item.model)
                   }
                 break;
               case 'date':
@@ -301,6 +301,7 @@
             }
             this.queryString === '' ? this.queryString += radioQueryText : this.queryString += ('#&#' + radioQueryText)
           }
+          console.log(this.queryString)
           eventBus.$emit('tableQueryData', [this.queryString, params])
         }).catch(err => {
           this.$alertInfo(err)

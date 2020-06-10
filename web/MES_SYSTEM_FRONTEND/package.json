@@ -12,7 +12,7 @@
     "axios": "^0.18.0",
     "core-js": "^3.4.3",
     "echarts": "^4.2.1",
-    "element-ui": "^2.13.0",
+    "element-ui": "^2.13.2",
     "file-saver": "^2.0.2",
     "moment": "^2.25.3",
     "rz-el-comp": "^0.1.12",

@@ -2,7 +2,19 @@
   <div id="capacity-setting">
     <div class="capacity-setting-main">
       <div class="query-comp">
+
         <div class="query-comp-container" v-for="(item, index) in queryOptions" :key="index">
+          <div class="query-comp-select" v-if="item.type === 'select'">
+            <label :for="item.key + index">{{item.label}}:</label>
+            <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
+                       autocomplete="off"
+                       :placeholder="'请选择' + item.label" size="small">
+              <el-option v-for="listItem in item.list"
+                         :key="listItem.value"
+                         :value="listItem.value"
+                         :label="listItem.label"></el-option>
+            </el-select>
+          </div>
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
@@ -20,12 +32,13 @@
               placeholder="请选择工序"
               size="small">
               <el-option v-for="listItem in processGroupSelectGroupWait"
-                         :key="listItem.id"
+                         :key="'wait'+listItem.id"
                          :value="listItem.id"
                          :label="listItem.groupName"></el-option>
             </el-select>
           </div>
         </div>
+
         <div class="query-comp-container">
           <el-button type="info" @click="initQueryOptions" size="small">重置条件</el-button>
         </div>
@@ -83,9 +96,9 @@
               <el-tooltip content="复制" placement="top">
                 <el-button type="text" @click="editCapacity('copy',scope.row)" icon="el-icon-t-copy"></el-button>
               </el-tooltip>
-<!--              <el-tooltip content="审核" placement="top">-->
-<!--                <el-button type="text" @click="checkCapacity(scope.row)" icon="el-icon-check" :disabled="scope.row.statusId !== 1 && scope.row.statusId !== null"></el-button>-->
-<!--              </el-tooltip>-->
+              <el-tooltip content="审核" placement="top">
+                <el-button type="text" @click="checkCapacity(scope.row)" icon="el-icon-check" :disabled="scope.row.statusId !== 1 && scope.row.statusId !== null"></el-button>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
@@ -136,7 +149,7 @@
         label-position="top"
         @submit.native.prevent
         :rules="capacityEditOptionsRules">
-          <el-form-item size="small" class="capacity-edit-form-comp" label="选择工厂" prop="factory" v-if="sessionFactory === '0' && capacityEditType === 'add'">
+          <el-form-item size="small" class="capacity-edit-form-comp" label="选择工厂" prop="factory" v-if="sessionFactory === '1' && capacityEditType === 'add'">
           <el-select v-model="getGroupInfoFactoryId" id="factory01"
                      autocomplete="off"
                      @change="changeGroupList"
@@ -310,7 +323,7 @@
     capacityEditOptions,
     capacityEditOptionsRules,
     capacityEditTableColumns,
-    capacityAddOptions, sessionFactory
+    capacityAddOptions,
   } from "../../../config/planConfig";
   import {
     planCapacityAddUrl,
@@ -333,7 +346,7 @@
     inject: ['reload'],
     data() {
       return {
-        sessionFactory:sessionFactory,
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: capacityQueryOptions,
         thisQueryOptions: {},
         processSelectGroupSrc: [], //工序信息 源
@@ -507,9 +520,11 @@
             url: planProcessGroupGetUrl,
           }).then(response => {
             if (response.data.result === 200) {
-              if(sessionFactory === '0'){
+              if(this.sessionFactory === '1'){
                 this.processGroupSelectGroupWait = response.data.data.list
               }else {
+                this.processGroupSelectGroupWait =[];
+                this.processGroupSelectGroup =[];
                 response.data.data.list.forEach(item => {
                   if (item.factoryId === Number(this.getGroupInfoFactoryId)) {
                     this.processGroupSelectGroupWait.push(item)
@@ -589,7 +604,7 @@
 
       fetchData: function () {
         if (!this.isPending) {
-          this.getGroupInfoFactoryId = sessionFactory
+          this.getGroupInfoFactoryId = this.sessionFactory === '1'?'0':this.sessionFactory
           this.isPending = true;
           this.$openLoading();
           this.tableData = [];
@@ -608,7 +623,7 @@
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
-          options.data.factory = sessionFactory
+          options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.getSpanArr(response.data.data.list, this.mergeKeys);
@@ -643,16 +658,18 @@
        **@params: mod
        */
       editData: function (type, val) {
+        console.log(111)
         this.fetchCustomer()
         this.fetchFactory()
         this.fetchProcessGroup()
         if (!!this.$refs['capacityEditForm']) {
           this.$refs['capacityEditForm'].clearValidate();
         }
-        if(sessionFactory === '0'){
+        if(this.sessionFactory === '1'){
           this.getGroupInfoFactoryId =""
         }
         if (type === 'edit') {
+          console.log(333)
           this.capacityEditType = 'edit';
           Object.keys(val).forEach(item => {
             this.capacityEditOptions.forEach(option => {
@@ -675,6 +692,7 @@
           // this.isCapacityEditing = true;
           this.isCapacityAdd = true;
         } else if (type === 'add') {
+          console.log(444)
           this.processGroupSelectGroup.forEach((item,i)=>{
             let arr ={processGroup:""}
             this.sameGroupDatas.push(arr)
@@ -772,8 +790,12 @@
 
 
       closeEditCapacityPanel: function () {
+        if(this.capacityEditType ==='add' && this.sessionFactory === '1'){
+          this.sameGroupDatas=[];
+        }else if(this.capacityEditType ==='edit'){
+          this.sameGroupDatas=[];
+        }
         this.isCapacityEditing = false;
-        this.sameGroupDatas=[];
         this.isCapacityAdd =false;
       },
       //新增、编辑、复制
@@ -827,7 +849,7 @@
             if(this.getGroupInfoFactoryId){
               options.data.factory = this.getGroupInfoFactoryId
             }else{
-              options.data.factory = sessionFactory
+              options.data.factory = this.sessionFactory
             }
             this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
               Object.keys(item).forEach(con => {
@@ -861,10 +883,15 @@
       },
 
       resetEditCapacityForm: function () {
+        if(this.capacityEditType ==='add' && this.sessionFactory === '1'){
+          this.sameGroupDatas=[];
+        }else if(this.capacityEditType ==='edit'){
+          this.sameGroupDatas=[];
+        }
         this.processGroupSelectGroup = []
         this.processSelectGroup = [];
         this.capacityEditOptionsData = {};
-        this.sameGroupDatas=[];
+
         this.customerNames ="";
         this.isCapacityAdd =false;
         // this.processGroupSelectGroup =[];

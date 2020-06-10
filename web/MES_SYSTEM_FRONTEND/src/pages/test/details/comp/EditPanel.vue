@@ -11,7 +11,7 @@
       <div class="setting-header">
         <div class="form-group">
           <label for="edit-software">软件版本:</label>
-          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
+          <el-input size="medium" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
                     v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
         </div>
         <div class="form-group">
@@ -488,8 +488,11 @@
   }
 
   .setting-header .form-group {
-    width: 200px;
+    width: 800px;
     margin-right: 10px;
+  }
+  .setting-header .form-group /deep/ .el-input :nth-child(1){
+    width: 300px;
   }
 
   .setting-header .setting-operation {

@@ -11,22 +11,23 @@
       <div class="setting-header">
         <div class="form-group">
           <label for="edit-software">软件版本:</label>
-          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
+          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本"  autocomplete="off"
                     v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">机型名:</label>
-          <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名" clearable autocomplete="off"
+          <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名"  autocomplete="off"
                     v-model.trim="formData.MachineName.value"></el-input>
         </div>
         <div class="setting-operation" style="margin-left: auto">
           <div v-if="deleteHistory.length > 0">
-            <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
-" @click="restoreOneSetting">撤销删除
+            <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back" @click="restoreOneSetting">
+              撤销删除
             </el-button>
           </div>
           <div style="margin-left: 10px" v-if="copySrcIndex !== null">
-            <el-button style="width: 100%" type="primary" size="mini" @click="cancelCopySetting">取消复制
+            <el-button style="width: 100%" type="primary" size="mini" @click="cancelCopySetting">
+              取消复制
             </el-button>
           </div>
 
@@ -35,21 +36,21 @@
       </div>
 
       <el-row style="margin-top: 20px" class="setting-title">
-        <el-col :span="2">序号</el-col>
-        <el-col :span="3">*工位</el-col>
-        <el-col :span="6">*项目</el-col>
-        <el-col :span="4">返回值</el-col>
-        <el-col :span="3">可变参数</el-col>
-        <el-col :span="4">AT指令</el-col>
+        <el-col :span="1">序号</el-col>
+        <el-col :span="2">*工位</el-col>
+        <el-col :span="4">*项目</el-col>
+        <el-col :span="8">返回值</el-col>
+        <el-col :span="2">可变参数</el-col>
+        <el-col :span="5">AT指令</el-col>
         <el-col :span="2">操作</el-col>
 
       </el-row>
       <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index"
               :class="setCopyStyle(index)">
-        <el-col :span="2">
+        <el-col :span="1">
           <el-input v-model.trim="index" disabled></el-input>
         </el-col>
-        <el-col :span="3">
+        <el-col :span="2">
           <el-select v-model="item['1']" placeholder="请选择" style="width: 100%">
             <el-option value="共有指令"></el-option>
             <el-option value="功能测试"></el-option>
@@ -57,16 +58,16 @@
             <el-option value="白卡测试" v-if="$route.query.type === '5'"></el-option>
           </el-select>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="4">
           <el-input v-model.trim="item['2']"></el-input>
         </el-col>
-        <el-col :span="4">
+        <el-col :span="8">
           <el-input v-model.trim="item['3']"></el-input>
         </el-col>
-        <el-col :span="3">
+        <el-col :span="2">
           <el-input v-model.trim="item['4']"></el-input>
         </el-col>
-        <el-col :span="4">
+        <el-col :span="5">
           <el-input v-model.trim="item['5']"></el-input>
         </el-col>
         <el-col :span="2">
@@ -487,6 +488,18 @@
     height: 100%;
   }
 
+  .setting-header .form-group {
+    width: auto;
+    margin-right: 10px;
+  }
+  .setting-header .form-group /deep/ .el-input #edit-software{
+    width: 550px;
+    margin-right: 20px;
+  }
+  .setting-header .form-group /deep/ .el-input #edit-machinename{
+    width: auto;
+    margin-right: 20px;
+  }
   .setting-row /deep/ .el-input__inner {
     background: unset;
     border: 1px solid #dddddd;

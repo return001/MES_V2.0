@@ -5,6 +5,7 @@ module.exports = {
   devServer: {
     proxy: {
       '/': {
+        // target: 'http://183.236.111.164:6091/mock/5c1a00070a62aa1c2dde4ce4',
         target: 'http://183.236.111.164:6091/mock/5c1a00070a62aa1c2dde4ce4',
         changOrigin: true
       }

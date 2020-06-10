@@ -73,7 +73,7 @@
               },
               {
                 type: 'capacity',
-                name: '产能设置'
+                name: '标准产能设置'
               },
             ]
           }

@@ -137,7 +137,7 @@
     processQueryOptions,
     processTableColumns,
     processEditOptions,
-    processEditOptionsRules, sessionFactory
+    processEditOptionsRules,
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -154,6 +154,7 @@
     inject: ['reload', '_getFunctionPermission'],
     data() {
       return {
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: processQueryOptions,
         thisQueryOptions: {
           processGroup:undefined,
@@ -237,11 +238,11 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              if(sessionFactory ==='0'){
+              if(this.sessionFactory ==='1'){
                 this.processGroupSelectGroup = response.data.data.list;
               }else{
                 response.data.data.list.forEach(item=>{
-                  if(item.factoryId === Number(sessionFactory)){
+                  if(item.factoryId === Number(this.sessionFactory)){
                     this.processGroupSelectGroup.push(item)
                   }
                 })
@@ -276,7 +277,7 @@
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
-              factory:sessionFactory,
+              factory:this.sessionFactory === '1'? '0':this.sessionFactory,
             }
           };
           Object.keys(this.thisQueryOptions).forEach(item => {
@@ -340,7 +341,7 @@
             } else if (this.processEditType === 'add') {
               options.url = planProcessAddUrl
             }
-            options.data.factory = sessionFactory;
+            options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory;
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
                 this.$alertSuccess('操作成功');

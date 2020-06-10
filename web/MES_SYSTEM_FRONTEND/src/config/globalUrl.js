@@ -107,6 +107,7 @@ export const planLineDeleteUrl = url + '/production/deleteLine'; //删除
 export const planLineEditUrl = url + '/production/editLine'; //修改
 export const planLineAddUrl = url + '/production/addLine'; //新增
 export const planLineGetUrl = url + '/production/getLine'; //获取线号信息，加载页面时异步加载
+export const planLineTimeSettingUrl = url + '/production/setWorkTimeByExecutorId'; //设置产线工作时间
 /*产线PC管理*/
 export const planLinePCSelectUrl = url + '/production/selectComputer'; //查询
 export const planLinePCDeleteUrl = url + '/production/deleteComputer'; //删除
@@ -127,12 +128,17 @@ export const planDetailsAddUrl = url + '/production/addPlan'; //新增
 export const planDetailsReAddUrl = url + '/production/reSchedulingPlan'; //新增重排
 export const planDetailsStatusEditUrl = url + '/production/editPlanStatus'; //修改状态
 export const planDetailsExportUrl = url + '/production/exportPlan'; //导出计划
+export const planDetailsPlanCalculateUrl = url + '/production/calculatePlanResult'; //排产计算
+// export const planLineTimeSelectUrl = url + '/production/getDefaultWorkTimeByExecutorId'; //设置时间时,选产线
+export const planLineTimeSelectUrl = url + '/production/getWorkTimeByExecutorId'; //设置时间时,选产线
 export const planDetailsGanttGetUrl = url + '/production/getPlanGantt'; //获取甘特图数据
 export const planDetailsUnscheduledSelectUrl = url + '/production/selectUnscheduledPlan'; //获取未排产订单
 export const planExtraDetailsSelectUrl = url + '/production/selectPlanDetail'; //查询计划详情
 export const planDetailsReworkSelectUrl = url + '/production/selectReworkPlan'; //获取未排产订单(返工
 export const planProducedQuantitySelectUrl = url + '/production/selectPlanProducedQuantity'; //获取订单已生产数量
 export const planCheckCompleteTimeSelectUrl = url + '/production/checkCompleteTime'; //检测是否可以完成
+export const planOrderDetailSelectUrl = url + '/production/getPlanByOrder'; //检测是否可以完成
+
 
 /*排产日志*/
 export const planLogsSelectUrl = url + '/production/selectProductionLog'; //查询

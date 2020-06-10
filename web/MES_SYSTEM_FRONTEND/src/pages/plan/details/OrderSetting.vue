@@ -11,7 +11,7 @@
                       autocomplete="off"></el-input>
           </div>
           <!--选择器-->
-          <div class="query-comp-select" v-else-if="item.key === 'factoryId' && sessionFactory === '0'" >
+          <div class="query-comp-select" v-else-if="item.key === 'factoryId' && sessionFactory === '1'" >
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
@@ -161,7 +161,7 @@
           class="order-edit-form-comp-select"
           label="所属工厂"
           prop="factory"
-          v-if="sessionFactory === '0'"
+          v-if="sessionFactory === '1'"
         >
           <el-select v-model="orderEditOptionsData['factory']" class="line-edit-form-comp-text"
                       placeholder="请选择工厂"
@@ -414,7 +414,7 @@
               <el-tooltip content="下载" placement="top">
                 <el-button type="text" icon="el-icon-download" @click="downloadDetailsTable(scope.row)"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top">
+              <el-tooltip content="作废" placement="top">
                 <el-button type="text" icon="el-icon-delete" @click="deleteDetailsTable(scope.row)" :disabled="scope.row.fileEditable === false"></el-button>
               </el-tooltip>
               <span style="display:inline-block;width: 10px;"></span>
@@ -508,7 +508,7 @@
     orderEditOptions,
     orderEditOptionsRules,
     orderReworkOptions,
-    orderDetailsTableColumns, sessionFactory
+    orderDetailsTableColumns,
   } from "../../../config/planConfig";
   import {FactoryTableColumns} from "../../../config/settingConfig";
   import {
@@ -536,7 +536,7 @@
     inject: ['reload'],
     data() {
       return {
-        sessionFactory:sessionFactory,
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: orderQueryOptions,
         thisQueryOptions: {}, //将queryOptions中的键值对提取作为该对象元素
         tableData: [],
@@ -587,7 +587,7 @@
         isOrderEditing: false,
         orderEditType: '',
         orderEditOptionsData: {
-          factory: sessionFactory
+          factory: this.sessionFactory
         },
         uploadAble:true,
         reworkOrder:"",
@@ -836,7 +836,6 @@
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
-              // factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -868,14 +867,15 @@
           };
           let queryFactoryId= this.thisQueryOptions.factoryId.value
           Object.keys(this.thisQueryOptions).forEach(item => {
-            if(sessionFactory === '0') {    //超级管理员的话  不需要工厂id（查询）
+            if(this.sessionFactory === '1') {    //超级管理员的话  不需要工厂id（查询）
               if (type === 'query') {
                 this.thisQueryOptions.factoryId.value = queryFactoryId //人员的工厂id 和 查询时上传的工厂id 区分
               } else {
               this.thisQueryOptions.factoryId.value = ""
               }
             }else{
-              this.thisQueryOptions.factoryId.value = sessionFactory
+              console.log(this.sessionFactory)
+              this.thisQueryOptions.factoryId.value = this.sessionFactory
             }
 
             options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item])).value
@@ -943,7 +943,6 @@
             url: planOrderDetailsSelectUrl,
             data: {
               id: val.id,
-              // factory:sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -1050,7 +1049,12 @@
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
-                options.data.factory = sessionFactory;
+                // if(this.sessionFactory === '1'){
+                options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory;
+                // }else{
+                //   options.data.factory = sessionFactory;
+                // }
+
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1238,7 +1242,7 @@
         this.$refs.orderUpload.submit();
         this.uploadFileData.append('isRework', this.isReworkUpload);
         this.uploadFileData.append('#TOKEN#', this.$store.state.token);
-        this.uploadFileData.append('factory', 2);
+        // this.uploadFileData.append('factory', 2);
         let config = {
           header: {
             'Content-Type': 'multipart/form-data'
@@ -1303,6 +1307,7 @@
               this.showingItemInfo = response.data.data.orderUser;
               this.isDetailsShowing = true;
               this.showingItemFileInfo = response.data.data.orderFileInfo;
+
               this.showingItemFileInfo.forEach(item=>{
                 if(item.deleteName !== null || val.orderStatus === 7 ||  val.orderStatus === 6){  //完成及以后的订单，不能改变文件状态    已完成或结束的订单不能作废文件
                   item.fileEditable = false;
@@ -1311,13 +1316,18 @@
                 // if(item.deleteName !== null || val.orderStatus !== 1 || val.orderStatus !== 2){
                 //   item.fileDeleteable = false;
                 // }
-                if(item.isNormal === false){
-                  item.isNormal ="异常"
-                }else if(item.isNormal === true){
-                  item.isNormal ="正常"
+                if(item.deleteName === null){
+                  if(item.isNormal === false){
+                    item.isNormal ="异常"
+                  }else if(item.isNormal === true){
+                    item.isNormal ="正常"
+                  }else{
+                    item.isNormal ="未审核"
+                  }
                 }else{
-                  item.isNormal ="未审核"
+                  item.isNormal ="已作废"
                 }
+
               })
               this.detailsTableData = this.showingItemFileInfo;
               if (this.detailsTableData.length !== 0) {
@@ -1532,7 +1542,7 @@
         this.$refs.orderDetailsUpload.submit();
         this.uploadFileData.append('type', this.orderDetailsType);
         this.uploadFileData.append('id', this.showingItem.id);
-        this.uploadFileData.append('factory', sessionFactory);
+        this.uploadFileData.append('factory', this.sessionFactory);
         this.uploadFileData.append('#TOKEN#', this.$store.state.token);
         let config = {
           header: {

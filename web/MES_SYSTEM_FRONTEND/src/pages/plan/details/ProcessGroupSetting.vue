@@ -112,7 +112,6 @@
     processGroupTableColumns,
     processGroupEditOptions,
     processGroupEditOptionsRules,
-    sessionFactory  //获取session中的对应工厂
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -128,6 +127,7 @@
     inject: ['reload'],
     data() {
       return {
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: [],
         thisQueryOptions: {},
         tableData: [],
@@ -220,7 +220,7 @@
             data: {
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
-              factory:sessionFactory,
+              factory:this.sessionFactory === '1'? 0 :this.sessionFactory,
             }
           };
           // if(sessionFactory !== "null"){
@@ -278,7 +278,7 @@
           if (isValid && !this.isPending) {
             this.isPending = true;
             this.$openLoading();
-            this.processGroupEditOptionsData.factory = sessionFactory
+            this.processGroupEditOptionsData.factory = this.sessionFactory ==='1'?'0':this.sessionFactory;
             let options = {
               url: '',
               data: this.processGroupEditOptionsData,
@@ -378,7 +378,7 @@
           });
           this.$set(this.processGroupEditOptionsData, 'id', val.row.groupId);
           this.$set(this.processGroupEditOptionsData, 'position', position);
-          this.$set(this.processGroupEditOptionsData, 'factory', Number(sessionFactory));
+          this.$set(this.processGroupEditOptionsData, 'factory', Number(this.sessionFactory === '1'?'0':this.sessionFactory));
         }
         axiosFetch({
           url: planProcessGroupEditUrl,

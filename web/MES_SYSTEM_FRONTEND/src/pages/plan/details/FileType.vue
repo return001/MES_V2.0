@@ -130,7 +130,6 @@
     fileTypeTableColumns,
     fileTypeEditOptions,
     fileEditOptionsRules,
-    sessionFactory,
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {
@@ -146,6 +145,7 @@
     inject: ['reload'],
     data() {
       return {
+        sessionFactory:sessionStorage.getItem('factory'),
         fileTypeQueryOptions: fileTypeQueryOptions,
         fileTypeEditOptions:fileTypeEditOptions,
         fileEditOptionsRules:fileEditOptionsRules,
@@ -243,7 +243,7 @@
           let options = {
             url: planFileTypeSelectUrl,
             data: {
-              factory:sessionFactory,
+              factory:this.sessionFactory=== '1'?'0':this.sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
             }
@@ -251,7 +251,7 @@
           if (this.queryString !== '') {
             options.data.filter = this.queryString;
           }
-          options.data.factory=sessionFactory
+          options.data.factory=this.sessionFactory=== '1'?'0':this.sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
@@ -323,7 +323,7 @@
           if(isValid){
             this.isPending = true;
             this.$openLoading();
-            this.fileTypeOptionsData.factory = sessionFactory
+            this.fileTypeOptionsData.factory = this.sessionFactory=== '1'?'0':this.sessionFactory
             let options= {
               url:"",
               data: this.fileTypeOptionsData

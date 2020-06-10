@@ -14,7 +14,7 @@ const state = {
   editData: [],
   copyData: [],
   testType: -1,
-  userType: '',
+  userType: 'SuperAdmin',
   userTypeList: {},
   tableDeleteGroup: {
     'DataRelativeSheet': [],

@@ -61,9 +61,12 @@
             fixed="right"
           >
             <template slot-scope="scope">
-<!--              <el-tooltip content="产线PC配置" placement="top">-->
-<!--                <el-button type="text" @click="showLineSetting(scope.row)" icon="el-icon-t-setting"></el-button>-->
-<!--              </el-tooltip>-->
+              <!--              <el-tooltip content="产线PC配置" placement="top">-->
+              <!--                <el-button type="text" @click="showLineSetting(scope.row)" icon="el-icon-t-setting"></el-button>-->
+              <!--              </el-tooltip>-->
+              <el-tooltip content="设置产线工作时间" placement="top">
+                <el-button type="text" @click="handleTimeSetting(scope.row)" icon="el-icon-t-setting"></el-button>
+              </el-tooltip>
               <el-tooltip content="编辑" placement="top">
                 <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
               </el-tooltip>
@@ -75,6 +78,78 @@
         </el-table>
       </div>
     </div>
+
+    <!-- settime component -->
+    <el-dialog
+      title="设置时间"
+      :visible.sync="isTimeSetting"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @close="closeTimeSetting"
+      append-to-body>
+      <div style="margin-top: 20px">
+
+        <el-table
+          class="time-setting-table"
+          size="small"
+          :data="workTime"
+          max-height="560">
+
+          <el-table-column
+            label="序号"
+            width="50"
+            type="index">
+          </el-table-column>
+
+          <el-table-column
+            label="时段"
+            width="500">
+            <template slot-scope="scope">
+              <div style="display: inline-block;margin-right: 30px">
+                <el-time-picker
+                  v-model="workTime[scope.$index].startTime"
+                  placeholder="开始时间点"
+                  format="HH:mm"
+                  value-format="HH:mm"
+                  editable>
+                </el-time-picker>
+              </div>
+
+              <el-time-picker
+                v-model="workTime[scope.$index].endTime"
+                placeholder="结束时间点"
+                format="HH:mm"
+                value-format="HH:mm"
+                editable>
+              </el-time-picker>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            float="right"
+            width="150"
+          >
+            <template slot-scope="scope">
+              <el-tooltip content="删除" placement="top">
+                <el-button size="small" type="primary" circle class="el-icon-minus" @click="handleDeleteTime(scope.$index)"></el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div style="margin-top: 20px">
+          <el-tooltip content="添加" placement="top">
+            <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddTime"></el-button>
+          </el-tooltip>
+        </div>
+      </div>
+
+
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" type="info" @click="closeTimeSetting">取消</el-button>
+        <el-button size="small" type="primary" @click="submitLineTimeSetting">确定</el-button>
+      </span>
+    </el-dialog>
 
     <!--dialog component-->
     <el-dialog
@@ -163,21 +238,21 @@
                 </el-tooltip>
               </template>
             </el-autocomplete>
-<!--            <el-select-->
-<!--              v-model="lineEditOptionsData[lineItem.key]"-->
-<!--              filterable-->
-<!--              remote-->
-<!--              reserve-keyword-->
-<!--              placeholder="请输入关键词"-->
-<!--              :remote-method="userRemoteMethod"-->
-<!--              :loading="remoteLoading">-->
-<!--              <el-option-->
-<!--                v-for="subItem in asyncUserSelectList"-->
-<!--                :key="subItem.id"-->
-<!--                :label="subItem.name"-->
-<!--                :value="subItem.id">-->
-<!--              </el-option>-->
-<!--            </el-select>-->
+            <!--            <el-select-->
+            <!--              v-model="lineEditOptionsData[lineItem.key]"-->
+            <!--              filterable-->
+            <!--              remote-->
+            <!--              reserve-keyword-->
+            <!--              placeholder="请输入关键词"-->
+            <!--              :remote-method="userRemoteMethod"-->
+            <!--              :loading="remoteLoading">-->
+            <!--              <el-option-->
+            <!--                v-for="subItem in asyncUserSelectList"-->
+            <!--                :key="subItem.id"-->
+            <!--                :label="subItem.name"-->
+            <!--                :value="subItem.id">-->
+            <!--              </el-option>-->
+            <!--            </el-select>-->
 
           </div>
           <div class="line-edit-form-comp-textarea" v-if="lineItem.type === 'textArea'">
@@ -309,6 +384,7 @@
     planLineDeleteUrl,
     planLineEditUrl,
     planLineSelectUrl,
+    planLineGetUrl,
     planProcessGroupGetUrl,
     planLinePCAddUrl,
     planLinePCDeleteUrl,
@@ -317,13 +393,14 @@
     getUserUrl,
     eSopWorkshopSelectUrl,
     eSopFactorySelectUrl,
+    planLineTimeSettingUrl,
+    planLineTimeSelectUrl,
   } from "../../../config/globalUrl";
   import {
     lineTableColumns,
     lineQueryOptions,
     lineEditOptions,
     lineEditOptionsRules,
-    sessionFactory
   } from "../../../config/planConfig";
   import {axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from 'element-ui'
@@ -333,6 +410,25 @@
     inject: ['reload'],
     data() {
       return {
+        //设置产线时间
+        choiceLine:'',       //选择产线
+        isTimeSetting:false, //设置时间 dialog 显示
+        lineItem:"",         //选中的产线
+        lineDate:'',         //产线日期
+        workTime:[
+          {
+            startTime:'',       //产线每个时段的开始时间
+            endTime:'',         //产线每个时段的结束时间
+          },
+          {
+            startTime:'',
+            endTime:'',
+          },
+        ],      //每条时间设置
+        trueTimes:"",
+        sessionFactory:sessionStorage.getItem('factory'),
+
+
         queryOptions: lineQueryOptions,
         thisQueryOptions: {},
         asyncSelectGroup: {
@@ -510,11 +606,12 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              if(sessionFactory === '0'){
+              console.log(this.sessionFactory)
+              if(this.sessionFactory === '1'){
                 this.asyncSelectGroup.processGroup.list = response.data.data.list;
               }else{
                 response.data.data.list.forEach(item=>{
-                  if(item.factoryId ===Number(sessionFactory)){
+                  if(item.factoryId ===Number(this.sessionFactory)){
                     this.asyncSelectGroup.processGroup.list.push(item)
                   }
                 })
@@ -563,14 +660,14 @@
             }
           }).then(response => {
             if (response.data.result === 200) {
-              if(sessionFactory === '0'){
+              if(this.sessionFactory === '1'){
                 this.asyncSelectGroup.workshopId.list = response.data.data.list;
               }else{
-              response.data.data.list.forEach(item=>{
-                if(item.factoryId === Number(sessionFactory)){
-                  this.asyncSelectGroup.workshopId.list.push(item)
-                }
-              })
+                response.data.data.list.forEach(item=>{
+                  if(item.factoryId === Number(this.sessionFactory)){
+                    this.asyncSelectGroup.workshopId.list.push(item)
+                  }
+                })
               }
             } else {
               this.$alertWarning(response.data.data)
@@ -609,7 +706,7 @@
               options.data[item] = this.thisQueryOptions[item].value
             }
           });
-          options.data.factoryId = sessionFactory
+          this.sessionFactory === '1'? options.data.factoryId = '0': options.data.factoryId = this.sessionFactory
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
@@ -625,6 +722,128 @@
             this.$closeLoading();
           })
         }
+      },
+
+      /**
+       * 设置产线时间
+       */
+      handleTimeSetting(val){
+        axiosFetch({
+          url:planLineTimeSelectUrl,
+          data:{
+            executorId: val.id,
+            isDefault:true,
+          }
+        }).then(response=>{
+          if(response.data.result === 200){
+            if(response.data.data.length > 0){
+              this.workTime = response.data.data
+              this.workTime.forEach(item=>{
+                delete item.date
+              })
+            }else{
+              this.workTime=[
+                {
+                  startTime:'',
+                  endTime:'',
+                },
+                {
+                  startTime:'',
+                  endTime:'',
+                },
+              ];
+            }
+          }else{
+            this.$alertWarning(response.data.data)
+          }
+        }).catch(err => {
+          this.$alertDanger('未知错误')
+        }).finally(() => {
+        })
+        this.isTimeSetting = true;
+        this.lineItem= val
+      },
+
+      handleAddTime(){
+        this.workTime.push({
+          startTime:'',
+          endTime:'',
+        })
+      },
+      handleDeleteTime(val){
+        this.workTime.splice(val,1)
+      },
+
+
+      closeTimeSetting(){
+        this.isTimeSetting = false
+        this.choiceLine= '';
+        this.lineDate= '';
+        this.workTime = [
+          {
+            startTime:'',       //产线每个时段的开始时间
+            endTime:'',         //产线每个时段的结束时间
+          },
+          {
+            startTime:'',
+            endTime:'',
+          },
+        ]
+      },
+
+      //设置完时间 确定
+      submitLineTimeSetting(){
+        this.workTime.forEach(item=>{
+          if(item.endTime > item.startTime && item.endTime !=="" && item.startTime !==""){
+            this.trueTimes= true
+            // item.endTime=new Date(item.endTime).getHours()+":"+this.addZero(new Date(item.endTime).getMinutes())
+            // item.startTime=new Date(item.startTime).getHours()+":"+this.addZero(new Date(item.startTime).getMinutes())
+          }else{
+            this.trueTimes= false
+          }
+        })
+        if(this.trueTimes === false){
+          this.$alertWarning('请设置正确的时间')
+          this.workTime=[
+            {
+              startTime:'',       //产线每个时段的开始时间
+              endTime:'',         //产线每个时段的结束时间
+            },
+            {
+              startTime:'',
+              endTime:'',
+            },
+          ];
+        }
+        if(this.trueTimes === true){
+          let options = {
+            url: planLineTimeSettingUrl,
+            data: {
+              executorId:this.lineItem.id,
+              workTimes:JSON.stringify(this.workTime),
+              isDefault:true
+            },
+          };
+          axiosFetch(options).then(response => {
+            if (response.data.result === 200) {
+              this.$alertSuccess('产线时间设置成功')
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            console.log(err)
+            this.$alertDanger('未知错误')
+          }).finally(() => {
+            this.closeTimeSetting()
+            this.isPending = false;
+            this.$closeLoading();
+          })
+        }
+      },
+
+      //补 0 函数
+      addZero(s) {
+        return s < 10 ? '0' + s : s;
       },
 
       /**
@@ -998,6 +1217,11 @@
     border-radius: 5px;
     padding: 10px;
     margin-top: 10px;
+  }
+  .time-setting-tip{
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
   }
 
   .line-edit-form {

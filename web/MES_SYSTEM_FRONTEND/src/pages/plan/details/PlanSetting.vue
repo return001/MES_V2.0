@@ -84,6 +84,9 @@
                :class="activeProcessGroup === item.id ? 'active' : ''" @click="switchTag(item)">{{item.groupName}}
           </div>
         </div>
+<!--        <div class="vice-tag" v-if="mainTag === '贴片'">-->
+
+<!--        </div>-->
         <el-table
             :data="tableData"
             max-height="560"
@@ -251,6 +254,7 @@
           :src-orders="importingOrderData"
           :order-columns="importingOrderColumns"
           :is-re-import="isReImport"
+          @parentDailogClose="resetOrderImportDialog"
           v-on:reload="partlyReload"/>
     </el-dialog>
 
@@ -297,7 +301,7 @@
     planTableExtraOrderColumns,
     planTableExtraUserColumns,
     orderTableColumns,
-    orderUnscheduledTableColumns, sessionFactory
+    orderUnscheduledTableColumns,
   } from "../../../config/planConfig";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {
@@ -314,7 +318,8 @@
     planProcessGroupGetUrl,
     planExtraDetailsSelectUrl,
     planOrderSelectUrl,
-    planDetailsReworkSelectUrl
+    planDetailsReworkSelectUrl,
+    planProcessGroupSelectUrl,
   } from "../../../config/globalUrl";
   import PlanEditPanel from './comp/PlanEditPanel';
   import GanttComp from './comp/GanttComp'
@@ -333,9 +338,11 @@
     },
     data() {
       return {
+        sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: planQueryOptions,
         thisQueryOptions: {},
         //预加载信息
+        mainTag:'',        //标签tag 贴片 会有副标签
         processSelectGroupSrc: [],
         processSelectGroup: [],
         processGroupSelectGroup: [],
@@ -435,8 +442,13 @@
       await this.dataPreload();
       this.$closeLoading();
       //加载表格
-      this.activeProcessGroup = this.processGroupSelectGroup[0].id;
-      this.fetchData();
+      if(this.processGroupSelectGroup.length>0){
+        this.activeProcessGroup = this.processGroupSelectGroup[0].id;
+
+        this.fetchData();
+      }else {
+        this.$alertDanger('获取工序组失败')
+      }
     },
     mounted() {
       eventBus.$off('closeEditPanel'); //关闭编辑界面
@@ -542,14 +554,15 @@
         return new Promise(resolve => {
           axiosFetch({
             url: planProcessGroupGetUrl,
-            factory:sessionFactory,
+            factory:this.sessionFactory === '1'?'0':this.sessionFactory,
           }).then(response => {
             if (response.data.result === 200) {
-              if(sessionFactory ==='0'){
+              console.log(response.data.data)
+              if(this.sessionFactory ==='1'){
                 this.processGroupSelectGroup = response.data.data.list;
               }else{
               response.data.data.list.forEach((item,i)=>{
-                if(item.factoryId === Number(sessionFactory)){
+                if(item.factoryId === Number(this.sessionFactory)){
                   this.processGroupSelectGroup.push(item)
                 }
               })
@@ -577,6 +590,7 @@
       },
 
       switchTag: function (item) {
+        this.mainTag = item.groupName
         this.activeProcessGroup = item.id;
         this.activeProcessGroupType = item.id - 1;
         this.initQueryOptions();
@@ -590,7 +604,7 @@
           let options = {
             url: planDetailsSelectUrl,
             data: {
-              factory:sessionFactory,
+              factory:this.sessionFactory === '1' ? '0':this.sessionFactory,
               pageNo: this.paginationOptions.currentPage,
               pageSize: this.paginationOptions.pageSize,
             }
@@ -606,7 +620,7 @@
             }
           });
           options.data.processGroup = this.activeProcessGroup;
-          options.data.factory = sessionFactory;
+          options.data.factory = this.sessionFactory === '1' ? '0':this.sessionFactory;
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.tableData = response.data.data.list;
@@ -635,13 +649,18 @@
       /*显示导入订单界面*/
       showOrderImport: function (url) {
         if (!this.isPending) {
+          if(this.activeProcessGroupType === 0){
+            this.activeProcessGroupType = this.processGroupSelectGroup[0].id-1
+          };
           this.isPending = true;
           this.$openLoading();
+
           axiosFetch({
             url: url === 'rework' ? planDetailsReworkSelectUrl : planDetailsUnscheduledSelectUrl,
             data: {
-              type: this.activeProcessGroupType, //track
-              factory:sessionFactory
+              processGroupId:this.activeProcessGroup,
+              // type: this.activeProcessGroupType, //track
+              factory:this.sessionFactory === '1' ? '0':this.sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -683,17 +702,16 @@
             this.$alertInfo('存在产能为0的订单，请前往产能管理模块添加信息');
             return;
           }
-
           this.isOrderImportingSetting = true
         } else {
           this.$alertInfo("请选择订单")
         }
-
       },
 
 
 
       resetOrderImportDialog: function () {
+        this.isOrderImporting = false;
         this.importingOrderData = [];
         this.importingOrderDataTemp = [];
         this.reImportingOrderData = [];
@@ -702,7 +720,6 @@
       },
 
       editData: function (val) {
-        this.planEditRow = val;
         if (this.$store.state.userType === 'engineer') {
           this.engineerEditing = true;
         } else if (this.$store.state.userType === 'schedulingJMPMC') {
@@ -915,7 +932,9 @@
         this.reImportingOrderData = this.tableData.filter(item => item.statusName === '已排产');
         if (this.reImportingOrderData.length !== 0) {
           this.reImportingOrderData.map(item => {
+
             item.unscheduledQuantity = item.schedulingQuantity;
+            item.lineChangeTime = Number(item.lineChangeTime)
             return item
           });
           this.isReImport = true;
@@ -1019,7 +1038,7 @@
 
   .content-tag-item {
     border: 1px solid #eeeeee;
-    min-width: 80px;
+    min-width: 110px!important;
     text-align: center;
     line-height: 26px;
     font-size: 14px;
@@ -1051,6 +1070,11 @@
     color: #66b1ff;
     border-bottom: none;
     background: #ffffff;
+  }
+  .vice-tag{
+    width: 100%;
+    min-height: 50px;
+    background-color: #a0cfff;
   }
 
   .order-details-title {
