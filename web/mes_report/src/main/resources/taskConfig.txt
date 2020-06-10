@@ -1,26 +1,6 @@
-cron4j=task_save_data,task_day,task_week,task_month
+cron4j=task_production
 
-task_save_data.cron=5 0 * * *
-task_save_data.class=com.jimi.mes_report.task.SaveDataTask
-task_save_data.daemon=true
-task_save_data.enable=true
-
-task_day.cron=10 0 * * *
-task_day.class=com.jimi.mes_report.task.SendDailyEmailTask
-task_day.daemon=true
-task_day.enable=true
-
-task_week.cron=15 0 * * 1
-task_week.class=com.jimi.mes_report.task.SendWeeklyEmailTask
-task_week.daemon=true
-task_week.enable=true
-
-task_month.cron=20 0 1 * *
-task_month.class=com.jimi.mes_report.task.SendMonthlyEmailTask
-task_month.daemon=true
-task_month.enable=true
-
-task_month.cron=25 0 * * *
-task_month.class=com.jimi.mes_report.task.SendDailyProductionEmailTask
-task_month.daemon=true
-task_month.enable=true
+task_production.cron=25 0 * * *
+task_production.class=com.jimi.mes_report.task.SendDailyProductionEmailTask
+task_production.daemon=true
+task_production.enable=true

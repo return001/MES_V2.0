@@ -78,7 +78,7 @@ public class EmailDocService {
 			SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy年MM月dd日");
 			paperDoc.getElementById("time").text(dayFormat.format(startDate));
 			capacityDoc.getElementById("time").text(dayFormat.format(startDate));
-			paperDoc.getElementById("title").text("几米智造日报表");
+			paperDoc.getElementById("title").text("几米智造已配置订单日报表");
 			paperDoc.getElementById("dailyPlanName").text("日计划量");
 			paperDoc.getElementById("dailyActualName").text("日完成量");
 			capacityDoc.getElementById("title").text("几米智造日产能报表");
@@ -89,7 +89,7 @@ public class EmailDocService {
 			String timeString = prefixFormat.format(startDate) + suffixFormat.format(endDate);
 			paperDoc.getElementById("time").text(timeString);
 			capacityDoc.getElementById("time").text(timeString);
-			paperDoc.getElementById("title").text("几米智造周报表");
+			paperDoc.getElementById("title").text("几米智造已配置订单周报表");
 			paperDoc.getElementById("dailyPlanName").text("周计划量");
 			paperDoc.getElementById("dailyActualName").text("周完成量");
 			capacityDoc.getElementById("title").text("几米智造周产能报表");
@@ -98,7 +98,7 @@ public class EmailDocService {
 			SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy年MM月");
 			paperDoc.getElementById("time").text(monthFormat.format(startDate));
 			capacityDoc.getElementById("time").text(monthFormat.format(startDate));
-			paperDoc.getElementById("title").text("几米智造月报表");
+			paperDoc.getElementById("title").text("几米智造已配置订单月报表");
 			paperDoc.getElementById("dailyPlanName").text("月计划量");
 			paperDoc.getElementById("dailyActualName").text("月完成量");
 			capacityDoc.getElementById("title").text("几米智造月产能报表");
@@ -219,6 +219,9 @@ public class EmailDocService {
 				break;
 			}
 		}
+
+		Element productionTable = paperDoc.select("table#production").first();
+
 		for (Record maxStationProduction : maxStationProductions) {
 			String maxProduction = maxStationProduction.get("maxProduct").toString();
 			switch (maxStationProduction.getInt("type")) {
@@ -245,15 +248,15 @@ public class EmailDocService {
 				break;
 			case 8:
 				stationTable.select("#cartonBoxTestMaximumTotal").first().text(maxProduction);
+				productionTable.select("#maximumProduct").first().text(maxProduction);
 				break;
 			default:
 				break;
 			}
 		}
-		Element productionTable = paperDoc.select("table#production").first();
+
 		productionTable.select("#dailyPlanProduct").first().text(orderProductionRecord.get("plan_product").toString());
 		productionTable.select("#dailyActualProduct").first().text(cartonProduct.toString());
-		productionTable.select("#maximumProduct").first().text(historyMaxProduct.toString());
 
 		Element hourlyProductionTable = capacityDoc.select("table#hourlyProduction").first();
 		switch (timeType) {
