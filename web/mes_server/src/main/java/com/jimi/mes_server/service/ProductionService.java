@@ -166,6 +166,8 @@ public class ProductionService {
 		}
 		if (parentGroup != null) {
 			sql.append(" and process_group.parent_group = ").append(parentGroup);
+		} else {
+			sql.append(" and process_group.parent_group is null ");
 		}
 		sql.append(" order by process_group.position");
 		sqlPara.setSql(sql.toString());
