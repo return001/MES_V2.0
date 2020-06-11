@@ -633,7 +633,11 @@
     },
     computed: {},
     async mounted() {
-
+      console.log(this.lineGroup)
+      if(this.lineGroup.length <= 0){
+        this.$alertWarning("该工序组未设置产线")
+        return;
+      }
       this.$openLoading();
       // this.workingSchedule = await this.getWorkingSchedule();
       this.planOptions.planTimePerDay = this.calcWorkingTimePerDay();

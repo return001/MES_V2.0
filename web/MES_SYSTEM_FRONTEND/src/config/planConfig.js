@@ -123,17 +123,17 @@ export const orderEditOptions = [{
         key: 'productNo'
     },
     {
-      type: 'text',
-      label: '客户料号',
-      key: 'customerMaterialNo'
+        type: 'text',
+        label: '客户料号',
+        key: 'customerMaterialNo'
     },
     {
-        type: 'text',
+        type: 'select',
         label: '客户编号',
         key: 'customerNumber'
     },
     {
-        type: 'text',
+        type: 'default',
         label: '客户名称',
         key: 'customerName'
     },
@@ -201,7 +201,7 @@ export const orderEditOptionsRules = {
         { required: true, message: '请输入成品编码', trigger: 'blur' }
     ],
     'customerNumber': [
-        { required: true, message: '请输入客户编号', trigger: 'blur' }
+        { required: true, message: '请输入客户编号', trigger: 'change' }
     ],
     'quantity': [
         { required: true, message: '请输入订单数量', trigger: 'blur' },
@@ -872,10 +872,17 @@ export const processGroupEditOptions = [
         key: 'groupName'
     },
     {
+        type: 'select',
+        label: '所属工序组',
+        key: 'parentGroup'
+    },
+    {
         type: 'text',
         label: '备注',
         key: 'groupRemark'
     },
+
+
 ];
 
 export const processGroupEditOptionsRules = {

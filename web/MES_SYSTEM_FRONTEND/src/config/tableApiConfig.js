@@ -526,8 +526,8 @@ const ROUTER_CONFIG = {
     type: 'int',
     queryOptions: [
       {
-        id: 'IMEI',
-        name: '打印IMEI',
+        id: 'SN',
+        name: 'SN号',
         model: '',
         type: 'text'
       },

@@ -81,12 +81,15 @@
       <div class="content-comp" v-if="processGroupSelectGroup.length > 0">
         <div class="content-tag">
           <div class="content-tag-item" v-for="item in processGroupSelectGroup"
+               v-if="item.parentGroup === null"
                :class="activeProcessGroup === item.id ? 'active' : ''" @click="switchTag(item)">{{item.groupName}}
           </div>
         </div>
-<!--        <div class="vice-tag" v-if="mainTag === '贴片'">-->
-
-<!--        </div>-->
+        <div class="vice-tag" v-if="viceGroup.length > 0">
+          <el-button size="small" :type="activeProcessGroup === item.id ? 'info' : 'primary'" v-for="item in viceGroup"
+                @click="viceSwitchTag(item)">{{item.groupName}}
+          </el-button>
+        </div>
         <el-table
             :data="tableData"
             max-height="560"
@@ -338,14 +341,15 @@
     },
     data() {
       return {
+        fetchDateAble:true,     //加载时第一个工序组标签是否有二级标签有二级标签就不能获取 产能数据，
         sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: planQueryOptions,
         thisQueryOptions: {},
         //预加载信息
-        mainTag:'',        //标签tag 贴片 会有副标签
         processSelectGroupSrc: [],
         processSelectGroup: [],
         processGroupSelectGroup: [],
+        viceGroup:[],                //存放副标签
         lineSelectGroupSrc: [],
         lineSelectGroup: [],
         tableData: [],
@@ -387,6 +391,7 @@
             }
           }]
         },
+        activeTag:{},
         activeProcessGroup: -1,
         activeProcessGroupType: 0, //selectReworkPlan param
         //导入未排产订单
@@ -428,8 +433,9 @@
       activeProcessGroup: function (val) {
         if (val !== -1) {
           this.lineSelectGroup = [];
+          let childrenGroup = this.processGroupSelectGroup.filter(item=>item.id === val)   //子工序组标签没有对应的 产线的话  就找父标签对应的产线
           this.lineSelectGroupSrc.forEach(item => {
-            if (item.processGroup === val) {
+            if (item.processGroup === val || item.processGroup === childrenGroup[0].parentGroup) {
               this.lineSelectGroup.push(item)
             }
           })
@@ -442,15 +448,16 @@
       await this.dataPreload();
       this.$closeLoading();
       //加载表格
-      if(this.processGroupSelectGroup.length>0){
-        this.activeProcessGroup = this.processGroupSelectGroup[0].id;
 
-        this.fetchData();
+      if(this.processGroupSelectGroup.length>0){
+        this.activeProcessGroup = this.processGroupSelectGroup[0].id
+        this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取 排产数据
       }else {
         this.$alertDanger('获取工序组失败')
       }
     },
     mounted() {
+
       eventBus.$off('closeEditPanel'); //关闭编辑界面
       eventBus.$off('setTimeoutHighlight'); //设置超时项目高亮
       eventBus.$off('partlyReload');
@@ -550,28 +557,45 @@
         });
       },
       /*获取工序组信息*/
-      fetchProcessGroup: function () {
+      fetchProcessGroup: function (parentGroup = undefined) {
         return new Promise(resolve => {
           axiosFetch({
-            url: planProcessGroupGetUrl,
-            factory:this.sessionFactory === '1'?'0':this.sessionFactory,
+            url: planProcessGroupSelectUrl,
+            data:{
+              parentGroup:parentGroup,
+              factory:this.sessionFactory === '1'?'0':this.sessionFactory,
+            }
           }).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data.data)
-              if(this.sessionFactory ==='1'){
-                this.processGroupSelectGroup = response.data.data.list;
-              }else{
-              response.data.data.list.forEach((item,i)=>{
-                if(item.factoryId === Number(this.sessionFactory)){
-                  this.processGroupSelectGroup.push(item)
+              //加载时查询工序组
+              if(typeof(parentGroup) === "undefined"){             //获取一级工序组标签
+              // if(this.activeProcessGroup === ""){             //获取一级工序组标签
+                if(response.data.data.list.length >0){
+                  if(this.sessionFactory ==='1'){                  //集团角色  全部都显示
+                    this.processGroupSelectGroup = response.data.data.list;
+                  }else{
+                    response.data.data.list.forEach((item,i)=>{
+                      if(item.factoryId === Number(this.sessionFactory)){
+                        this.processGroupSelectGroup.push(item)
+                      }
+                    })
+                  }
+                }else{
+                  this.$alertWarning('未设置工序组')
                 }
-              })
+              }else{                                              //点击一级工序组标签（传自己的id：就是paretGroup字段）
+                if(response.data.data.list.length >0){            //有二级工序组标签的情况
+                  this.fetchDateAble = false;                     //加载时 如果第一个页签就有二级工序组标签的话  不允许直接获取产能数据
+                  this.viceGroup = response.data.data.list
+                }else{                                            //没有二级工序组标签的情况：直接获取工序组产能数据
+                  this.queryData();
+                }
               }
-              // this.processGroupSelectGroup = response.data.data.list;
             } else {
               this.$alertWarning(response.data.data)
             }
           }).catch(err => {
+            console.log(err)
             this.$alertDanger('获取工序组信息失败，请刷新重试');
           }).finally(() => {
             resolve();
@@ -590,9 +614,16 @@
       },
 
       switchTag: function (item) {
-        this.mainTag = item.groupName
+        this.viceGroup = [];
+        this.tableData = [];
         this.activeProcessGroup = item.id;
         this.activeProcessGroupType = item.id - 1;
+        this.initQueryOptions();
+        this.fetchProcessGroup(item.id)
+      },
+      viceSwitchTag: function (item) {
+        this.activeProcessGroup = item.id;
+        this.activeProcessGroupType = item.parentGroup - 1;
         this.initQueryOptions();
         this.queryData();
       },
@@ -1073,10 +1104,12 @@
   }
   .vice-tag{
     width: 100%;
+    margin-top: 5px;
     min-height: 50px;
-    background-color: #a0cfff;
   }
-
+  .vice-tag /deep/ .el-button{
+    margin-top: 5px;
+  }
   .order-details-title {
     margin-top: 5px;
     font-weight: bold;

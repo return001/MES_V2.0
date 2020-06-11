@@ -193,6 +193,29 @@
               autocomplete="off"
               v-model="orderEditOptionsData[item.key]"></el-input>
           </div>
+
+          <div class="order-edit-form-comp-text" v-if="item.type === 'select'">
+            <el-autocomplete
+              class="inline-input"
+              v-model="orderEditOptionsData[item.key]"
+              :fetch-suggestions="querySearch"
+              clearable
+              placeholder="请输入客户编号"
+              @select="handleSelect"
+            ></el-autocomplete>
+          </div>
+
+          <div class="order-edit-form-comp-text" v-if="item.type === 'default'">
+            <el-input
+              type="text"
+              :disabled = "customerDatas.length > 0"
+              :id="'edit' + item.key + index"
+              :placeholder="'请填写' + item.label"
+              clearable
+              autocomplete="off"
+              v-model="orderEditOptionsData[item.key]"></el-input>
+          </div>
+
           <div class="order-edit-form-comp-text" v-if="item.type === 'date'">
             <el-date-picker
               :id="'edit' + item.key + index"
@@ -525,7 +548,7 @@
     planOrderTableEditUrl,
     planLineGetUrl,
     eSopFactorySelectUrl,
-    planFileTypeSelectUrl,
+    planFileTypeSelectUrl, eSopCustomerSelectUrl,
   } from "../../../config/globalUrl";
   import {axiosFetch, axiosDownload} from "../../../utils/fetchData";
   import {MessageBox} from 'element-ui';
@@ -590,6 +613,7 @@
           factory: this.sessionFactory
         },
         uploadAble:true,
+        customerDatas:[],   //客户编号选择
         reworkOrder:"",
         factoryList:[],//工厂列表
         /*作废订单*/
@@ -852,6 +876,34 @@
         });
       },
 
+      //获取客户信息
+      fetchCustomer() {
+        return new Promise(resolve => {
+          this.$openLoading();
+          let options = {
+            url: eSopCustomerSelectUrl,
+            data: {
+              factoryId: this.sessionFactory === '1' ? '0' : this.sessionFactory,
+              pageNo: this.paginationOptions.currentPage,
+              pageSize: 1000,
+            }
+          };
+          axiosFetch(options).then(response => {
+            if (response.data.result === 200) {
+              this.customerDatas = response.data.data.list;
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            this.$alertDanger('获取客户失败')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+            resolve();
+          })
+        })
+      },
+
       fetchData: function (type) {
         if (!this.isPending) {
           this.isPending = true;
@@ -874,7 +926,6 @@
               this.thisQueryOptions.factoryId.value = ""
               }
             }else{
-              console.log(this.sessionFactory)
               this.thisQueryOptions.factoryId.value = this.sessionFactory
             }
 
@@ -916,9 +967,11 @@
         }
       },
 
+
       choiceReworkRow(row){
         this.reworkOrder = row;
       },
+
 
 
       /**
@@ -929,11 +982,11 @@
        **@params: mod
        */
       editData: function (type, val) {
-
         if(val){
           this.$set(this.orderEditOptionsData,'factory',val.factoryId)
         }
         this.fetchFactory()
+        this.fetchCustomer();
         this.orderEditOptions.forEach(item => {
           this.$set(this.orderEditOptionsData, item.key, '')
         });
@@ -976,7 +1029,6 @@
             })
           });
           this.$set(this.orderEditOptionsData, 'id', val.id)
-
           this.isOrderEditing = true;
         } else if (type === 'copy') {
           if(val.reworkZhidan !== null){
@@ -997,6 +1049,7 @@
         } else if (type === 'add') {
           this.orderEditType = 'add';
           this.isOrderEditing = true;
+
         } else if (type === "rework"){
           this.isReworkEdit = true;
           this.orderEditType = 'rework';
@@ -1011,10 +1064,33 @@
           this.$set(this.orderEditOptionsData, 'rework', '');
           this.isOrderEditing = true;
         }
-
-
       },
 
+      //选择客户编号
+      choicedCustomerNumber(val){
+        this.customerDatas.forEach(item=>{
+          if(val === item.id){
+            this.orderEditOptionsData.customerName=item.customerName
+          }
+        })
+      },
+      //客户编号 输入自动联想
+      querySearch(queryString, cb) {
+        this.customerDatas = this.customerDatas.map(item=>{
+          return {...item,value:item.customerNumber}
+        })
+        var results = queryString ? this.customerDatas.filter(this.createFilter(queryString)) : this.customerDatas;
+        // 调用 callback 返回建议列表的数据
+        cb(results);
+      },
+      createFilter(queryString) {
+        return (restaurant) => {
+          return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      handleSelect(item){
+        this.orderEditOptionsData.customerName = item.customerName
+      },
 
 
       //灰色返工按钮

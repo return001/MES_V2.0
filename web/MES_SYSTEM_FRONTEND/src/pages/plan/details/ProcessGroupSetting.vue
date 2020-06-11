@@ -72,7 +72,7 @@
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       @closed="resetEditProcessGroupForm"
-      width="730px">
+      width="650px">
       <el-form
         ref="processGroupEditForm"
         :model="processGroupEditOptionsData"
@@ -87,13 +87,31 @@
           :key="index"
           :label="item.label + '：'"
           :prop="item.key">
-          <div class="process-group-edit-form-comp-text">
+          <div class="process-group-edit-form-comp-text"  v-if="item.type === 'text'">
             <el-input
               type="text"
               :id="'edit' + item.key + index" :placeholder="'请填写' + item.label"
               clearable
               autocomplete="off"
               v-model="processGroupEditOptionsData[item.key]"></el-input>
+          </div>
+          <div class="process-group-edit-form-comp-text" v-if="item.type === 'select'">
+            <el-select
+            size="small"
+            v-model="processGroupEditOptionsData[item.key]"
+            :id="item.key + index"
+            :placeholder="'请选择'+item.label"
+            autocomplete="off"
+            clearable
+            >
+              <el-option v-for="(item,index) in options"
+              :key="item.id"
+              :value="item.id"
+              :label="item.groupName"
+              >
+
+              </el-option>
+            </el-select>
           </div>
         </el-form-item>
       </el-form>
@@ -131,6 +149,7 @@
         queryOptions: [],
         thisQueryOptions: {},
         tableData: [],
+        options:[],                //新增和编辑时 要用到的 所属工序组的数据
         tableColumns: processGroupTableColumns,
         paginationOptions: {
           currentPage: 1,
@@ -253,6 +272,31 @@
         this.processGroupEditOptions.forEach(item => {
           this.$set(this.processGroupEditOptionsData, item.key, '')
         });
+        let options = {
+          url: planProcessGroupSelectUrl,
+          data: {
+            pageNo: this.paginationOptions.currentPage,
+            pageSize: this.paginationOptions.pageSize,
+            factory:this.sessionFactory === '1'? 0 :this.sessionFactory,
+          }
+        };
+        axiosFetch(options).then(response => {
+          if (response.data.result === 200) {
+            response.data.data.list.forEach(item=>{
+              if(item.parentGroup === null){
+                this.options.push(item)
+              }});
+            this.paginationOptions.currentPage = response.data.data.pageNumber;
+            this.paginationOptions.total = response.data.data.totalRow;
+          } else {
+            this.$alertWarning(response.data.data)
+          }
+        }).catch(err => {
+          this.$alertDanger('未知错误')
+        }).finally(() => {
+          this.isPending = false;
+          this.$closeLoading();
+        })
         if (type === 'edit') {
           this.processGroupEditType = 'edit';
           Object.keys(val).forEach(item => {
@@ -283,10 +327,6 @@
               url: '',
               data: this.processGroupEditOptionsData,
             };
-            // if(sessionFactory !== "null"){
-            //   options.data.factory=sessionFactory
-            // }
-
             if (this.processGroupEditType === 'edit') {
               options.url = planProcessGroupEditUrl
             } else if (this.processGroupEditType === 'add') {

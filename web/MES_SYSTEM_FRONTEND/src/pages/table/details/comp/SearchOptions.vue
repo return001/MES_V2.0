@@ -301,7 +301,6 @@
             }
             this.queryString === '' ? this.queryString += radioQueryText : this.queryString += ('#&#' + radioQueryText)
           }
-          console.log(this.queryString)
           eventBus.$emit('tableQueryData', [this.queryString, params])
         }).catch(err => {
           this.$alertInfo(err)
