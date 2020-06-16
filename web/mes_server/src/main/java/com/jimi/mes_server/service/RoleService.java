@@ -149,6 +149,7 @@ public class RoleService {
 			sb.append(" AND role.no = ?");
 			sqlPara.addPara(no);
 		}
+		sb.append(" order by companyName ");
 		sqlPara.setSql(sb.toString());
 		List<Record> records = Db.find(sqlPara);
 		List<RoleInfoVO> roleInfoVOs = RoleInfoVO.fillList(records);
@@ -178,19 +179,21 @@ public class RoleService {
 			throw new OperationException("权限配置存在错误");
 		}
 		List<RoleAuthority> roleAuthorities = new ArrayList<>(authorities.size());
+		int roleId = role.getId();
 		if (role.getIsTypical()) {
-			role = new Role();
-			role.setDepartment(role.getDepartment()).setName(role.getName()).setNo(role.getNo()).setIsTypical(false).save();
+			Role newRole = new Role();
+			newRole.setDepartment(role.getDepartment()).setName(role.getName()).setNo(role.getNo()).setIsTypical(false).save();
+			roleId = newRole.getId();
 		} else {
 			Db.delete(DELETE_ALL_AUTHORITY_BY_ROLE, role.getId());
 		}
 		for (Authority authority : authorities) {
 			RoleAuthority roleAuthority = new RoleAuthority();
-			roleAuthority.setRole(role.getId()).setAuthority(authority.getId());
+			roleAuthority.setRole(roleId).setAuthority(authority.getId());
 			roleAuthorities.add(roleAuthority);
 		}
 		Db.batchSave(roleAuthorities, batchSize);
-		lUserAccount.setRole(role.getId()).update();
+		lUserAccount.setRole(roleId).update();
 		return lUserAccount;
 	}
 
@@ -228,6 +231,7 @@ public class RoleService {
 			sqlPara.setSql(sb.toString());
 			List<Authority> waitCheckAuthorities = Authority.dao.find(sqlPara);
 			if (waitCheckAuthorities.isEmpty()) {
+				System.err.println(sqlPara);
 				throw new OperationException("权限配置存在错误");
 			}
 			authorities.addAll(waitCheckAuthorities);

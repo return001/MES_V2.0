@@ -140,7 +140,7 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULINGPLANSTATUS_NAME_ID = "SELECT id, status_name as statusName from scheduling_plan_status";
 
-	public final static String SELECT_ORDER = " SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, order_status AS orderStatus, order_status.status_name AS statusName, sop_factory.abbreviation,sop_factory.id as factoryId, customer_material_no as customerMaterialNo, rework_quantity as reworkQuantity, rework_zhidan as reworkZhidan, scheduled_quantity as scheduledQuantity, produced_quantity as producedQuantity, unfinished_reason as unfinishedReason,is_rework as isRework FROM orders LEFT JOIN order_status ON orders.order_status = order_status.id LEFT JOIN sop_factory ON sop_factory.id = orders.factory WHERE 1 = 1 ";
+	public final static String SELECT_ORDER = " SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, order_status AS orderStatus, order_status.status_name AS statusName, sop_factory.abbreviation,sop_factory.id as factoryId, customer_material_no as customerMaterialNo, rework_quantity as reworkQuantity, rework_zhidan as reworkZhidan, scheduled_quantity as scheduledQuantity, produced_quantity as producedQuantity, unfinished_reason as unfinishedReason,is_rework as isRework, material_state AS materialState, enough_material_time AS enoughMaterialTime, pcba FROM orders LEFT JOIN order_status ON orders.order_status = order_status.id LEFT JOIN sop_factory ON sop_factory.id = orders.factory WHERE 1 = 1 ";
 
 	public final static String SELECT_PROCESSGROUP = "SELECT process_group.id, process_group.group_no AS groupNo, process_group.group_name AS groupName, process_group.group_remark AS groupRemark, abbreviation, sop_factory.id AS factoryId, process_group.parent_group AS parentGroup, a.group_name AS parentGroupName FROM process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id LEFT JOIN process_group a ON a.id = process_group.parent_group WHERE 1 = 1 ";
 
@@ -248,7 +248,7 @@ public class SQL {
 
 	public final static String UPDATE_MODELCAPACITY_BY_MODEL_PROCESS = "UPDATE model_capacity SET rhythm = ? WHERE process_group = ? and  soft_model = ? and customer_name = ? and customer_number = ?";
 
-	public final static String SELECT_ORDER_BY_PLAN_ID = "SELECT orders.id,zhidan,alias,soft_model as softModel,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,delivery_date as deliveryDate,quantity from orders INNER JOIN scheduling_plan on scheduling_plan.orders = orders.id WHERE scheduling_plan.id = ?";
+	public final static String SELECT_ORDER_BY_PLAN_ID = "SELECT orders.id,zhidan,alias,soft_model as softModel,product_no as productNo,customer_name as customerName,customer_number as customerNumber,order_date as orderDate,delivery_date as deliveryDate,quantity,material_state AS materialState, enough_material_time AS enoughMaterialTime, pcba from orders INNER JOIN scheduling_plan on scheduling_plan.orders = orders.id WHERE scheduling_plan.id = ?";
 
 	public final static String SELECT_COUPLE_ERROR_FOR_CUSTOMER = "SELECT B.errorName1,B.errorNum1,B.errorName2,B.errorNum2 FROM (SELECT 'RF耦合' as errorName1,sum(case WHEN A.errorName like '%RF耦合指标测试失败%' then 1 ELSE 0 END) as errorNum1 , 'IMEI对比' as errorName2,sum(case WHEN A.errorName like '%IMEI 不一致%' then 1 ELSE 0 END) as errorNum2 FROM (SELECT SUBSTRING (ErrorMessage2, charindex('+++', ErrorMessage2) + 3, charindex('->', ErrorMessage2) - 6 ) AS errorName FROM LTestLogMessage WHERE TestTime >= ? AND TestTime < ? AND ErrorMessage2 IS NOT NULL AND ErrorMessage2 != '') A ) B";
 
@@ -306,4 +306,7 @@ public class SQL {
 
 	public final static String SELECT_PLAN_INFO_BY_ORDER = "SELECT scheduling_plan_status AS statusId, scheduling_plan_status.status_name AS statusName, soft_model as softModel, zhidan, quantity, rework_zhidan as reworkZhidan, rework_quantity AS reworkQuantity, line.id as lineId, line.line_name as lineName, scheduling_plan.scheduling_quantity as schedulingQuantity, scheduling_plan.plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planCompleteTime, scheduling_plan.produced_quantity as producedQuantity, scheduling_plan.start_time as startTime, scheduling_plan.complete_time as completeTime FROM orders INNER JOIN scheduling_plan ON orders.id = scheduling_plan.orders INNER JOIN scheduling_plan_status ON scheduling_plan.scheduling_plan_status = scheduling_plan_status.id LEFT JOIN line ON line.id = scheduling_plan.line WHERE orders.id = ?";
 
+	public final static String SELECT_PROCESSGROUP_BY_PARENGROUP = "select id from process_group where parent_group = ?";
+
+	public final static String DELETE_USER_BY_ID = "update LUserAccount set [Delete] = 'TRUE',InService = 'FALSE' WHERE Id = ?";
 }

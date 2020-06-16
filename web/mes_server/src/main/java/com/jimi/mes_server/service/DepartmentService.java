@@ -28,7 +28,7 @@ public class DepartmentService {
 
 	private static final String SELECT_DEPARTMENT_BY_COMPNAY_AND_NAME = "SELECT department.* FROM department INNER JOIN sop_factory ON department.company = sop_factory.id WHERE department.name = ? AND department.company = ? AND department.is_enabled = 1";;
 
-	private static final String SELECT_ROLE_BY_DEPARTMENT = "SELECT * FROM role WEHRE department = ?";
+	private static final String SELECT_ROLE_BY_DEPARTMENT = "SELECT * FROM role WHERE department = ?";
 
 	private static final String BASE_SELECT_DEPARTMENT_INFO = "SELECT sop_factory.id AS companyId, sop_factory.abbreviation AS companyName, department.id AS departmentId, department.name AS departmentName, department.[no] AS departmentNo FROM sop_factory INNER JOIN department ON department.company = sop_factory.id WHERE department.is_enabled = 1 ";
 
@@ -91,6 +91,7 @@ public class DepartmentService {
 			sb.append(" AND department.no = ?");
 			sqlPara.addPara(no);
 		}
+		sb.append(" order by companyName ");
 		sqlPara.setSql(sb.toString());
 		List<Record> records = Db.find(sqlPara);
 		List<DepartmentInfoVO> departmentInfoVOs = DepartmentInfoVO.fillList(records);

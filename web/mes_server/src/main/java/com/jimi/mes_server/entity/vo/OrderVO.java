@@ -1,5 +1,7 @@
 package com.jimi.mes_server.entity.vo;
 
+import java.text.SimpleDateFormat;
+
 import com.jimi.mes_server.model.Orders;
 
 /**订单VO
@@ -9,6 +11,8 @@ import com.jimi.mes_server.model.Orders;
 public class OrderVO extends Orders {
 
 	private static final long serialVersionUID = 5840191253006973812L;
+
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 
 	public Integer getCapacity() {
@@ -29,7 +33,8 @@ public class OrderVO extends Orders {
 	public void setUnscheduledQuantity(Integer unscheduledQuantity) {
 		this.set("unscheduledQuantity", unscheduledQuantity);
 	}
-	
+
+
 	public Integer getProcessPeopleQuantity() {
 		return this.getInt("processPeopleQuantity");
 	}
@@ -38,23 +43,25 @@ public class OrderVO extends Orders {
 	public void setProcessPeopleQuantity(Integer processPeopleQuantity) {
 		this.set("processPeopleQuantity", processPeopleQuantity);
 	}
-	
-	public Integer getTransferLineTime () {
+
+
+	public Integer getTransferLineTime() {
 		return this.getInt("transferLineTime");
 	}
 
 
-	public void setTransferLineTime (Integer transferLineTime ) {
-		this.set("transferLineTime", transferLineTime );
+	public void setTransferLineTime(Integer transferLineTime) {
+		this.set("transferLineTime", transferLineTime);
 	}
-	
-	public Double getRhythm () {
+
+
+	public Double getRhythm() {
 		return this.getDouble("rhythm");
 	}
 
 
-	public void setRhythm (Double rhythm ) {
-		this.set("rhythm", rhythm );
+	public void setRhythm(Double rhythm) {
+		this.set("rhythm", rhythm);
 	}
 
 
@@ -73,5 +80,12 @@ public class OrderVO extends Orders {
 		this.set("customerMaterialNo", order.getCustomerMaterialNo());
 		this.set("reworkZhidan", order.getReworkZhidan());
 		this.set("reworkQuantity", order.getReworkQuantity());
+		this.set("materialState", order.getMaterialState());
+		if (order.getEnoughMaterialTime() != null) {
+			this.set("enoughMaterialTime", dateFormat.format(order.getEnoughMaterialTime()));
+		} else {
+			this.set("enoughMaterialTime", order.getEnoughMaterialTime());
+		}
+		this.set("pcba", order.getPcba());
 	}
 }

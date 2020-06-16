@@ -143,6 +143,7 @@ public class TokenBox {
 			List<String> tokens = userTokenMap.get(username);
 			if (tokens == null) {
 				userTokenMap.remove(username);
+				return;
 			}
 			for (String tokenId : tokens) {
 				sessions.remove(tokenId);

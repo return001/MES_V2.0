@@ -147,7 +147,7 @@ public class UserController extends Controller {
 	 * @param curPwd 新密码
 	 * @date 2020年4月13日 下午5:21:13
 	 */
-	@UserLog("修改用户密码}")
+	@UserLog("修改用户密码")
 	public void updatePassword(String orgPwd, String curPwd) {
 		if (StringUtils.isAnyBlank(orgPwd, curPwd)) {
 			throw new ParameterException("参数不能为空");
@@ -171,5 +171,18 @@ public class UserController extends Controller {
 		}
 		RoleAuthorityVO authorityVOs = userService.getAuthority(user);
 		renderJson(ResultUtil.succeed(authorityVOs));
+	}
+
+
+	@UserLog("删除用户：{id}")
+	public void delete(Integer id) {
+		if (id == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (userService.delete(id)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
 	}
 }

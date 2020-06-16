@@ -126,7 +126,7 @@ public class ProductionService {
 	}
 
 
-	public boolean addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory) {
+	public boolean addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory, Integer parentGroup) {
 		if (SopFactory.dao.findById(factory) == null) {
 			throw new OperationException("当前工厂不存在");
 		}
@@ -136,8 +136,12 @@ public class ProductionService {
 		if (ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNAME, groupName, factory) != null) {
 			throw new OperationException("工序组名称已存在");
 		}
+		if (parentGroup != null && ProcessGroup.dao.findById(parentGroup) == null) {
+			throw new OperationException("父工序组不存在");
+		}
 		ProcessGroup processGroup = new ProcessGroup();
 		processGroup.setGroupNo(groupNo).setGroupName(groupName).setGroupRemark(groupRemark).setFactory(factory);
+		processGroup.setParentGroup(parentGroup);
 		processGroup.save();
 		return processGroup.setPosition(processGroup.getId()).update();
 	}
@@ -147,6 +151,10 @@ public class ProductionService {
 		ProcessGroup processGroup = ProcessGroup.dao.findById(id);
 		if (processGroup == null) {
 			throw new OperationException("删除失败，工序组不存在");
+		}
+		List<ProcessGroup> groups = ProcessGroup.dao.find(SQL.SELECT_PROCESSGROUP_BY_PARENGROUP, id);
+		if (groups != null && !groups.isEmpty()) {
+			throw new OperationException("删除失败，当前工序组存在子工序组");
 		}
 		return processGroup.delete();
 	}
@@ -166,8 +174,6 @@ public class ProductionService {
 		}
 		if (parentGroup != null) {
 			sql.append(" and process_group.parent_group = ").append(parentGroup);
-		} else {
-			sql.append(" and process_group.parent_group is null ");
 		}
 		sql.append(" order by process_group.position");
 		sqlPara.setSql(sql.toString());
@@ -175,13 +181,16 @@ public class ProductionService {
 	}
 
 
-	public boolean editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer factory) {
+	public boolean editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer factory, Integer parentGroup) {
 		if (SopFactory.dao.findById(factory) == null) {
 			throw new OperationException("当前工厂不存在");
 		}
 		ProcessGroup processGroup = ProcessGroup.dao.findById(id);
 		if (processGroup == null) {
-			throw new OperationException("修改失败，项目组不存在");
+			throw new OperationException("修改失败，工序组不存在");
+		}
+		if (parentGroup != null && ProcessGroup.dao.findById(parentGroup) == null) {
+			throw new OperationException("修改失败，父工序组不存在");
 		}
 		if (!StrKit.isBlank(groupNo)) {
 			ProcessGroup group = ProcessGroup.dao.findFirst(SQL.SELECT_PROCESSGROUP_BY_GROUPNO, groupNo, factory);
@@ -198,6 +207,7 @@ public class ProductionService {
 			processGroup.setGroupName(groupName);
 		}
 		processGroup.setGroupRemark(groupRemark).setFactory(factory);
+		processGroup.setParentGroup(parentGroup);
 		return processGroup.update();
 	}
 
@@ -1233,6 +1243,7 @@ public class ProductionService {
 
 
 	public PlanDetail selectPlanDetail(Integer id) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		PlanDetail planDetail = new PlanDetail();
 		Record planUser = new Record();
 		Record order = new Record();
@@ -1268,6 +1279,9 @@ public class ProductionService {
 					}
 				}
 			}
+		}
+		if (order.getDate("enoughMaterialTime") != null) {
+			order.set("enoughMaterialTime", dateFormat.format(order.getDate("enoughMaterialTime")));
 		}
 		planDetail.setOrder(order);
 		planDetail.setPlanUser(planUser);
@@ -2106,6 +2120,9 @@ public class ProductionService {
 			if (!StringUtils.isAnyBlank(record.getStr("orderDate"), record.getStr("deliveryDate"))) {
 				record.set("orderDate", record.getStr("orderDate").replace(" 00:00:00", ""));
 				record.set("deliveryDate", record.getStr("deliveryDate").replace(" 00:00:00", ""));
+			}
+			if (!StrKit.isBlank(record.getStr("enoughMaterialTime"))) {
+				record.set("enoughMaterialTime", record.getStr("enoughMaterialTime").replace(" 00:00:00", ""));
 			}
 		}
 		return page;

@@ -110,14 +110,14 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午2:47:31
 	 */
 	@ProductionLog("添加工序组")
-	public void addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory) {
+	public void addProcessGroup(String groupNo, String groupName, String groupRemark, Integer factory, Integer parentGroup) {
 		if (StringUtils.isAnyBlank(groupNo, groupName)) {
 			throw new ParameterException("参数不能为空");
 		}
 		if (factory == null) {
 			throw new ParameterException("所属工厂不能为空");
 		}
-		if (productionService.addProcessGroup(groupNo, groupName, groupRemark, factory)) {
+		if (productionService.addProcessGroup(groupNo, groupName, groupRemark, factory, parentGroup)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -166,11 +166,11 @@ public class ProductionController extends Controller {
 	 * @date 2019年8月8日 下午3:43:47
 	 */
 	@ProductionLog("修改工序组")
-	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer factory) {
+	public void editProcessGroup(Integer id, String groupNo, String groupName, String groupRemark, Integer factory, Integer parentGroup) {
 		if (id == null || factory == null) {
 			throw new ParameterException("参数不能为空");
 		}
-		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark, factory)) {
+		if (productionService.editProcessGroup(id, groupNo, groupName, groupRemark, factory, parentGroup)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

@@ -184,12 +184,11 @@ public class UserService extends SelectService {
 
 
 	public Page<UserInfoVO> select(Integer pageNo, Integer pageSize, String name, String userDes, String otherProcess, Boolean inService, String mainProcess, String proficiency, String lineName, Integer company, Integer department, String roleName) {
-
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sb = new StringBuilder(BASE_SELECT_USER_INFO);
 		if (name != null) {
 			sb.append(" AND LUserAccount.Name = ?");
-			sqlPara.addPara(company);
+			sqlPara.addPara(name);
 		}
 		if (userDes != null) {
 			sb.append(" AND LUserAccount.UserDes like ?");
@@ -235,11 +234,13 @@ public class UserService extends SelectService {
 	}
 
 
-	public void delete(Integer user) {
-		LUserAccount lUserAccount = LUserAccount.dao.findById(user);
-		if (lUserAccount != null) {
-			lUserAccount.setDelete(true);
+	public boolean delete(Integer id) {
+		LUserAccount lUserAccount = LUserAccount.dao.findById(id);
+		if (lUserAccount == null) {
+			throw new OperationException("当前用户不存在");
 		}
+		Db.update(SQL.DELETE_USER_BY_ID, id);
+		return true;
 	}
 
 

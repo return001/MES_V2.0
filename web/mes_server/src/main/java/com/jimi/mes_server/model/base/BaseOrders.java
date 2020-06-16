@@ -387,4 +387,31 @@ public abstract class BaseOrders<M extends BaseOrders<M>> extends Model<M> imple
 		return get("qc_remarks_time");
 	}
 
+	public M setMaterialState(java.lang.String materialState) {
+		set("material_state", materialState);
+		return (M)this;
+	}
+	
+	public java.lang.String getMaterialState() {
+		return getStr("material_state");
+	}
+
+	public M setEnoughMaterialTime(java.util.Date enoughMaterialTime) {
+		set("enough_material_time", enoughMaterialTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getEnoughMaterialTime() {
+		return get("enough_material_time");
+	}
+
+	public M setPcba(java.lang.String pcba) {
+		set("pcba", pcba);
+		return (M)this;
+	}
+	
+	public java.lang.String getPcba() {
+		return getStr("pcba");
+	}
+
 }
