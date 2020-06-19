@@ -583,6 +583,7 @@
               this.processGroupSelectGroup.push(item)
             }
           })
+        
         this.processGroupSelectGroup.forEach((item,i)=>{
           let arr ={processGroup:""}
           this.sameGroupDatas.push(arr)
