@@ -981,7 +981,7 @@ public class ProductionController extends Controller {
 	 * @date 2020年5月15日 下午3:00:19
 	 */
 	@ProductionLog("修改排产计划")
-	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber, Integer personNumber, Double rhythm) {
+	public void editPlan(Integer id, Boolean isUrgent, String remark, Integer producedQuantity,Integer schedulingQuantity, Integer line, String planStartTime, String planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber, Integer personNumber, Double rhythm) {
 		if (lineChangeTime != null) {
 			if (StrKit.isBlank(lineChangeTime) || lineChangeTime.length() > Constant.MAX_LINECHANGETIME_LENGTH) {
 				throw new ParameterException("转线时间内容为空或长度过长");
@@ -1003,7 +1003,7 @@ public class ProductionController extends Controller {
 		}
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		LUserAccountVO userVO = TokenBox.get(tokenId, UserController.SESSION_KEY_LOGIN_USER);
-		if (productionService.editPlan(id, isUrgent, remark, schedulingQuantity, line, start, end, lineChangeTime, capacity, isCompleted, remainingReason, productionPlanningNumber, userVO, personNumber, rhythm)) {
+		if (productionService.editPlan(id, isUrgent, remark, producedQuantity, schedulingQuantity, line, start, end, lineChangeTime, capacity, isCompleted, remainingReason, productionPlanningNumber, userVO, personNumber, rhythm)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

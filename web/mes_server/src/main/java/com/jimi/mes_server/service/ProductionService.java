@@ -1432,7 +1432,7 @@ public class ProductionService {
 	}
 
 
-	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer schedulingQuantity, Integer line, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber, LUserAccountVO userVO, Integer personNumber, Double rhythm) {
+	public boolean editPlan(Integer id, Boolean isUrgent, String remark, Integer producedQuantity, Integer schedulingQuantity, Integer line, Date planStartTime, Date planCompleteTime, String lineChangeTime, Integer capacity, Boolean isCompleted, String remainingReason, String productionPlanningNumber, LUserAccountVO userVO, Integer personNumber, Double rhythm) {
 		SchedulingPlan schedulingPlan = SchedulingPlan.dao.findById(id);
 		if (schedulingPlan == null) {
 			throw new OperationException("排产计划不存在");
@@ -1468,6 +1468,9 @@ public class ProductionService {
 			schedulingPlan.setCapacity(capacity);
 		}
 		schedulingPlan.setRemark(remark);
+		if (producedQuantity != null) {
+			schedulingPlan.setProducedQuantity(producedQuantity);
+		}
 		if (schedulingQuantity != null) {
 			schedulingPlan.setSchedulingQuantity(schedulingQuantity);
 		}
