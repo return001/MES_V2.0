@@ -580,7 +580,6 @@
         this.sameGroupDatas = []
           this.processGroupSelectGroupWait.forEach(item=>{
             if(item.factoryId === val){
-              console.log(item)
               this.processGroupSelectGroup.push(item)
             }
           })
