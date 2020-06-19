@@ -1028,6 +1028,8 @@
               }
             })
           });
+          console.log(this.orderEditOptionsData)
+          this.$set(this.orderEditOptionsData, 'isRework', val['isRework'])
           this.$set(this.orderEditOptionsData, 'id', val.id)
           this.isOrderEditing = true;
         } else if (type === 'copy') {
@@ -1049,6 +1051,7 @@
         } else if (type === 'add') {
           this.orderEditType = 'add';
           this.isOrderEditing = true;
+          this.isReworkEdit = false
 
         } else if (type === "rework"){
           this.isReworkEdit = true;
@@ -1115,22 +1118,21 @@
               url: '',
               data: this.orderEditOptionsData,
             };
-            // if(sessionFactory !== "null"){
-            //   options.data.factory=sessionFactory
-            // }
+            console.log(this.orderEditOptionsData)
+            if(this.orderEditOptionsData.isRework === true){
+              if(this.orderEditOptionsData.reworkQuantity > this.orderEditOptionsData.quantity){
+                this.$alertWarning('返工数量不得大于订单数量')
+                this.$closeLoading();
+                return
+              }
+            }
             if (this.orderEditType === 'edit') {
               options.url = planOrderEditUrl
-              options.data.isRework = this.isRework
             } else if (this.orderEditType === 'add' || this.orderEditType === 'rework' || this.orderEditType === 'copy') {
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
-                // if(this.sessionFactory === '1'){
                 options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory;
-                // }else{
-                //   options.data.factory = sessionFactory;
-                // }
-
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1149,7 +1151,6 @@
               }
             }).catch(err => {
               this.$alertDanger("未知错误")
-
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();

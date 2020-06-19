@@ -278,6 +278,7 @@
             pageNo: this.paginationOptions.currentPage,
             pageSize: this.paginationOptions.pageSize,
             factory:this.sessionFactory === '1'? 0 :this.sessionFactory,
+
           }
         };
         axiosFetch(options).then(response => {
@@ -306,7 +307,7 @@
               }
             })
           });
-          this.$set(this.processGroupEditOptionsData, 'id', val.groupId);
+          this.$set(this.processGroupEditOptionsData, 'id', val.id);
           this.isProcessGroupEditing = true;
         } else if (type === 'add') {
           this.processGroupEditType = 'add';

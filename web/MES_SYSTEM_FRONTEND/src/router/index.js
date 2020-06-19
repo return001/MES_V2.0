@@ -99,12 +99,13 @@ const index = new Router({
             },
             {
               path: 'multi',
+
               component: MultiTableModule
             }
           ]
         },
         {
-          path: '/order',
+          path: '/work_order',
           name: 'Order',
           component: OrderManage,
           // children: [
@@ -213,7 +214,7 @@ const index = new Router({
               component: LineSetting
             },
             {
-              path: 'site',
+              path: 'site_set',
               component: SiteSetting
             },
             {

@@ -131,7 +131,7 @@
               <el-tooltip content="编辑" placement="top">
                 <el-button
                     type="text"
-                    :disabled="scope.row.schedulingPlanStatus === 4 || scope.row.schedulingPlanStatus === 5"
+                    :disabled="scope.row.schedulingPlanStatus === 4 || scope.row.schedulingPlanStatus === 5 || jurisdiction[2] === false"
                     @click="editData(scope.row)"
                     icon="el-icon-edit-outline"></el-button>
               </el-tooltip>
@@ -173,7 +173,7 @@
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         @closed="tableDetailsData = []"
-        width="650px">
+        width="80%">
 
       <div class="order-details-title">订单信息:</div>
       <el-table
@@ -285,10 +285,14 @@
     </el-dialog>
 
     <!--edit panel-->
+<!--    <plan-edit-panel-->
+<!--        :row="planEditRow"-->
+<!--        :pmc-editing="pmcEditing"-->
+<!--        :engineer-editing="engineerEditing"-->
+<!--        :line-select-group="lineSelectGroup"-->
+<!--        :totally-editing="totallyEditing"/>-->
     <plan-edit-panel
         :row="planEditRow"
-        :pmc-editing="pmcEditing"
-        :engineer-editing="engineerEditing"
         :line-select-group="lineSelectGroup"
         :totally-editing="totallyEditing"/>
 
@@ -341,6 +345,7 @@
     },
     data() {
       return {
+        jurisdiction:JSON.parse(sessionStorage.getItem('charactersFuncMap')).map.plan.plan.detail,
         fetchDateAble:true,     //加载时第一个工序组标签是否有二级标签有二级标签就不能获取 产能数据，
         sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: planQueryOptions,
@@ -443,25 +448,23 @@
       }
     },
     async created() {
+      console.log(this.jurisdiction)
       this.$openLoading();
       this.initQueryOptions();
       await this.dataPreload();
       this.$closeLoading();
       //加载表格
-
       if(this.processGroupSelectGroup.length>0){
-        this.activeProcessGroup = this.processGroupSelectGroup[0].id
+        this.activeProcessGroup = this.processGroupSelectGroup[0].id;
         this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取 排产数据
       }else {
         this.$alertDanger('获取工序组失败')
       }
     },
     mounted() {
-
       eventBus.$off('closeEditPanel'); //关闭编辑界面
       eventBus.$off('setTimeoutHighlight'); //设置超时项目高亮
       eventBus.$off('partlyReload');
-
       eventBus.$on('partlyReload', () => {
         this.partlyReload();
       });
@@ -495,6 +498,15 @@
           Object.assign(this.$data, this.$options.data());
           Object.assign(this.$data, this.$store.state.stashData);
           this.queryData();
+          this.fetchProcessGroup();
+          //有操作需要刷新时 判断是否为 副工序组标签，显示问题
+          this.processGroupSelectGroup.forEach(item=>{
+            if(item.id === this.activeProcessGroup){
+              if(typeof(item.parentGroup) === "number"){
+                this.fetchProcessGroup(item.parentGroup)
+              }
+            }
+          })
           this.$store.commit('setStashData', {});
         };
         _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc', 'lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup'])
@@ -569,7 +581,8 @@
             if (response.data.result === 200) {
               //加载时查询工序组
               if(typeof(parentGroup) === "undefined"){             //获取一级工序组标签
-              // if(this.activeProcessGroup === ""){             //获取一级工序组标签
+
+              // if(this.activeProcessGroup === ""){               //获取一级工序组标签
                 if(response.data.data.list.length >0){
                   if(this.sessionFactory ==='1'){                  //集团角色  全部都显示
                     this.processGroupSelectGroup = response.data.data.list;
@@ -584,6 +597,7 @@
                   this.$alertWarning('未设置工序组')
                 }
               }else{                                              //点击一级工序组标签（传自己的id：就是paretGroup字段）
+                console.log(112233)
                 if(response.data.data.list.length >0){            //有二级工序组标签的情况
                   this.fetchDateAble = false;                     //加载时 如果第一个页签就有二级工序组标签的话  不允许直接获取产能数据
                   this.viceGroup = response.data.data.list
@@ -594,6 +608,7 @@
             } else {
               this.$alertWarning(response.data.data)
             }
+            console.log(this.processGroupSelectGroup)
           }).catch(err => {
             console.log(err)
             this.$alertDanger('获取工序组信息失败，请刷新重试');
@@ -751,13 +766,15 @@
       },
 
       editData: function (val) {
-        if (this.$store.state.userType === 'engineer') {
-          this.engineerEditing = true;
-        } else if (this.$store.state.userType === 'schedulingJMPMC') {
-          this.pmcEditing = true;
-        } else if (this.$store.state.userType === 'SuperAdmin') {
+        // if (this.$store.state.userType === 'engineer') {
+        //   this.engineerEditing = true;
+        // }
+        // else if (this.$store.state.userType === 'schedulingJMPMC') {
+        //   this.pmcEditing = true;
+        // } else if (this.$store.state.userType === 'SuperAdmin') {
           this.totallyEditing = true;
-        }
+          this.planEditRow = val
+        // }
 
       },
 

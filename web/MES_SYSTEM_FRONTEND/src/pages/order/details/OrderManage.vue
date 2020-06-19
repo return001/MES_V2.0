@@ -26,6 +26,9 @@
         isRouterAlive: true
       }
     },
+    mounted() {
+      console.log(1122)
+    },
     components: {
       Options,
       TableDetails,

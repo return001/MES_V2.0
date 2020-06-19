@@ -6,7 +6,7 @@
  **@params: 长度, 填充值
  */
 
-const generateArray = function (length, fillValue, fillPos) {
+const generateArray = function(length, fillValue, fillPos) {
   let tempArray = new Array(length).fill(undefined);
   for (let i in fillPos) {
     tempArray[fillPos[i]] = fillValue
@@ -23,12 +23,12 @@ const generateArray = function (length, fillValue, fillPos) {
 const funcNameMap = {
   '基础': 'basic',
   '排产': 'plan',
-  '工单': 'order',
+  '工单': 'work_order',
   '产量': 'capacity',
-  '测试': 'test',
+  '配置': 'test',
   'ESOP': 'esop',
   '功能': 'func',
-  '报表': 'table',
+  '查询': 'table',
   '用户': 'user'
 };
 
@@ -44,7 +44,7 @@ const moduleNameMap = {
   '数据表': 'table',
   '多表查询': 'multi',
   '备份': 'backup',
-  '工单': 'order',
+  '工单': 'work_order',
   'SMT测试': 'smt_test',
   '组装测试': 'zz_test',
   '研发测试': 'yf_test',
@@ -74,7 +74,7 @@ const pageNameMap = {
   '工序组设置': 'process_group',
   '工序设置': 'process',
   '产线设置': 'line',
-  '站点设置': 'site',
+  '站点设置': 'site_set',
   '客户信息': 'customer',
   '系列机型': 'model',
   '产品型号': 'product',
@@ -116,7 +116,7 @@ const pageNameMap = {
   '部门信息设置': 'dept',
   '用户类型设置': 'char',
   '用户信息': 'users',
-  '工单': 'order',
+  '工单': 'work_order',
   '产量录入': 'capacity',
   '红茶': 'redtea',
 };
@@ -158,7 +158,7 @@ const reversePermissionIndexMap = {
  **@method: getCharactersFuncList
  **@params:
  */
-const getCharactersFuncList = function () {
+const getCharactersFuncList = function() {
   return {
     'basic': {
       'basic': {
@@ -167,11 +167,11 @@ const getCharactersFuncList = function () {
         'process_group': generateArray(4, false, [0, 1, 2, 3]),
         'process': generateArray(4, false, [0, 1, 2, 3]),
         'line': generateArray(4, false, [0, 1, 2, 3]),
-        'site': generateArray(4, false, [0, 1, 2, 3]),
+        'site_set': generateArray(4, false, [0, 1, 2, 3]),
         'customer': generateArray(4, false, [0, 1, 2, 3]),
         'model': generateArray(4, false, [0, 1, 2, 3]),
         'product': generateArray(4, false, [0, 1, 2, 3]),
-        'capacity': generateArray(4, false, [0, 1, 2, 3]),
+        'capacity': generateArray(4, false, [0, 1, 2, 3, 6]),
         'file_type': generateArray(4, false, [0, 1, 2, 3]),
       },
     },
@@ -184,9 +184,24 @@ const getCharactersFuncList = function () {
         'order': generateArray(7, false, [0, 1, 2, 3, 4, 5, 6, 7]),
       }
     },
-    'order': {
-      'order': {
-        'order': generateArray(7, false, [0, 1, 2, 6])
+    'esop': {
+      'file': {
+        'file': generateArray(8, false, [0, 1, 3, 4, 5, 6]),
+        'notice': generateArray(8, false, [0, 1, 2, 3, 7]),
+        'site': generateArray(8, false, [0, 6, 7]),
+        'assign': generateArray(3, false, [0, 2]),
+        'action_log': generateArray(1, false, [0]),
+        'confirm_log': generateArray(1, false, [0]),
+        'notice_log': generateArray(1, false, [0]),
+      },
+      'client': {
+        'login_log': generateArray(1, false, [0]),
+        'count_log': generateArray(1, false, [0])
+      }
+    },
+    'work_order': {
+      'work_order': {
+        'work_order': generateArray(7, false, [0, 1, 2, 6])
       }
     },
     'test': {
@@ -203,32 +218,6 @@ const getCharactersFuncList = function () {
       },
       'oqc_test': {
         'oqc': generateArray(4, false, [0, 1, 2, 3])
-      }
-    },
-    'func': {
-      'mac': {
-        'mac': generateArray(3, false, [0, 2])
-      },
-      'imei': {
-        'imei': generateArray(6, false, [0, 5])
-      },
-      'redtea': {
-        'redtea': generateArray(1, false, [0])
-      }
-    },
-    'esop': {
-      'file': {
-        'file': generateArray(8, false, [0, 1, 3, 4, 5, 6]),
-        'notice': generateArray(8, false, [0, 1, 2, 3, 7]),
-        'site': generateArray(8, false, [0, 6, 7]),
-        'assign': generateArray(3, false, [0, 2]),
-        'action_log': generateArray(1, false, [0]),
-        'confirm_log': generateArray(1, false, [0]),
-        'notice_log': generateArray(1, false, [0]),
-      },
-      'client': {
-        'login_log': generateArray(1, false, [0]),
-        'count_log': generateArray(1, false, [0])
       }
     },
     'table': {
@@ -256,11 +245,22 @@ const getCharactersFuncList = function () {
         'backups': generateArray(6, false, [0, 3, 5])
       }
     },
+    'func': {
+      'mac': {
+        'mac': generateArray(3, false, [0, 2])
+      },
+      'imei': {
+        'imei': generateArray(6, false, [0, 5])
+      },
+      'redtea': {
+        'redtea': generateArray(1, false, [0])
+      }
+    },
     'user': {
       'user': {
         'dept': generateArray(4, false, [0, 1, 2, 3]),
         'char': generateArray(8, false, [0, 1, 2, 3, 7]),
-        'users': generateArray(8, false, [0, 1, 2, 7]),
+        'users': generateArray(8, false, [0, 1, 2, 3, 7]),
         // 'action_log': generateArray(8, false),
       }
     }
@@ -277,7 +277,7 @@ const getCharactersFuncList = function () {
  **@params: srcMap, authorities
  */
 
-const initCharactersFuncMap = function (srcMap, authorities) {
+const initCharactersFuncMap = function(srcMap, authorities) {
   let Obj = {
     map: srcMap,
     pageList: undefined,
@@ -315,7 +315,7 @@ const initCharactersFuncMap = function (srcMap, authorities) {
  **@params: path: String
  **@return: _page: String
  */
-const getModuleIndex = function (path, query) {
+const getModuleIndex = function(path, query) {
   const pathGroup = path.split('/');
   let _moduleMap, _pageMap, _page;
   const _routerMap = {
@@ -326,6 +326,7 @@ const getModuleIndex = function (path, query) {
     'setting': 'basic',
     'plan': 'plan',
     'user': 'user',
+    'work_order':'work_order',
 
   };
   /*当路由未到达叶子路由时将返回值设置为 ‘模块’，排除目前存在的两种单层路由页面的情况 */
@@ -408,7 +409,7 @@ const getModuleIndex = function (path, query) {
  **@params: path: String, query:Object, charactersFuncMap:Object
  */
 
-const getModulePermission = function (path, query, charactersFuncMapPageList) {
+const getModulePermission = function(path, query, charactersFuncMapPageList) {
   let page = getModuleIndex(path, query);
   if (path === '/editPassword') {
     return true;
@@ -425,7 +426,7 @@ const getModulePermission = function (path, query, charactersFuncMapPageList) {
  **@params: path, query
  **@return: moduleIndexArray: Array
  */
-const getModuleIndexArray = function (path, query) {
+const getModuleIndexArray = function(path, query) {
   return getModuleIndex(path, query).split('-')
 };
 
@@ -437,7 +438,7 @@ const getModuleIndexArray = function (path, query) {
  **@params: path: String, query: Object, functionType: Number, funcMap: Object
  **@return: Boolean
  */
-const getFunctionPermission = function (path, query, functionType, funcMap) {
+const getFunctionPermission = function(path, query, functionType, funcMap) {
   let indexArray = getModuleIndexArray(path, query);
   return Boolean(funcMap[indexArray[0]][indexArray[1]][indexArray[2]][functionType])
 };

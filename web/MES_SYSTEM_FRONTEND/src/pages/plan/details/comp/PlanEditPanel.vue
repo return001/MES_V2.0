@@ -100,18 +100,7 @@
             placeholder="请填写转线时间"
             v-model="planEditOptionsData.lineChangeTime"></el-input>
         </el-form-item>-->
-        <el-form-item
-          size="small"
-          v-if="permissionShow([true, false])"
-          class="plan-edit-form-comp plan-edit-form-comp-textarea"
-          label="备注"
-          prop="remark">
-          <el-input type="textarea"
-                    :rows="4"
-                    clearable
-                    autocomplete="off"
-                    v-model="planEditOptionsData.remark"></el-input>
-        </el-form-item>
+
         <el-form-item
           size="small"
           v-if="permissionShow([false, true])"
@@ -161,10 +150,21 @@
           <el-input
             type="text"
             clearable
-            disabled
             autocomplete="off"
             placeholder="请填写已完成数量"
             v-model.number="planEditOptionsData.producedQuantity"></el-input>
+        </el-form-item>
+        <el-form-item
+          size="small"
+          v-if="permissionShow([true, false])"
+          class="plan-edit-form-comp plan-edit-form-comp-textarea"
+          label="备注"
+          prop="remark">
+          <el-input type="textarea"
+                    :rows="4"
+                    clearable
+                    autocomplete="off"
+                    v-model="planEditOptionsData.remark"></el-input>
         </el-form-item>
         <el-form-item
           size="small"
@@ -313,35 +313,36 @@
       },
 
       row(val) {
-        if (this.pmcEditing && !this.engineerEditing) {
-          Object.assign(this.planEditOptionsData, this.$options.data().planPMCEditOptionsData);
-          this.planEditOptionsData = {
-            isUrgent: val.isUrgent,
-            line: val.line,
-            schedulingQuantity: val.schedulingQuantity,
-            lineChangeTime: val.lineChangeTime,
-            remark: val.remark,
-            planStartTime: !!val.planStartTime ? val.planStartTime : '',
-            planCompleteTime: !!val.planCompleteTime ? val.planCompleteTime : ''
-          };
-          Object.assign(this.planEditOptionsRules, this.planPMCEditOptionsRules);
-
-        } else if (!this.pmcEditing && this.engineerEditing) {
-          Object.assign(this.planEditOptionsData, this.$options.data().planEngineerEditOptionsData);
-          this.setProducedQuantity(val.id);
-
-          this.planEditOptionsData = {
-            isCompleted: false,
-            productionPlanningNumber: val.productionPlanningNumber,
-            capacity: val.capacity,
-            producedQuantity: val.producedQuantity,
-            remainingReason: val.remainingReason
-          };
-          Object.assign(this.planEditOptionsRules, this.planEngineerEditOptionsRules);
-          this.setProducedQuantity(val.id);
-
-        } else if (this.totallyEditing) {
+        // if (this.pmcEditing && !this.engineerEditing) {
+        //   Object.assign(this.planEditOptionsData, this.$options.data().planPMCEditOptionsData);
+        //   this.planEditOptionsData = {
+        //     isUrgent: val.isUrgent,
+        //     line: val.line,
+        //     schedulingQuantity: val.schedulingQuantity,
+        //     lineChangeTime: val.lineChangeTime,
+        //     remark: val.remark,
+        //     planStartTime: !!val.planStartTime ? val.planStartTime : '',
+        //     planCompleteTime: !!val.planCompleteTime ? val.planCompleteTime : ''
+        //   };
+        //   Object.assign(this.planEditOptionsRules, this.planPMCEditOptionsRules);
+        //
+        // } else if (!this.pmcEditing && this.engineerEditing) {
+        //   Object.assign(this.planEditOptionsData, this.$options.data().planEngineerEditOptionsData);
+        //   this.setProducedQuantity(val.id);
+        //
+        //   this.planEditOptionsData = {
+        //     isCompleted: false,
+        //     productionPlanningNumber: val.productionPlanningNumber,
+        //     capacity: val.capacity,
+        //     producedQuantity: val.producedQuantity,
+        //     remainingReason: val.remainingReason
+        //   };
+        //   Object.assign(this.planEditOptionsRules, this.planEngineerEditOptionsRules);
+        //   this.setProducedQuantity(val.id);
+        // }
+        // else if (this.totallyEditing) {
           this.$set(this.$data, 'planEditOptionsData', {
+            id:val.id,
             isCompleted: false,
             productionPlanningNumber: val.productionPlanningNumber,
             capacity: val.capacity,
@@ -358,9 +359,10 @@
           });
           Object.assign(this.planEditOptionsRules, this.planPMCEditOptionsRules);
           Object.assign(this.planEditOptionsRules, this.planEngineerEditOptionsRules);
-
-          this.setProducedQuantity(val.id);
-        }
+          if(this.planEditOptionsData.id){
+            this.setProducedQuantity(val.id);
+          }
+        // }
       }
     },
 
@@ -378,6 +380,7 @@
       },
 
       resetEditPanel() {
+        this.planEditOptionsData = {}
         eventBus.$emit('closeEditPanel')
       },
 
@@ -410,36 +413,36 @@
 
 
       async submitData(options) {
-        let validMark = false;
-        if (this.pmcEditing || this.totallyEditing) {
-          let validateOptions = {
-            url: planCheckCompleteTimeSelectUrl,
-            data: options.data
-          };
-          if (this.pmcEditing && !this.engineerEditing) {
-            validateOptions.data.capacity = this.row.capacity;
-          }
-          await axiosFetch(validateOptions).then(response => {
-            if (response.data.result === 200) {
-              if (response.data.data === true) {
-                validMark = true
-              } else {
-                this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
-                this.isPending = false;
-                this.$closeLoading();
-              }
-            } else {
-              this.$alertWarning(response.data.data);
-              this.isPending = false;
-              this.$closeLoading();
-            }
-          }).catch(err => {
-            this.$alertDanger('未知错误');
-            this.isPending = false;
-            this.$closeLoading();
-          })
-        }
-        if (validMark || this.engineerEditing) {
+        // let validMark = false;
+        // if (this.pmcEditing || this.totallyEditing) {
+        //   let validateOptions = {
+        //     url: planCheckCompleteTimeSelectUrl,
+        //     data: options.data
+        //   };
+        //   if (this.pmcEditing && !this.engineerEditing) {
+        //     validateOptions.data.capacity = this.row.capacity;
+        //   }
+        //   await axiosFetch(validateOptions).then(response => {
+        //     if (response.data.result === 200) {
+        //       if (response.data.data === true) {
+        //         validMark = true
+        //       } else {
+        //         this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
+        //         this.isPending = false;
+        //         this.$closeLoading();
+        //       }
+        //     } else {
+        //       this.$alertWarning(response.data.data);
+        //       this.isPending = false;
+        //       this.$closeLoading();
+        //     }
+        //   }).catch(err => {
+        //     this.$alertDanger('未知错误');
+        //     this.isPending = false;
+        //     this.$closeLoading();
+        //   })
+        // }
+        // if (validMark || this.engineerEditing) {
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess("修改成功");
@@ -455,7 +458,7 @@
             this.isPending = false;
             this.$closeLoading();
           })
-        }
+        // }
       },
 
       setProducedQuantity(id) {

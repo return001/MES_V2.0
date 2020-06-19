@@ -28,7 +28,8 @@
         </el-form>
 
         <div class="form-item-btn">
-          <el-button type="primary" style="width: 100%" native-type="submit">确认</el-button>
+          <el-button plain type="info" style="width: 40%" @click="$router.go(-1)">取消</el-button>
+          <el-button type="primary" style="width: 40%" native-type="submit">确认</el-button>
         </div>
       </form>
     </div>
@@ -167,7 +168,7 @@
     background: #fff;
     border: 1px solid #999;
     border-radius: 5px;
-    height: 360px;
+    height: 400px;
     width: 320px;
     padding: 10px 20px;
   }
@@ -181,6 +182,8 @@
   }
 
   .form-item-btn {
+    display: flex;
+    justify-content: space-between;
     margin-top: 30px;
   }
 </style>

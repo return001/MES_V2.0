@@ -1,11 +1,64 @@
 <template>
   <div id="user-setting">
     <div class="query-comp">
-      <rz-query-bar
-          :list="queryConfig"
-          :button-group="buttonGroup"
-          :data.sync="queryCompData"/>
+<!--      <rz-query-bar-->
+<!--          :list="queryConfig"-->
+<!--          :button-group="buttonGroup"-->
+<!--          :data.sync="queryCompData"/>-->
+
+
+      <div class="query-comp-container" v-for="(item, index) in queryConfig" :key="index">
+        <!--纯文本框-->
+        <div class="query-comp-text" v-if="item.type === 'text'">
+          <label :for="item.prop + index">{{item.label}}:</label>
+          <el-input v-model="queryCompData[item.prop]" :id="item.prop + index"
+                    :placeholder="'请填写' + item.label" size="small"
+                    autocomplete="off"
+                    clearable></el-input>
+        </div>
+        <!--选择器-->
+        <div class="query-comp-select" v-else-if="item.type === 'select'">
+          <label :for="item.prop + index">{{item.label}}:</label>
+          <el-select v-model="queryCompData[item.prop]" :id="item.prop + index"
+                     :placeholder="'请选择' + item.label" size="small"
+                     autocomplete="off"
+                     @change="linkageSelect($event,item.prop)"
+                     clearable
+                     >
+            <el-option v-for="listItem in item.selectList"
+                       :key="listItem.key"
+                       :value="listItem.key"
+                       :label="listItem.label"></el-option>
+          </el-select>
+        </div>
+<!--        <div class="query-comp-select" v-else-if="item.type === 'select' && item.prop === 'company'">-->
+<!--          <label :for="item.prop + index">{{item.label}}:</label>-->
+<!--          <el-select v-model="queryCompData[item.prop]" :id="item.prop + index"-->
+<!--                     :placeholder="'请选择' + item.label" size="small"-->
+<!--                     autocomplete="off"-->
+<!--                     @change="linkageSelect"-->
+<!--                     >-->
+<!--            <el-option v-for="listItem in item.selectList"-->
+<!--                       :key="listItem.key"-->
+<!--                       :value="listItem.key"-->
+<!--                       :label="listItem.label"></el-option>-->
+<!--          </el-select>-->
+<!--        </div>-->
+      </div>
+      <div class="query-comp-container">
+        <el-button type="info" @click="queryCompData = {}" size="small">重置条件</el-button>
+      </div>
+      <div class="query-comp-container">
+        <el-button type="primary" @click="queryData" size="small">查询</el-button>
+      </div>
+      <div class="query-comp-container">
+        <el-button type="primary" @click="addData" size="small">新增</el-button>
+      </div>
     </div>
+
+
+
+
 
     <div class="content-comp">
       <el-table
@@ -28,7 +81,7 @@
 
         <el-table-column
             label="操作"
-            width="80"
+            width="100"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -37,6 +90,9 @@
             </el-tooltip>
             <el-tooltip content="编辑" placement="top">
               <el-button type="text" @click="editData(scope.row)" icon="el-icon-edit-outline"></el-button>
+            </el-tooltip>
+            <el-tooltip content="删除" placement="top">
+              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -72,14 +128,14 @@
         <el-form-item
             size="small"
             label="用户名"
-            prop="userName"
+            prop="name"
         >
           <el-input
               type="text"
               placeholder="请填写登录时用户名"
               clearable
               autocomplete="off"
-              v-model="formData.userName"></el-input>
+              v-model="formData.name"></el-input>
         </el-form-item>
         <el-form-item
             size="small"
@@ -96,14 +152,14 @@
         <el-form-item
             size="small"
             label="密码"
-            prop="userPwd"
+            prop="password"
         >
           <el-input
               type="text"
               placeholder="请填写密码"
               clearable
               autocomplete="off"
-              v-model="formData.userPwd"></el-input>
+              v-model="formData.password"></el-input>
         </el-form-item>
         <el-form-item
             size="small"
@@ -128,7 +184,7 @@
               clearable>
             <el-option v-for="listItem in srcLineList"
                        :key="'line-item-'+listItem.id"
-                       :value="listItem.id"
+                       :value="listItem.lineName"
                        :label="listItem.lineName"></el-option>
           </el-select>
         </el-form-item>
@@ -142,7 +198,8 @@
               id="process-select"
               class="custom-select"
               v-model="formData.mainProcess"
-              @change="selectMainProcess">
+              @change="selectMainProcess"
+              clearable>
             <el-option value="" selected label="未选择"></el-option>
             <el-option v-for="item in srcProcessList"
                        :value="item.processName"
@@ -160,32 +217,35 @@
               id="proficiency-select"
               class="custom-select"
               v-model="formData.proficiency"
-              :disabled="!formData.mainProcess">
+              :disabled="!formData.mainProcess"
+              clearable
+          >
             <el-option value="" selected label="未选择"></el-option>
             <el-option value="熟练" label="熟练"></el-option>
             <el-option value="一般" label="一般"></el-option>
             <el-option value="不熟" label="不熟"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item
-            size="small"
-            label="其它技能"
-            prop="otherProcess"
-        >
-          <el-select
-              size="small"
-              id="other-skill"
-              class="custom-select"
-              v-model="formData.otherProcess"
-              multiple
-              :disabled="!formData.mainProcess">
-            <el-option value="" selected label="未选择"></el-option>
-            <el-option v-for="item in processSelectGroupSrcAfter"
-                       :value="item.processName"
-                       :key="'order-process-item-'+item.id"
-                       :label="item.processName"></el-option>
-          </el-select>
-        </el-form-item>
+<!--        <el-form-item-->
+<!--            size="small"-->
+<!--            label="其它技能"-->
+<!--            prop="otherProcess"-->
+<!--        >-->
+<!--          <el-select-->
+<!--              size="small"-->
+<!--              id="other-skill"-->
+<!--              class="custom-select"-->
+<!--              v-model="formData.otherProcess"-->
+<!--              multiple-->
+<!--              clearable-->
+<!--              :disabled="!formData.mainProcess">-->
+<!--&lt;!&ndash;            <el-option value="" selected label="未选择"></el-option>&ndash;&gt;-->
+<!--            <el-option v-for="item in processSelectGroupSrcAfter"-->
+<!--                       :value="item.id"-->
+<!--                       :key="'order-process-item-'+item.id"-->
+<!--                       :label="item.processName"></el-option>-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
       </el-form>
       <span slot="footer" class="dialog-footer">
          <el-button size="small" @click="closeEditPanel" type="info">取消</el-button>
@@ -227,10 +287,11 @@
     planProcessSelectUrl,
     userUpdateUrl,
     userQueryUrl,
-    eSopFactorySelectUrl, selectDeptUrl, selectCharUrl, getUserAuthorities, setTypicalChar
+    eSopFactorySelectUrl, selectDeptUrl, selectCharUrl, getUserAuthorities, setTypicalChar,userDeleteUrl
   } from "../../../config/globalUrl";
   import {UserQueryConfig, UserTableColumns, UserFormRules} from "../../../config/UserConfig";
   import EditCharComp from "./comp/EditCharComp";
+  import {MessageBox} from "element-ui";
 
   export default {
     name: "UserConfig",
@@ -238,6 +299,7 @@
     inject: ['reload'],
     data() {
       return {
+        thisQueryOptions:[],
         queryConfig: UserQueryConfig,
         buttonGroup: [
           {
@@ -277,13 +339,13 @@
         editType: 0, //0: add, 1: edit
 
         formRules: {
-          userName: [
+          name: [
             {required: true, message: '请输入用户名(工号)', trigger: 'blur'},
           ],
           userDes: [
             {required: true, message: '请输入用户描述', trigger: 'blur'},
           ],
-          userPwd: [
+          password: [
             {required: false, message: '请输入密码', trigger: 'blur'},
           ],
         },
@@ -306,6 +368,7 @@
         selectedAuthority: [],
 
         srcProcessList: [],
+        srcOtherProcessList: [],
         processSelectGroupSrcAfter: [],
         processList: [],
 
@@ -335,21 +398,22 @@
             label: item.abbreviation
           }
         });
-        this.queryConfig[1].selectList = this.srcDeptList.map(item => {
-          return {
-            key: item.id,
-            label: item.name
-          }
-        });
+        this.queryConfig[1].selectList = []
+        // this.queryConfig[1].selectList = this.srcDeptList.map(item => {
+        //   return {
+        //     key: item.id,
+        //     label: item.name
+        //   }
+        // });
         this.queryConfig[5].selectList = this.srcProcessList.map(item => {
           return {
-            key: item.id,
+            key: item.processName,
             label: item.processName
           }
         });
         this.queryConfig[7].selectList = this.srcLineList.map(item => {
           return {
-            key: item.id,
+            key: item.lineName,
             label: item.lineName
           }
         });
@@ -366,11 +430,10 @@
       };
       this.buttonGroup[1].callback = this.queryData;
       this.buttonGroup[2].callback = this.addData;
-
-
       this.queryData();
     },
     methods: {
+
       queryData() {
         this.paginationOptions.currentPage = 1;
         this.paginationOptions.total = 0;
@@ -395,10 +458,11 @@
         axiosFetch(options).then(response => {
           if (response.data.result === 200) {
             this.tableData = response.data.data.list;
-
           } else {
             this.$alertWarning(response.data.data)
           }
+          this.paginationOptions.currentPage = response.data.data.pageNumber;
+          this.paginationOptions.total = response.data.data.totalRow;
         }).catch((err) => {
           console.log(err);
           this.$alertDanger('未知错误');
@@ -408,16 +472,59 @@
         })
       },
 
+      linkageSelect(val,prop){
+        console.log(prop)
+        if(prop === 'company'){
+          delete this.queryCompData.department
+          delete this.queryCompData.roleName
+          this.queryConfig[1].selectList = []
+          this.queryConfig[2].selectList = []
+          this.srcDeptList.forEach(item=>{
+            if(item.company === val){
+              this.queryConfig[1].selectList.push({
+                key: item.id,
+                label: item.name
+              })
+            }
+          })
+        }else if(prop === 'department'){
+          delete this.queryCompData.roleName
+          this.queryConfig[2].selectList = []
+          this.srcAuthoritiesList.forEach(item=>{
+            if(item.department === val){
+              this.queryConfig[2].selectList.push({
+                key: item.name,
+                label: item.name
+              })
+            }
+          })
+        }else if(prop === 'mainProcess'){
+          delete this.queryCompData.otherProcess
+          this.queryConfig[6].selectList= []
+          this.srcProcessList.forEach(item=>{
+            if(val){
+              if (item.processName !== val){
+                this.queryConfig[6].selectList.push({
+                  key: item.processName,
+                  label: item.processName
+                })
+              }
+            }
+          })
+        }
+      },
+
       addData() {
         this.editType = 0;
         this.editPanelTitle = '新增';
-        this.formRules.userPwd[0].required = true;
+        this.formRules.password[0].required = true;
         this.isEditing = true;
+        this.queryData();
       },
       editData(row) {
         this.editType = 1;
         this.editPanelTitle = '编辑';
-        this.formRules.userPwd[0].required = false;
+        this.formRules.password[0].required = false;
         this.formData = {
           'id': row.id,
           'inService': row.inService,
@@ -432,6 +539,37 @@
         };
         this.selectedAuthority = [row.company, row.department, row.role];
         this.isEditing = true;
+      },
+
+      //删除
+      deleteData(row) {
+        MessageBox.confirm('将删除该项目，是否继续?', '提示', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$openLoading();
+          axiosFetch({
+            url: userDeleteUrl,
+            data: {
+              id: row.id
+            }
+          }).then(response => {
+            if (response.data.result === 200) {
+              this.$alertSuccess('删除成功');
+              this.reload();
+            } else {
+              this.$alertWarning(response.data.data)
+            }
+          }).catch(err => {
+            console.log(err)
+            this.$alertDanger("未知错误")
+          }).finally(() => {
+            this.$closeLoading();
+          })
+        }).catch(() => {
+
+        })
       },
 
       preloadAll() {
@@ -482,6 +620,7 @@
             data: {}
           }).then(response => {
             if (response.data.result === 200) {
+              console.log(response.data.data)
               resolve(response.data.data);
             } else {
               this.$alertWarning(response.data.data);
@@ -728,6 +867,28 @@
     border: 1px solid #ededed;
     border-radius: 5px;
     margin-top: 10px;
+  }
+  .query-comp {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 5px;
+    padding: 10px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+  .query-comp label {
+    display: block;
+    line-height: 24px;
+    font-size: 14px;
+  }
+  .query-comp-container {
+    margin: 0 16px 10px 0;
+  }
+  .query-comp-container .el-button {
+    margin-top: 24px;
+    min-width: 80px;
   }
 
   .page-pagination {

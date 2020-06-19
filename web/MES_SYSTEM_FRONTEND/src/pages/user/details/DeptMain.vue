@@ -11,7 +11,8 @@
           :data="tableData"
           max-height="560"
           ref="tablecomponent"
-          :span-method="spanMethod">
+          :span-method="spanMethod"
+          border>
         <el-table-column v-for="(item, index) in tableColumns"
                          :key="index"
                          :prop="item.key"

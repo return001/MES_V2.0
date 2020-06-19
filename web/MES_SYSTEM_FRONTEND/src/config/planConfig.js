@@ -137,7 +137,21 @@ export const orderEditOptions = [{
         label: '客户名称',
         key: 'customerName'
     },
-
+    {
+        type: 'text',
+        label: '物料状态',
+        key: 'materialState'
+    },
+    {
+        type: 'date',
+        label: '齐料时间',
+        key: 'enoughMaterialTime'
+    },
+    {
+        type: 'text',
+        label: 'PCBA',
+        key: 'pcba'
+    },
     {
         type: 'text',
         label: '订单数量',
@@ -252,6 +266,21 @@ export const orderTableColumns = [{
         'min-width': '120px'
     },
     {
+      'label': '物料状态',
+      'key': 'materialState',
+      'min-width': '120px'
+    },
+    {
+      'label': '齐料时间',
+      'key': 'enoughMaterialTime',
+      'min-width': '120px'
+    },
+    {
+      'label': 'PCBA',
+      'key': 'pcba',
+      'min-width': '120px'
+    },
+    {
         'label': '客户料号',
         'key': 'customerMaterialNo',
         'min-width': '90px'
@@ -344,6 +373,21 @@ export const orderUnscheduledTableColumns = [{
         'label': '订单数量',
         'key': 'quantity',
         'min-width': '80px'
+    },
+    {
+        'label': '物料状态',
+        'key': 'materialState',
+        'min-width': '120px'
+    },
+    {
+        'label': '齐料时间',
+        'key': 'enoughMaterialTime',
+        'min-width': '90px'
+    },
+    {
+        'label': 'PCBA',
+        'key': 'pcba',
+        'min-width': '90px'
     },
     {
         'label': '未排产数量',
@@ -1204,6 +1248,21 @@ export const planTableExtraOrderColumns = [{
         'min-width': '100px'
     },
     {
+        'label': '物料状态',
+        'key': 'materialState',
+        'min-width': '120px'
+    },
+    {
+        'label': '齐料时间',
+        'key': 'enoughMaterialTime',
+        'min-width': '90px'
+    },
+    {
+        'label': 'PCBA',
+        'key': 'pcba',
+        'min-width': '90px'
+    },
+    {
         'label': '客户编号',
         'key': 'customerNumber',
         'min-width': '80px'
@@ -1369,23 +1428,26 @@ export const planOrderDetail = [
   {
     'label': '预计开始时间',
     'key': 'planStartTime',
-    'min-width': '120px'
+    'min-width': '90px'
   },
   {
     'label': '预计结束时间',
     'key': 'planCompleteTime',
-    'min-width': '120px'
-  },{
+    'min-width': '90px'
+  },
+  {
     'label': '完成数量',
     'key': 'producedQuantity',
     'min-width': '70px'
-  },{
+  },
+  {
     'label': '生产开始时间',
     'key': 'startTime',
-    'min-width': '120px'
-  },{
+    'min-width': '90px'
+  },
+  {
     'label': '生产结束时间',
     'key': 'completeTime',
-    'min-width': '120px'
+    'min-width': '90px'
   },
   ]

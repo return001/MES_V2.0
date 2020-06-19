@@ -253,9 +253,10 @@ export const UserQueryConfig = [
     prop: 'department',
   },
   {
-    type: 'text',
+    type: 'select',
     label: '角色名称',
     size: 'small',
+    selectList: [],
     prop: 'roleName',
   },
   {
@@ -278,9 +279,10 @@ export const UserQueryConfig = [
     prop: 'mainProcess',
   },
   {
-    type: 'text',
+    type: 'select1',
     label: '其他技能',
     size: 'small',
+    selectList: [],
     prop: 'otherProcess',
   },
   {
@@ -296,11 +298,11 @@ export const UserQueryConfig = [
     size: 'small',
     selectList: [
       {
-        key: true,
+        key: 'true',
         label: '是'
       },
       {
-        key: false,
+        key: 'false',
         label: '否'
       }
 
@@ -373,14 +375,14 @@ export const UserTableColumns = [
     'key': 'proficiency',
     'min-width': '100px'
   },
-  {
-    'label': '其他技能',
-    'key': 'otherProcess',
-    'min-width': '100px',
-    formatter(row, column, cellValue, index) {
-      return !cellValue ? '' : cellValue.split('@@').join('、')
-    }
-  },
+  // {
+  //   'label': '其他技能',
+  //   'key': 'otherProcess',
+  //   'min-width': '100px',
+  //   formatter(row, column, cellValue, index) {
+  //     return !cellValue ? '' : cellValue.split('@@').join('、')
+  //   }
+  // },
 ];
 
 

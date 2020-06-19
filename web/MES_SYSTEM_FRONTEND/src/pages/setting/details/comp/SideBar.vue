@@ -15,7 +15,6 @@
         </div>
       </div>
     </nav>
-
   </div>
 </template>
 
@@ -52,7 +51,7 @@
                 name: '产线设置'
               },
               {
-                type: 'site',
+                type: 'site_set',
                 name: '站点设置'
               },
               {

@@ -149,7 +149,7 @@
               <el-input class="table-inner-input-text"
                         type="text"
                         size="mini"
-                        @change="clearPredictTime"
+                        @change="changeLineChangeTime"
                         v-model.number="tableEditData[scope.row.id].lineChangeTime"></el-input>
             </template>
           </el-table-column>
@@ -173,8 +173,8 @@
           </el-table-column>
 
           <el-table-column
-            label="预计生产时长(小时)"
-            width="80"
+            label="预计生产时长"
+            width="100"
             fixed="right"
           >
             <template slot-scope="scope">
@@ -183,7 +183,7 @@
           </el-table-column>
           <el-table-column
             label="预计开始时间"
-            :width="isAuto ? '160' : '200'"
+            :width="isAuto ? '150' : '190'"
             fixed="right"
           >
             <template slot-scope="scope">
@@ -298,7 +298,13 @@
         </el-date-picker>
       </div>
       <div class="allreday-choice-date">
-        <el-button size="small" type="info" round v-for="item in choicedDate">{{item}}</el-button>
+        <el-tag v-for="item in choicedDate"
+                size="medium"
+                effect="dark"
+                closable
+                @close="handleClose(item)"
+                @click="handleShowDateTime(item)"
+                :type="clicked === item ? 'info' : ''">{{item}}</el-tag>
       </div>
       <div style="margin-top: 20px">
         <el-table
@@ -373,7 +379,7 @@
       :close-on-press-escape="false"
       @closed="isDetailsShowing = false"
       append-to-body
-      width="80%">
+      width="88%">
       <el-table
         :data="detailData"
         max-height="500"
@@ -476,10 +482,11 @@
         isTimeSetting:false, //设置时间 dialog 显示
         lineDate:'',         //产线日期
         trueTimes:true,      //设置时间时是验证表单（暂时不用）
-        isExist:"",          //当前产线是否已经设置过时间
+        clicked:'',          //设置时间页面 点击日期变色
+        // isExist:"",          //当前产线是否已经设置过时间
         workTime:[
           {
-            startTime:'',       //产线每个时段的开始时间1590827395
+            startTime:'',       //产线每个时段的开始时间
             endTime:'',         //产线每个时段的结束时间
           },
           {
@@ -541,11 +548,14 @@
           {'label': '内部替换号', 'key': 'alias', 'min-width': '60px'},
           {'label': '机型', 'key': 'softModel', 'min-width': '60px'},
           // {'label': '版本号', 'key': '', 'min-width': '100px'},
+          {'label': '物料状态','key': 'materialState', 'min-width': '90px'},
+          {'label': '齐料时间', 'key': 'enoughMaterialTime', 'min-width': '90px'},
+          {'label': 'PCBA', 'key': 'pcba', 'min-width': '90px'},
           {'label': '客户料号', 'key': 'customerMaterialNo', 'min-width': '100px'},
           {'label': '客户编号', 'key': 'customerNumber', 'min-width': '100px'},
           {'label': '客户名称', 'key': 'customerName', 'min-width': '100px'},
-          {'label': '订单日期', 'key': 'orderDate', 'min-width': '100px'},
-          {'label': '交货日期', 'key': 'deliveryDate', 'min-width': '100px'},
+          {'label': '订单日期', 'key': 'orderDate', 'min-width': '95px'},
+          {'label': '交货日期', 'key': 'deliveryDate', 'min-width': '95px'},
         ],
         tableData: [],
         tableTollData:[],    //获取排产时的 未排产数
@@ -633,7 +643,6 @@
     },
     computed: {},
     async mounted() {
-      console.log(this.lineGroup)
       if(this.lineGroup.length <= 0){
         this.$alertWarning("该工序组未设置产线")
         return;
@@ -664,8 +673,6 @@
         return item
       });
       this.tableTollData = JSON.parse(JSON.stringify(this.tableData))
-      console.log(this.tableData)
-      console.log(this.tableTollData)
       this.$closeLoading()
     },
     methods: {
@@ -730,6 +737,14 @@
           this.$alertWarning('请选择日期');
           return
         }
+        if(this.workTime.length <= 1){
+          if(this.lineDate.length > 1){
+            this.$alertWarning('只能清空单个日期的时间')
+            return
+          }else{
+            this.handleClose(this.clicked)
+          }
+        }
         this.workTime.splice(val,1)
       },
 
@@ -754,7 +769,6 @@
         this.cleanOptions()
         this.choicedDate = [];
         this.isTimeSetting = false;
-        this.choicedDate = [];
       },
 
       //选择产线
@@ -808,14 +822,16 @@
               })
               this.dateToTime = obj
               this.choicedDate = Object.keys(this.dateToTime).map(choiced=>choiced)
+
               //选择产线后，出现第一个日期的数据
               this.lineDate = [Object.keys(obj)[0]]
               this.workTime = obj[Object.keys(obj)[0]]
+              this.clicked = Object.keys(obj)[0]
 
               //判断选择的产线在不在从数据库里取出的数据中 在的话，覆盖，不在则直接加
               if(this.timesAndTasks.workTimes.length >0){
-                let datearray = this.timesAndTasks.workTimes.map(item=>item.executorId)
-                if (datearray.indexOf(this.choiceLine) !== -1){
+                let dateArray = this.timesAndTasks.workTimes.map(item=>item.executorId)
+                if (dateArray.indexOf(this.choiceLine) !== -1){
                   this.timesAndTasks.workTimes.forEach(item=> {
                     if (item.executorId === this.choiceLine) {
                       item.workTime = this.unDefaultData
@@ -858,29 +874,16 @@
           return
         }
         if(this.lineDate === null){           //清空日期时，显示公共时间
+          this.clicked = '';
           this.workTime = this.defaultData;
         }else{
+          this.clicked = this.lineDate[0];
           if(Object.keys(this.dateToTime).indexOf(this.lineDate[0]) !== -1){
-            this.workTime=this.dateToTime[this.lineDate[0]]
+            this.workTime=this.dateToTime[this.lineDate[0]];
           } else {
-            // this.workTime=[
-            //   {startTime: "",endTime: ""},
-            //   {startTime: "",endTime: ""}
-            // ]
-            this.workTime = this.defaultData;
+            this.workTime = this.defaultData; //产线页面设置的公共时间
           }
           if(this.lineDate.length > 1){
-            // this.workTime = [
-            //   {
-            //     startTime:'',       //产线每个时段的开始时间
-            //     endTime:'',         //产线每个时段的结束时间
-            //   },
-            //   {
-            //     startTime:'',
-            //     endTime:'',
-            //   },
-            // ]
-            // return
             this.workTime = this.defaultData;
           }
         }
@@ -891,8 +894,55 @@
         return s < 10 ? '0' + s : s;
       },
 
+      //点击已选择过的日期  显示对应日期的时间设置
+      handleShowDateTime(date){
+        this.clicked = date
+        this.lineDate = [date];
+        this.workTime = this.dateToTime[date];
+      },
+
+      //删除日期
+      handleClose(date){
+        delete this.dateToTime[date]
+        console.log(Object.keys(this.dateToTime).length)
+        console.log(this.dateToTime)
+        if(Object.keys(this.dateToTime).length > 0){
+          this.choicedDate = Object.keys(this.dateToTime).map(item=>item)
+          this.clicked = this.choicedDate[0]
+          this.lineDate = [this.choicedDate[0]]
+          this.workTime = this.dateToTime[this.clicked]
+          //把没有删除的日期 放入
+          let notEmpty=[]
+          this.timesAndTasks.workTimes.forEach(item=>{
+            if (item.executorId === this.choiceLine){
+              item.workTime.forEach(timeItem=> {
+                if (date.indexOf(timeItem.date) === -1) {
+                  notEmpty.push(timeItem)
+                }
+                item.workTime = notEmpty
+              })
+            }
+          })
+        }else{
+          let myDate = new Date();
+          let defaultDate = myDate.getFullYear()+"-"+(this.addZero(Number(myDate.getMonth())+1))+"-"+myDate.getDate();
+          console.log(defaultDate)
+          this.lineDate = [defaultDate];
+          this.choicedDate = [];
+          this.workTime = []
+          //删除全部日期的情况
+          this.timesAndTasks.workTimes.forEach((item,i)=>{
+            if(item.executorId === this.choiceLine ){
+              this.timesAndTasks.workTimes.splice(i,1)
+            }
+          })
+          console.log(this.timesAndTasks.workTimes)
+        }
+      },
+
       //提交设置的产线工作时长
       submitLineTimeSetting(){
+        console.log(this.timesAndTasks.workTimes)
         //处理 timesAndTasks的 workTimes
         if(this.choiceLine === ""){
           this.$alertWarning('请选择产线');
@@ -903,30 +953,37 @@
           return
         }
         //日期下 时间为空，则代表要删除该日期
-        if(this.workTime.length <= 0) {
-          this.lineDate.forEach(dateItem=>{
-            if(this.dateToTime[dateItem] === []){
-              delete this.dateToTime[dateItem]
+        // if(this.workTime.length <= 0) {
+        //   this.lineDate.forEach(dateItem=>{
+        //     if(this.dateToTime[dateItem] === []){
+        //       delete this.dateToTime[dateItem]
+        //     }
+        //   })
+        //   let notEmpty=[]
+        //   this.timesAndTasks.workTimes.forEach(item => {
+        //     item.workTime.forEach(timeItem=> {
+        //       if (this.lineDate.indexOf(timeItem.date) === -1) {
+        //         notEmpty.push(timeItem)
+        //       }
+        //       item.workTime = notEmpty
+        //     })
+        //   })
+        //   this.trueTimes=true
+        // }
+
+
+
+
+        if(this.workTime && this.workTime.length > 0){
+          this.workTime.forEach((item,i)=>{
+            if(item.endTime > item.startTime && item.endTime !=="" && item.startTime !==""){
+              this.trueTimes= true
+            }else{
+              this.trueTimes= false
             }
           })
-          let notEmpty=[]
-          this.timesAndTasks.workTimes.forEach(item => {
-            item.workTime.forEach(timeItem=> {
-              if (this.lineDate.indexOf(timeItem.date) === -1) {
-                notEmpty.push(timeItem)
-              }
-              item.workTime = notEmpty
-            })
-          })
-          this.trueTimes=true
         }
-        this.workTime.forEach((item,i)=>{
-          if(item.endTime > item.startTime && item.endTime !=="" && item.startTime !==""){
-            this.trueTimes= true
-          }else{
-            this.trueTimes= false
-          }
-        })
+
         if(this.trueTimes === false){
           this.$alertWarning('请设置正确的时间')
           this.workTime=[
@@ -1000,6 +1057,7 @@
             // this.closeTimeSetting();
             // this.cleanOptions();
             // this.isTimeSetting = false;
+            this.handleChoiceLine(this.choiceLine)
           })
         }
         this.eqLine = this.choiceLine  //保存起来  因为计算的时候获取不到（暂未找到原因，怀疑是引用类型问题）
@@ -1008,52 +1066,23 @@
       //提交数据给后台计算
       submitOptions(){
         //计算!
-        //插入订单后 tableData变了，tableEditData也要变
-        // this.tableData.map(item => {
-        //   this.$set(this.tableEditData, "s_"+item.id, {
-        //     id: this.isReImport ? item.id : undefined,
-        //     order: this.isReImport ? item.orders : item.id,
-        //     remark: null,
-        //     schedulingQuantity: item.unscheduledQuantity,
-        //     line: item.line || this.lineGroup[0].id,
-        //     capacity: item.capacity,
-        //     processGroup: this.activeProcessGroup,
-        //     planStartTime: '',
-        //     planCompleteTime: '',
-        //     rhythm: item.rhythm,
-        //     personNumber: item.processPeopleQuantity,
-        //     // lineChangeTime: typeof(item.lineChangeTime) === "undefined" ? item.transferLineTime : item.lineChangeTime,js以数字为键的对象会自动排序怎么解决
-        //     lineChangeTime: this.isReImport ? item.lineChangeTime : item.transferLineTime ,
-        //     planInterval: null,
-        //     isUrgent: Boolean(item.isUrgent)
-        //   });
-        //   console.log(item)
-        //   return item
-        // });
         this.timesAndTasks.tasks = []
-        console.log(this.tableData);
-        console.log(this.tableEditData);
-        let trueSchedulQun = true
+        let trueSchedulQun = true;
         this.tableData.forEach((item,i)=>{
           if (Number(item.unscheduledQuantity) < 0 ){
             trueSchedulQun = false
-
           }
           this.timesAndTasks.tasks.push({})
-                                   // this.timesAndTasks.tasks.forEach((ins,index)=>{
-                                     // if(i === index){
           if (item.id.toString().indexOf('-') !== -1){
             this.timesAndTasks.tasks[i].orderId = Number(item.id.split('-')[0])
           }else{
             this.timesAndTasks.tasks[i].orderId = Number(item.id)
           }
           this.timesAndTasks.tasks[i].executorId = this.tableEditData[item.id].line;
-          this.timesAndTasks.tasks[i].switchConsumingTime = this.isReImport ? item.lineChangeTime : item.transferLineTime
+          this.timesAndTasks.tasks[i].switchConsumingTime = this.isReImport ? this.tableEditData[item.id].transferLineTime : this.tableEditData[item.id].lineChangeTime
           this.timesAndTasks.tasks[i].planQuantity = this.tableEditData[item.id].schedulingQuantity
           this.timesAndTasks.tasks[i].standardCapacity = item.capacity
           this.timesAndTasks.tasks[i].tagId =item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
-                                      // }
-                                    // })
         })
         if(!trueSchedulQun){
           this.$alertWarning('请输入正确的排产数量(存在未排产数小于零)！')
@@ -1095,8 +1124,22 @@
                     if(item === res.tagId){
                       this.$set(this.tableEditData[item], 'planStartTime', res.estimatedStartTime);
                       this.$set(this.tableEditData[item], 'planCompleteTime', res.estimatedEndTime);
-                      let houMin = res.estimatedProductionTime.toString().split('.')
-                      let pInterval = parseFloat(houMin[0]+'.'+Math.round(Number(houMin[1])/100*60));
+                      let pInterval = ''
+                      if(res.estimatedProductionTime < 1){
+                        pInterval = Math.floor(res.estimatedProductionTime*60)+'分';
+                      }else {
+                        let houMin = res.estimatedProductionTime.toString().split('.')
+                        console.log(houMin)
+                        if (typeof (houMin[1]) === 'undefined') {
+                          houMin[1] = '0'
+                        }
+                        console.log(houMin[1])
+                        // if((parseFloat('0.'+houMin[1])*60).toString().indexOf('.') !== -1 ){
+                          pInterval = parseInt(houMin[0])+'小时'+(Math.floor(parseFloat('0.'+houMin[1])*60))+"分"
+                        // }else{
+                        //   pInterval = parseInt(houMin[0])+'小时'+(parseFloat('0.'+houMin[1])*60)+"分"
+                        // }
+                      }
                       this.$set(this.tableEditData[item], 'planInterval', pInterval);}
                   })
                 })
@@ -1194,7 +1237,6 @@
       /*计算*/
       calcOptions() {
         this.clearPredictTime();
-        console.log(this.tableEditData)
         this.$refs['order-setting-form'].validate(valid => {
           if (valid) {
             if (this.tableData.length === 0) {
@@ -1337,6 +1379,16 @@
           }).format('YYYY-MM-DD HH:mm:ss');
         }
       },
+
+      /*修改转线时长*/
+      changeLineChangeTime(){
+        Object.values(this.tableEditData).forEach(item=>{
+          if(item.lineChangeTime === ''){
+            item.lineChangeTime = 0
+          }
+        })
+        this.clearPredictTime()
+      },
       /*修改条目数量*/
       changeQuantity(value, row) {
         let initUnschedul = ''
@@ -1345,12 +1397,13 @@
             initUnschedul = item.unscheduledQuantity
           }
         })
-        console.log(initUnschedul)
         let scheduleSum = 0
         Object.values(this.tableEditData).forEach(item=>{
           if(row.zhidan === item.zhidan){
-            console.log(item.schedulingQuantity)
             scheduleSum += item.schedulingQuantity
+          }
+          if(item.schedulingQuantity === ''){
+            item.schedulingQuantity = 0
           }
         })
         this.tableData.forEach(item=>{
@@ -1432,9 +1485,6 @@
           zhidan:item.zhidan
         });
         this.tableData.splice(this.insertingPosition + 1, 0, item);
-
-        console.log(this.tableEditData)
-        console.log(this.tableData)
         this.closeInsert();
       },
       closeInsert() {
@@ -1448,6 +1498,8 @@
         delete this.tableEditData[id];
         this.tableData.splice(index, 1)
       },
+
+      //导入排产计划
       submitEdit() {
         let flag = false;
         Object.keys(this.tableEditData).forEach(key => {
@@ -1458,6 +1510,20 @@
         if (flag) {
           this.$alertInfo('请完善信息');
           return
+        }
+        let trueTime = false;
+        let planDataEndtime =[];
+          Object.keys(this.tableEditData).forEach(item=>{
+          planDataEndtime.push(this.tableEditData[item].planCompleteTime)
+          if(planDataEndtime.indexOf('超出预期') !== -1){
+            trueTime = false;
+          }else{
+            trueTime = true
+          }
+        })
+        if(trueTime === false){
+          this.$alertDanger('请设置正确排产计划')
+          return;
         }
         MessageBox.confirm('请确认是否按此配置导入排产(请留意页面中可能存在的错误提示)', '提示', {
           confirmButtonText: '确认',
@@ -1710,10 +1776,13 @@
     min-height: 30px;
     max-width: 800px;
     margin-top: 20px;
-    display: flex;
   }
-  .allreday-choice-date /deep/ .el-button{
+  .allreday-choice-date /deep/ .el-tag{
     margin-top: 5px;
+    margin-right: 10px;
+  }
+  .allreday-choice-date /deep/ .el-tag:hover{
+    cursor: pointer;
   }
 
 </style>

@@ -2,12 +2,12 @@
   <el-dialog
       title="编辑权限"
       :visible="isEditingAuthority"
+      append-to-body
+      width="96%"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="false"
-      append-to-body
-      width="96%"
-  >
+      >
 
     <div class="edit-char-tips">
       <p>点击表头可全选指定列</p>
@@ -38,9 +38,10 @@
       </el-table-column>
     </el-table>
     <span slot="footer" class="dialog-footer">
-         <el-button size="small" @click="clearSelection" type="info">重置选择</el-button>
-         <el-button size="small" @click="closeComp" type="primary">确认</el-button>
-       </span>
+       <el-button size="small" @click="clearSelection" type="info">重置选择</el-button>
+        <el-button size="small" @click="closeEditDai" ype="info" plain>取消</el-button>
+        <el-button size="small" @click="closeComp" type="primary">确认</el-button>
+     </span>
   </el-dialog>
 </template>
 
@@ -90,6 +91,9 @@
     methods: {
       closeComp() {
         this.$emit('update:authoritiesJSON', this.generateAuthoritiesJSON());
+        this.$emit('update:isEditingAuthority', false)
+      },
+      closeEditDai(){
         this.$emit('update:isEditingAuthority', false)
       },
 

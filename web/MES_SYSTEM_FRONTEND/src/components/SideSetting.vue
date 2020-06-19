@@ -3,28 +3,11 @@
   <div class="side-setting">
     <div class="setting-container">
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')"  v-if="accessPermission('table')">
+        <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')"  v-if="accessPermission('basic')">
           <div class="setting-icon">
-            <i class="el-icon-t-table" style="color: #fff;"></i>
+            <i class="el-icon-t-setting" style="color: #fff;"></i>
           </div>
-          <span>报表</span>
-        </div>
-      </div>
-      <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'order' ? 'icon-active' : ''" @click="initData('order')"  v-if="accessPermission('order')">
-          <div class="setting-icon">
-            <i class="el-icon-t-toggles" style="color: #fff;"></i>
-          </div>
-          <span>订单</span>
-        </div>
-      </div>
-
-      <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')"  v-if="accessPermission('test')">
-          <div class="setting-icon">
-            <i class="el-icon-t-test" style="color: #fff;"></i>
-          </div>
-          <span>测试</span>
+          <span>基础</span>
         </div>
       </div>
       <div class="w-100">
@@ -36,14 +19,6 @@
         </div>
       </div>
       <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'func' ? 'icon-active' : ''" @click="initData('func')"  v-if="accessPermission('func')">
-          <div class="setting-icon">
-            <i class="el-icon-t-func" style="color: #fff;"></i>
-          </div>
-          <span>功能</span>
-        </div>
-      </div>
-      <div class="w-100">
         <div class="icon-container" :class="activeItem === 'esop' ? 'icon-active' : ''" @click="initData('esop')"  v-if="accessPermission('esop')">
           <div class="setting-icon">
             <i class="el-icon-t-SOP" style="color: #fff;"></i>
@@ -52,6 +27,39 @@
         </div>
       </div>
       <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'work_order' ? 'icon-active' : ''" @click="initData('work_order')"  v-if="accessPermission('work_order')">
+          <div class="setting-icon">
+            <i class="el-icon-t-toggles" style="color: #fff;"></i>
+          </div>
+          <span>工单</span>
+        </div>
+      </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'test' ? 'icon-active' : ''" @click="initData('test')"  v-if="accessPermission('test')">
+          <div class="setting-icon">
+            <i class="el-icon-t-test" style="color: #fff;"></i>
+          </div>
+          <span>配置</span>
+        </div>
+      </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'table' ? 'icon-active' : '' " @click="initData('table')"  v-if="accessPermission('table')">
+          <div class="setting-icon">
+            <i class="el-icon-t-table" style="color: #fff;"></i>
+          </div>
+          <span>查询</span>
+        </div>
+      </div>
+      <div class="w-100">
+        <div class="icon-container" :class="activeItem === 'func' ? 'icon-active' : ''" @click="initData('func')"  v-if="accessPermission('func')">
+          <div class="setting-icon">
+            <i class="el-icon-t-func" style="color: #fff;"></i>
+          </div>
+          <span>功能</span>
+        </div>
+      </div>
+
+      <div class="w-100">
         <div class="icon-container" :class="activeItem === 'redtea' ? 'icon-active' : ''" @click="initData('redtea')"  v-if="accessPermission('redtea')">
           <div class="setting-icon">
             <i class="el-icon-t-tea" style="color: #fff;"></i>
@@ -59,14 +67,7 @@
           <span>红茶</span>
         </div>
       </div>
-      <div class="w-100">
-        <div class="icon-container" :class="activeItem === 'setting' ? 'icon-active' : ''" @click="initData('setting')"  v-if="accessPermission('basic')">
-          <div class="setting-icon">
-            <i class="el-icon-t-setting" style="color: #fff;"></i>
-          </div>
-          <span>配置</span>
-        </div>
-      </div>
+
 
       <!--<div class="icon-container">-->
       <!--<div class="setting-icon"></div>-->

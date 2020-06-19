@@ -13,6 +13,8 @@ export const logoutUrl = url + '/user/logout';
 export const userUpdateUrl = url + '/user/update';
 export const userAddUrl = url + '/user/add';
 export const userQueryUrl = url + '/user/select';
+export const userDeleteUrl = url + '/user/delete';
+
 export const getUserTypeUrl = url + '/user/getUserType';
 export const getUserUrl = url + '/user/getUserIdAndName';
 export const editUserPasswordUrl = url + '/user/updatePassword';
@@ -26,7 +28,7 @@ export const charUpdateUrl = url + '/role/update';
 export const selectCharUrl = url + '/role/get';
 export const getAuthorities = url + '/role/getAuthority';
 export const getUserAuthorities = url + '/user/getAuthority';
-export const setTypicalChar = url + '/setAtypicalRoleUser';
+export const setTypicalChar = url + '/role/setAtypicalRoleUser';
 
 export const redTeaUrl = url + '/redTea/findCId';
 
