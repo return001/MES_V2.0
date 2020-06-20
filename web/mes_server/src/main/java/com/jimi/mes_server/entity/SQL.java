@@ -154,15 +154,15 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULINGPLANDETAIL_BY_ID = "SELECT scheduler, LUserAccount.UserDes AS schedulerName, scheduling_time AS schedulingTime, plan_modifier AS planModifier, NULL AS modifierName, plan_modify_time as planModifyTime, production_confirmer AS productionConfirmer, NULL AS confirmerName, line_change_time as lineChangeTime FROM scheduling_plan JOIN LUserAccount ON LUserAccount.Id = scheduling_plan.scheduler WHERE scheduling_plan.id = ?";
 
-	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_AutoTest_Result WHERE ZhiDan = ? and Computer like ? and TestTime >= ?";
+	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) AS countNum FROM Gps_AutoTest_Result WHERE ZhiDan = ? and Computer like ? and TestTime >= ?";
 
-	public final static String SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CoupleTest_Result WHERE ZhiDan = ?  and Computer like ? and TestTime >= ?";
+	public final static String SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) AS countNum FROM Gps_CoupleTest_Result WHERE ZhiDan = ?  and Computer like ? and TestTime >= ?";
 
-	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?  and Computer like ? and TestTime >= ?";
+	public final static String SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY = "SELECT count(*) AS countNum FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?  and Computer like ? and TestTime >= ?";
 
-	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_AutoTest_Result WHERE ZhiDan = ? ";
+	public final static String SELECT_ASSEMBLING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY = "SELECT count(*) AS countNum FROM Gps_AutoTest_Result WHERE ZhiDan = ? ";
 
-	public final static String SELECT_PACKING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?";
+	public final static String SELECT_PACKING_PROCESS_GROUP_TOTAL_PRUDUCEDQUANTITY = "SELECT count(*) AS countNum FROM Gps_CartonBoxTwenty_Result WHERE ZhiDan = ?";
 
 	public final static String SELECT_REWORK_ORDER = "SELECT * FROM orders WHERE is_rework = 1 and order_status = 1 or order_status = 2";
 

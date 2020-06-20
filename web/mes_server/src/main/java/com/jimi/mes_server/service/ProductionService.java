@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
@@ -1314,7 +1315,8 @@ public class ProductionService {
 		Integer planProducedQuantity = 0;
 		Integer scheduledQuantity = 0;
 		List<Record> scheduledQuantities = null;
-		String lineNameParam = "'" + line.getLineName() + "%'";
+		String lineNameParam = line.getLineName() + "%";
+		Record quantity = new Record();
 		if (!Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(schedulingPlan.getSchedulingPlanStatus())) {
 			// 查询产线和订单各工序组对应产量
 			if (Constant.ASSEMBLING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
@@ -1334,7 +1336,11 @@ public class ProductionService {
 				zhidan = order.getZhidan();
 			}
 			if (sql != null) {
-				planProducedQuantity = Db.queryInt(sql, zhidan, lineNameParam, planStartTime);
+				Record countRecord = Db.findFirst(sql, zhidan, lineNameParam, planStartTime);
+				if (countRecord != null && countRecord.getInt("countNum") != null) {
+					planProducedQuantity = countRecord.getInt("countNum");
+				}
+				
 			}
 			// 最后一个工序组订单已排产数量
 			scheduledQuantities = Db.find(SQL.SELECT_SCHEDULED_ORDER_WORKSTATION_QUANTITY, Constant.PACKING_PROCESS_GROUP, order.getId(), Constant.SMT_PROCESS_GROUP, order.getId());
@@ -1403,12 +1409,17 @@ public class ProductionService {
 					} else if (Constant.PACKING_PROCESS_GROUP.equals(processGroup)) {
 						lastTime = Db.findFirst(SQL.SELECT_PACKING_LAST_TIME, zhidan, lineNameParam);
 					}
-					if (planProducedQuantity >= schedulingPlan.getSchedulingQuantity() && lastTime != null) {
+					if (planProducedQuantity > 0 && planProducedQuantity >= schedulingPlan.getSchedulingQuantity() && lastTime != null) {
 						record.set("completeTime", lastTime.getStr("TestTime"));
 						schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+						quantity.set("schedulingPlanStatus", Constant.COMPLETED_PLANSTATUS);
 						schedulingPlan.setCompleteTime(lastTime.getDate("TestTime"));
 						schedulingPlan.setRemainingQuantity(0);
 					} else {
+						if (planProducedQuantity < schedulingPlan.getSchedulingQuantity() && lastTime != null) {
+							schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
+							quantity.set("schedulingPlanStatus", Constant.WORKING_PLANSTATUS);
+						}
 						record.set("remainingQuantity", schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
 						schedulingPlan.setRemainingQuantity(schedulingPlan.getSchedulingQuantity() - planProducedQuantity);
 					}
@@ -1426,7 +1437,7 @@ public class ProductionService {
 			};
 			executorService.execute(runnable);
 		}
-		Record quantity = new Record();
+		
 		quantity.set("planProducedQuantity", planProducedQuantity);
 		return quantity;
 	}
@@ -2147,7 +2158,11 @@ public class ProductionService {
 			Record planProducedQuantity = selectPlanProducedQuantityAndUpdate(record.getInt("id"), record, dateFormat);
 			if (planProducedQuantity != null) {
 				record.set("producedQuantity", planProducedQuantity.getInt("planProducedQuantity"));
+				if (planProducedQuantity.getInt("schedulingPlanStatus") != null) {
+					record.set("schedulingPlanStatus", planProducedQuantity.getInt("schedulingPlanStatus"));
+				}
 			}
+			
 			if (new Date().after(record.getDate("planCompleteTime"))) {
 				if (planProducedQuantity.getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
 					record.set("isTimeout", true);
