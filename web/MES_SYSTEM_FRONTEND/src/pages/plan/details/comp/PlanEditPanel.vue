@@ -150,6 +150,7 @@
           <el-input
             type="text"
             clearable
+            :disabled="planEditOptionsData.activeProcessGroup === 1 || planEditOptionsData.activeProcessGroup === 2 || planEditOptionsData.activeProcessGroup === 3"
             autocomplete="off"
             placeholder="请填写已完成数量"
             v-model.number="planEditOptionsData.producedQuantity"></el-input>
@@ -342,6 +343,7 @@
         // }
         // else if (this.totallyEditing) {
           this.$set(this.$data, 'planEditOptionsData', {
+            activeProcessGroup:val.activeProcessGroup,
             id:val.id,
             isCompleted: false,
             productionPlanningNumber: val.productionPlanningNumber,
@@ -414,35 +416,36 @@
 
       async submitData(options) {
         // let validMark = false;
-        // if (this.pmcEditing || this.totallyEditing) {
-        //   let validateOptions = {
-        //     url: planCheckCompleteTimeSelectUrl,
-        //     data: options.data
-        //   };
-        //   if (this.pmcEditing && !this.engineerEditing) {
-        //     validateOptions.data.capacity = this.row.capacity;
-        //   }
-        //   await axiosFetch(validateOptions).then(response => {
-        //     if (response.data.result === 200) {
-        //       if (response.data.data === true) {
-        //         validMark = true
-        //       } else {
-        //         this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
-        //         this.isPending = false;
-        //         this.$closeLoading();
-        //       }
-        //     } else {
-        //       this.$alertWarning(response.data.data);
-        //       this.isPending = false;
-        //       this.$closeLoading();
-        //     }
-        //   }).catch(err => {
-        //     this.$alertDanger('未知错误');
-        //     this.isPending = false;
-        //     this.$closeLoading();
-        //   })
-        // }
+        if (this.pmcEditing || this.totallyEditing) {
+          let validateOptions = {
+            url: planCheckCompleteTimeSelectUrl,
+            data: options.data
+          };
+          if (this.pmcEditing && !this.engineerEditing) {
+            validateOptions.data.capacity = this.row.capacity;
+          }
+          await axiosFetch(validateOptions).then(response => {
+            if (response.data.result === 200) {
+              if (response.data.data === true) {
+                validMark = true
+              } else {
+                this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
+                this.isPending = false;
+                this.$closeLoading();
+              }
+            } else {
+              this.$alertWarning(response.data.data);
+              this.isPending = false;
+              this.$closeLoading();
+            }
+          }).catch(err => {
+            this.$alertDanger('未知错误');
+            this.isPending = false;
+            this.$closeLoading();
+          })
+        }
         // if (validMark || this.engineerEditing) {
+        if (validMark) {
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess("修改成功");
@@ -458,7 +461,7 @@
             this.isPending = false;
             this.$closeLoading();
           })
-        // }
+        }
       },
 
       setProducedQuantity(id) {

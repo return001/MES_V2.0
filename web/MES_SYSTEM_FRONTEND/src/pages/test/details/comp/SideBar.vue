@@ -79,7 +79,29 @@
                 typeName: 'oqc'
               }
             ],
-          }
+          },
+          {
+            title: '操作日志',
+            moduleName: 'oqc_test',
+            subList: [
+              {
+                type: '6',
+                name: '配置测试项日志',
+                typeName: 'oqc'
+              }
+            ],
+          },
+          // {
+          //   title: '操作日志',
+          //   moduleName: 'test_log',
+          //   subList: [
+          //     {
+          //       type: '6',
+          //       name: '配置测试项日志',
+          //       typeName: 'test_item_log'
+          //     }
+          //   ],
+          // }
         ],
         linkListValidated: [],
         //控制列表active状态，当前已激活的项目

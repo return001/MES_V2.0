@@ -13,18 +13,17 @@
           ref="tablecomponent"
           :span-method="spanMethod"
           border>
+        <el-table-column
+          type="index"
+          fixed="left"
+          width="60">
+        </el-table-column>
         <el-table-column v-for="(item, index) in tableColumns"
                          :key="index"
                          :prop="item.key"
                          :label="item.label"
                          :min-width="item['min-width']"
                          :formatter="item.formatter">
-        </el-table-column>
-
-        <el-table-column
-            type="index"
-            fixed="left"
-            width="60">
         </el-table-column>
 
         <el-table-column
@@ -154,7 +153,6 @@
       };
       this.buttonGroup[1].callback = this.queryData;
       this.buttonGroup[2].callback = this.addData;
-
       this.queryData();
     },
 
@@ -173,10 +171,13 @@
         });
         axiosFetch(options).then(response => {
           if (response.data.result === 200) {
-            if (response.data.data.length !== 0) {
+            if (response.data.data !== 0) {
               this.getSpanArr(response.data.data, this.mergeKeys);
             }
             this.tableData = response.data.data
+            console.log(this.tableData)
+            console.log(this.mergeData)
+            console.log(this.mergePos)
           } else {
             this.$alertWarning(response.data.data)
           }
@@ -187,6 +188,7 @@
           this.isPending = false;
           this.$closeLoading();
         })
+
       },
 
       addData() {
@@ -253,7 +255,8 @@
           })
         })
       },
-      getSpanArr(tableData, keyName) {
+      getSpanArr: function (tableData, keyName) {
+        this.mergeData = []
         keyName.forEach((kitem, k) => {
           tableData.forEach((data, i) => {
             if (i === 0) {
@@ -275,7 +278,7 @@
       },
       spanMethod({row, column, rowIndex, columnIndex}) {
         if (this.mergeProp.includes(column.property)) {
-          const _row = this.mergeData[column.property][rowIndex];
+          const _row = this.mergeData[column.property][rowIndex]; //0,2,0,2,0,2
           const _col = _row > 0 ? 1 : 0;
           return {
             rowspan: _row,

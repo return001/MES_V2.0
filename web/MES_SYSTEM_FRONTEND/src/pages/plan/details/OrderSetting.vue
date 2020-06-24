@@ -22,7 +22,7 @@
                          :label="listItem.abbreviation"></el-option>
             </el-select>
           </div>
-          <div class="query-comp-select" v-else-if="item.type === 'select' && item.key !=='factoryId'">
+          <div class="query-comp-select" v-if="item.type === 'select' && item.key !=='factoryId'">
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
@@ -51,22 +51,13 @@
             </el-date-picker>
           </div>
         </div>
-        <div class="query-comp-container" style="padding-top: 36px;">
+
+        <div class="query-comp-container" style="padding-top: 24px;">
           <el-checkbox v-model="isRework">返工订单</el-checkbox>
-        </div>
-        <div class="query-comp-container">
-          <el-button type="info" @click="initQueryOptions" size="small">重置条件</el-button>
-        </div>
-        <div class="query-comp-container">
+          <el-button type="info" size="small" @click="initQueryOptions">重置条件</el-button>
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
-        </div>
-        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="isOrderUploading = true">导入订单</el-button>
-        </div>
-        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('add')">新增订单</el-button>
-        </div>
-        <div class="query-comp-container">
           <el-button type="primary" size="small" @click="editData('rework',reworkOrder)" v-if="reworkOrder !== ''">返工</el-button>
           <el-button type="info" @click="unselected" size="small" v-else>返工</el-button>
         </div>
@@ -1028,7 +1019,6 @@
               }
             })
           });
-          console.log(this.orderEditOptionsData)
           this.$set(this.orderEditOptionsData, 'isRework', val['isRework'])
           this.$set(this.orderEditOptionsData, 'id', val.id)
           this.isOrderEditing = true;
@@ -1118,7 +1108,6 @@
               url: '',
               data: this.orderEditOptionsData,
             };
-            console.log(this.orderEditOptionsData)
             if(this.orderEditOptionsData.isRework === true){
               if(this.orderEditOptionsData.reworkQuantity > this.orderEditOptionsData.quantity){
                 this.$alertWarning('返工数量不得大于订单数量')
@@ -1669,8 +1658,8 @@
     min-height: 60px;
   }
 
-  .query-comp-container {
-    margin: 0 16px 10px 0;
+  .query-comp-container>div , .query-comp-container>/deep/ .el-button{
+    margin: 0 16px 10px 0
   }
 
   .query-comp label {
@@ -1695,9 +1684,15 @@
     padding-right: 0;
   }
 
+  .query-comp-container .el-checkbox{
+    display: inline-block;
+    margin-right: 16px;
+  }
   .query-comp-container .el-button {
-    margin-top: 24px;
     width: 80px;
+  }
+  .query-comp-select-factory{
+    margin-right: 16px;
   }
 
   .content-comp {

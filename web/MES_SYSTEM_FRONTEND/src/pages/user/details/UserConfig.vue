@@ -246,6 +246,23 @@
 <!--                       :label="item.processName"></el-option>-->
 <!--          </el-select>-->
 <!--        </el-form-item>-->
+        <el-form-item
+          size="small"
+          label="是否启用"
+          prop="proficiency"
+        >
+          <el-select
+            size="small"
+            id="proficiency-select"
+            class="custom-select"
+            placeholder="选择是否启用"
+            v-model="formData.inService"
+            clearable
+          >
+            <el-option :value=true label="是"></el-option>
+            <el-option :value=false label="否"></el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
          <el-button size="small" @click="closeEditPanel" type="info">取消</el-button>
@@ -349,7 +366,9 @@
             {required: false, message: '请输入密码', trigger: 'blur'},
           ],
         },
-        formData: {},
+        formData: {
+          inService:true,
+        },
 
         /*链接重定义*/
         formAddUrl: userAddUrl,

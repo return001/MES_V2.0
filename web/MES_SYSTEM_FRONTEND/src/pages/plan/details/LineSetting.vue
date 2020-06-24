@@ -218,7 +218,6 @@
               value-format="yyyy-MM-dd"></el-date-picker>
           </div>
           <div class="line-edit-form-comp-text" v-if="lineItem.type === 'asyncSelect'">
-
             <el-autocomplete
               style="display: block;"
               v-model.trim="tempStorage[lineItem.condition]"
@@ -228,14 +227,15 @@
               @focus="setAsyncSearchProp(lineItem.key, lineItem.condition)"
               @select="handleSelect"
               :trigger-on-focus="false"
-              :id="'upload-' + lineItem.prop">
+              :id="'upload-' + lineItem.prop"
+              clearable>
               <template slot-scope="{ item }">
-                <el-tooltip :content="'用户名: ' + item.name" placement="top-start">
                   <div>
                     <span style="font-size: 10px; color: #777;">id: {{ item.id }}</span>
-                    <div class="upload-name">用户名: {{ item.name }}</div>
+                    <div class="upload-name">用户名: {{ item.name }}
+                      <span style="display: inline-block;float:right;">{{item.userDes }}</span>
+                    </div>
                   </div>
-                </el-tooltip>
               </template>
             </el-autocomplete>
             <!--            <el-select-->
@@ -498,7 +498,7 @@
         lineEditOptionsRules: lineEditOptionsRules,
         lineEditType: '',
         lineEditOptionsData: {
-          'processGroup': ''
+          'processGroup': '',
         },
         asyncUserSelectList: [],
         remoteLoading: false,
@@ -606,7 +606,6 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
-              console.log(this.sessionFactory)
               if(this.sessionFactory === '1'){
                 this.asyncSelectGroup.processGroup.list = response.data.data.list;
               }else{
@@ -1063,7 +1062,6 @@
             this.$alertInfo('请完善表单信息')
           }
         })
-
       },
 
       deletePCData: function (val) {
@@ -1120,11 +1118,17 @@
         }
       },
       searchItem: function (qs, cb) {
+
         let options = {
           url: getUserUrl,
           data: {}
         };
-        options.data['userName'] = qs;
+        let re = new RegExp("^[\u4e00-\u9fa5]");  //判断第一个是字符是不是 汉字
+        if(re.test(qs) === true){
+          options.data['userDes'] = qs;
+        }else{
+          options.data['userName'] = qs;
+        }
         axiosFetch(options).then(response => {
           if (response.data.result === 200) {
             if (response.data.data !== null) {

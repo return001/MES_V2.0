@@ -723,6 +723,10 @@
       },
 
       handleAddTime(){
+        if(this.choiceLine === ""){
+          this.$alertWarning('请选择产线');
+          return
+        }
         this.workTime.push({
           startTime:'',
           endTime:'',

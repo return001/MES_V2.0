@@ -86,8 +86,11 @@
           </div>
         </div>
         <div class="vice-tag" v-if="viceGroup.length > 0">
-          <el-button size="small" :type="activeProcessGroup === item.id ? 'info' : 'primary'" v-for="item in viceGroup"
-                @click="viceSwitchTag(item)">{{item.groupName}}
+          <el-button v-for="item in viceGroup"
+                     size="small"
+                     :type="activeProcessGroup === item.id ? 'info' : 'primary'"
+                     @click="viceSwitchTag(item)">
+            {{item.groupName}}
           </el-button>
         </div>
         <el-table
@@ -448,7 +451,6 @@
       }
     },
     async created() {
-      console.log(this.jurisdiction)
       this.$openLoading();
       this.initQueryOptions();
       await this.dataPreload();
@@ -456,7 +458,7 @@
       //加载表格
       if(this.processGroupSelectGroup.length>0){
         this.activeProcessGroup = this.processGroupSelectGroup[0].id;
-        this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取 排产数据
+        this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取排产数据
       }else {
         this.$alertDanger('获取工序组失败')
       }
@@ -597,7 +599,6 @@
                   this.$alertWarning('未设置工序组')
                 }
               }else{                                              //点击一级工序组标签（传自己的id：就是paretGroup字段）
-                console.log(112233)
                 if(response.data.data.list.length >0){            //有二级工序组标签的情况
                   this.fetchDateAble = false;                     //加载时 如果第一个页签就有二级工序组标签的话  不允许直接获取产能数据
                   this.viceGroup = response.data.data.list
@@ -608,7 +609,6 @@
             } else {
               this.$alertWarning(response.data.data)
             }
-            console.log(this.processGroupSelectGroup)
           }).catch(err => {
             console.log(err)
             this.$alertDanger('获取工序组信息失败，请刷新重试');
@@ -774,6 +774,7 @@
         // } else if (this.$store.state.userType === 'SuperAdmin') {
           this.totallyEditing = true;
           this.planEditRow = val
+          this.planEditRow.activeProcessGroup = this.activeProcessGroup
         // }
 
       },
@@ -1125,7 +1126,8 @@
     min-height: 50px;
   }
   .vice-tag /deep/ .el-button{
-    margin-top: 5px;
+    min-width: 110px;
+    margin: 10px 10px 0 0 ;
   }
   .order-details-title {
     margin-top: 5px;

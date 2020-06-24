@@ -1,9 +1,10 @@
 
 /*排产计划订单相关*/
-export const orderQueryOptions = [{
-        type: 'select',
-        label: '所属工厂',
-        key: 'factoryId',
+export const orderQueryOptions = [
+    {
+      type: 'select',
+      label: '所属工厂',
+      key: 'factoryId',
     },
     {
         type: 'select',
@@ -43,6 +44,7 @@ export const orderQueryOptions = [{
             },
         ]
     },
+
     {
         type: 'text',
         label: '订单号/生产PO',
@@ -771,10 +773,11 @@ export const capacityEditOptionsRules = {
     'softModel': [{ required: true, message: '请填写机型', trigger: 'blur' }],
     // 'customerModel': [{required: true, message: '请填写客户型号', trigger: 'blur'}],
     // 'customerNumber': [{ required: true, message: '请选择客户编号', trigger: 'change' }],
-    // 'rhythm': [{ required: true, message: '请填写节拍', trigger: 'blur' }],
+    'rhythm': [
+      // { required: true, message: '请填写节拍', trigger: 'blur' },
+                { pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur' }],
     'processPeopleQuantity': [{ required: true, message: '请填写人数', trigger: 'blur' },
-        { pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur' }
-    ],
+                              { pattern: /^[1-9]\d*$/, message: '请输入正整数', trigger: 'blur' }],
     'capacity': [{ required: true, message: '请填写产能', trigger: 'blur' }],
 };
 
@@ -841,7 +844,7 @@ export const capacityTableColumns = [{
     {
       'label': '审核人',
       'key': 'reviewerName',
-      'min-width': '100px'
+      'min-width': '80px'
     },
     {
       'label': '审核时间',
@@ -860,7 +863,7 @@ export const capacityEditTableColumns = [
     {
         'label': '工序组',
         'key': 'groupName',
-        'min-width': '140px'
+        'min-width': '180px'
     },
     {
         'label': '* 人数(个)',
@@ -885,7 +888,7 @@ export const capacityEditTableColumns = [
     {
         'label': '备注',
         'key': 'remark',
-        'min-width': '160px'
+        'min-width': '120px'
     },
 ];
 

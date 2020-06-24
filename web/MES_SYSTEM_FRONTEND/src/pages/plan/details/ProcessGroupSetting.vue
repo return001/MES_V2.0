@@ -16,9 +16,9 @@
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="queryData">查询</el-button>
         </div>
-        <div class="query-comp-container">
-          <el-button type="primary" size="small" @click="editData('add')">新增</el-button>
-        </div>
+<!--        <div class="query-comp-container">-->
+<!--          <el-button type="primary" size="small" @click="editData('add')">新增</el-button>-->
+<!--        </div>-->
       </div>
     </div>
 
@@ -43,26 +43,26 @@
           width="60">
         </el-table-column>
 
-        <el-table-column
-          label="操作"
-          width="160"
-          fixed="right"
-        >
-          <template slot-scope="scope">
-<!--            <el-tooltip content="上移" placement="top">-->
-<!--              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>-->
+<!--        <el-table-column-->
+<!--          label="操作"-->
+<!--          width="160"-->
+<!--          fixed="right"-->
+<!--        >-->
+<!--          <template slot-scope="scope">-->
+<!--&lt;!&ndash;            <el-tooltip content="上移" placement="top">&ndash;&gt;-->
+<!--&lt;!&ndash;              <el-button type="text" @click="changePosition(scope, 'up')" icon="el-icon-sort-up"></el-button>&ndash;&gt;-->
+<!--&lt;!&ndash;            </el-tooltip>&ndash;&gt;-->
+<!--&lt;!&ndash;            <el-tooltip content="下移" placement="top">&ndash;&gt;-->
+<!--&lt;!&ndash;              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>&ndash;&gt;-->
+<!--&lt;!&ndash;            </el-tooltip>&ndash;&gt;-->
+<!--            <el-tooltip content="编辑" placement="top">-->
+<!--              <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>-->
 <!--            </el-tooltip>-->
-<!--            <el-tooltip content="下移" placement="top">-->
-<!--              <el-button type="text" @click="changePosition(scope, 'down')" icon="el-icon-sort-down"></el-button>-->
+<!--            <el-tooltip content="删除" placement="top">-->
+<!--              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>-->
 <!--            </el-tooltip>-->
-            <el-tooltip content="编辑" placement="top">
-              <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-edit-outline"></el-button>
-            </el-tooltip>
-            <el-tooltip content="删除" placement="top">
-              <el-button type="text" @click="deleteData(scope.row)" icon="el-icon-delete"></el-button>
-            </el-tooltip>
-          </template>
-        </el-table-column>
+<!--          </template>-->
+<!--        </el-table-column>-->
       </el-table>
     </div>
     <!--dialog component-->

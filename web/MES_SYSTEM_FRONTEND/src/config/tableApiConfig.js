@@ -889,7 +889,7 @@ const ROUTER_CONFIG = {
               return '管理员';
           }
         }},
-      {field: 'Computer', title: '错误主机(组装)', colStyle: {'width': '100px'},},
+      {field: 'Computer', title: '地址', colStyle: {'width': '100px'},},
       {field: 'TestSetting', title: '配置指令', colStyle: {'width': '400px'},},
       {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'},},
       {field: 'Remark', title: '备注', colStyle: {'width': '100px'},},

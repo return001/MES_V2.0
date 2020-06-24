@@ -49,6 +49,7 @@ const moduleNameMap = {
   '组装测试': 'zz_test',
   '研发测试': 'yf_test',
   'OQC': 'oqc_test',
+  '测试日志':'test_log',
   '排产计划': 'plan',
   '订单': 'order',
   'MAC返工': 'mac',
@@ -85,6 +86,7 @@ const pageNameMap = {
   '功能测试': 'func',
   '耦合测试': 'couple',
   'OQC': 'oqc',
+  '配置测试项日志':'test_item_log',
   '文件管理与发放': 'file',
   '通知管理': 'notice',
   '站点信息': 'site',
@@ -186,7 +188,7 @@ const getCharactersFuncList = function() {
     },
     'esop': {
       'file': {
-        'file': generateArray(8, false, [0, 1, 3, 4, 5, 6]),
+        'file': generateArray(8, false, [0, 1, 3, 4, 5, 6, 7]),
         'notice': generateArray(8, false, [0, 1, 2, 3, 7]),
         'site': generateArray(8, false, [0, 6, 7]),
         'assign': generateArray(3, false, [0, 2]),
@@ -218,6 +220,9 @@ const getCharactersFuncList = function() {
       },
       'oqc_test': {
         'oqc': generateArray(4, false, [0, 1, 2, 3])
+      },
+      'test_log':{
+        'test_item_log': generateArray(4, false, [0, 1, 2, 3])
       }
     },
     'table': {
@@ -359,6 +364,7 @@ const getModuleIndex = function(path, query) {
           3: 'yf_test',
           4: 'yf_test',
           5: 'oqc_test',
+          6: 'test_log'
         };
         _pageMap = {
           0: 'func',
@@ -367,6 +373,7 @@ const getModuleIndex = function(path, query) {
           3: 'func',
           4: 'couple',
           5: 'oqc',
+          6: 'test_item_log'
         };
         _page = `test-${_moduleMap[query.type]}-${_pageMap[query.type]}`;
         break;
