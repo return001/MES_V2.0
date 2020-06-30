@@ -128,7 +128,7 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULINGPLAN = "SELECT scheduling_plan.id, scheduling_plan.orders, is_urgent AS isUrgent, scheduling_plan.process_group AS processGroup, line, scheduling_quantity AS schedulingQuantity, capacity, production_planning_number AS productionPlanningNumber, plan_start_time AS planStartTime, plan_complete_time AS planCompleteTime, start_time AS startTime, complete_time AS completeTime, scheduling_plan.produced_quantity producedQuantity, remaining_quantity AS remainingQuantity, is_timeout AS isTimeout, scheduling_plan_status AS schedulingPlanStatus, scheduling_plan.remark, remaining_reason AS remainingReason, line.line_no AS 'lineNo', line.line_name AS lineName, scheduling_plan_status.status_name AS statusName, zhidan, alias, soft_model AS softModel, product_no AS productNo, customer_number AS customerNumber, customer_name AS customerName, order_date AS orderDate, delivery_date AS deliveryDate, line_change_time AS lineChangeTime, customer_material_no AS customerMaterialNo, person_number AS personNumber, rhythm FROM scheduling_plan LEFT JOIN orders ON scheduling_plan.orders = orders.id LEFT JOIN line ON scheduling_plan.line = line.id LEFT JOIN  scheduling_plan_status on scheduling_plan.scheduling_plan_status = scheduling_plan_status.id WHERE 1 = 1 ";
 
-	public final static String SELECT_USER_NAME_ID_BY_NAME = "SELECT Name as name, Id as id, UserDes as userDes from LUserAccount WHERE InService = 1 and Name LIKE ?";
+	public final static String SELECT_USER_NAME_ID = "SELECT Name as name, Id as id, UserDes as userDes from LUserAccount WHERE InService = 1 ";
 
 	public final static String SELECT_PROCESS_NAME_ID = "SELECT id, process_name as processName, process_group as processGroup from process";
 

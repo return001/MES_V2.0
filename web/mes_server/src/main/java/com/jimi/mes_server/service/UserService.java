@@ -129,10 +129,18 @@ public class UserService extends SelectService {
 	}
 
 
-	public Page<Record> getUserIdAndName(String userName) {
+	public Page<Record> getUserIdAndName(String userName, String userDes) {
 		SqlPara sqlPara = new SqlPara();
-		sqlPara.setSql(SQL.SELECT_USER_NAME_ID_BY_NAME);
-		sqlPara.addPara("%" + userName + "%");
+		StringBuilder builder = new StringBuilder(SQL.SELECT_USER_NAME_ID);
+		if (userName != null && !userName.trim().equals("")) {
+			builder.append(" AND Name like ? ");
+			sqlPara.addPara("%" + userName + "%");
+		}
+		if (userDes != null && !userDes.trim().equals("")) {
+			builder.append(" AND UserDes like ?");
+			sqlPara.addPara("%" + userDes + "%");
+		}
+		sqlPara.setSql(builder.toString());
 		Page<Record> page = Db.paginate(Constant.DEFAULT_PAGE_NUM, Constant.DEFAULT_PAGE_SIZE, sqlPara);
 		for (Record record : page.getList()) {
 			System.err.println(record);
