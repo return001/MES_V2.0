@@ -6,14 +6,16 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
-                      :placeholder="'请填写' + item.label" size="small"></el-input>
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
+                      :placeholder="'请填写' + item.label"
+                      size="small" clearable></el-input>
           </div>
           <!--选择器-->
           <div class="query-comp-select" v-else-if="item.type === 'select' && item.async === true">
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
-                       :placeholder="'请选择' + item.label" size="small">
+                       :placeholder="'请选择' + item.label"
+                       size="small" clearable>
               <el-option v-for="listItem in asyncSelectGroup[item.key].list"
                          :key="listItem[asyncSelectGroup[item.key].alias.id]"
                          :value="listItem[asyncSelectGroup[item.key].alias.id]"

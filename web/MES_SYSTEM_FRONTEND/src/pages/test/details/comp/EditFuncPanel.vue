@@ -10,7 +10,7 @@
       width="90%">
       <div class="setting-header">
         <div class="form-group">
-          <label for="edit-software">软件版本:</label>
+          <label for="edit-software">软件版本 (无需输入订单号，只填软件版本):</label>
           <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本"  autocomplete="off"
                     v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
         </div>
@@ -19,11 +19,11 @@
           <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名"  autocomplete="off"
                     v-model.trim="formData.MachineName.value"></el-input>
         </div>
-        <div class="form-group">
-          <label for="edit-machinename">订单号:</label>
-          <el-input size="small" type="text" id="edit-zhidan" placeholder="请填写订单号"  autocomplete="off"
-                    v-model.trim="formData.MachineName.zhidan"></el-input>
-        </div>
+<!--        <div class="form-group">-->
+<!--          <label for="edit-machinename">订单号:</label>-->
+<!--          <el-input size="small" type="text" id="edit-zhidan" placeholder="请填写订单号"  autocomplete="off"-->
+<!--                    v-model.trim="formData.MachineName.zhidan"></el-input>-->
+<!--        </div>-->
         <div class="setting-operation" style="margin-left: auto">
           <div v-if="deleteHistory.length > 0">
             <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back" @click="restoreOneSetting">
@@ -35,9 +35,7 @@
               取消复制
             </el-button>
           </div>
-
         </div>
-
       </div>
 
       <el-row style="margin-top: 20px" class="setting-title">
@@ -144,7 +142,6 @@
               '3': '',
               '4': '',
               '5': '',
-
             }
           ]
         },
@@ -171,6 +168,7 @@
       }
     },
     mounted: function () {
+
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTestFunc');
       eventBus.$on('editTestFunc', data => {
@@ -285,6 +283,7 @@
         if (!emptyMark) {
           this.$alertInfo('存在不能为空项目')
         }
+        console.log(mark,"++",emptyMark)
         return mark && emptyMark;
       },
 

@@ -255,13 +255,6 @@
       </div>
     </div>
 
-
-    <!--    <div class="import-working-schedule">-->
-    <!--      <div class="schedule-title">排班表:</div>-->
-    <!--      <div v-for="(val, key) in workingSchedule" class="schedule-item">{{scheduleMap[key] + ': ' + (!!val ? val :-->
-    <!--        '未设置')}}-->
-    <!--      </div>-->
-    <!--    </div>-->
     <!-- 设置产线时间 -->
     <div class="setting-time">
       <el-tooltip class="item" effect="dark" content="设置产线工作时间" placement="top-start">
@@ -463,7 +456,6 @@
   import {
     planDetailsAddUrl,
     planDetailsReAddUrl,
-    // getWorkingScheduleUrl,
     planDetailsPlanCalculateUrl,
     planLineTimeSelectUrl,
     planLineTimeSettingUrl,
@@ -570,16 +562,7 @@
         existOrders: [],
         currentOrderQuantity: undefined,
         workingSchedule: {},
-        scheduleMap: {
-          "0": "白班上班时间",
-          "1": "白班下班时间",
-          "2": "中午上班时间",
-          "3": "下午下班时间",
-          "4": "夜班上班时间",
-          "5": "夜间下班时间",
-          "6": "夜间上班时间",
-          "7": "夜班下班时间",
-        },
+
         timeIntervalMinutes: {
           "0": 0,
           "1": 0,
@@ -1178,28 +1161,6 @@
         return (new Date(str.replace(/-/g,'/'))).getTime(); //用/替换日期中的-是为了解决Safari的兼容
       },
 
-
-      // getWorkingSchedule() {
-      //   return new Promise(resolve => {
-      //     axiosFetch({
-      //       url: getWorkingScheduleUrl
-      //     }).then(response => {
-      //       if (response.data.result === 200) {
-      //         let data = {};
-      //         Object.keys(response.data.data).forEach(key => {
-      //           data[parseInt(key) - 1] = response.data.data[key]
-      //         });
-      //         resolve(data);
-      //       } else {
-      //         this.$alertWarning(response.data.data)
-      //       }
-      //     }).catch(err => {
-      //       this.$alertDanger('获取排班时间失败，请刷新重试');
-      //     }).finally(() => {
-      //       resolve();
-      //     })
-      //   });
-      // },
       /*检查所选时间是否在排班日期内*/
       checkIsInSchedule(date, callback, cbParams) {
         const calcTime = (val) => {

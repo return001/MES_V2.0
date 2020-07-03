@@ -84,9 +84,9 @@
             switch (item.type) {
               case 'text':
                 if (index === 0) {
-                  this.queryString += (item.id + "#like#" + item.model)
+                  this.queryString += (item.id + "#=#" + item.model)
                 } else {
-                  this.queryString += ("#&#" + item.id + "#like#" + item.model)
+                  this.queryString += ("#&#" + item.id + "#=#" + item.model)
                 }
                 break;
               case 'date':

@@ -6,7 +6,7 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
                       :placeholder="'请填写' + item.label" size="small" clearable
                       autocomplete="off"></el-input>
           </div>
@@ -15,7 +15,8 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
-                       :placeholder="'请选择' + item.label" size="small">
+                       :placeholder="'请选择' + item.label"
+                       size="small" clearable>
               <el-option v-for="listItem in factoryList"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -26,7 +27,7 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
-                       :placeholder="'请选择' + item.label" size="small">
+                       :placeholder="'请选择' + item.label" size="small" clearable>
               <el-option v-for="listItem in item.list"
                          :key="listItem.value"
                          :value="listItem.value"
@@ -47,7 +48,8 @@
               end-placeholder="结束日期"
               value-format="yyyy-MM-dd"
               autocomplete="off"
-              size="small">
+              size="small"
+              clearable>
             </el-date-picker>
           </div>
         </div>
@@ -68,7 +70,6 @@
           :data="tableData"
           max-height="560"
           ref="tablecomponent"
-          highlight-current-row
           stripe>
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
@@ -809,7 +810,8 @@
             case 'text':
               //possible value: null [empty string] [string]
               if (!!subObj.value) {
-                queryString += queryString.length === 0 ? (itemCopy + '#like#' + subObj.value) : ('#&#' + itemCopy + '#like#' + subObj.value)
+                //like
+                queryString += queryString.length === 0 ? (itemCopy + '#=#' + subObj.value) : ('#&#' + itemCopy + '#=#' + subObj.value)
               }
               break;
             case 'select':

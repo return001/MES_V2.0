@@ -6,8 +6,8 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
-                      :placeholder="'请填写' + item.label" size="small"></el-input>
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
+                      :placeholder="'请填写' + item.label" size="small" clearable></el-input>
           </div>
           <!--时间范围-->
           <div class="query-comp-timerange" v-else-if="item.type === 'timeRange'">
@@ -23,7 +23,8 @@
               end-placeholder="结束日期"
               value-format="yyyy-MM-dd"
               autocomplete="off"
-              size="small">
+              size="small"
+              clearable>
             </el-date-picker>
           </div>
         </div>
@@ -39,7 +40,7 @@
     <div class="content-comp">
       <el-table
         :data="tableData"
-        max-height="560"
+        max-height="600"
         ref="tablecomponent"
         stripe>
         <el-table-column v-for="(item, index) in tableColumns"
@@ -89,6 +90,7 @@
     inject: ['reload'],
     data() {
       return {
+        isPending: false,
         sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: logsQueryOptions,
         thisQueryOptions: {},
@@ -129,15 +131,6 @@
         },
       }
     },
-    computed: {
-      editPanelTitle: function () {
-        if (this.processGroupEditType === 'edit') {
-          return '编辑'
-        } else if (this.processGroupEditType === 'add') {
-          return '新增'
-        }
-      },
-    },
     created() {
       this.initQueryOptions();
     },
@@ -168,7 +161,8 @@
             case 'text':
               //possible value: null [empty string] [string]
               if (!!subObj.value) {
-                queryString += queryString.length === 0 ? (itemCopy + '#like#' + subObj.value) : ('#&#' + itemCopy + '#like#' + subObj.value)
+                //like
+                queryString += queryString.length === 0 ? (itemCopy + '#=#' + subObj.value) : ('#&#' + itemCopy + '#=#' + subObj.value)
               }
               break;
             case 'select':
@@ -237,147 +231,6 @@
           })
         }
       },
-      // editData: function (type, val) {
-      //   //初始化要提交的值
-      //   this.processGroupEditOptions.forEach(item => {
-      //     this.$set(this.processGroupEditOptionsData, item.key, '')
-      //   });
-      //   if (type === 'edit') {
-      //     this.processGroupEditType = 'edit';
-      //     Object.keys(val).forEach(item => {
-      //       this.processGroupEditOptions.forEach(option => {
-      //         if (item === option.key && val[item] !== null) {
-      //           this.$set(this.processGroupEditOptionsData, item, val[item])
-      //         }
-      //       })
-      //     });
-      //     this.$set(this.processGroupEditOptionsData, 'id', val.id);
-      //     this.isProcessGroupEditing = true;
-      //   } else if (type === 'add') {
-      //     this.processGroupEditType = 'add';
-      //     this.isProcessGroupEditing = true;
-      //   }
-      // },
-      // closeEditProcessGroupPanel: function () {
-      //   this.isProcessGroupEditing = false;
-      // },
-      //
-      // submitEditProcessGroup: function () {
-      //   this.$refs['processGroupEditForm'].validate((isValid) => {
-      //     if (isValid && !this.isPending) {
-      //       this.isPending = true;
-      //       this.$openLoading();
-      //       let options = {
-      //         url: '',
-      //         data: this.processGroupEditOptionsData
-      //       };
-      //       if (this.processGroupEditType === 'edit') {
-      //         options.url = planProcessGroupEditUrl
-      //       } else if (this.processGroupEditType === 'add') {
-      //         options.url = planProcessGroupAddUrl
-      //       }
-      //       axiosFetch(options).then(response => {
-      //         if (response.data.result === 200) {
-      //           this.$alertSuccess('操作成功');
-      //           this.resetEditProcessGroupForm();
-      //           this.closeEditProcessGroupPanel();
-      //         } else {
-      //           this.$alertWarning(response.data.data)
-      //         }
-      //       }).catch(err => {
-      //         this.$alertDanger("未知错误")
-      //       }).finally(() => {
-      //         this.isPending = false;
-      //         this.$closeLoading();
-      //         this.reload();
-      //       })
-      //     } else {
-      //       this.$alertInfo('请完善表单信息')
-      //     }
-      //   })
-      // },
-      // resetEditProcessGroupForm: function () {
-      //   this.processGroupEditOptionsData = {};
-      //   this.$refs['processGroupEditForm'].clearValidate();
-      // },
-      // deleteData: function (val) {
-      //   MessageBox.confirm('将删除该配置，是否继续?', '提示', {
-      //     confirmButtonText: '确认',
-      //     cancelButtonText: '取消',
-      //     type: 'warning'
-      //   }).then(() => {
-      //     this.$openLoading();
-      //     this.isPending = true;
-      //     axiosFetch({
-      //       url: planProcessGroupDeleteUrl,
-      //       data: {
-      //         id: val.id
-      //       }
-      //     }).then(response => {
-      //       if (response.data.result === 200) {
-      //         this.$alertSuccess('删除成功');
-      //         this.reload();
-      //       } else {
-      //         this.$alertWarning(response.data.data)
-      //       }
-      //     }).catch(err => {
-      //       this.$alertDanger("未知错误")
-      //     }).finally(() => {
-      //       this.$closeLoading();
-      //       this.isPending = false;
-      //     })
-      //   }).catch(() => {})
-      // },changePosition: function (val, direction) {
-      //   let position;
-      //   if (direction === 'up') {
-      //     if (val.$index > 0) {
-      //       position = this.tableData[val.$index - 1].id
-      //     } else {
-      //       return
-      //     }
-      //   } else if (direction === 'down') {
-      //     if (val.$index < (this.tableData.length - 1)) {
-      //       position = this.tableData[val.$index + 1].id
-      //     } else {
-      //       return
-      //     }
-      //   }
-      //   if (!this.isPending) {
-      //     this.isPending = true;
-      //     this.$openLoading();
-      //     //初始化要提交的值，行内容填充
-      //     this.processGroupEditOptions.forEach(item => {
-      //       this.$set(this.processGroupEditOptionsData, item.key, '')
-      //     });
-      //     Object.keys(val.row).forEach(item => {
-      //       this.processGroupEditOptions.forEach(option => {
-      //         if (item === option.key && val.row[item] !== null) {
-      //           this.$set(this.processGroupEditOptionsData, item, val.row[item])
-      //         }
-      //       })
-      //     });
-      //     this.$set(this.processGroupEditOptionsData, 'id', val.row.id);
-      //     this.$set(this.processGroupEditOptionsData, 'position', position);
-      //   }
-      //   axiosFetch({
-      //     url: planProcessGroupEditUrl,
-      //     data: this.processGroupEditOptionsData
-      //   }).then(response => {
-      //     if (response.data.result === 200) {
-      //       this.$alertSuccess('操作成功');
-      //       this.processGroupEditOptionsData = {};
-      //       this.reload();
-      //     } else {
-      //       this.$alertWarning(response.data.data)
-      //     }
-      //   }).catch(err => {
-      //     this.$alertDanger("未知错误")
-      //   }).finally(() => {
-      //     this.isPending = false;
-      //     this.$closeLoading();
-      //   })
-      //
-      // }
     }
   }
 </script>

@@ -224,6 +224,3 @@ export const eSopLoginLogSelectUrl = url + '/sop/selectLoginLog';
 export const eSopStationStatusSelectUrl = url + '/sop/selectPost';
 export const eSopAssignableStaffSelectUrl = url + '/sop/selectAssignableUser';
 export const eSopAssignStaffUrl = url + '/sop/assignUser';
-
-/*获取排班时间*/
-export const getWorkingScheduleUrl = url + '/production/getWorkingSchedule';

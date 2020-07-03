@@ -11,6 +11,7 @@
               id="process-group-query-item"
               placeholder="请选择工序组"
               size="small"
+              clearable
               >
               <el-option v-for="listItem in processGroupSelectGroup"
                          :key="listItem.id"
@@ -23,8 +24,8 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
-                      :placeholder="'请填写' + item.label" size="small"></el-input>
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
+                      :placeholder="'请填写' + item.label" size="small" clearable></el-input>
           </div>
         </div>
         <div class="query-comp-container">

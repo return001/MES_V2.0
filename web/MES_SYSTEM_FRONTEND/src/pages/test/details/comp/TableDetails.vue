@@ -158,6 +158,7 @@
 
       /*编辑/复制条目 $on at @/pages/test/details/comp/EditPanel*/
       editData: function (operType, val) {
+        console.log(val)
         if (this.$route.query.type === '2' || this.$route.query.type === '4') {
           eventBus.$emit('editTest', [operType, val])
         } else {

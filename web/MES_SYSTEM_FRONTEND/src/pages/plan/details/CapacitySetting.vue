@@ -8,7 +8,8 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        autocomplete="off"
-                       :placeholder="'请选择' + item.label" size="small">
+                       :placeholder="'请选择' + item.label"
+                       size="small" clearable>
               <el-option v-for="listItem in item.list"
                          :key="listItem.value"
                          :value="listItem.value"
@@ -18,8 +19,9 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
-                      :placeholder="'请填写' + item.label" size="small"></el-input>
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
+                      :placeholder="'请填写' + item.label"
+                      size="small" clearable></el-input>
           </div>
         </div>
         <!--选择器-->
@@ -30,7 +32,7 @@
               v-model="thisQueryOptions['processGroup'].value"
               id="process-query-item"
               placeholder="请选择工序"
-              size="small">
+              size="small" clearable>
               <el-option v-for="listItem in processGroupSelectWait"
                          :key="'wait'+listItem.id"
                          :value="listItem.id"
@@ -57,8 +59,7 @@
           max-height="560"
           :span-method="detailsTableSpanMethod"
           border
-          ref="tablecomponent"
-          stripe>
+          ref="tablecomponent">
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
                            :prop="item.key"
@@ -76,7 +77,7 @@
 
           <el-table-column
             label="删除"
-            width="100"
+            width="60"
             fixed="right"
           >
             <template slot-scope="scope">
@@ -213,7 +214,6 @@
             ref="tablecomponent">
             <el-table-column
               type="index"
-              :index="indexMethod"
               fixed="left"
               width="60">
             </el-table-column>
@@ -387,6 +387,27 @@
           return '复制'
         }
       },
+
+      oneList(){
+        let iList = [];
+        this.tableData.forEach((row, rowIndex) => {
+          let eIndex = iList.findIndex(e =>e.customerNumber === row.customerNumber && e.softModel === row.softModel && e.customerModel === row.customerModel);
+          console.log(eIndex)
+          if(eIndex !== -1){
+            iList[eIndex].length += 1;
+          } else {
+            iList.push({
+              customerNumber: row.customerNumber,
+              softModel: row.softModel,
+              customerModel: row.customerModel,
+              length: 1,
+              index: rowIndex
+            })
+          }
+          console.log(iList)
+        })
+        return iList
+      },
     },
     async created() {
       this.initQueryOptions();
@@ -410,7 +431,7 @@
           this.queryData();
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectSrc', 'processGroupSelect'])
+        _partlyReload(['thisQueryOptions', 'capacityEditOptions', 'processSelectSrc', 'processGroupSelect','processGroupSelectWait'])
       },
 
 
@@ -448,27 +469,35 @@
       },
 
       /*获取客户信息*/
-      fetchCustomer() {
+      fetchCustomer(factoryId = this.sessionFactory) {
         this.$openLoading();
         let options = {
           url: eSopCustomerSelectUrl,
           data: {
+            factoryId:factoryId,
             pageNo: this.paginationOptions.currentPage,
             pageSize: this.paginationOptions.pageSize
           }
         };
         axiosFetch(options).then(response => {
           if (response.data.result === 200) {
-            this.customerDatas = response.data.data.list;
+            this.customerDatas = response.data.data.list
+            // this.customerDatas = []
+            // response.data.data.list.forEach(item=>{
+            //   if(item.factoryId === Number(this.sessionFactory)){
+            //     this.customerDatas.push(item);
+            //   }
+            // })
           } else {
             this.$alertWarning(response.data.data)
           }
         }).catch(err => {
+          console.log(err)
           this.$alertDanger('未知错误')
         }).finally(() => {
           this.isPending = false;
           this.$closeLoading();
-
+          console.log(this.customerDatas)
         })
       },
       choiceCustomer(val){
@@ -559,6 +588,7 @@
 
       //工厂更改  工序组即更改
       changeGroupList(val){
+        this.fetchCustomer(val)
         this.processGroupSelect = []
         this.sameGroupDatas = []
           this.processGroupSelectWait.forEach(item=>{
@@ -751,6 +781,8 @@
         this.$set(this.capacityEditOptionsData,'customerNumber',this.sameGroupDatas[0].customerNumber)
         this.$set(this.capacityEditOptionsData,'softModel',this.sameGroupDatas[0].softModel)
         this.$set(this.capacityEditOptionsData,'customerModel',this.sameGroupDatas[0].customerModel)
+        // this.$set(this.capacityEditOptionsData,'statusId',row.statusId)
+        // this.$set(this.capacityEditOptionsData,'statusName',row.statusName)
         this.customerNames= this.sameGroupDatas[0].customerName
 
         // 编辑时 也能选更多的工序组
@@ -785,7 +817,8 @@
 
       //节拍、产能、转线时常 可以是float  需要比较0
       compareZero(scope,val){
-        if(val <= 0){
+        console.log(val)
+        if(val <= 0 && val !== ''){
           scope.row[scope.column.property] = ''
           this.$alertWarning('数值必须大于0')
           return
@@ -826,6 +859,7 @@
       },
       //新增、编辑、复制
       submitEditCapacity: function () {
+        this.Parameter = true
         if(this.sameGroupDatas.length <= 0){
           this.$alertWarning('该工厂不存在可用工序组')
           return
@@ -835,10 +869,10 @@
             item.customerName= this.customerNames;
             item.softModel= this.capacityEditOptionsData.softModel;
             item.customerModel= this.capacityEditOptionsData.customerModel;
-            !item.processPeopleQuantity || !item.rhythm ? this.Parameter = false : this.Parameter = true
+            !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
           })
         if(!this.Parameter){
-          this.$alertWarning('人数和产能为必填项')
+          this.$alertWarning('工序组、人数和产能为必填项')
           this.$closeLoading()
           return
         }
@@ -863,14 +897,14 @@
             }else{
               options.data.factory = this.sessionFactory
             }
-            this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
-              Object.keys(item).forEach(con => {
-                if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === "" || item[con] === "0"){
-                  console.log('冗余代码')
-                  item[con] = null
-                }
-              })
-            })
+            // this.sameGroupDatas.forEach(item=>{      //存数据的时候  没数据就为空 避免 0 undefind  的情况
+            //   Object.keys(item).forEach(con => {
+            //     if(item[con] === null || item[con] === undefined || item[con] === 0 || item[con] === "" || item[con] === "0"){
+            //       console.log('冗余代码')
+            //       item[con] = null
+            //     }
+            //   })
+            // })
             options.data.modelCapacityString= JSON.stringify(this.sameGroupDatas)
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {
@@ -963,16 +997,30 @@
           })
         });
       },
+
+
+
       detailsTableSpanMethod: function ({row, column, rowIndex, columnIndex}) {
-        if (this.mergeProp.includes(column.property)) {
-          const _row = this.mergeData[column.property][rowIndex]; //0,2,0,2,0,2
-          const _col = _row > 0 ? 1 : 0;
-          return {
-            rowspan: _row,
-            colspan: _col
+        // if (columnIndex === 1) {
+        //   if (this.mergeProp.includes(column.property)) {
+        //     const _row = this.mergeData[column.property][rowIndex]; //0,2,0,2,0,2
+        //     const _col = _row > 0 ? 1 : 0;
+        //     return {
+        //       rowspan: _row,
+        //       colspan: _col
+        //     }
+        //   }
+        // }
+        if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' || column.label === '备注' ||
+            column.label === '机型' || column.label === '客户编号' || column.label === '客户名称' || column.label === '所属工厂' || column.label === '客户型号/料号' || column.label === '操作') {
+          // console.log('oneList',row, column, rowIndex, columnIndex,this.oneList)
+          let iIndex = this.oneList.findIndex(e => { return e.index == rowIndex});
+          if (iIndex !== -1) {
+            return [this.oneList[iIndex].length, 1];
+          } else {
+            return [0, 0];
           }
         }
-
       },
 
 

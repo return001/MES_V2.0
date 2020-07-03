@@ -222,7 +222,7 @@ const getCharactersFuncList = function() {
         'oqc': generateArray(4, false, [0, 1, 2, 3])
       },
       'test_log':{
-        'test_item_log': generateArray(4, false, [0, 1, 2, 3])
+        'test_item_log': generateArray(4, false, [0])
       }
     },
     'table': {
@@ -332,7 +332,6 @@ const getModuleIndex = function(path, query) {
     'plan': 'plan',
     'user': 'user',
     'work_order':'work_order',
-
   };
   /*当路由未到达叶子路由时将返回值设置为 ‘模块’，排除目前存在的两种单层路由页面的情况 */
   if (pathGroup.length === 2 && pathGroup[1] !== 'order' && pathGroup[1] !== 'redtea') {

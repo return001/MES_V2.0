@@ -6,7 +6,7 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value"
+            <el-input v-model.trim="thisQueryOptions[item.key].value"
                       :id="item.key + index"
                       :placeholder="'请填写' + item.label"
                       size="small"
@@ -203,7 +203,8 @@
             case 'text':
               //possible value: null [empty string] [string]
               if (!!subObj.value) {
-                queryString += queryString.length === 0 ? (itemCopy + '#like#' + subObj.value) : ('#&#' + itemCopy + '#like#' + subObj.value)
+                //like
+                queryString += queryString.length === 0 ? (itemCopy + '#=#' + subObj.value) : ('#&#' + itemCopy + '#=#' + subObj.value)
               }
               break;
             case 'select':

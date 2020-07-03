@@ -22,6 +22,7 @@ const RedTea = () => import ('../pages/redtea/RedTeaMain');
 /*测试配置*/
 const TestMain = () => import ('../pages/test/TestMain');
 const TestManage = () => import ('../pages/test/details/TestManage');
+const TestLog = () => import ('../pages/test/details/comp/TestLog');
 /*表单查询*/
 const TableMain = () => import ('../pages/table/TableMain');
 const TableModule = () => import ('../pages/table/details/TableModule');
@@ -99,7 +100,6 @@ const index = new Router({
             },
             {
               path: 'multi',
-
               component: MultiTableModule
             }
           ]
@@ -123,7 +123,11 @@ const index = new Router({
             {
               path: 'test_manage',
               component: TestManage
-            }
+            },
+            // {
+            //   path: 'test_item_log',
+            //   component: TestLog
+            // }
           ]
         },
         {

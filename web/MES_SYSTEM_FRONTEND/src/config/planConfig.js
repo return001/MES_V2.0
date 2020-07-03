@@ -781,81 +781,82 @@ export const capacityEditOptionsRules = {
     'capacity': [{ required: true, message: '请填写产能', trigger: 'blur' }],
 };
 
-export const capacityTableColumns = [{
-        'label': '机型',
-        'key': 'softModel',
-        'min-width': '100px'
-    },
-    {
-        'label': '客户编号',
-        'key': 'customerNumber',
-        'min-width': '100px'
-    },
-    {
-        'label': '客户名称',
-        'key': 'customerName',
-        'min-width': '100px'
-    },
-    {
-        'label': '所属工厂',
-        'key': 'abbreviation',
-        'min-width': '100px'
-    },
-    {
-        'label': '客户型号/料号',
-        'key': 'customerModel',
-        'min-width': '100px'
-    },
-    {
-        'label': '节拍/用时(s)',
-        'key': 'rhythm',
-        'min-width': '80px'
-    },
-    {
-        'label': '工序组',
-        'key': 'groupName',
-        'min-width': '80px'
-    },
-    {
-        'label': '人数(个)',
-        'key': 'processPeopleQuantity',
-        'min-width': '60px'
-    },
-    {
-        'label': '产能(PCS/H)',
-        'key': 'capacity',
-        'min-width': '60px'
-    },
-    {
-        'label': '转线时长(分钟)',
-        'key': 'transferLineTime',
-        'min-width': '60px'
-    },
-    {
-      'label': '状态',
-      'key': 'statusName',
+export const capacityTableColumns = [
+  {
+    'label': '状态',
+    'key': 'statusName',
+    'min-width': '70px'
+  },
+  {
+    'label': '审核人',
+    'key': 'reviewerName',
+    'min-width': '80px'
+  },
+  {
+    'label': '审核时间',
+    'key': 'reviewTime',
+    'min-width': '100px'
+  },
+  {
+    'label': '审核说明',
+    'key': 'reviewRemark',
+    'min-width': '100px'
+  },
+  {
+      'label': '机型',
+      'key': 'softModel',
       'min-width': '100px'
-    },
-    {
-      'label': '审核说明',
-      'key': 'reviewRemark',
+  },
+  {
+      'label': '客户编号',
+      'key': 'customerNumber',
       'min-width': '100px'
-    },
-    {
-      'label': '审核人',
-      'key': 'reviewerName',
+  },
+  {
+      'label': '客户名称',
+      'key': 'customerName',
+      'min-width': '100px'
+  },
+  {
+      'label': '所属工厂',
+      'key': 'abbreviation',
+      'min-width': '100px'
+  },
+  {
+      'label': '客户型号/料号',
+      'key': 'customerModel',
+      'min-width': '100px'
+  },
+  {
+      'label': '节拍/用时(s)',
+      'key': 'rhythm',
       'min-width': '80px'
-    },
-    {
-      'label': '审核时间',
-      'key': 'reviewTime',
-      'min-width': '100px'
-    },
-    {
-        'label': '备注',
-        'key': 'remark',
-        'min-width': '100px'
-    },
+  },
+  {
+      'label': '工序组',
+      'key': 'groupName',
+      'min-width': '80px'
+  },
+  {
+      'label': '人数(个)',
+      'key': 'processPeopleQuantity',
+      'min-width': '60px'
+  },
+  {
+      'label': '产能(PCS/H)',
+      'key': 'capacity',
+      'min-width': '60px'
+  },
+  {
+      'label': '转线时长(分钟)',
+      'key': 'transferLineTime',
+      'min-width': '60px'
+  },
+  {
+    'label': '备注',
+    'key': 'remark',
+    'min-width': '100px'
+  },
 ];
 
 /*新增编辑页面的table*/

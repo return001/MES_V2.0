@@ -1,11 +1,18 @@
 <!--订单配置页面根组件-->
 <template>
   <div class="test-manager">
-    <options/>
-    <table-details/>
-    <edit-func-panel/>
-    <edit-panel/>
+    <div v-if="$route.query.type !== '6'">
+      <options/>
+      <table-details/>
+      <edit-func-panel/>
+      <edit-panel/>
+    </div>
+    <div v-if="$route.query.type === '6'">
+      <test-log/>
+    </div>
   </div>
+
+
 </template>
 
 <script>
@@ -13,6 +20,7 @@
   import TableDetails from './comp/TableDetails'
   import EditFuncPanel from './comp/EditFuncPanel'
   import EditPanel from './comp/EditPanel'
+  import TestLog from './comp/TestLog'
 
   export default {
     name: "TestManage",
@@ -25,7 +33,8 @@
       Options,
       TableDetails,
       EditFuncPanel,
-      EditPanel
+      EditPanel,
+      TestLog
     }
   }
 </script>

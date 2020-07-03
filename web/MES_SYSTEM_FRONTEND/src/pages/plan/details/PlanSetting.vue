@@ -9,7 +9,7 @@
                 v-model="thisQueryOptions['line'].value"
                 id="process-query-item"
                 placeholder="请选择产线"
-                size="small">
+                size="small" clearable>
               <el-option v-for="listItem in lineSelectGroup"
                          :key="listItem.id"
                          :value="listItem.id"
@@ -21,7 +21,7 @@
           <!--纯文本框-->
           <div class="query-comp-text" v-if="item.type === 'text'">
             <label :for="item.key + index">{{item.label}}:</label>
-            <el-input v-model="thisQueryOptions[item.key].value" :id="item.key + index"
+            <el-input v-model.trim="thisQueryOptions[item.key].value" :id="item.key + index"
                       :placeholder="'请填写' + item.label" size="small"
                       autocomplete="off"></el-input>
           </div>
@@ -30,7 +30,7 @@
             <label :for="item.key + index">{{item.label}}:</label>
             <el-select v-model="thisQueryOptions[item.key].value" :id="item.key + index"
                        :placeholder="'请选择' + item.label" size="small"
-                       autocomplete="off">
+                       autocomplete="off" clearable>
               <el-option v-for="listItem in item.list"
                          :key="listItem.value"
                          :value="listItem.value"
@@ -51,7 +51,8 @@
                 end-placeholder="结束日期"
                 value-format="yyyy-MM-dd"
                 autocomplete="off"
-                size="small">
+                size="small"
+                clearable>
             </el-date-picker>
           </div>
         </div>
@@ -441,7 +442,7 @@
       activeProcessGroup: function (val) {
         if (val !== -1) {
           this.lineSelectGroup = [];
-          let childrenGroup = this.processGroupSelectGroup.filter(item=>item.id === val)   //子工序组标签没有对应的 产线的话  就找父标签对应的产线
+          let childrenGroup = this.processGroupSelectGroup.filter(item=>item.id === val)   //子工序组标签没有对应的产线的话  就找父标签对应的产线
           this.lineSelectGroupSrc.forEach(item => {
             if (item.processGroup === val || item.processGroup === childrenGroup[0].parentGroup) {
               this.lineSelectGroup.push(item)
@@ -697,7 +698,7 @@
         if (!this.isPending) {
           if(this.activeProcessGroupType === 0){
             this.activeProcessGroupType = this.processGroupSelectGroup[0].id-1
-          };
+          }
           this.isPending = true;
           this.$openLoading();
 
@@ -766,17 +767,9 @@
       },
 
       editData: function (val) {
-        // if (this.$store.state.userType === 'engineer') {
-        //   this.engineerEditing = true;
-        // }
-        // else if (this.$store.state.userType === 'schedulingJMPMC') {
-        //   this.pmcEditing = true;
-        // } else if (this.$store.state.userType === 'SuperAdmin') {
-          this.totallyEditing = true;
-          this.planEditRow = val
-          this.planEditRow.activeProcessGroup = this.activeProcessGroup
-        // }
-
+        this.totallyEditing = true;
+        this.planEditRow = val
+        this.planEditRow.activeProcessGroup = this.activeProcessGroup
       },
 
 

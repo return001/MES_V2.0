@@ -1,0 +1,340 @@
+<template>
+  <div id="test-log">
+    <div class="test-log-main">
+      <div class="query-comp">
+        <div class="query-comp-container" v-for="(item,index) in queryOptions" :key="index">
+          <div class="query-comp-text" v-if="item.type === 'text'">
+            <label :for="item.key + index">{{item.label}}</label>
+            <el-input v-model.trim="thisQueryOptions[item.key]"
+                      :id="item.key + index"
+                      :placeholder="'请填写' + item.label"
+                      size="small" autocomplete="false" clearable>
+            </el-input>
+          </div>
+
+          <div class="query-comp-select" v-if="item.type === 'select'">
+            <label :for="item.key + index">{{item.label}}</label>
+            <el-select v-model="thisQueryOptions[item.key]" :id="item.key + index"
+                       :placeholder="'请选择' + item.label"
+                       autocomplete="false" size="small" clearable>
+              <el-option v-for="(listItem,itemIndex) in item.list"
+                         :key="itemIndex.value"
+                         :value="listItem.value"
+                         :label="listItem.label">
+              </el-option>
+            </el-select>
+          </div>
+
+          <div class="query-comp-timerange" v-if="item.type === 'timeRange'">
+            <label :for="item.key + index">{{item.label}}</label>
+            <el-date-picker
+              :id="item.key + index"
+              v-model="thisQueryOptions[item.key]"
+              type="datetimerange"
+              :picker-options="timePickerOptions"
+              prefix-icon="el-icon-date"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="yyyy-MM-dd hh:mm:ss"
+              autocomplete="off"
+              size="small"
+              clearable>
+            </el-date-picker>
+          </div>
+        </div>
+        <div class="query-comp-container">
+          <el-button type="info" size="small" @click="clearOptions">重置条件</el-button>
+          <el-button type="primary" size="small" @click="fetchData">查询</el-button>
+        </div>
+      </div>
+
+      <div class="content-comp" >
+        <el-table
+          max-height="650"
+          :data="tableData"
+          :header-cell-style="{'text-align':'center'}"
+          :cell-style="{'text-align':'center'}"
+          style="width:100%"
+          stripe
+        >
+          <el-table-column
+            label="序号"
+            type="index"
+            header-align="center"
+            width="80"
+            fixed="left">
+          </el-table-column>
+          <el-table-column v-for="(item,index) in tableColumns"
+                           :key="index"
+                           :label="item.label"
+                           :prop="item.key"
+                           :min-width="item['min-width']">
+          </el-table-column>
+
+          <el-table-column
+            label="详情"
+            min-width="70"
+            header-align="center"
+            fixed="right">
+            <template slot-scope="scope">
+              <el-tooltip content='查看详情' placement="top">
+                <el-button type="text" icon="el-icon-t-table" @click="logDetail(scope.row)"></el-button>
+              </el-tooltip>
+            </template>
+
+          </el-table-column>
+        </el-table>
+        <!--分页控制-->
+        <el-pagination
+          background
+          :current-page.sync="paginationOptions.currentPage"
+          :page-sizes="[20, 40, 80]"
+          :page-size.sync="paginationOptions.pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="paginationOptions.total"
+          @current-change="thisFetch()"
+          @size-change="thisFetch('sizeChange')"
+          class="page-pagination">
+        </el-pagination>
+      </div>
+
+      <log-detail-panel v-if="isDetail === true"
+                        :detail-data="detailData"
+                        :is-detail.sync="isDetail"/>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {
+    testLogGetUrl,
+    testOperUrl,
+    testSelectUrl,
+
+    testLogQueryOptions,
+    testLogTableOptions,
+  } from "../../../../config/testApiConfig";
+  import {axiosFetch} from "../../../../utils/fetchData";
+  import LogDetailPanel from "./LogDetailPanel";
+
+    export default {
+      name: "TestLog",
+      components:{
+        LogDetailPanel
+      },
+      data(){
+        return {
+          isPending: false,
+          queryOptions:testLogQueryOptions,
+          tableColumns:testLogTableOptions,
+          tableData:[
+            {
+              settingType:'组装耦合测试',
+              softVersion: "PB88-V_11_S2_SC2",
+              zhidan:'JIMI-1020-2010',
+              model: "PB88-V",
+              operationType: "新增",
+              operator: "张三",
+              time:'2020-05-06 20:31:00',
+              result:'成功',
+              station:'NT912_R0_V01@@@@}}}}11共有指令切换为NB@@AT+MSMODE=2,0@@OK}}共有指令芯片ID@@AT^GT_CM=ID,1@@RID}}共有指令软件版本@@AT^GT_CM=VERSION@@[VERSION]}}IMEI域名IMEI写号@@AT^GT_CM=IMEI,1,@@OK!}}IMEI域名测试项@@AT^GT_CM=ESDS@@NVRAM执行成功！}}IMEI域名RFID@@AT^GT_CM=RF_BAR@@PASS}}IMEI域名IMEI检查@@AT+EGMR=0,7@@OK}}IMEI域名恢复出厂@@AT^GT_CM=FACTORYALL@@OK}}IMEI域名查IP及端口@@AT^GT_CM=SCXSZ@@112.35.78.50,7100}}共有指令清除参数@@AT^GT_CM=CLEAR@@OK}}共有指令耦合测试@@@@}}'
+            }
+          ],
+          thisQueryOptions:{},  //查询条件存储
+          isDetail:false,
+          detailData:[],
+          timePickerOptions: {
+            shortcuts: [{
+              text: '最近一周',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近一个月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近三个月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                picker.$emit('pick', [start, end]);
+              }
+            }]
+          },
+
+          paginationOptions: {
+            currentPage: 1,
+            pageSize: 20,
+            total: 0
+          },
+        }
+      },
+
+      created(){
+        this.fetchData();
+
+      },
+      methods:{
+        clearOptions(){
+          this.thisQueryOptions = {};
+        },
+
+        fetchData(){
+          if(!this.isPending){
+            this.isPending = true
+            this.$openLoading();
+            let options = {
+              url:testLogGetUrl,
+              data:{
+                pageNo:this.paginationOptions.currentPage,
+                pageSize:this.paginationOptions.pageSize,
+                descBy: 'RecordTime',
+                type: 3
+              }
+            }
+            Object.keys(this.thisQueryOptions).forEach(item=>{
+              options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item]))
+            })
+            axiosFetch(options).then(response=>{
+              if(response.data.result === 200 ){
+                // this.tableData = response.data.data.list
+                this.paginationOptions.currentPage = response.data.data['pageNumber'];
+                this.paginationOptions.total = response.data.data['totalRow'];
+              }else{
+                this.$alertWarning(response.data)
+              }
+            }).catch(err=>{
+              console.log(err)
+            }).finally(()=>{
+              this.$closeLoading()
+              this.isPending = false
+              }
+            )
+          }
+        },
+
+        thisFetch: function (opt) {
+          this.$openLoading();
+          if (opt === 'sizeChange') {
+            this.paginationOptions.currentPage = 1;
+          }
+
+          let options = {
+            url: testSelectUrl,
+            data: {
+              pageNo: this.paginationOptions.currentPage,
+              pageSize: this.paginationOptions.pageSize,
+              descBy: 'RecordTime',
+              type: this.$route.query.type
+            }
+          };
+          this.fetchData(options)
+        },
+
+        logDetail(row){
+          console.log(row)
+          this.isDetail = true;
+          this.detailData = row
+        }
+      }
+    }
+</script>
+
+<style scoped>
+  #test-logs /deep/ .el-button i{
+    font-size: 17px;
+    font-weight: bold;
+  }
+
+  #test-log {
+    position: relative;
+    width: 100%;
+    min-height: 600px;
+    height: 100%;
+  }
+
+  .test-log-main {
+  }
+
+  .query-comp {
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 5px;
+    padding: 10px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 60px;
+  }
+
+  .query-comp-container {
+    margin: 0 16px 10px 0;
+  }
+
+  .query-comp label {
+    display: block;
+    line-height: 24px;
+    font-size: 14px;
+  }
+
+  .query-comp-text {
+    width: 220px;
+  }
+
+  .query-comp-select {
+    width: 220px !important;
+  }
+
+  .query-comp-select .el-select {
+    width: 100%;
+  }
+
+  .query-comp-select /deep/ input {
+    padding-right: 0;
+  }
+
+  .query-comp-container .el-button {
+    margin-top: 24px;
+    width: 80px;
+  }
+
+  .content-comp {
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .process-group-edit-form {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .process-group-edit-form-comp {
+    padding: 0 10px;
+  }
+
+  .process-group-edit-form-comp label {
+    font-size: 15px;
+    line-height: 24px;
+    padding: 0;
+  }
+
+  .process-group-edit-form-comp-text {
+    width: 210px;
+  }
+
+  .process-group-edit-form-comp-text /deep/ .el-input {
+    width: 210px;
+  }
+</style>

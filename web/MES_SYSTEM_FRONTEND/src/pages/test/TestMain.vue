@@ -38,6 +38,7 @@
     },
     methods: {
       reload: function () {
+        console.log(this.$store.state.testType)
         this.isRouterAlive = false;
         this.$nextTick(function () {
           this.isRouterAlive = true;
