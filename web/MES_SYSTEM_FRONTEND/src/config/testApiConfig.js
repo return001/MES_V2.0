@@ -120,6 +120,11 @@ export const testLogTableOptions =[
     'min-width':'200'
   },
   {
+    'label':'配置类型',
+    'key':'configType',
+    'min-width':'200'
+  },
+  {
     'label':'机型名',
     'key':'model',
     'min-width':'150'
@@ -142,14 +147,14 @@ export const testLogTableOptions =[
   {
     'label':'操作结果',
     'key':'result',
-    'min-width':'60'
+    'min-width':'80'
   },
 ]
 export const logDetailHeader = [
   {
     type:'select',
     label:'配置类型',
-    key:'settingType',
+    key:'configType',
   },
   {
     type:'text',
@@ -183,6 +188,11 @@ export const logDetailTable =[
       'label':'AT指令',
       'key':'orderAT',
       'min-width':'200'
+    },
+    {
+      'label':'可变参数',
+      'key':'variable',
+      'min-width':'200',
     },
     {
       'label':'返回值',

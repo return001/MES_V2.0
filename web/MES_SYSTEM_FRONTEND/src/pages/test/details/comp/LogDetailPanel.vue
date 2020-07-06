@@ -71,30 +71,48 @@
 
         sliceData(){
           let dataItemList =JSON.parse(JSON.stringify(this.detailData.station)).split("}}");
-          console.log(dataItemList)
-          // this.dialogData.settingType = dataItemList.shift()
           //掐头（类型）去尾（空）
           dataItemList.pop()
           let arrLength = (dataItemList.length > 10 ? dataItemList.length : '0'+dataItemList.length).toString()
-          dataItemList[0] = dataItemList[0].replace(arrLength,"")
+          dataItemList[0] = dataItemList[0].replace(arrLength,"")   //第二个元素的开头是 长度的字符串  要删除
           let placeStrList =['IMEI域名','共有指令','功能测试','白卡测试'];
-          placeStrList.forEach((item)=>{
-            dataItemList.forEach((dataItem)=>{
-              if(dataItem.indexOf(item) !==-1 ){
-                dataItem = dataItem.replace(item,"")
-                dataItem = {
-                  place:item,
-                  pro:dataItem.split('@@')[0],
-                  orderAT:dataItem.split('@@')[1],
-                  response:dataItem.split('@@')[2]
+          console.log(this.dialogData.typeId)
+          if(this.dialogData.typeId === 2 || this.dialogData.typeId === 4){
+            console.log(this.logDetailTable)
+            placeStrList.forEach((item)=>{                 //dataItemList中的元素 包含 ↑ 上面的字符串，要取出来 ↓
+              dataItemList.forEach((dataItem)=>{
+                if(dataItem.indexOf(item) !==-1 ){
+                  dataItem = dataItem.replace(item,"")
+                  dataItem = {
+                    place:item,
+                    pro:dataItem.split('@@')[0],
+                    orderAT:dataItem.split('@@')[1],
+                    variable:dataItem.split('@@')[2],
+                    response:dataItem.split('@@')[3]
+                  }
+                  this.tableData.push(dataItem)
                 }
-                this.tableData.push(dataItem)
-              }
+              })
             })
-          })
+          }else{
+            placeStrList.forEach((item)=>{
+              dataItemList.forEach((dataItem)=>{
+                if(dataItem.indexOf(item) !==-1 ){
+                  dataItem = dataItem.replace(item,"")
+                  dataItem = {
+                    place:item,
+                    pro:dataItem.split('@@')[0],
+                    orderAT:dataItem.split('@@')[1],
+                    response:dataItem.split('@@')[2]
+                  }
+                  this.tableData.push(dataItem)
+                }
+              })
+            })
+            this.logDetailTable = this.logDetailTable.filter(item=>item.key !== 'variable')
+          }
         },
       },
-
     }
 </script>
 
