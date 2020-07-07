@@ -33,12 +33,14 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   res => {
     if (res.data.result === 401){
-      // store.commit('setLoginToken', '');
-      // sessionStorage.removeItem('token');
-      // index.replace({
-      //   path: '/login',
-      //   query: {redirect: index.currentRoute.fullPath}
-      // });
+      if(res.data.data === '未登录'){
+        store.commit('setLoginToken', '');
+        sessionStorage.removeItem('token');
+        index.replace({
+          path: '/login',
+          query: {redirect: index.currentRoute.fullPath}
+        });
+      }
     }
     return res
   },
