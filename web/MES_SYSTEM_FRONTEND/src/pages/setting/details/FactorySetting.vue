@@ -87,7 +87,8 @@
     FactoryQueryConfig,
     FactoryTableColumns,
     FactoryFormItems,
-    FactoryFormRules
+    FactoryFormRules,
+    limit
   } from "../../../config/settingConfig";
   import {
     eSopFactorySelectUrl,
@@ -98,10 +99,13 @@
   import common from "./mixins/common";
 
   export default {
+
     name: "FactorySetting",
     mixins: [common],
     data() {
       return {
+        limit:{},
+        jurisdiction:JSON.parse(sessionStorage.getItem('charactersFuncMap')).map.basic.basic.factory,
         /*搜索框*/
         queryConfig: FactoryQueryConfig,
         buttonGroup: [
@@ -144,7 +148,27 @@
 
       }
     },
+    created() {
+      // console.log(this.$store.state.charactersFuncMap)
+
+      // this.$nextTick(()=>{
+      //   console.log(this.jurisdiction)
+      //   this.limit = {
+        //   select:this.jurisdiction[0],
+        //   add:this.jurisdiction[1],
+        //   update:this.jurisdiction[2],
+        //   delete:this.jurisdiction[3],
+        //   upload:this.jurisdiction[4],
+        //   download:this.jurisdiction[5],
+        //   checkout:this.jurisdiction[6],
+        //   other:this.jurisdiction[7],
+        //   explain:this.jurisdiction[8],
+        // }
+        // console.log(this.limit)
+      // })
+    },
     mounted() {
+      // console.log(this.jurisdiction)
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
@@ -162,6 +186,7 @@
     methods: {
       /*查询、获取表格内容*/
       fetchData() {
+        console.log(this.jurisdiction)
         this.$openLoading();
         let options = {
           url: eSopFactorySelectUrl,
