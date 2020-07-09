@@ -105,7 +105,6 @@
     data() {
       return {
         limit:{},
-        jurisdiction:JSON.parse(sessionStorage.getItem('charactersFuncMap')).map.basic.basic.factory,
         /*搜索框*/
         queryConfig: FactoryQueryConfig,
         buttonGroup: [
@@ -149,26 +148,11 @@
       }
     },
     created() {
-      // console.log(this.$store.state.charactersFuncMap)
-
-      // this.$nextTick(()=>{
-      //   console.log(this.jurisdiction)
-      //   this.limit = {
-        //   select:this.jurisdiction[0],
-        //   add:this.jurisdiction[1],
-        //   update:this.jurisdiction[2],
-        //   delete:this.jurisdiction[3],
-        //   upload:this.jurisdiction[4],
-        //   download:this.jurisdiction[5],
-        //   checkout:this.jurisdiction[6],
-        //   other:this.jurisdiction[7],
-        //   explain:this.jurisdiction[8],
-        // }
-        // console.log(this.limit)
-      // })
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.factory)
     },
+
     mounted() {
-      // console.log(this.jurisdiction)
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
@@ -179,14 +163,15 @@
           type: 'primary',
           callback: this._addData
         });
-
-
-      this._queryData();
+        this._queryData();
     },
     methods: {
       /*查询、获取表格内容*/
       fetchData() {
-        console.log(this.jurisdiction)
+        if(!this.$store.state.limits.select){
+          this.$alertWarning('暂无查询权限')
+          return
+        }
         this.$openLoading();
         let options = {
           url: eSopFactorySelectUrl,

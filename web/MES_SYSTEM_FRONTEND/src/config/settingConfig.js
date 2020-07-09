@@ -1,17 +1,3 @@
-export const limit = function (parm) {
-  let charact = JSON.parse(sessionStorage.getItem('charactersFuncMap'))
-  console.log(charact)
-  return {select:charact[0],
-    add:charact[1],
-    update:charact[2],
-    delete:charact[3],
-    upload:charact[4],
-    download:charact[5],
-    checkout:charact[6],
-    other:charact[7],
-    explain:charact[8],
-  }
-}
 /*查询设置*/
 
 export const FactoryQueryConfig = [

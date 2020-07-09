@@ -109,6 +109,10 @@ export default {
 
     /*数据删除*/
     _deleteData(row) {
+      if(!this.$store.state.limits.delete){
+        this.$alertWarning('暂无删除权限')
+        return
+      }
         MessageBox.confirm('将删除该项目，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',
@@ -186,6 +190,10 @@ export default {
 
     /*新增项目*/
     _addData() {
+      if(!this.$store.state.limits.add){
+        this.$alertWarning('暂无新增权限')
+        return
+      }
       this.editType = 0;
       this.editPanelTitle = '新增项目';
       this.isEditing = true;
@@ -193,6 +201,10 @@ export default {
 
     /*编辑指定项目*/
     _editData(row) {
+      if(!this.$store.state.limits.update){
+        this.$alertWarning('暂无编辑权限')
+        return
+      }
       this.editType = 1;
       this.editPanelTitle = '编辑项目';
       this.formData.id = row.id;

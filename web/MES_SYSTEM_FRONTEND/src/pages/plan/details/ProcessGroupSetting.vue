@@ -175,6 +175,8 @@
     },
     created() {
       this.initQueryOptions();
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process_group)
     },
     mounted() {
       this.fetchData()
@@ -225,6 +227,10 @@
         this.queryString = queryString;
       },
       queryData: function () {
+        if(!this.$store.state.limits.select){
+          this.$alertWarning('暂无查询权限');
+          return;
+        }
         this.paginationOptions.pageNo = 1;
         this.paginationOptions.total = 0;
         this.createQueryString();
@@ -269,6 +275,7 @@
         }
       },
       editData: function (type, val) {
+
         //初始化要提交的值
         this.processGroupEditOptions.forEach(item => {
           this.$set(this.processGroupEditOptionsData, item.key, '')
@@ -300,6 +307,10 @@
           this.$closeLoading();
         })
         if (type === 'edit') {
+          if(!this.$store.state.limits.update){
+            this.$alertWarning('暂无编辑权限');
+            return;
+          }
           this.processGroupEditType = 'edit';
           Object.keys(val).forEach(item => {
             this.processGroupEditOptions.forEach(option => {
@@ -311,6 +322,10 @@
           this.$set(this.processGroupEditOptionsData, 'id', val.id);
           this.isProcessGroupEditing = true;
         } else if (type === 'add') {
+          if(!this.$store.state.limits.add){
+            this.$alertWarning('暂无新增权限');
+            return;
+          }
           this.processGroupEditType = 'add';
           this.isProcessGroupEditing = true;
         }
@@ -359,6 +374,10 @@
         this.$refs['processGroupEditForm'].clearValidate();
       },
       deleteData: function (val) {
+        if(!this.$store.state.limits.delete){
+          this.$alertWarning('暂无删除权限');
+          return;
+        }
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',

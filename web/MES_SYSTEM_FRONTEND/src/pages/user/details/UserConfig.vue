@@ -639,7 +639,6 @@
             data: {}
           }).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data.data)
               resolve(response.data.data);
             } else {
               this.$alertWarning(response.data.data);
