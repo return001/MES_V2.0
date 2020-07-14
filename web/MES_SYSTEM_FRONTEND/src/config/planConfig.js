@@ -429,12 +429,14 @@ export const orderUnscheduledTableColumns = [{
     {
         'label': '订单日期',
         'key': 'orderDate',
-        'min-width': '120px'
+        'min-width': '120px',
+        'sortable':true,
     },
     {
         'label': '交货日期',
         'key': 'deliveryDate',
-        'min-width': '120px'
+        'min-width': '120px',
+        'sortable':true,
     },
 ];
 export const orderDetailsTableColumns = [{

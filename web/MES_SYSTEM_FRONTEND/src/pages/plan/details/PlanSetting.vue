@@ -243,6 +243,7 @@
                          :prop="item.key"
                          :label="item.label"
                          :min-width="item['min-width']"
+                         :sortable="item['sortable'] === true"
                          :formatter="item.formatter">
         </el-table-column>
 
