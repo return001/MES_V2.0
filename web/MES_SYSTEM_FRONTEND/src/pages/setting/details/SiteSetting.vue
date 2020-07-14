@@ -136,22 +136,6 @@
 
       }
     },
-    mounted() {
-      /*注册按键*/
-      this.buttonGroup[0].callback = this._initQueryOptions;
-      this.buttonGroup[1].callback = this._queryData;
-      if (this._getFunctionPermission(1)) {
-        this.buttonGroup.push(
-          {
-            label: '新增',
-            size: 'small',
-            type: 'primary',
-            callback: this._addData
-          })
-      }
-
-      this._queryData();
-    },
     created() {
       this.$openLoading();
       this._getLineList().then(data => {
@@ -169,7 +153,29 @@
         });
         this.$closeLoading();
       })
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.site_set)
     },
+
+    mounted() {
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.site_set)
+      /*注册按键*/
+      this.buttonGroup[0].callback = this._initQueryOptions;
+      this.buttonGroup[1].callback = this._queryData;
+      if (this._getFunctionPermission(1)) {
+        this.buttonGroup.push(
+          {
+            label: '新增',
+            size: 'small',
+            type: 'primary',
+            callback: this._addData
+          })
+      }
+
+      this._queryData();
+    },
+
     methods: {
       fetchData() {
         this.$openLoading();

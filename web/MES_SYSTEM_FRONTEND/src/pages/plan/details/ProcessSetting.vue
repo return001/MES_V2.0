@@ -192,6 +192,8 @@
     },
     mounted() {
       this.fetchData()
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process)
     },
     methods: {
       /*局部刷新*/
@@ -270,6 +272,10 @@
       },
 
       fetchData: function () {
+        if(this.$store.state.limits.select !== true){
+          this.$alertWarning('暂无查询权限')
+          return
+        }
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
@@ -307,6 +313,10 @@
           this.$refs['processEditForm'].clearValidate();
         }
         if (type === 'edit') {
+          if(this.$store.state.limits.update !== true){
+            this.$alertWarning('暂无编辑权限')
+            return
+          }
           this.processEditType = 'edit';
           Object.keys(val).forEach(item => {
             this.processEditOptions.forEach(option => {
@@ -320,6 +330,10 @@
 
           this.isProcessEditing = true;
         } else if (type === 'add') {
+          if(this.$store.state.limits.add !== true){
+            this.$alertWarning('暂无新增权限')
+            return
+          }
           this.processEditType = 'add';
           this.isProcessEditing = true;
         }
@@ -370,7 +384,10 @@
         this.initEditOptions();
       },
       deleteData: function (val) {
-
+        if(this.$store.state.limits.delete !== true){
+          this.$alertWarning('暂无删除权限')
+          return
+        }
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',

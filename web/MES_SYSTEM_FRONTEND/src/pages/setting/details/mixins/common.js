@@ -109,7 +109,7 @@ export default {
 
     /*数据删除*/
     _deleteData(row) {
-      if(!this.$store.state.limits.delete){
+      if(this.$store.state.limits.delete !== true){
         this.$alertWarning('暂无删除权限')
         return
       }
@@ -190,7 +190,8 @@ export default {
 
     /*新增项目*/
     _addData() {
-      if(!this.$store.state.limits.add){
+      console.log(this.$store.state.limits.add)
+      if(this.$store.state.limits.add !== true){
         this.$alertWarning('暂无新增权限')
         return
       }
@@ -201,7 +202,7 @@ export default {
 
     /*编辑指定项目*/
     _editData(row) {
-      if(!this.$store.state.limits.update){
+      if(this.$store.state.limits.update !== true){
         this.$alertWarning('暂无编辑权限')
         return
       }

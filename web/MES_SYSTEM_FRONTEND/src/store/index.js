@@ -32,7 +32,8 @@ const state = {
 
   stashData: {},
 
-  charactersFuncMap: undefined
+  charactersFuncMap: undefined,
+  limits:{},
 };
 
 const store = new Vuex.Store({

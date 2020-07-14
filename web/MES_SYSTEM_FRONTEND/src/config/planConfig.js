@@ -1354,17 +1354,17 @@ export const logsQueryOptions = [{
 export const logsTableColumns = [{
         'label': '订单号',
         'key': 'zhidan',
-        'min-width': '70px'
+        'min-width': '80px'
     },
     {
         'label': '内部替换号',
         'key': 'alias',
-        'min-width': '60px'
+        'min-width': '80px'
     },
     {
         'label': '操作日志',
         'key': 'action',
-        'min-width': '300px'
+        'min-width': '260px'
     },
     {
         'label': '操作结果',
@@ -1384,7 +1384,7 @@ export const logsTableColumns = [{
     {
         'label': 'IP地址',
         'key': 'address',
-        'min-width': '70px'
+        'min-width': '80px'
     },
     {
         'label': '备注',

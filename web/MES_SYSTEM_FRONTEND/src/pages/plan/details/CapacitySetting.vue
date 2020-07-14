@@ -392,7 +392,6 @@
         let iList = [];
         this.tableData.forEach((row, rowIndex) => {
           let eIndex = iList.findIndex(e =>e.customerNumber === row.customerNumber && e.softModel === row.softModel && e.customerModel === row.customerModel);
-          console.log(eIndex)
           if(eIndex !== -1){
             iList[eIndex].length += 1;
           } else {
@@ -404,7 +403,6 @@
               index: rowIndex
             })
           }
-          console.log(iList)
         })
         return iList
       },
@@ -415,6 +413,8 @@
     },
     mounted() {
       this.fetchData();
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.capacity)
     },
     methods: {
       /*局部刷新*/
@@ -497,7 +497,6 @@
         }).finally(() => {
           this.isPending = false;
           this.$closeLoading();
-          console.log(this.customerDatas)
         })
       },
       choiceCustomer(val){
@@ -629,6 +628,10 @@
       },
 
       fetchData: function () {
+        if(this.$store.state.limits.select !== true){
+          this.$alertWarning('暂无查询权限');
+          return
+        }
         if (!this.isPending) {
           this.getGroupInfoFactoryId = this.sessionFactory === '1'?'0':this.sessionFactory
           this.isPending = true;
@@ -684,7 +687,10 @@
        **@params: mod
        */
       addCapacity: function () {
-
+        if(this.$store.state.limits.add !== true){
+          this.$alertWarning('暂无新增权限');
+          return
+        }
         this.fetchCustomer()
         this.fetchProcessGroup()
         if(this.sessionFactory === '1'){
@@ -711,6 +717,10 @@
 
       //审核产能
       checkCapacity(val){
+        if(this.$store.state.limits.checkout !== true){
+          this.$alertWarning('暂无审核权限');
+          return
+        }
         this.isCapacityCheck = true;
         this.checkItem = val
       },
@@ -766,9 +776,17 @@
       editCapacity(type,row){
         this.fetchCustomer();
         if(type === 'edit'){
+          if(this.$store.state.limits.update !== true){
+            this.$alertWarning('暂无编辑权限');
+            return
+          }
           this.capacityEditType = 'edit';
           this.isCapacityAdd = true;
         }else if(type === 'copy'){
+          if(this.$store.state.limits.add !== true){
+            this.$alertWarning('暂无复制权限');
+            return
+          }
           this.capacityEditType = 'copy';
           this.isCapacityAdd = true;
         }
@@ -793,7 +811,6 @@
           this.processGroupChoice=this.processGroupChoice.filter(item=>existGroup.indexOf(item.id) === -1)
         }else{
           this.$alertWarning('没有可用工序组')
-          return
         }
       },
 
@@ -804,24 +821,20 @@
           if (key === 'e' || key === '.' ||key === '+' || key === '-' || key === 'Shift') {
             this.$alertWarning('请输入正整数')
             val.returnValue = false
-            return
           }
         }else{
           if (key === 'e' || key === '+' || key === '-' || key === 'Shift') {
             this.$alertWarning('请输入数字')
             val.returnValue = false
-            return
           }
         }
       },
 
-      //节拍、产能、转线时常 可以是float  需要比较0
+      //节拍、产能、转线时常 可以是float  需要验证0
       compareZero(scope,val){
-        console.log(val)
         if(val <= 0 && val !== ''){
           scope.row[scope.column.property] = ''
           this.$alertWarning('数值必须大于0')
-          return
         }
       },
 
@@ -945,6 +958,10 @@
 
 
       deleteData: function (val) {
+        if(this.$store.state.limits.delete !== true){
+          this.$alertWarning('暂无删除权限');
+          return
+        }
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',
@@ -1014,7 +1031,7 @@
         if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' || column.label === '备注' ||
             column.label === '机型' || column.label === '客户编号' || column.label === '客户名称' || column.label === '所属工厂' || column.label === '客户型号/料号' || column.label === '操作') {
           // console.log('oneList',row, column, rowIndex, columnIndex,this.oneList)
-          let iIndex = this.oneList.findIndex(e => { return e.index == rowIndex});
+          let iIndex = this.oneList.findIndex(e => { return e.index === rowIndex});
           if (iIndex !== -1) {
             return [this.oneList[iIndex].length, 1];
           } else {

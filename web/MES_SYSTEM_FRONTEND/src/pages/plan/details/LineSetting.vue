@@ -558,6 +558,8 @@
     },
     mounted() {
       this.fetchData();
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.line)
     },
     methods: {
       /*局部刷新*/
@@ -692,6 +694,10 @@
       },
 
       fetchData: function () {
+        if(this.$store.state.limits.select !== true){
+          this.$alertWarning('暂无查询权限')
+          return
+        }
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
@@ -737,6 +743,8 @@
           }
         }).then(response=>{
           if(response.data.result === 200){
+            this.isTimeSetting = true;
+            this.lineItem= val
             if(response.data.data.length > 0){
               this.workTime = response.data.data
               this.workTime.forEach(item=>{
@@ -761,8 +769,6 @@
           this.$alertDanger('未知错误')
         }).finally(() => {
         })
-        this.isTimeSetting = true;
-        this.lineItem= val
       },
 
       handleAddTime(){
@@ -871,6 +877,10 @@
           this.$refs['lineEditForm'].clearValidate();
         }
         if (type === 'edit') {
+          if(this.$store.state.limits.update !== true){
+            this.$alertWarning('暂无编辑权限')
+            return
+          }
           this.lineEditType = 'edit';
           Object.keys(val).forEach(item => {
             this.lineEditOptions.forEach(option => {
@@ -891,6 +901,10 @@
 
           this.isLineEditing = true;
         } else if (type === 'add') {
+          if(this.$store.state.limits.add !== true){
+            this.$alertWarning('暂无新增权限')
+            return
+          }
           this.lineEditType = 'add';
           this.isLineEditing = true;
         }
@@ -943,6 +957,10 @@
         this.initEditOptions();
       },
       deleteData: function (val) {
+        if(this.$store.state.limits.delete !== true){
+          this.$alertWarning('暂无删除权限')
+          return
+        }
         MessageBox.confirm('将删除该配置，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',

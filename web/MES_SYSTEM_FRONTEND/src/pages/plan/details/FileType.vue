@@ -178,6 +178,8 @@
     },
     mounted() {
       this.fetchData()
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.file_type)
     },
     methods: {
       initQueryOptions: function () {
@@ -238,6 +240,10 @@
       },
 
       fetchData: function () {
+        if(this.$store.state.limits.select !== true){
+          this.$alertWarning('暂无查询权限')
+          return;
+        }
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
@@ -272,6 +278,10 @@
 
       editData: function (type, val) {
           if (type === 'edit') {
+            if(this.$store.state.limits.update !== true){
+              this.$alertWarning('暂无新增权限')
+              return;
+            }
             this.fileTypeTitle = 'edit';
             Object.keys(val).forEach(item => {
               this.fileTypeEditOptions.forEach(option => {
@@ -283,6 +293,10 @@
             this.$set(this.fileTypeOptionsData, 'id', val.id)
             this.isFileEdit = true;
           } else if (type === 'add') {
+            if(this.$store.state.limits.add !== true){
+              this.$alertWarning('暂无编辑权限')
+              return;
+            }
             this.fileTypeTitle = 'add';
             this.isFileEdit = true;
           }
@@ -290,6 +304,10 @@
 
       //删除
       deleteFileType(val){
+        if(this.$store.state.limits.delete !== true){
+          this.$alertWarning('暂无删除权限')
+          return;
+        }
         MessageBox.confirm('将作删除该文件类型，是否继续?', '提示', {
           confirmButtonText: '确认',
           cancelButtonText: '取消',

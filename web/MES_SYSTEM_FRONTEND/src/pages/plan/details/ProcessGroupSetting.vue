@@ -175,11 +175,11 @@
     },
     created() {
       this.initQueryOptions();
-      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process_group)
     },
     mounted() {
       this.fetchData()
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process_group)
     },
     methods: {
       initQueryOptions: function () {
@@ -227,7 +227,7 @@
         this.queryString = queryString;
       },
       queryData: function () {
-        if(!this.$store.state.limits.select){
+        if(this.$store.state.limits.select !== true){
           this.$alertWarning('暂无查询权限');
           return;
         }
@@ -307,7 +307,7 @@
           this.$closeLoading();
         })
         if (type === 'edit') {
-          if(!this.$store.state.limits.update){
+          if(this.$store.state.limits.update !== true){
             this.$alertWarning('暂无编辑权限');
             return;
           }
@@ -322,7 +322,7 @@
           this.$set(this.processGroupEditOptionsData, 'id', val.id);
           this.isProcessGroupEditing = true;
         } else if (type === 'add') {
-          if(!this.$store.state.limits.add){
+          if(this.$store.state.limits.add !== true){
             this.$alertWarning('暂无新增权限');
             return;
           }
@@ -374,7 +374,7 @@
         this.$refs['processGroupEditForm'].clearValidate();
       },
       deleteData: function (val) {
-        if(!this.$store.state.limits.delete){
+        if(this.$store.state.limits.delete !== true){
           this.$alertWarning('暂无删除权限');
           return;
         }

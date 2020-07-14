@@ -88,7 +88,6 @@
     FactoryTableColumns,
     FactoryFormItems,
     FactoryFormRules,
-    limit
   } from "../../../config/settingConfig";
   import {
     eSopFactorySelectUrl,
@@ -99,12 +98,10 @@
   import common from "./mixins/common";
 
   export default {
-
     name: "FactorySetting",
     mixins: [common],
     data() {
       return {
-        limit:{},
         /*搜索框*/
         queryConfig: FactoryQueryConfig,
         buttonGroup: [
@@ -147,12 +144,10 @@
 
       }
     },
-    created() {
-      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.factory)
-    },
 
     mounted() {
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.factory)
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
@@ -168,10 +163,6 @@
     methods: {
       /*查询、获取表格内容*/
       fetchData() {
-        if(!this.$store.state.limits.select){
-          this.$alertWarning('暂无查询权限')
-          return
-        }
         this.$openLoading();
         let options = {
           url: eSopFactorySelectUrl,

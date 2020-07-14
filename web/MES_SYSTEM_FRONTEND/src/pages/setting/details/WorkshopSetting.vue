@@ -147,10 +147,6 @@
     },
     created() {
       this.$openLoading();
-
-      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.workshop)
-
       this._getFactoryList().then(data => {
         this.queryConfig[2].selectList = data.map(item => {
           return {
@@ -168,6 +164,8 @@
       })
     },
     mounted() {
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.workshop)
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
@@ -178,8 +176,6 @@
           type: 'primary',
           callback: this._addData
         });
-
-
       this._queryData();
     },
     methods: {

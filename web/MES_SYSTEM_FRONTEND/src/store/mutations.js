@@ -43,7 +43,7 @@ export const setStashData = (state, obj) => {
 export const setCharactersFuncMap = (state, obj) => {
   state.charactersFuncMap = deepCopy(obj);
 };
-export let pageActionLimits = (state, limitList)=>{
+export const pageActionLimits = (state, limitList)=>{
   state.limits = {
         select:limitList[0],
         add:limitList[1],
@@ -56,3 +56,4 @@ export let pageActionLimits = (state, limitList)=>{
         explain:limitList[8],
       }
 }
+
