@@ -86,6 +86,7 @@ public class ReworkService {
 		String suffix = " )";
 		if (!StrKit.isBlank(sn)) {
 			sql = concatSqlParameter(" SN in (", sn.split(","), suffix);
+			String gpsAutoTestAntiDupSqlCondition = concatSqlParameter(" SN in (", sn.split(","), suffix).toString();
 			if (!StrKit.isBlank(version)) {
 				sql.append(concatSqlParameter(" and Version in (", version.split(","), suffix));
 			}
@@ -93,7 +94,7 @@ public class ReworkService {
 				sql.append(concatSqlParameter(" and SoftModel in (", softModel.split(","), suffix));
 			}
 			try {
-				Db.update(SQL.DELETE_AUTOTEST_ANTIDUP_SQL_FRAGMENT + sql);
+				Db.update(SQL.DELETE_AUTOTEST_ANTIDUP_SQL_FRAGMENT + gpsAutoTestAntiDupSqlCondition);
 				Db.update(SQL.DELETE_AUTOTEST_RESULT2_SQL_FRAGMENT1 + sql);
 				Db.update(SQL.UPDATE_AUTOTEST_RESULT2_FUNCTIONRESULT_SQL_FRAGMENT1 + sql);
 				return true;
