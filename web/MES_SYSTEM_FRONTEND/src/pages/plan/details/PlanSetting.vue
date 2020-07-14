@@ -246,7 +246,6 @@
                          :sortable="item['sortable'] === true"
                          :formatter="item.formatter">
         </el-table-column>
-
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" type="info" @click="isOrderImporting = false">取消</el-button>
