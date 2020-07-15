@@ -165,12 +165,38 @@
                         v-model.number="tableEditData[scope.row.id].schedulingQuantity"></el-input>
             </template>
           </el-table-column>
+          <el-table-column
+            label="标准产能"
+            width="100">
+            <template slot-scope="scope">
+              <el-select size="small"
+                         @focus="softModelCapacity(scope.row)"
+                         v-model="tableEditData[scope.row.id].capacity"
+              >
+                <el-option v-for="(item,index) in capacityList"
+                           :key="index"
+                           :value="item.capacity"
+                >
+                  <div>标准产能：{{item.capacity}}</div>
+                  <div>客户编号：{{item.customerNumber}}</div>
+                  <div>客户料号：{{item.customerMaterialNo}}</div>
+                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：{{item.softModel}}</div>
+<!--                  <span style="margin-right: 50px;">标准产能：{{item.capacity}}</span>-->
+<!--                  <span>KKS</span>-->
+<!--                  <div>客户料号：K-EL100-M01fsad-f3</div>-->
+<!--                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：K-EL100-M01fsad-f3</div>-->
+                </el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
                            :prop="item.key"
                            :label="item.label"
                            :min-width="item['min-width']">
           </el-table-column>
+
 
           <el-table-column
             label="预计生产时长"
@@ -459,7 +485,7 @@
     planDetailsPlanCalculateUrl,
     planLineTimeSelectUrl,
     planLineTimeSettingUrl,
-    planOrderDetailSelectUrl,
+    planOrderDetailSelectUrl, planCapacitySelectUrl,
   } from "../../../../config/globalUrl";
   import{planOrderDetail} from "../../../../config/planConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
@@ -471,6 +497,7 @@
       return {
         choiceLine:'',       //选择产线
         eqLine:'',           //选择产线(问题)
+        capacityList:[],     //选择产能
         isTimeSetting:false, //设置时间 dialog 显示
         lineDate:'',         //产线日期
         trueTimes:true,      //设置时间时是验证表单（暂时不用）
@@ -536,7 +563,7 @@
           {'label': '订单数量', 'key': 'quantity', 'min-width': '60px'},
           {'label': '未排产数量', 'key': 'unscheduledQuantity', 'min-width': '60px'},
           {'label': '人数', 'key': 'processPeopleQuantity', 'min-width': '50px'},
-          {'label': '标准产能', 'key': 'capacity', 'min-width': '60px'},
+          // {'label': '标准产能', 'key': 'capacity', 'min-width': '180px'},
           {'label': '内部替换号', 'key': 'alias', 'min-width': '60px'},
           {'label': '机型', 'key': 'softModel', 'min-width': '60px'},
           // {'label': '版本号', 'key': '', 'min-width': '100px'},
@@ -673,6 +700,24 @@
           workTimes:[],
           tasks:[],
         };
+      },
+      //排产页面标产
+      softModelCapacity(row){
+        let options={
+          url: planCapacitySelectUrl,
+          data:{
+            pageSize:1024,
+            pageNo:1,
+            softModel:row.softModel,
+            processGroup:this.tableEditData[row.id].processGroup,
+            customerNumber:row.customerNumber,
+          }
+        }
+        axiosFetch(options).then(response=>{
+          if(response.data.result === 200){
+            this.capacityList = response.data.data.list
+          }
+        })
       },
 
       //详情
@@ -1741,6 +1786,7 @@
     min-height: 30px;
     max-width: 800px;
     margin-top: 20px;
+
   }
   .allreday-choice-date /deep/ .el-tag{
     margin-top: 5px;
@@ -1748,6 +1794,15 @@
   }
   .allreday-choice-date /deep/ .el-tag:hover{
     cursor: pointer;
+  }
+  .el-select-dropdown .el-scrollbar .el-scrollbar__view .el-select-dropdown__item{
+    min-height: 107px;
+    padding-top: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  .el-select-dropdown .el-scrollbar .el-scrollbar__view .el-select-dropdown__item >div{
+    margin: -10px 0;
+
   }
 
 </style>

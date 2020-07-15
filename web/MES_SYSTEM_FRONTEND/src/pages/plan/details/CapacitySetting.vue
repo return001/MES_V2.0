@@ -1064,7 +1064,7 @@
             this.$set(this.capacityEditOptionsData, item.key, '')
           });
           Object.keys(val.row).forEach(item => {
-            this.capacityEditOptions.forEach(option => {
+            this.capacityEditOptions.forEach(option => {f
               if (item === option.key && val.row[item] !== null) {
                 this.$set(this.capacityEditOptionsData, item, val.row[item])
               }
