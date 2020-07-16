@@ -72,6 +72,7 @@ public class MappingKit {
 		arp.addMapping("sop_site", "id", SopSite.class);
 		arp.addMapping("sop_site_display", "id", SopSiteDisplay.class);
 		arp.addMapping("sop_workshop", "id", SopWorkshop.class);
+		arp.addMapping("test_system_setting_log", "id", TestSystemSettingLog.class);
 		arp.addMapping("user_action_log", "id", UserActionLog.class);
 		arp.addMapping("WebUserType", "TypeId", WebUserType.class);
 	}

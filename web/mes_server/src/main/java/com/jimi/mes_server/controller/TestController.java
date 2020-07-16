@@ -3,11 +3,15 @@ package com.jimi.mes_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jimi.mes_server.annotation.TestLog;
+import com.jimi.mes_server.entity.vo.LUserAccountVO;
+import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.service.TestService;
 import com.jimi.mes_server.util.ResultUtil;
+import com.jimi.mes_server.util.TokenBox;
 
 /**
  * 测试配置控制器
@@ -44,7 +48,8 @@ public class TestController extends Controller {
 
 
 	public void copy(String oldKey, Integer type, String newKey) {
-		if (testService.copy(oldKey, type, newKey)) {
+		LUserAccountVO user = TokenBox.get(getPara(TokenBox.TOKEN_ID_KEY_NAME), UserController.SESSION_KEY_LOGIN_USER);
+		if (testService.copy(user.getName(),oldKey, type, newKey)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -52,8 +57,9 @@ public class TestController extends Controller {
 	}
 
 
-	public void create(@Para("") TestSystemSetting coupleSetTing, @Para("") TestSystemSettingFunc functionSetTing, @Para("") TestSystemSettingOqc oqcSetTing, Integer type) {
-		if (testService.create(coupleSetTing, functionSetTing, oqcSetTing, type)) {
+	@TestLog
+	public void create(@Para("") TestSystemSetting coupleSetTing, @Para("") TestSystemSettingFunc functionSetTing, @Para("") TestSystemSettingOqc oqcSetTing,String softVersion,String orderName, Integer type) {
+		if (testService.create(coupleSetTing, functionSetTing, oqcSetTing,type)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
@@ -62,14 +68,15 @@ public class TestController extends Controller {
 
 
 	public void cancel(String key, Integer type) {
-		if (testService.cancel(key, type)) {
+		LUserAccountVO user = TokenBox.get(getPara(TokenBox.TOKEN_ID_KEY_NAME), UserController.SESSION_KEY_LOGIN_USER);
+		if (testService.cancel(user.getName(),key, type)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 
-
+	@TestLog
 	public void update(@Para("") TestSystemSetting coupleSetTing, @Para("") TestSystemSettingFunc functionSetTing, @Para("") TestSystemSettingOqc oqcSetTing, Integer type) {
 		if (testService.update(coupleSetTing, functionSetTing, oqcSetTing, type)) {
 			renderJson(ResultUtil.succeed());
@@ -77,4 +84,26 @@ public class TestController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
+
+	/**
+	 * 查询测试项配置日志
+	 * @param pageNo
+	 * @param pageSize
+	 * @param startTime
+	 * @param endTime
+	 * @param operator
+	 * @param model
+	 * @param settingType
+	 * @param softVersion
+	 */
+	public void getLog(Integer pageNo, Integer pageSize,String startTime, String endTime,String operator,String model,Integer settingType,String softVersion){
+		if (pageNo == null || pageSize == null) {
+			throw new ParameterException("页码和页大小不能为空");
+		}
+		if (pageNo <= 0 || pageSize <= 0) {
+			throw new ParameterException("页码与页大小均需要大于0");
+		}
+		renderJson(ResultUtil.succeed(testService.getLogs(pageNo,pageSize,startTime,endTime,operator,model,settingType,softVersion)));
+	}
+
 }

@@ -1,12 +1,12 @@
 package com.jimi.mes_server.model.gen;
 
-import javax.sql.DataSource;
-
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
 import com.jfinal.plugin.activerecord.generator.Generator;
 import com.jfinal.plugin.druid.DruidPlugin;
+
+import javax.sql.DataSource;
 
 public class GeneratorStarter {
 

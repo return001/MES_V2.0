@@ -1,13 +1,7 @@
 package com.jimi.mes_server.config;
 
-import java.io.File;
-
-import com.jfinal.config.Constants;
-import com.jfinal.config.Handlers;
-import com.jfinal.config.Interceptors;
-import com.jfinal.config.JFinalConfig;
-import com.jfinal.config.Plugins;
-import com.jfinal.config.Routes;
+import cc.darhao.pasta.Pasta;
+import com.jfinal.config.*;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
@@ -15,40 +9,17 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.cron4j.Cron4jPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
-import com.jimi.mes_server.controller.DeleteHistoryController;
-import com.jimi.mes_server.controller.DepartmentController;
-import com.jimi.mes_server.controller.OrderController;
-import com.jimi.mes_server.controller.ProductionController;
-import com.jimi.mes_server.controller.RedTeaController;
-import com.jimi.mes_server.controller.ReportController;
-import com.jimi.mes_server.controller.ReworkController;
-import com.jimi.mes_server.controller.RoleController;
-import com.jimi.mes_server.controller.SopController;
-import com.jimi.mes_server.controller.TestController;
-import com.jimi.mes_server.controller.UserActionLogController;
-import com.jimi.mes_server.controller.UserController;
+import com.jimi.mes_server.controller.*;
 import com.jimi.mes_server.entity.Constant;
-import com.jimi.mes_server.interceptor.AccessInterceptor;
-import com.jimi.mes_server.interceptor.ActionLogInterceptor;
-import com.jimi.mes_server.interceptor.CORSInterceptor;
-import com.jimi.mes_server.interceptor.ErrorLogInterceptor;
-import com.jimi.mes_server.interceptor.ProductionActionLogInterceptor;
-import com.jimi.mes_server.interceptor.UserActionLogInterceptor;
-import com.jimi.mes_server.model.MappingKit;
-import com.jimi.mes_server.model.NetMarkIMEI;
-import com.jimi.mes_server.model.TestSystemSetting;
-import com.jimi.mes_server.model.TestSystemSettingFunc;
-import com.jimi.mes_server.model.TestSystemSettingOqc;
+import com.jimi.mes_server.interceptor.*;
+import com.jimi.mes_server.model.*;
 import com.jimi.mes_server.util.CommonUtil;
 import com.jimi.mes_server.util.TokenBox;
 import com.jimi.mes_server.websocket.entity.RequestTypeTimeoutTimeManager;
-import com.jimi.mes_server.websocket.handler.ConfirmHandler;
-import com.jimi.mes_server.websocket.handler.CountHandler;
-import com.jimi.mes_server.websocket.handler.LoginHandler;
-import com.jimi.mes_server.websocket.handler.LogoutHandler;
-import com.jimi.mes_server.websocket.handler.WebSocketHandler;
+import com.jimi.mes_server.websocket.handler.*;
 import com.jimi.mes_server.websocket.logger.PackageLogger;
-import cc.darhao.pasta.Pasta;
+
+import java.io.File;
 
 /**
  * 全局配置 <br>
@@ -87,6 +58,7 @@ public class MesConfig extends JFinalConfig {
 		me.addGlobalActionInterceptor(new AccessInterceptor());
 		me.addGlobalActionInterceptor(new ActionLogInterceptor());
 		me.addGlobalActionInterceptor(new ProductionActionLogInterceptor());
+		me.addGlobalActionInterceptor(new TestActionLogInterceptor());
 		me.addGlobalServiceInterceptor(new Tx());
 	}
 

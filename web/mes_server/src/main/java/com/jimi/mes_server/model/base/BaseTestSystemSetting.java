@@ -657,4 +657,21 @@ public abstract class BaseTestSystemSetting<M extends BaseTestSystemSetting<M>> 
 		return get("RecordTime");
 	}
 
+	public M setOrderName(java.lang.String OrderName) {
+		set("order_name", OrderName);
+		return (M)this;
+	}
+
+	public java.lang.String getOrderName() {
+		return getStr("order_name");
+	}
+
+	public M setSoftVersion(java.lang.String SoftVersion) {
+		set("soft_version", SoftVersion);
+		return (M)this;
+	}
+
+	public java.lang.String getSoftVersion() {
+		return getStr("soft_version");
+	}
 }

@@ -309,4 +309,6 @@ public class SQL {
 	public final static String SELECT_PROCESSGROUP_BY_PARENGROUP = "select id from process_group where parent_group = ?";
 
 	public final static String DELETE_USER_BY_ID = "update LUserAccount set [Delete] = 'TRUE',InService = 'FALSE' WHERE Id = ?";
+
+	public final static String SELECT_TEST_SYSTeM_SETTING_LOG ="select id,setting_type as settingType,operation_type as operationType,soft_version as softVersion,order_name as orderName,model,operator,time,result,station from test_system_setting_log";
 }
