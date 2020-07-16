@@ -85,6 +85,7 @@ public class UserService extends SelectService {
 		if (LUserAccount.dao.find(uniqueCheckSql, user.getName()).size() != 0) {
 			throw new OperationException("用户名已存在");
 		}
+		user.setUserType("&0301");
 		user.setLoginTime(new Date());
 		Role role = Role.dao.findById(user.getRole());
 		if (role == null) {

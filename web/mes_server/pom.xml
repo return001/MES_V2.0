@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi</groupId>
 	<artifactId>mes_server</artifactId>
-	<version>v1</version>
+	<version>v2</version>
 	<packaging>war</packaging>
 
 	<name>mes_server</name>
