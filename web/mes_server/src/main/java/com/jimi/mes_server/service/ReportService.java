@@ -124,6 +124,9 @@ public class ReportService extends SelectService {
 		} else if (table.equals("GPSOQC_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
 			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+		} else if (table.equals("LTestLogMessage")) {
+			field = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "TestTime"};
+			head = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "TestTime"};
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);

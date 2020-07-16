@@ -6,6 +6,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jimi.mes_server.entity.SQL;
+import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
@@ -13,8 +14,12 @@ import com.jimi.mes_server.model.TestSystemSettingLog;
 import com.jimi.mes_server.model.TestSystemSettingOqc;
 import com.jimi.mes_server.service.base.SelectService;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 /**测试配置项业务层
  * @author   HCJ
@@ -22,6 +27,8 @@ import java.util.List;
  */
 public class TestService extends SelectService {
 
+	private static final String GuideFileLink = "/home/mes_document/guide_document";
+	
 	public boolean copy(String operator,String oldKey, Integer type, String newKey) {
 		TestSystemSetting coupleSetTing = null;
 		TestSystemSettingFunc functionSetTing = null;
@@ -159,10 +166,21 @@ public class TestService extends SelectService {
 			if (coupleSetTing.getOrderName() == null || coupleSetTing.getSoftVersion() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
+			
 			softWare = coupleSetTing.getSoftVersion() + "_"+ coupleSetTing.getOrderName();
 			coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(softWare);
 			if (coupleTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
+			}
+			if (coupleSetTing.getFileLink() != null && !coupleSetTing.getFileLink().trim().equals("")) {
+				File oldFile = new File(coupleSetTing.getFileLink());
+				File newFile = new File(GuideFileLink + File.separator + System.currentTimeMillis() + File.separator + coupleSetTing.getFileName());
+				try {
+					FileUtils.copyFile(oldFile, newFile);
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new OperationException("无法生成生产指导指南");
+				};
 			}
 			coupleSetTing.setSoftWare(softWare);
 			return coupleSetTing.use("db3").save();
