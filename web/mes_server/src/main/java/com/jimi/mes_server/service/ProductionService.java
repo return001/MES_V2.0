@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;

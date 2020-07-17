@@ -124,6 +124,9 @@ public class ReportService extends SelectService {
 		} else if (table.equals("GPSOQC_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
 			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+		} else if (table.equals("LTestLogMessage")) {
+			field = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "TestTime"};
+			head = new String[] {"芯片ID", "IMEI", "机型", "软件版本", "订单", "组装错误信息", "组装错误类型", "耦合错误信息", "耦合错误类型", "SMT错误信息", "SMT错误类型", "卡通箱错误信息", "卡通箱错误类型", "老化后错误信息", "老化后错误类型","组装主机IP", "耦合主机IP", "SMT主机IP", "卡通箱主机IP", "组装主机IP", "上传时间"};
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);
