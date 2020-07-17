@@ -51,13 +51,13 @@
             </el-button>
           </div>
         </div>
-        <div style="margin-right: 12px">
-          <div class="search-btn">
-            <el-button size="small" :disabled="queryOptionsLock" type="primary" @click="switchSearchType">
-              切换条件
-            </el-button>
-          </div>
-        </div>
+<!--        <div style="margin-right: 12px">-->
+<!--          <div class="search-btn">-->
+<!--            <el-button size="small" :disabled="queryOptionsLock" type="primary" @click="switchSearchType">-->
+<!--              切换条件-->
+<!--            </el-button>-->
+<!--          </div>-->
+<!--        </div>-->
         <div style="margin-right: 12px">
           <div class="search-btn">
             <el-button size="small" type="warning" @click="showReworkDialog">

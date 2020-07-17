@@ -169,24 +169,30 @@
             label="标准产能"
             width="100">
             <template slot-scope="scope">
-              <el-select size="small"
-                         @focus="softModelCapacity(scope.row)"
-                         v-model="tableEditData[scope.row.id].capacity"
-              >
-                <el-option v-for="(item,index) in capacityList"
-                           :key="index"
-                           :value="item.capacity"
-                >
-                  <div>标准产能：{{item.capacity}}</div>
-                  <div>客户编号：{{item.customerNumber}}</div>
-                  <div>客户料号：{{item.customerMaterialNo}}</div>
-                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：{{item.softModel}}</div>
-<!--                  <span style="margin-right: 50px;">标准产能：{{item.capacity}}</span>-->
-<!--                  <span>KKS</span>-->
-<!--                  <div>客户料号：K-EL100-M01fsad-f3</div>-->
-<!--                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：K-EL100-M01fsad-f3</div>-->
-                </el-option>
-              </el-select>
+
+                <el-select size="small"
+                           :loading = 'capacityList.length <= 0'
+                           loading-text="加载中..."
+                           @focus="softModelCapacity(scope.row)"
+                           v-model="tableEditData[scope.row.id].capacity">
+                  <div class="select-capacity">
+                    <el-option v-for="(item,index) in capacityList"
+                               class="select-capacity"
+                               :key="index"
+                               :value="item.capacity">
+                      <div>标准产能：{{item.capacity}}</div>
+                      <div>客户编号：{{item.customerNumber}}</div>
+                      <div>客户料号：{{item.customerMaterialNo}}</div>
+                      <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：{{item.softModel}}</div>
+                      <!--                  <span style="margin-right: 50px;">标准产能：{{item.capacity}}</span>-->
+                      <!--                  <span>KKS</span>-->
+                      <!--                  <div>客户料号：K-EL100-M01fsad-f3</div>-->
+                      <!--                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：K-EL100-M01fsad-f3</div>-->
+                    </el-option>
+                  </div>
+                </el-select>
+
+
             </template>
           </el-table-column>
 
@@ -706,7 +712,7 @@
         let options={
           url: planCapacitySelectUrl,
           data:{
-            pageSize:1024,
+            pageSize:65535,
             pageNo:1,
             softModel:row.softModel,
             processGroup:this.tableEditData[row.id].processGroup,
@@ -936,8 +942,6 @@
       //删除日期
       handleClose(date){
         delete this.dateToTime[date]
-        console.log(Object.keys(this.dateToTime).length)
-        console.log(this.dateToTime)
         if(Object.keys(this.dateToTime).length > 0){
           this.choicedDate = Object.keys(this.dateToTime).map(item=>item)
           this.clicked = this.choicedDate[0]
@@ -958,7 +962,6 @@
         }else{
           let myDate = new Date();
           let defaultDate = myDate.getFullYear()+"-"+(this.addZero(Number(myDate.getMonth())+1))+"-"+myDate.getDate();
-          console.log(defaultDate)
           this.lineDate = [defaultDate];
           this.choicedDate = [];
           this.workTime = []
@@ -968,13 +971,11 @@
               this.timesAndTasks.workTimes.splice(i,1)
             }
           })
-          console.log(this.timesAndTasks.workTimes)
         }
       },
 
       //提交设置的产线工作时长
       submitLineTimeSetting(){
-        console.log(this.timesAndTasks.workTimes)
         //处理 timesAndTasks的 workTimes
         if(this.choiceLine === ""){
           this.$alertWarning('请选择产线');
@@ -1161,11 +1162,9 @@
                         pInterval = Math.floor(res.estimatedProductionTime*60)+'分';
                       }else {
                         let houMin = res.estimatedProductionTime.toString().split('.')
-                        console.log(houMin)
                         if (typeof (houMin[1]) === 'undefined') {
                           houMin[1] = '0'
                         }
-                        console.log(houMin[1])
                         // if((parseFloat('0.'+houMin[1])*60).toString().indexOf('.') !== -1 ){
                           pInterval = parseInt(houMin[0])+'小时'+(Math.floor(parseFloat('0.'+houMin[1])*60))+"分"
                         // }else{
@@ -1795,14 +1794,13 @@
   .allreday-choice-date /deep/ .el-tag:hover{
     cursor: pointer;
   }
-  .el-select-dropdown .el-scrollbar .el-scrollbar__view .el-select-dropdown__item{
+  .select-capacity /deep/ .el-select-dropdown__item{
     min-height: 107px;
     padding-top: 10px;
     border-bottom: 1px solid #ccc;
   }
-  .el-select-dropdown .el-scrollbar .el-scrollbar__view .el-select-dropdown__item >div{
+  .select-capacity /deep/ .el-select-dropdown__item >div{
     margin: -10px 0;
-
   }
 
 </style>

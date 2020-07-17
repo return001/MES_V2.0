@@ -566,7 +566,7 @@ const ROUTER_CONFIG = {
       {field: 'CoupleResult', title: '耦合测试', colStyle: {'width': '80px'}},
       {field: 'WriteIMEIResult', title: 'IMEI写入', colStyle: {'width': '80px'}},
       {field: 'ParamDownloadResult', title: '参数下载', colStyle: {'width': '80px'}},
-      {field: 'AutoTestResult', title: 'SMT测试组装测试', colStyle: {'width': '80px'}},
+      {field: 'AutoTestResult', title: '组装测试', colStyle: {'width': '80px'}}, //SMT测试组装测试
       {field: 'AutoTestSMTResult', title: '预备字段1', colStyle: {'width': '80px'}},
       {field: 'SMTIQCResult', title: 'SMT IQC', colStyle: {'width': '90px'}},
       // {field: 'OtherTestSign', title: '???', colStyle: {'width': '100px'}, visible: false},

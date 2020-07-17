@@ -190,7 +190,6 @@ export default {
 
     /*新增项目*/
     _addData() {
-      console.log(this.$store.state.limits.add)
       if(this.$store.state.limits.add !== true){
         this.$alertWarning('暂无新增权限')
         return

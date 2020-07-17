@@ -35,13 +35,14 @@
           label="操作"
           width="80"
           fixed="right"
+          v-if="_getFunctionPermission(2) || _getFunctionPermission(3)"
         >
           <template slot-scope="scope">
             <el-tooltip content="编辑" placement="top">
-              <el-button type="text" @click="_editData(scope.row)" icon="el-icon-edit-outline"></el-button>
+              <el-button type="text" @click="_editData(scope.row)" icon="el-icon-edit-outline" v-if="_getFunctionPermission(2)"></el-button>
             </el-tooltip>
             <el-tooltip content="删除" placement="top">
-              <el-button type="text" @click="_deleteData(scope.row)" icon="el-icon-delete"></el-button>
+              <el-button type="text" @click="_deleteData(scope.row)" icon="el-icon-delete" v-if="_getFunctionPermission(3)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -100,6 +101,7 @@
   export default {
     name: "FactorySetting",
     mixins: [common],
+    inject:['_getFunctionPermission'],
     data() {
       return {
         /*搜索框*/
@@ -151,13 +153,15 @@
       /*注册按键*/
       this.buttonGroup[0].callback = this._initQueryOptions;
       this.buttonGroup[1].callback = this._queryData;
-      this.buttonGroup.push(
-        {
-          label: '新增',
-          size: 'small',
-          type: 'primary',
-          callback: this._addData
-        });
+      if(this._getFunctionPermission(1)){
+        this.buttonGroup.push(
+          {
+            label: '新增',
+            size: 'small',
+            type: 'primary',
+            callback: this._addData
+          });
+        }
         this._queryData();
     },
     methods: {

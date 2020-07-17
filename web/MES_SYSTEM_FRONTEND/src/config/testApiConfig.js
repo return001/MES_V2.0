@@ -10,7 +10,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 export const testOperUrl = url + '/test';
 export const testSelectUrl = url + "/test/select";
-export const testLogGetUrl = url + "/test/select";
+// export const testLogGetUrl = url + "/test/select";
+export const testLogGetUrl = url + "/test/getLog";
 
 //export const routerUrl = "http://10.10.11.109:8080/mes_server/order/select";
 export const getTestConfig = () => {
@@ -41,6 +42,7 @@ const ROUTER_CONFIG = {
         timeRange: '',
         type: 'date'
       },
+
     ],
     dataColumns: [
       {field: 'SoftWare', title: '版本号', colStyle: {'width': '120px'}, notNull: true},
@@ -116,12 +118,12 @@ export const testLogTableOptions =[
   },
   {
     'label':'订单号',
-    'key':'zhidan',
+    'key':'orderName',
     'min-width':'200'
   },
   {
     'label':'配置类型',
-    'key':'configType',
+    'key':'settingType',
     'min-width':'200'
   },
   {
@@ -154,7 +156,7 @@ export const logDetailHeader = [
   {
     type:'select',
     label:'配置类型',
-    key:'configType',
+    key:'settingType',
   },
   {
     type:'text',

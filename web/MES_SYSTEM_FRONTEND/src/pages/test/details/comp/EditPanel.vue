@@ -11,8 +11,21 @@
       <div class="setting-header">
         <div class="form-group">
           <label for="edit-software">软件版本:</label>
-          <el-input size="medium" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
-                    v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
+          <el-input size="medium" type="text" id="edit-software"
+                    :placeholder="editType === 'edit' ? '' : '请填写软件版本'"
+                    clearable
+                    autocomplete="off"
+                    v-model.trim="formData.soft_version.value"
+                    :disabled="editType === 'edit'"></el-input>
+        </div>
+        <div class="form-group">
+          <label for="edit-machinename">订单号:</label>
+          <el-input size="small" type="text" id="edit-zhidan"
+                    :placeholder="editType === 'edit' ? '' : '请填写订单号'"
+                    autocomplete="off"
+                    v-model.trim="formData.order_name.value"
+                    :disabled="editType === 'edit'"
+                    clearable></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">机型名:</label>
@@ -20,16 +33,17 @@
                     v-model.trim="formData.MachineName.value"></el-input>
         </div>
         <div class="form-group" v-if="$route.query.type === '2'">
-          <label for="edit-software">IMEI号段 从:</label>
-          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+          <label for="edit-imeifrom">IMEI号段 从:</label>
+          <el-input size="small" type="text" id="edit-imeifrom" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiFrom"></el-input>
         </div>
         <div class="form-group" v-if="$route.query.type === '2'">
-          <label for="edit-software">至:</label>
-          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+          <label for="edit-imeito">至:</label>
+          <el-input size="small" type="text" id="edit-imeito" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiTo"></el-input>
         </div>
-        <div class="setting-operation" style="margin-left: auto">
+
+        <div class="setting-operation" style="margin-left: auto" v-if="deleteHistory.length > 0 && copySrcIndex !== null">
           <div v-if="deleteHistory.length > 0">
             <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
 " @click="restoreOneSetting">撤销删除
@@ -127,12 +141,24 @@
         isCreate: false,
         isUpdate: false,
         formData: {
-          'SoftWare': {
-            value: ''
+          // 'soft_version': {
+          //   value: ''
+          // },
+          'soft_version':{
+            value:''
+          },
+          'order_name':{
+            value:''
           },
           'MachineName': {
-            value: ''
+            value: '',
           },
+          // 'imeiFrom': {
+          //   value: ''
+          // },
+          // 'imeiTo': {
+          //   value: ''
+          // },
           'SettingList': [
             {
               '1': '共有指令',
@@ -175,7 +201,8 @@
         if (this.editType === 'edit' || this.editType === 'copy') {
           this.isCreate = false;
           this.isUpdate = true;
-          this.formData.SoftWare.value = this.sourceData.SoftWare;
+          this.formData.soft_version.value = this.sourceData.soft_version;
+          this.formData.order_name.value = this.sourceData.order_name;
           if (this.$route.query.type === '2') {
             this.$set(this.formData.MachineName, 'imeiFrom', '');
             this.$set(this.formData.MachineName, 'imeiTo', '');
@@ -258,7 +285,7 @@
         /*空值*/
         let emptyMark = true;
         let mark = true;
-        if (this.formData.SoftWare.value === '' || this.formData.MachineName.value === '') {
+        if (this.formData.soft_version.value === '' || this.formData.MachineName.value === '') {
           emptyMark = false;
         }
 
@@ -306,7 +333,8 @@
           let options = {
             url: testOperUrl + (this.editType === 'edit' ? '/update' : '/create'),
             data: {
-              softWare: this.formData.SoftWare.value,
+              orderName: this.formData.order_name.value,
+              softVersion: this.formData.soft_version.value,
               machineName: this.formData.MachineName.value,
               recordTime: getTime()
             }
@@ -480,20 +508,26 @@
 
   .setting-header {
     display: flex;
+    justify-content: space-between;
     align-items: flex-end;
   }
 
   .setting-header label {
     line-height: 24px;
   }
+  .setting-header .form-group{
+    min-width: 260px;
+  }
+  .setting-header .form-group:nth-child(1) {
+    width: 450px;
+  }
+  .setting-header .form-group:nth-child(2) {
+    width: 360px;
+  }
 
-  .setting-header .form-group {
-    width: 800px;
-    margin-right: 10px;
-  }
-  .setting-header .form-group /deep/ .el-input :nth-child(1){
-    width: 300px;
-  }
+
+
+
 
   .setting-header .setting-operation {
     display: flex;

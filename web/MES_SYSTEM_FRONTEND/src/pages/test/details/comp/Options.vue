@@ -88,7 +88,6 @@
     },
     mounted: function () {
       this.initForm('test_manage')
-
     },
     watch: {
       $route: function (val) {
@@ -116,11 +115,20 @@
           this.copyQueryOptions.map((item, index) => {
             switch (item.type) {
               case 'text':
-                if (index === 0) {
-                  this.queryString += (item.id + "#=#" + item.model) //like
-                } else {
-                  this.queryString += ("#&#" + item.id + "#=#" + item.model) //like
+                if(item.id === 'MachineName' && this.$route.query.type === '2'){
+                  if (index === 0) {
+                    this.queryString += (item.id + "#rightLike#" + item.model) //like
+                  } else {
+                    this.queryString += ("#&#" + item.id + "#rightLike#" + item.model) //like
+                  }
+                }else{
+                  if (index === 0) {
+                    this.queryString += (item.id + "#=#" + item.model) //like
+                  } else {
+                    this.queryString += ("#&#" + item.id + "#=#" + item.model) //like
+                  }
                 }
+
                 break;
               case 'date':
                 if (!!item.timeRange) {

@@ -260,6 +260,7 @@
                 label="操作"
                 float="right"
                 width="80"
+                v-if="capacityEditType !== 'edit'"
               >
                 <template slot-scope="scope">
                   <el-tooltip content="删除" placement="top">
@@ -267,12 +268,9 @@
                   </el-tooltip>
                 </template>
               </el-table-column>
-
-
-
           </el-table>
         </div>
-          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
+          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length && capacityEditType !== 'edit'">
             <el-tooltip content="添加" placement="top">
               <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
             </el-tooltip>
@@ -588,6 +586,10 @@
       //工厂更改  工序组即更改
       changeGroupList(val){
         this.fetchCustomer(val)
+
+        this.capacityEditOptionsData.customerNumber="" ;
+        this.customerNames="";
+        this.capacityEditOptionsData=[]
         this.processGroupSelect = []
         this.sameGroupDatas = []
           this.processGroupSelectWait.forEach(item=>{

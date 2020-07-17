@@ -13,6 +13,13 @@
                        :min-width=item.colStyle.width
                        :formatter=item.formatter>
       </el-table-column>
+<!--      <el-table-column key="file_name"-->
+<!--                       prop='file_name'-->
+<!--                       label="文件名"-->
+<!--                       min-width=180-->
+<!--                       v-if="$route.query.type === '3'">-->
+<!--      </el-table-column>-->
+
 
       <el-table-column
         type="index"
@@ -21,18 +28,72 @@
         width="60">
       </el-table-column>
 
+<!--      <el-table-column-->
+<!--        label="文件操作"-->
+<!--        width="180"-->
+<!--        fixed="right"-->
+<!--        v-if="$route.query.type === '3'"-->
+<!--      >-->
+<!--        <template slot-scope="scope" v-if="$route.query.type === '3'">-->
+<!--          <span class="file-action-upload">-->
+<!--            <el-tooltip content="上传文件" placement="top">-->
+<!--              <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-upload2"></el-button>-->
+<!--            </el-tooltip>-->
+<!--          </span>-->
+<!--          <span class="file-action-download">-->
+<!--            <el-tooltip content="下载文件" placement="top">-->
+<!--              <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-download" :disabled="!scope.row.SoftWare"></el-button>-->
+<!--            </el-tooltip>-->
+<!--          </span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+
       <el-table-column
         label="操作"
-        width="120"
+        width="180"
         fixed="left"
       >
         <template slot-scope="scope">
-          <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
-          <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
-          <el-button type="text" @click="delData(scope.row)" icon="el-icon-t-delete"></el-button>
+          <el-tooltip content="编辑" placement="top">
+            <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
+          </el-tooltip>
+          <el-tooltip content="复制" placement="top">
+            <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
+          </el-tooltip>
+<!--          <span class="file-action-upload">-->
+<!--            <el-tooltip content="导出" placement="top">-->
+<!--              <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-upload"></el-button>-->
+<!--            </el-tooltip>-->
+<!--          </span>-->
+          <el-tooltip content="删除" placement="top">
+            <el-button type="text" @click="delData(scope.row)" icon="el-icon-t-delete"></el-button>
+          </el-tooltip>
         </template>
       </el-table-column>
     </el-table>
+
+    <!--上传框-->
+    <el-dialog
+      title="上传文件"
+      :visible.sync="isUpload"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @closed="clearOrderUploadFile"
+      width="400px">
+      <el-upload
+        ref="fileUpload"
+        :action="planOrderImportUrl"
+        :auto-upload="false"
+        :http-request="uploadFile"
+        :before-upload="beforeOrderUpload"
+        accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      >
+        <el-button slot="trigger" size="small" type="info">选取文件</el-button>
+        <el-button style="margin-left: 10px;" size="small" type="primary" @click="submitOrderUpload">上传</el-button>
+<!--        <div slot="tip" class="upload-tip">请选择xls、xlsx文件</div>-->
+      </el-upload>
+    </el-dialog>
+
     <!--分页控制-->
     <el-pagination
       background
@@ -62,6 +123,7 @@
         tableData: [],
         tableColumns: [],
         //srcData: [],
+        isUpload:false,         //上传框
         paginationOptions: {
           currentPage: 1,
           pageSize: 20,
@@ -202,7 +264,12 @@
         }).catch(() => {
 
         })
-      }
+      },
+      clearOrderUploadFile: function () {
+        this.$refs.fileUpload.clearFiles();
+      },
+
+
     }
   }
 </script>
@@ -221,6 +288,17 @@
     flex-wrap: wrap;
     margin: 20px 0;
     padding: 0 20px;
+  }
+
+  .file-action-upload /deep/ .el-button{
+    display: inline-block;
+    font-size: 20px;
+    margin: 0 8px;
+  }
+  .file-action-download /deep/ .el-button{
+    display: inline-block;
+    font-size: 20px;
+    margin-right: 5px;
   }
 
 </style>
