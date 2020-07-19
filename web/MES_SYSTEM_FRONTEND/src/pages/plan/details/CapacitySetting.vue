@@ -586,10 +586,11 @@
       //工厂更改  工序组即更改
       changeGroupList(val){
         this.fetchCustomer(val)
-
-        this.capacityEditOptionsData.customerNumber="" ;
         this.customerNames="";
-        this.capacityEditOptionsData=[]
+        this.capacityEditOptionsData={
+          process: '',
+          customerNumber:"",
+        },
         this.processGroupSelect = []
         this.sameGroupDatas = []
           this.processGroupSelectWait.forEach(item=>{
