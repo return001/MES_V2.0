@@ -12,6 +12,8 @@ export const testOperUrl = url + '/test';
 export const testSelectUrl = url + "/test/select";
 // export const testLogGetUrl = url + "/test/select";
 export const testLogGetUrl = url + "/test/getLog";
+export const uploadGuideFile = url + "/test/uploadGuideFile";
+export const downloadGuideFile = url + "/test/downloadGuideFile";
 
 //export const routerUrl = "http://10.10.11.109:8080/mes_server/order/select";
 export const getTestConfig = () => {

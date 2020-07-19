@@ -1316,6 +1316,7 @@
             'Content-Type': 'multipart/form-data'
           },
         };
+        console.log(this.uploadFileData)
         this.$axios.post(planOrderImportUrl, this.uploadFileData, config).then(response => {
           if (response.data.result === 200) {
             this.$alertSuccess(response.data.data);
@@ -1456,6 +1457,8 @@
               id: val.id
             }
           }).then(response => {
+
+            // console.log(XMLHttpRequest.getResponseHeader("Content-disposition"))
             let contentType = response.request.getResponseHeader('content-type');
             if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
 

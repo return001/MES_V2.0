@@ -215,8 +215,8 @@ const getCharactersFuncList = function() {
         'couple': generateArray(4, false, [0, 1, 2, 3])
       },
       'yf_test': {
-        'func': generateArray(4, false, [0, 1, 2, 3]),
-        'couple': generateArray(4, false, [0, 1, 2, 3])
+        'func': generateArray(4, false, [0, 1, 2, 3, 4, 5]),
+        'couple': generateArray(4, false, [0, 1, 2, 3, 4, 5])
       },
       'oqc_test': {
         'oqc': generateArray(4, false, [0, 1, 2, 3])
