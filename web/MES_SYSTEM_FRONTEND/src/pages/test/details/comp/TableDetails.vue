@@ -42,7 +42,7 @@
           </span>
           <span class="file-action-download">
             <el-tooltip content="下载文件" placement="top">
-              <el-button type="text" @click="downloadFile(scope.row)" icon="el-icon-download" :disabled="!scope.row.file_name"></el-button>
+              <el-button type="text" @click="downloadFile(scope.row)" icon="el-icon-download" :disabled="!scope.row['file_name']"></el-button>
             </el-tooltip>
           </span>
         </template>
@@ -360,11 +360,13 @@
               id: val.SoftWare,
             }
           }).then(response => {
-            console.log(response.getResponseHeader('Content-Disposition'))
+            console.log(response.request.getResponseHeader('Content-disposition'))
             let contentType = response.request.getResponseHeader('content-type');
             if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
-              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
-              saveAs(response.data, decodeURIComponent(name))
+              let name = decodeURIComponent(escape(response.request.getResponseHeader('Content-disposition').split('=')[1]));
+              let fileName = name.substring(1,name.length-1);
+
+              saveAs(response.data, fileName)
             } else {
               let reader = new FileReader();
               reader.readAsText(response.data);
