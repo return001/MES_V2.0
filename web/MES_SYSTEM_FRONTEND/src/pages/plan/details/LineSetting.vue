@@ -219,11 +219,12 @@
               placeholder="选择日期"
               value-format="yyyy-MM-dd"></el-date-picker>
           </div>
+<!--          :fetch-suggestions="searchItem($event,lineItem.key,)"-->
           <div class="line-edit-form-comp-text" v-if="lineItem.type === 'asyncSelect'">
             <el-autocomplete
               style="display: block;"
               v-model.trim="tempStorage[lineItem.condition]"
-              :fetch-suggestions="searchItem"
+              :fetch-suggestions="((queryString,callback) => {searchItem(queryString,callback,lineItem.key)})"
               :placeholder="'请输入工号并选择'"
               @input="autoClear"
               @focus="setAsyncSearchProp(lineItem.key, lineItem.condition)"
@@ -409,7 +410,7 @@
 
   export default {
     name: "LineSetting",
-    inject: ['reload'],
+    inject: ['reload','_getFunctionPermission'],
     data() {
       return {
         //设置产线时间
@@ -552,14 +553,16 @@
         }
       },
     },
-    async created() {
+    created() {
       this.initQueryOptions();
-      await this.dataPreload();
+      this.dataPreload();
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.line)
     },
     mounted() {
       this.fetchData();
       //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.line)
+      // this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.line)
     },
     methods: {
       /*局部刷新*/
@@ -915,6 +918,12 @@
       },
 
       submitEditLine: function () {
+        // console.log(this.tempStorage.directorName)
+        // return
+        // if(this.lineEditOptionsData.lineDirector === "" || this.lineEditOptionsData.lineEngineer === "" || this.lineEditOptionsData.lineQc === ""){
+        //   this.$alertWarning('负责人、产线工程、产线品质请选择现有人员');
+        //   return;
+        // }
         this.$refs['lineEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
@@ -1137,8 +1146,8 @@
           condition: condition
         }
       },
-      searchItem: function (qs, cb) {
 
+      searchItem: function (qs, cb, key) {
         let options = {
           url: getUserUrl,
           data: {}
@@ -1153,6 +1162,14 @@
           if (response.data.result === 200) {
             if (response.data.data !== null) {
               cb(response.data.data.list)
+              //限制只能选择已有人员 有ID才能存 "" 不能存
+              if(key === 'lineDirector' && response.data.data.list.length <1){
+                this.lineEditOptionsData.lineDirector = ""
+              }else if(key === 'lineEngineer' && response.data.data.list <1){
+                this.lineEditOptionsData.lineEngineer = ""
+              }else if(key === 'lineQc' && response.data.data.list <1){
+                this.lineEditOptionsData.lineQc = ""
+              }
             } else {
               cb([])
             }

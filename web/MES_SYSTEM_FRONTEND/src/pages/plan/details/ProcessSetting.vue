@@ -185,15 +185,16 @@
         }
       },
     },
-    async created() {
+    created() {       //async
       this.initQueryOptions();
-      await this.fetchProcessGroup();
+      this.fetchProcessGroup();     // await
       this.initEditOptions();
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process)
     },
     mounted() {
       this.fetchData()
       //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process)
+      // this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.process)
     },
     methods: {
       /*局部刷新*/

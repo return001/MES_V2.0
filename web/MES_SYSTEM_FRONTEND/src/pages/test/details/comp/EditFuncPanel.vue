@@ -289,12 +289,14 @@
         if (this.formData.order_name.value === '' ||this.formData.soft_version.value === '' || this.formData.MachineName.value === '') {
           emptyMark = false;
         }
-
         this.formData.SettingList.forEach((item, index) => {
           if (item['2'] === '') {
             emptyMark = false;
           }
-          if (item[2].indexOf('@@') >= 0 || item[3].indexOf('@@') >= 0 || item[4].indexOf('@@') >= 0 || item[5].indexOf('@@') >= 0) {
+          if(typeof (item[5]) === 'undefined'){
+            item[5] = ""
+          }
+          if (item[2].indexOf('@@') >= 0 || item[3].indexOf('@@') >= 0 || item[4].indexOf('@@') >= 0 ||item[5].indexOf('@@') >= 0) {
             this.$alertInfo('第' + index + '项存在非法字符"@@"');
             mark = false;
           }
@@ -310,7 +312,7 @@
         console.log(222)
         const selectedFile = this.$refs.refFile.files[0];
         if(selectedFile.type !== 'text/plain'){
-          this.$alertWarning('请选择.txt文件')
+          this.$alertWarning('请选择.tRxt文件')
           return
         }
         let modelName
@@ -334,7 +336,6 @@
             modelName = 'OQC'
             break
         }
-        console.log(selectedFile.name.indexOf(modelName))
         if(selectedFile.name.indexOf(modelName) === -1){
           this.$alertWarning('请选择当前模块所对应的.txt文件')
           return
@@ -344,7 +345,6 @@
         reader.readAsText(selectedFile);
         reader.onload = (e) => {
           this.sourceData = JSON.parse(e.target.result);
-          console.log(this.sourceData)
           Object.keys(this.sourceData).forEach(item => {
             if (this.sourceData[item] === "") {
               return;
@@ -408,7 +408,7 @@
           let options = {
             url: testOperUrl + (this.editType === 'edit' ? '/update' : '/create'),
             data: {
-              // softWare: this.formData.SoftWare.value,
+              softWare: this.formData.soft_version.value + this.formData.order_name.value,
               softVersion: this.formData.soft_version.value,
               orderName: this.formData.order_name.value,
               machineName: this.formData.MachineName.value,

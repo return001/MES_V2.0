@@ -175,6 +175,8 @@
     },
     created() {
       this.initQueryOptions();
+      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.file_type)
     },
     mounted() {
       this.fetchData()

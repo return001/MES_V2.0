@@ -174,6 +174,7 @@
                            :loading = 'capacityList.length <= 0'
                            loading-text="加载中..."
                            @focus="softModelCapacity(scope.row)"
+                           @change="insertTransferLineTime(scope.row)"
                            v-model="tableEditData[scope.row.id].capacity">
                   <div class="select-capacity">
                     <el-option v-for="(item,index) in capacityList"
@@ -726,6 +727,20 @@
         })
       },
 
+      //选完标产，更改转线时长
+      insertTransferLineTime(row){
+        this.capacityList.forEach(item=>{
+          if(this.tableEditData[row.id].capacity === item.capacity){
+            row.processPeopleQuantity = item.processPeopleQuantity
+            this.tableEditData[row.id].personNumber = item.processPeopleQuantity
+            if(item.transferLineTime === null){
+              this.tableEditData[row.id].lineChangeTime = 0
+            }else{
+              this.tableEditData[row.id].lineChangeTime = item.transferLineTime;
+            }
+          }
+        })
+      },
       //详情
       showDetails(val){
         this.isDetailsShowing= true
@@ -1111,11 +1126,18 @@
           }else{
             this.timesAndTasks.tasks[i].orderId = Number(item.id)
           }
-          this.timesAndTasks.tasks[i].executorId = this.tableEditData[item.id].line;
-          this.timesAndTasks.tasks[i].switchConsumingTime = this.isReImport ? this.tableEditData[item.id].transferLineTime : this.tableEditData[item.id].lineChangeTime
-          this.timesAndTasks.tasks[i].planQuantity = this.tableEditData[item.id].schedulingQuantity
-          this.timesAndTasks.tasks[i].standardCapacity = item.capacity
-          this.timesAndTasks.tasks[i].tagId =item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
+          // this.timesAndTasks.tasks[i].executorId = this.tableEditData[item.id].line;
+          // this.timesAndTasks.tasks[i].switchConsumingTime = this.isReImport ? this.tableEditData[item.id].transferLineTime : this.tableEditData[item.id].lineChangeTime
+          // this.timesAndTasks.tasks[i].planQuantity = this.tableEditData[item.id].schedulingQuantity
+          // this.timesAndTasks.tasks[i].standardCapacity = item.capacity
+          // this.timesAndTasks.tasks[i].tagId =item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
+          this.$set(this.timesAndTasks.tasks,i,{
+            executorId:this.tableEditData[item.id].line,
+            switchConsumingTime : this.tableEditData[item.id].lineChangeTime,
+            planQuantity : this.tableEditData[item.id].schedulingQuantity,
+            standardCapacity : item.capacity,
+            tagId :item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
+          })
         })
         if(!trueSchedulQun){
           this.$alertWarning('请输入正确的排产数量(存在未排产数小于零)！')
@@ -1158,6 +1180,8 @@
                       this.$set(this.tableEditData[item], 'planStartTime', res.estimatedStartTime);
                       this.$set(this.tableEditData[item], 'planCompleteTime', res.estimatedEndTime);
                       let pInterval = ''
+
+                      //把 百进制时换算成 _分_秒
                       if(res.estimatedProductionTime < 1){
                         pInterval = Math.floor(res.estimatedProductionTime*60)+'分';
                       }else {
@@ -1165,25 +1189,23 @@
                         if (typeof (houMin[1]) === 'undefined') {
                           houMin[1] = '0'
                         }
-                        // if((parseFloat('0.'+houMin[1])*60).toString().indexOf('.') !== -1 ){
                           pInterval = parseInt(houMin[0])+'小时'+(Math.floor(parseFloat('0.'+houMin[1])*60))+"分"
-                        // }else{
-                        //   pInterval = parseInt(houMin[0])+'小时'+(parseFloat('0.'+houMin[1])*60)+"分"
-                        // }
                       }
-                      this.$set(this.tableEditData[item], 'planInterval', pInterval);}
+                      this.$set(this.tableEditData[item], 'planInterval', pInterval);
+                    }
                   })
                 })
                 this.isImportable = true;
+                this.$alertSuccess('计算成功！')
               } else {
-                this.$alertWarning(response.data)
+                this.$alertWarning(response.data.data);
               }
             }).catch(err => {
               this.$alertDanger('计算有误,请刷新重试');
             }).finally(() => {
             })
           }else{
-            this.$alertWarning('缺少参数')
+            this.$alertWarning('请设置产线工作时间和其他排产信息')
           }
       },
 

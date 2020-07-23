@@ -16,7 +16,7 @@
         :rules="planEditOptionsRules">
         <!--<el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
+
           class="plan-edit-form-comp"
           label="是否紧急"
           prop="isUrgent">
@@ -30,7 +30,7 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
+
           class="plan-edit-form-comp"
           label="产线"
           prop="line">
@@ -46,7 +46,7 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
+
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="排产数量"
           prop="schedulingQuantity">
@@ -59,7 +59,7 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
+
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="预计开始时间"
           prop="planStartTime">
@@ -74,7 +74,7 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
+
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="预计完成时间"
           prop="planStartTime">
@@ -87,6 +87,7 @@
             autocomplete="off">
           </el-date-picker>
         </el-form-item>
+
         <el-form-item
           size="small"
           v-if="permissionShow([true, false])"
@@ -99,11 +100,24 @@
             autocomplete="off"
             placeholder="请填写转线时间"
             v-model="planEditOptionsData.lineChangeTime"></el-input>
-        </el-form-item>-->
+        </el-form-item>
+
 
         <el-form-item
           size="small"
           v-if="permissionShow([false, true])"
+          class="plan-edit-form-comp plan-edit-form-comp-text"
+          label="产能"
+          prop="capacity">
+          <el-input
+            type="text"
+            clearable
+            placeholder="请填写产能"
+            autocomplete="off"
+            v-model.number="planEditOptionsData.capacity"></el-input>
+        </el-form-item>-->
+        <el-form-item
+          size="small"
           class="plan-edit-form-comp"
           label="是否完成"
           prop="isCompleted">
@@ -117,7 +131,6 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([false, true])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="生产计划单号"
           prop="productionPlanningNumber">
@@ -130,20 +143,6 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([false, true])"
-          class="plan-edit-form-comp plan-edit-form-comp-text"
-          label="产能"
-          prop="capacity">
-          <el-input
-            type="text"
-            clearable
-            placeholder="请填写产能"
-            autocomplete="off"
-            v-model.number="planEditOptionsData.capacity"></el-input>
-        </el-form-item>
-        <el-form-item
-          size="small"
-          v-if="permissionShow([true, true])"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="已完成数量"
           prop="producedQuantity">
@@ -157,7 +156,6 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([true, false])"
           class="plan-edit-form-comp plan-edit-form-comp-textarea"
           label="备注"
           prop="remark">
@@ -169,7 +167,6 @@
         </el-form-item>
         <el-form-item
           size="small"
-          v-if="permissionShow([false, true])"
           class="plan-edit-form-comp plan-edit-form-comp-textarea"
           label="未完成原因"
           prop="remainingReason">
@@ -347,18 +344,20 @@
             id:val.id,
             isCompleted: false,
             productionPlanningNumber: val.productionPlanningNumber,
-            capacity: val.capacity,
-            isStarting: val.isStarting,
             producedQuantity: val.producedQuantity,
             remainingReason: val.remainingReason,
-            isUrgent: val.isUrgent,
-            line: val.line,
-            schedulingQuantity: val.schedulingQuantity,
-            lineChangeTime: val.lineChangeTime,
             remark: val.remark,
-            planStartTime: !!val.planStartTime ? val.planStartTime : '',
-            planCompleteTime: !!val.planCompleteTime ? val.planCompleteTime : ''
+
+            // capacity: val.capacity,
+            // isStarting: val.isStarting,
+            // isUrgent: val.isUrgent,
+            // line: val.line,
+            // schedulingQuantity: val.schedulingQuantity,
+            // lineChangeTime: val.lineChangeTime,
+            // planStartTime: !!val.planStartTime ? val.planStartTime : '',
+            // planCompleteTime: !!val.planCompleteTime ? val.planCompleteTime : ''
           });
+        // isCompleted  productionPlanningNumber   producedQuantity remainingReason remark
           Object.assign(this.planEditOptionsRules, this.planPMCEditOptionsRules);
           Object.assign(this.planEditOptionsRules, this.planEngineerEditOptionsRules);
           if(this.planEditOptionsData.id){
@@ -370,16 +369,16 @@
 
     methods: {
       //控制表单项目显示 params: [pmcEdit, engineerEdit]
-      permissionShow(statusArray) {
-        let userType = this.$store.state.userType;
-        if (statusArray[0] && userType === 'schedulingJMPMC') {
-          return true;
-        } else if (statusArray[1] && userType === 'engineer') {
-          return true;
-        } else if (userType === 'SuperAdmin') {
-          return true;
-        }
-      },
+      // permissionShow(statusArray) {
+      //   let userType = this.$store.state.userType;
+      //   if (statusArray[0] && userType === 'schedulingJMPMC') {
+      //     return true;
+      //   } else if (statusArray[1] && userType === 'engineer') {
+      //     return true;
+      //   } else if (userType === 'SuperAdmin') {
+      //     return true;
+      //   }
+      // },
 
       resetEditPanel() {
         this.planEditOptionsData = {}
@@ -391,11 +390,6 @@
           if (valid && !this.isPending) {
             this.isPending = true;
             this.$openLoading();
-            // if (this.planEditOptionsData.isCompleted === true) {
-            //   if (this.planEditOptionsData.producedQuantity < row.schedulingQuantity) {
-            //     return;
-            //   }
-            // }
             let options = {
               url: planDetailsEditUrl,
               data: {
@@ -403,66 +397,107 @@
               }
             };
             Object.keys(this.planEditOptionsData).forEach(item => {
-              if (this.planEditOptionsData[item] !== null || this.planEditOptionsData[item] !== '') {
-                options.data[item] = this.planEditOptionsData[item]
-              }
+              console.log(item,":",this.planEditOptionsData[item])
+              // if (this.planEditOptionsData[item] !== null || this.planEditOptionsData[item] !== '') {
+              options.data[item] = this.planEditOptionsData[item]
+              // }
             });
-            this.submitData(options)
-          }
-        })
-
-      },
-
-
-      async submitData(options) {
-        // let validMark = false;
-        if (this.pmcEditing || this.totallyEditing) {
-          let validateOptions = {
-            url: planCheckCompleteTimeSelectUrl,
-            data: options.data
-          };
-          if (this.pmcEditing && !this.engineerEditing) {
-            validateOptions.data.capacity = this.row.capacity;
-          }
-          await axiosFetch(validateOptions).then(response => {
-            if (response.data.result === 200) {
-              if (response.data.data === true) {
-                validMark = true
+            axiosFetch(options).then(response => {
+              if (response.data.result === 200) {
+                this.$alertSuccess("修改成功");
+                eventBus.$emit('partlyReload');
+                //this.reload();
               } else {
-                this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
-                this.isPending = false;
-                this.$closeLoading();
+                this.$alertWarning(response.data.data)
               }
-            } else {
-              this.$alertWarning(response.data.data);
+            }).catch(err => {
+              console.log(err);
+              this.$alertDanger("未知错误")
+            }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-            }
-          }).catch(err => {
-            this.$alertDanger('未知错误');
-            this.isPending = false;
-            this.$closeLoading();
-          })
-        }
-        // if (validMark || this.engineerEditing) {
-        if (validMark) {
-          axiosFetch(options).then(response => {
-            if (response.data.result === 200) {
-              this.$alertSuccess("修改成功");
-              eventBus.$emit('partlyReload');
-              //this.reload();
-            } else {
-              this.$alertWarning(response.data.data)
-            }
-          }).catch(err => {
-            console.log(err);
-            this.$alertDanger("未知错误")
-          }).finally(() => {
-            this.isPending = false;
-            this.$closeLoading();
-          })
-        }
+            })
+          }
+        })
       },
+
+      // submitEdit1() {
+      //   this.$refs['planEditForm'].validate((valid) => {
+      //     if (valid && !this.isPending) {
+      //       this.isPending = true;
+      //       this.$openLoading();
+      //       // if (this.planEditOptionsData.isCompleted === true) {
+      //       //   if (this.planEditOptionsData.producedQuantity < row.schedulingQuantity) {
+      //       //     return;
+      //       //   }
+      //       // }
+      //       let options = {
+      //         url: planDetailsEditUrl,
+      //         data: {
+      //           id: this.row.id
+      //         }
+      //       };
+      //       Object.keys(this.planEditOptionsData).forEach(item => {
+      //         console.log(item,":",this.planEditOptionsData[item])
+      //         if (this.planEditOptionsData[item] !== null || this.planEditOptionsData[item] !== '') {
+      //           options.data[item] = this.planEditOptionsData[item]
+      //         }
+      //       });
+      //       this.submitData(options)
+      //     }
+      //   })
+      // },
+      //
+      //
+      // async submitData(options) {
+      //   let validMark = false;
+      //   if (this.pmcEditing || this.totallyEditing) {
+      //     let validateOptions = {
+      //       url: planCheckCompleteTimeSelectUrl,
+      //       data: options.data
+      //     };
+      //     if (this.pmcEditing && !this.engineerEditing) {
+      //       validateOptions.data.capacity = this.row.capacity;
+      //     }
+      //     await axiosFetch(validateOptions).then(response => {
+      //       if (response.data.result === 200) {
+      //         if (response.data.data === true) {
+      //           validMark = true
+      //         } else {
+      //           this.$alertInfo('排产超出生产能力，请重新排产或调整产能');
+      //           this.isPending = false;
+      //           this.$closeLoading();
+      //         }
+      //       } else {
+      //         this.$alertWarning(response.data.data);
+      //         this.isPending = false;
+      //         this.$closeLoading();
+      //       }
+      //     }).catch(err => {
+      //       this.$alertDanger('未知错误');
+      //       this.isPending = false;
+      //       this.$closeLoading();
+      //     })
+      //   }
+      //   // if (validMark || this.engineerEditing) {
+      //   if (validMark) {
+      //     axiosFetch(options).then(response => {
+      //       if (response.data.result === 200) {
+      //         this.$alertSuccess("修改成功");
+      //         eventBus.$emit('partlyReload');
+      //         //this.reload();
+      //       } else {
+      //         this.$alertWarning(response.data.data)
+      //       }
+      //     }).catch(err => {
+      //       console.log(err);
+      //       this.$alertDanger("未知错误")
+      //     }).finally(() => {
+      //       this.isPending = false;
+      //       this.$closeLoading();
+      //     })
+      //   }
+      // },
 
       setProducedQuantity(id) {
         if (!this.isPending) {

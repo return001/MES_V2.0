@@ -228,6 +228,26 @@
                 console.log(response)
                 response.data.data.list.forEach(item=>{
                   item.model = item.model.split("@@")[0]
+                  switch (item.settingType) {
+                    case 0:
+                      item.settingTypeName = 'SMT功能测试'
+                      break
+                    case 1:
+                      item.settingTypeName = '组装功能测试'
+                      break
+                    case 2:
+                      item.settingTypeName = '组装耦合测试'
+                      break
+                    case 3:
+                      item.settingTypeName = '研发功能测试'
+                      break
+                    case 4:
+                      item.settingTypeName = '研发耦合测试'
+                      break
+                    case 5:
+                      item.settingTypeName = 'OQC'
+                      break
+                  }
                 })
                 this.tableData = response.data.data.list
                 this.paginationOptions.currentPage = response.data.data['pageNumber'];

@@ -80,7 +80,8 @@
           let arrLength = (dataItemList.length > 10 ? dataItemList.length : '0'+dataItemList.length).toString()
           dataItemList[0] = dataItemList[0].replace(arrLength,"")   //第二个元素的开头是 长度的字符串  要删除
           let placeStrList =['IMEI域名','共有指令','功能测试','白卡测试'];
-          if(this.dialogData.typeId === 2 || this.dialogData.typeId === 4){
+          console.log(this.dialogData)
+          if(this.dialogData.settingType === 2 || this.dialogData.settingType === 4 || this.dialogData.settingType === 5){
             placeStrList.forEach((item)=>{                 //dataItemList中的元素 包含 ↑ 上面的字符串，要取出来 ↓
               dataItemList.forEach((dataItem)=>{
                 if(dataItem.indexOf(item) !==-1 ){

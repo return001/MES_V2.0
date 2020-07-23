@@ -39,12 +39,12 @@
           <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.value"></el-input>
         </div>
-        <div class="form-group" v-if="$route.query.type === '2'">
+        <div class="form-group" v-if="$route.query.type === '2' || $route.query.type === '4'">
           <label for="edit-imeifrom">IMEI号段 从:</label>
           <el-input size="small" type="text" id="edit-imeifrom" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiFrom"></el-input>
         </div>
-        <div class="form-group" v-if="$route.query.type === '2'">
+        <div class="form-group" v-if="$route.query.type === '2' || $route.query.type === '4'">
           <label for="edit-imeito">至:</label>
           <el-input size="small" type="text" id="edit-imeito" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiTo"></el-input>
@@ -71,7 +71,6 @@
         <el-col :span="7">AT指令</el-col>
         <el-col :span="4">返回值</el-col>
         <el-col :span="2">操作</el-col>
-
       </el-row>
       <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index"
               :class="setCopyStyle(index)">
@@ -211,7 +210,7 @@
           this.isUpdate = true;
           this.formData.soft_version.value = this.sourceData.soft_version;
           this.formData.order_name.value = this.sourceData.order_name;
-          if (this.$route.query.type === '2') {
+          if (this.$route.query.type === '2' || this.$route.query.type === '4') {
             this.$set(this.formData.MachineName, 'imeiFrom', '');
             this.$set(this.formData.MachineName, 'imeiTo', '');
             let array = this.sourceData.MachineName.replace('}}', '').split('@@');
@@ -455,6 +454,7 @@
             data: {
               orderName: this.formData.order_name.value,
               softVersion: this.formData.soft_version.value,
+              softWare: this.formData.soft_version.value + this.formData.order_name.value,
               machineName: this.formData.MachineName.value,
               recordTime: getTime()
             }
@@ -470,7 +470,7 @@
           options.data.station = station;
 
           /*组装-耦合(type:2)的MachineName需要IMEI号段*/
-          if (this.$route.query.type === '2') {
+          if (this.$route.query.type === '2' || this.$route.query.type === '4') {
             options.data.machineName = this.formData.MachineName.value + '@@' + this.formData.MachineName.imeiFrom + '@@' + this.formData.MachineName.imeiTo + '}}'
           }
 
@@ -485,12 +485,13 @@
           if (submitType === 'saveAs') {
             if (this.pageType !== '') {
               options.data.type = this.pageType;
-              if (this.$route.query.type === '2') {
-                options.data.machineName = this.formData.MachineName.value;
+              if (this.$route.query.type === '2' || this.pageType === '2' && this.$route.query.type === '4') {
+                // options.data.machineName = this.formData.MachineName.value;
+                options.data.machineName = this.formData.MachineName.value + '@@' + this.formData.MachineName.imeiFrom + '@@' + this.formData.MachineName.imeiTo + '}}';
               }
-              if (this.pageType === '2' && this.$route.query.type === '4') {
-                options.data.machineName = this.formData.MachineName.value + '@@@@}}';
-              }
+              // if (this.pageType === '2' && this.$route.query.type === '4') {
+              //   options.data.machineName = this.formData.MachineName.value + '@@@@}}';
+              // }
               if (this.pageType === '5') {
                 options.data.machineName = this.formData.MachineName.value;
 

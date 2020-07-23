@@ -113,9 +113,10 @@
           });
 
           this.copyQueryOptions.map((item, index) => {
+            console.log(item.id,"++",this.$route.query.type)
             switch (item.type) {
               case 'text':
-                if(item.id === 'MachineName' && this.$route.query.type === '2'){
+                if(item.id === 'MachineName' && this.$route.query.type === '2' || item.id === 'MachineName' && this.$route.query.type === '4'){
                   if (index === 0) {
                     this.queryString += (item.id + "#rightLike#" + item.model) //like
                   } else {

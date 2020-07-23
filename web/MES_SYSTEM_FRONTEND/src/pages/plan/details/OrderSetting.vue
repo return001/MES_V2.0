@@ -358,10 +358,13 @@
         :on-error="onOrderUploadError"-->
       <el-upload
         ref="orderUpload"
+        class="orderUpload"
         :action="planOrderImportUrl"
+        :limit=2
         :auto-upload="false"
         :http-request="uploadFile"
         :before-upload="beforeOrderUpload"
+        :on-change ='handleCheckFile'
         accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       >
         <el-button slot="trigger" size="small" type="info">选取文件</el-button>
@@ -769,6 +772,7 @@
     },
     mounted() {
       this.fetchData()
+
     },
     methods: {
       /*局部刷新*/
@@ -785,7 +789,7 @@
           this.queryData();
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions'])
+        _partlyReload(['thisQueryOptions','factoryList'])
       },
 
       initQueryOptions: function () {
@@ -1123,7 +1127,7 @@
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
-                options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory;
+                options.data.factory = this.orderEditOptionsData['factory'];
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1274,17 +1278,15 @@
           Object.keys(val).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(val[item]))
           });
-          if (val.reworkZhidan || val.reworkQuantity){
-            options.data.isRework = true
-          }else{
-            options.data.isRework = false
-          }
+          val.reworkZhidan || val.reworkQuantity ? options.data.isRework = true : options.data.isRework = false;
           options.data.orderStatus = 2
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('确认成功');
               this.partlyReload();
               //this.reload();
+            } else if(response.data.result === 400){
+              this.$alertWarning('请先选取文件')
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -1316,13 +1318,14 @@
             'Content-Type': 'multipart/form-data'
           },
         };
-        console.log(this.uploadFileData)
         this.$axios.post(planOrderImportUrl, this.uploadFileData, config).then(response => {
           if (response.data.result === 200) {
             this.$alertSuccess(response.data.data);
             this.partlyReload();
             //this.reload();
-          } else {
+          } else if(response.data.result === 400){
+            this.$alertWarning('请先选取文件');
+          }else {
             this.$alertWarning(response.data.data);
           }
 
@@ -1342,6 +1345,11 @@
       beforeOrderUpload: function () {
         this.isPending = true;
         this.$openLoading();
+      },
+      handleCheckFile(file,fileList){
+        if(fileList && fileList.length >1){
+          fileList.shift()
+        }
       },
 
 
@@ -1626,7 +1634,7 @@
             this.isPending = false;
             this.resetDetailsUploadDialog();
             this.showDetails(this.showingItem);
-          } else {
+          }else{
             this.$alertWarning(response.data.data);
           }
 
@@ -1816,5 +1824,18 @@
     margin: 20px 0;
     padding: 0 20px;
   }
+
+/*  上传订单，取消新的覆盖旧的的动画效果  */
+
+  .orderUpload /deep/ .el-list-enter-active,
+  /deep/ .el-list-leave-active {
+    transition: none;
+  }
+
+  .orderUpload /deep/ .el-list-enter,
+  /deep/ .el-list-leave-active {
+    opacity: 0;
+  }
+
 
 </style>

@@ -71,16 +71,16 @@ export const testLogQueryOptions = [
     ]
   },
 
-  {
-    type:'select',
-    label:'操作类型',
-    key:'operationType',
-    list:[
-      {value:'0',label:'新增'},
-      {value:'1',label:'修改'},
-      {value:'2',label:'删除'},
-    ]
-  },
+  // {
+  //   type:'select',
+  //   label:'操作类型',
+  //   key:'operationType',
+  //   list:[
+  //     {value:'0',label:'新增'},
+  //     {value:'1',label:'修改'},
+  //     {value:'2',label:'删除'},
+  //   ]
+  // },
 
   {
     type:'text',
@@ -125,7 +125,7 @@ export const testLogTableOptions =[
   },
   {
     'label':'配置类型',
-    'key':'settingType',
+    'key':'settingTypeName',
     'min-width':'200'
   },
   {
@@ -158,7 +158,7 @@ export const logDetailHeader = [
   {
     type:'select',
     label:'配置类型',
-    key:'settingType',
+    key:'settingTypeName',
   },
   {
     type:'text',

@@ -209,7 +209,7 @@
           <el-table
             :data="sameGroupDatas"
             class="capacity-edit-table"
-            max-height="400"
+            :max-height="capacityEditType === 'edit' ? 480 : 400"
             border
             ref="tablecomponent">
             <el-table-column
@@ -270,7 +270,7 @@
               </el-table-column>
           </el-table>
         </div>
-          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length && capacityEditType !== 'edit'">
+          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
             <el-tooltip content="添加" placement="top">
               <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
             </el-tooltip>
@@ -405,14 +405,13 @@
         return iList
       },
     },
-    async created() {
+    created() {    //async
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.capacity)
       this.initQueryOptions();
-      await this.dataPreload();
+      this.dataPreload();   //await
     },
     mounted() {
       this.fetchData();
-      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.capacity)
     },
     methods: {
       /*局部刷新*/
@@ -815,6 +814,8 @@
         }else{
           this.$alertWarning('没有可用工序组')
         }
+
+        console.log(this.sameGroupDatas)
       },
 
       inputLimit(scope,val){
@@ -865,7 +866,20 @@
         this.sameGroupDatas.splice(index,1)
       },
       handleAddCapacity(){
-        this.sameGroupDatas.push({})
+        this.sameGroupDatas.push(
+          {
+            factoryId:this.sameGroupDatas[0].factoryId,
+            remark:"",
+            abbreviation:this.sameGroupDatas[0].abbreviation,
+            statusId:this.sameGroupDatas[0].statusId,
+            tempcolumn:this.sameGroupDatas[0].tempcolumn,
+            reviewRemark:this.sameGroupDatas[0].reviewRemark,
+            reviewerName:this.sameGroupDatas[0].reviewerName,
+            statusName:this.sameGroupDatas[0].statusName,
+            temprownumber:this.sameGroupDatas[0].temprownumber,
+            reviewTime:this.sameGroupDatas[0].reviewTime,
+          }
+          )
       },
 
 
@@ -880,13 +894,14 @@
           this.$alertWarning('该工厂不存在可用工序组')
           return
         }
-          this.sameGroupDatas.forEach(item=>{
-            item.customerNumber= this.capacityEditOptionsData.customerNumber;
-            item.customerName= this.customerNames;
-            item.softModel= this.capacityEditOptionsData.softModel;
-            item.customerModel= this.capacityEditOptionsData.customerModel;
-            !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
-          })
+        console.log(this.sameGroupDatas)
+        this.sameGroupDatas.forEach(item=>{
+          item.customerNumber= this.capacityEditOptionsData.customerNumber;
+          item.customerName= this.customerNames;
+          item.softModel= this.capacityEditOptionsData.softModel;
+          item.customerModel= this.capacityEditOptionsData.customerModel;
+          !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
+        })
         if(!this.Parameter){
           this.$alertWarning('工序组、人数和产能为必填项')
           this.$closeLoading()
@@ -927,6 +942,7 @@
                 this.resetEditCapacityForm();
                 this.closeEditCapacityPanel();
                 this.$alertSuccess('操作成功');
+                this.sameGroupDatas =[];
                 this.partlyReload();
               }
               else {
@@ -937,7 +953,6 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-              this.sameGroupDatas =[];
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -1031,7 +1046,7 @@
         //     }
         //   }
         // }
-        if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' || column.label === '备注' ||
+        if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' ||
             column.label === '机型' || column.label === '客户编号' || column.label === '客户名称' || column.label === '所属工厂' || column.label === '客户型号/料号' || column.label === '操作') {
           // console.log('oneList',row, column, rowIndex, columnIndex,this.oneList)
           let iIndex = this.oneList.findIndex(e => { return e.index === rowIndex});

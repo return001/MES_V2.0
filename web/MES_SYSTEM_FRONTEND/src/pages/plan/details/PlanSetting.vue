@@ -402,6 +402,7 @@
           }]
         },
         activeTag:{},
+        groupFactoryId:'',
         activeProcessGroup: -1,
         activeProcessGroupType: 0, //selectReworkPlan param
         //导入未排产订单
@@ -460,7 +461,8 @@
       //加载表格
       if(this.processGroupSelectGroup.length>0){
         this.activeProcessGroup = this.processGroupSelectGroup[0].id;
-        this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取排产数据
+        this.groupFactoryId = this.processGroupSelectGroup[0].factoryId;
+        await this.fetchProcessGroup(this.activeProcessGroup)                              //加载时显示的第一个工序组标签 有子标签的话显示，没有的话获取排产数据
       }else {
         this.$alertDanger('获取工序组失败')
       }
@@ -513,7 +515,7 @@
           })
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc', 'lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup'])
+        _partlyReload(['thisQueryOptions', 'lineSelectGroupSrc', 'lineSelectGroup', 'processSelectGroupSrc', 'processGroupSelectGroup', 'activeProcessGroup','groupFactoryId'])
       },
 
       initQueryOptions: function () {
@@ -631,8 +633,10 @@
       },
 
       switchTag: function (item) {
+        console.log(item)
         this.viceGroup = [];
         this.tableData = [];
+        this.groupFactoryId = item.factoryId;
         this.activeProcessGroup = item.id;
         this.activeProcessGroupType = item.id - 1;
         this.initQueryOptions();
@@ -707,8 +711,9 @@
             url: url === 'rework' ? planDetailsReworkSelectUrl : planDetailsUnscheduledSelectUrl,
             data: {
               processGroupId:this.activeProcessGroup,
+              factory:this.groupFactoryId,
               // type: this.activeProcessGroupType, //track
-              factory:this.sessionFactory === '1' ? '0':this.sessionFactory
+              // factory:this.sessionFactory === '1' ? '0':this.sessionFactory
             }
           }).then(response => {
             if (response.data.result === 200) {
@@ -768,6 +773,7 @@
       },
 
       editData: function (val) {
+        console.log(val)
         this.totallyEditing = true;
         this.planEditRow = val
         this.planEditRow.activeProcessGroup = this.activeProcessGroup
@@ -980,6 +986,7 @@
             item.lineChangeTime = Number(item.lineChangeTime)
             return item
           });
+          console.log(this.reImportingOrderData)
           this.isReImport = true;
           /*获取子页面插单功能的列表源*/
           this.showOrderImport();
