@@ -633,7 +633,6 @@
       },
 
       switchTag: function (item) {
-        console.log(item)
         this.viceGroup = [];
         this.tableData = [];
         this.groupFactoryId = item.factoryId;
@@ -773,7 +772,6 @@
       },
 
       editData: function (val) {
-        console.log(val)
         this.totallyEditing = true;
         this.planEditRow = val
         this.planEditRow.activeProcessGroup = this.activeProcessGroup
@@ -986,7 +984,6 @@
             item.lineChangeTime = Number(item.lineChangeTime)
             return item
           });
-          console.log(this.reImportingOrderData)
           this.isReImport = true;
           /*获取子页面插单功能的列表源*/
           this.showOrderImport();

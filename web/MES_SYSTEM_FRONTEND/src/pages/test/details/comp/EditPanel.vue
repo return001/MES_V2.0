@@ -220,7 +220,6 @@
           } else {
             this.formData.MachineName.value = this.sourceData.MachineName;
           }
-          console.log(this.sourceData)
           Object.keys(this.sourceData).forEach(item => {
             if (this.sourceData[item] === "") {
               return;
@@ -352,7 +351,6 @@
       //   }
       // },
       importData() {
-        console.log(222)
         const selectedFile = this.$refs.refFile.files[0];
         if(selectedFile.type !== 'text/plain'){
           this.$alertWarning('请选择.txt文件')
@@ -379,7 +377,6 @@
             modelName = 'OQC'
             break
         }
-        console.log(selectedFile.name.indexOf(modelName))
         if(selectedFile.name.indexOf(modelName) === -1){
           this.$alertWarning('请选择当前模块所对应的.txt文件')
           return
@@ -389,7 +386,6 @@
         reader.readAsText(selectedFile);
         reader.onload = (e) => {
           this.sourceData = JSON.parse(e.target.result);
-          console.log(this.sourceData)
           Object.keys(this.sourceData).forEach(item => {
             if (this.sourceData[item] === "") {
               return;

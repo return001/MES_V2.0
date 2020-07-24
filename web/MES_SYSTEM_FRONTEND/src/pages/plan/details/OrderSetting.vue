@@ -1465,8 +1465,6 @@
               id: val.id
             }
           }).then(response => {
-
-            // console.log(XMLHttpRequest.getResponseHeader("Content-disposition"))
             let contentType = response.request.getResponseHeader('content-type');
             if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
 

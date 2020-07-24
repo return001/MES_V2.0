@@ -353,7 +353,7 @@
             // isUrgent: val.isUrgent,
             // line: val.line,
             // schedulingQuantity: val.schedulingQuantity,
-            // lineChangeTime: val.lineChangeTime,
+            // lineChangeTime: val.lineChangeTime,validMark
             // planStartTime: !!val.planStartTime ? val.planStartTime : '',
             // planCompleteTime: !!val.planCompleteTime ? val.planCompleteTime : ''
           });
@@ -397,7 +397,6 @@
               }
             };
             Object.keys(this.planEditOptionsData).forEach(item => {
-              console.log(item,":",this.planEditOptionsData[item])
               // if (this.planEditOptionsData[item] !== null || this.planEditOptionsData[item] !== '') {
               options.data[item] = this.planEditOptionsData[item]
               // }

@@ -309,7 +309,6 @@
 
       //导入文件
       importData() {
-        console.log(222)
         const selectedFile = this.$refs.refFile.files[0];
         if(selectedFile.type !== 'text/plain'){
           this.$alertWarning('请选择.tRxt文件')

@@ -814,8 +814,6 @@
         }else{
           this.$alertWarning('没有可用工序组')
         }
-
-        console.log(this.sameGroupDatas)
       },
 
       inputLimit(scope,val){
@@ -894,7 +892,6 @@
           this.$alertWarning('该工厂不存在可用工序组')
           return
         }
-        console.log(this.sameGroupDatas)
         this.sameGroupDatas.forEach(item=>{
           item.customerNumber= this.capacityEditOptionsData.customerNumber;
           item.customerName= this.customerNames;
@@ -1048,7 +1045,6 @@
         // }
         if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' ||
             column.label === '机型' || column.label === '客户编号' || column.label === '客户名称' || column.label === '所属工厂' || column.label === '客户型号/料号' || column.label === '操作') {
-          // console.log('oneList',row, column, rowIndex, columnIndex,this.oneList)
           let iIndex = this.oneList.findIndex(e => { return e.index === rowIndex});
           if (iIndex !== -1) {
             return [this.oneList[iIndex].length, 1];
