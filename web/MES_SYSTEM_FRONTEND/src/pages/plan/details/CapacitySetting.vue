@@ -205,11 +205,13 @@
         </el-form-item>
 
 <!--        <el-form-item>-->
-        <div>
+        <div style="width: 100% !important;">
           <el-table
             :data="sameGroupDatas"
             class="capacity-edit-table"
-            :max-height="capacityEditType === 'edit' ? 480 : 400"
+            max-height="480"
+            :cell-style="{'width':'1000px','padding':'0px','text-align':'center'}"
+            :header-cell-style="{'text-align':'center'}"
             border
             ref="tablecomponent">
             <el-table-column
@@ -217,7 +219,6 @@
               fixed="left"
               width="60">
             </el-table-column>
-
               <el-table-column v-for="(item, index) in capacityEditTableColumns"
                                :key="index"
                                :prop="item.key"
@@ -242,17 +243,18 @@
 <!--                                v-else-if="scope.column.property === 'processPeopleQuantity'">-->
 <!--                      </el-input>-->
 
-                      <el-input v-model="scope.row[item.key]"
-                                type="text"
-                                v-else-if="scope.column.property === 'remark'">
-                      </el-input>
+                    <el-input v-model="scope.row[item.key]"
+                              type="text"
+                              :width="capacityEditType === 'edit' ? '600' : '550'"
+                              v-else-if="scope.column.property === 'remark'">
+                    </el-input>
 
-                      <el-input v-model.number="scope.row[item.key]"
-                                type="number"
-                                @keydown.native="inputLimit(scope,$event)"
-                                @change="compareZero(scope,$event)"
-                                v-else>
-                      </el-input>
+                    <el-input v-model.number="scope.row[item.key]"
+                              type="number"
+                              @keydown.native="inputLimit(scope,$event)"
+                              @change="compareZero(scope,$event)"
+                              v-else>
+                    </el-input>
                   </div>
                 </template>
               </el-table-column>
@@ -270,11 +272,11 @@
               </el-table-column>
           </el-table>
         </div>
-          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
-            <el-tooltip content="添加" placement="top">
-              <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
-            </el-tooltip>
-          </div>
+        <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
+          <el-tooltip content="添加" placement="top">
+            <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
+          </el-tooltip>
+        </div>
 <!--        </el-form-item>-->
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -776,13 +778,14 @@
 
       //编辑、复制产能信息
       editCapacity(type,row){
+
         this.fetchCustomer();
         if(type === 'edit'){
+          this.capacityEditType = 'edit';
           if(this.$store.state.limits.update !== true){
             this.$alertWarning('暂无编辑权限');
             return
           }
-          this.capacityEditType = 'edit';
           this.isCapacityAdd = true;
         }else if(type === 'copy'){
           if(this.$store.state.limits.add !== true){
@@ -814,6 +817,7 @@
         }else{
           this.$alertWarning('没有可用工序组')
         }
+        console.log(this.capacityEditType)
       },
 
       inputLimit(scope,val){
@@ -1172,6 +1176,7 @@
 
   .copy-capacity-data /deep/ input{
     border: 0;
+    text-align: center;
     outline: none;
     background:rgba(0,0,0,0);
   }

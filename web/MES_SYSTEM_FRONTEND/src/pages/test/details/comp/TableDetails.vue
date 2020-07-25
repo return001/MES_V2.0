@@ -223,14 +223,12 @@
         return index + (this.paginationOptions.currentPage - 1) * this.paginationOptions.pageSize + 1
       },
       showUpload(val){
-        console.log(val)
         this.isUpload=true;
         this.testIngeId = val.SoftWare
       },
 
       /*编辑/复制条目 $on at @/pages/test/details/comp/EditPanel*/
       editData: function (operType, val) {
-        console.log(val)
         if (this.$route.query.type === '2' || this.$route.query.type === '4') {
           eventBus.$emit('editTest', [operType, val])
         } else {
@@ -301,7 +299,6 @@
         let blob = new Blob([JSON.stringify(val)], {
           type: "text/plain;charset=utf-8"
         });
-        console.log(blob)
         saveAs(blob, filename + '.txt');
       },
 
@@ -360,7 +357,6 @@
               id: val.SoftWare,
             }
           }).then(response => {
-            console.log(response.request.getResponseHeader('Content-disposition'))
             let contentType = response.request.getResponseHeader('content-type');
             if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
               let name = decodeURIComponent(escape(response.request.getResponseHeader('Content-disposition').split('=')[1]));
