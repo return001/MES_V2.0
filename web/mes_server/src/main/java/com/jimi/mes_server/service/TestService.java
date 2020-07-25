@@ -29,6 +29,12 @@ public class TestService extends SelectService {
 
 	private static final String GuideFileLink = "/home/mes_document/guide_document";
 	
+	private static final String SELECT_TEST_SYSTEM_SETTING_FUNC_SQL = "SELECT * FROM TestSystemSettingFunc";
+	
+	private static final String SELECT_TEST_SYSTEM_SETTING_SQL = "SELECT * FROM TestSystemSetting";
+
+	private static final String SELECT_TEST_SYSTEM_SETTING_OQC_SQL = "SELECT * FROM TestSystemSettingOqc";
+
 	public boolean copy(String operator,String oldKey, Integer type, String newKey) {
 		TestSystemSetting coupleSetTing = null;
 		TestSystemSettingFunc functionSetTing = null;
@@ -122,7 +128,7 @@ public class TestService extends SelectService {
 			if (functionSetTing.getOrderName() == null || functionSetTing.getSoftVersion() == null  || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
-			softWare = functionSetTing.getSoftVersion() + "_"+ functionSetTing.getOrderName();
+			softWare = functionSetTing.getSoftVersion() + functionSetTing.getOrderName();
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db1").findById(softWare);
 			if (functionTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
@@ -133,7 +139,7 @@ public class TestService extends SelectService {
 			if (functionSetTing.getOrderName() == null || functionSetTing.getSoftVersion() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
-			softWare = functionSetTing.getSoftVersion() + "_"+ functionSetTing.getOrderName();
+			softWare = functionSetTing.getSoftVersion() + functionSetTing.getOrderName();
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db2").findById(softWare);
 			if (functionTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
@@ -144,7 +150,7 @@ public class TestService extends SelectService {
 			if (coupleSetTing.getOrderName() == null || coupleSetTing.getSoftVersion() == null || coupleSetTing.getMachineName() == null || coupleSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
-			softWare = coupleSetTing.getSoftVersion() + "_"+ coupleSetTing.getOrderName();
+			softWare = coupleSetTing.getSoftVersion() + coupleSetTing.getOrderName();
 			coupleTestSetTing = TestSystemSetting.dao.use("db2").findById(softWare);
 			if (coupleTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
@@ -155,10 +161,15 @@ public class TestService extends SelectService {
 			if (functionSetTing.getOrderName() == null || functionSetTing.getSoftVersion() == null || functionSetTing.getMachineName() == null || functionSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
-			softWare = functionSetTing.getSoftVersion() + "_"+ functionSetTing.getOrderName();
+			softWare = functionSetTing.getSoftVersion() + functionSetTing.getOrderName();
 			functionTestSetTing = TestSystemSettingFunc.dao.use("db3").findById(softWare);
 			if (functionTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
+			}
+			if (functionSetTing.getFileLink() != null && !functionSetTing.getFileLink().trim().equals("")) {
+				File oldFile = new File(functionSetTing.getFileLink());
+				String path = saveGuideFile(oldFile, functionSetTing.getFileName());
+				coupleSetTing.setFileLink(path).setFileName(functionSetTing.getFileName());
 			}
 			functionSetTing.setSoftWare(softWare);
 			return functionSetTing.use("db3").save();
@@ -167,20 +178,15 @@ public class TestService extends SelectService {
 				throw new ParameterException("机型名、版本号、订单号和配置不能为空");
 			}
 			
-			softWare = coupleSetTing.getSoftVersion() + "_"+ coupleSetTing.getOrderName();
+			softWare = coupleSetTing.getSoftVersion() + coupleSetTing.getOrderName();
 			coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(softWare);
 			if (coupleTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
 			}
 			if (coupleSetTing.getFileLink() != null && !coupleSetTing.getFileLink().trim().equals("")) {
 				File oldFile = new File(coupleSetTing.getFileLink());
-				File newFile = new File(GuideFileLink + File.separator + System.currentTimeMillis() + File.separator + coupleSetTing.getFileName());
-				try {
-					FileUtils.copyFile(oldFile, newFile);
-				} catch (IOException e) {
-					e.printStackTrace();
-					throw new OperationException("无法生成生产指导指南");
-				};
+				String path = saveGuideFile(oldFile, coupleSetTing.getFileName());
+				coupleSetTing.setFileLink(path).setFileName(coupleSetTing.getFileName());
 			}
 			coupleSetTing.setSoftWare(softWare);
 			return coupleSetTing.use("db3").save();
@@ -188,7 +194,7 @@ public class TestService extends SelectService {
 			if (oqcSetTing.getOrderName() == null || oqcSetTing.getSoftVersion() == null|| oqcSetTing.getMachineName() == null || oqcSetTing.getStation() == null) {
 				throw new ParameterException("机型名、版本号和配置不能为空");
 			}
-			softWare = oqcSetTing.getSoftVersion() + "_"+ oqcSetTing.getOrderName();
+			softWare = oqcSetTing.getSoftVersion() + oqcSetTing.getOrderName();
 			oqcTestSetTing = TestSystemSettingOqc.dao.use("db2").findById(softWare);
 			if (oqcTestSetTing != null) {
 				throw new ParameterException("已存在此配置");
@@ -335,7 +341,7 @@ public class TestService extends SelectService {
 		}
 	}
 
-	public Page<Record> getLogs(Integer pageNo, Integer pageSize,String startTime, String endTime,String operator,String model,Integer settingType,String softVersion) {
+	public Page<Record> getLogs(Integer pageNo, Integer pageSize,String startTime, String endTime, String operator, String model, Integer settingType, String softVersion, Boolean result) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SQL.SELECT_TEST_SYSTeM_SETTING_LOG);
 		sql.append(" WHERE 1 = 1 ");
@@ -352,10 +358,13 @@ public class TestService extends SelectService {
 			sql.append(" AND soft_version ='").append(softVersion).append("'");
 		}
 		if (!StrKit.isBlank(startTime)) {
-			sql.append(" AND time >= '").append(startTime).append(" 00:00:00'");
+			sql.append(" AND time >= '").append(startTime).append("'");
 		}
 		if (!StrKit.isBlank(endTime)) {
-			sql.append(" AND time <= '").append(endTime).append(" 23:59:59'");
+			sql.append(" AND time <= '").append(endTime).append("'");
+		}
+		if (result != null){
+			  sql.append(" AND result = '").append(result).append("'");
 		}
 		sql.append(" order by id desc");
 		sqlPara.setSql(sql.toString());
@@ -363,7 +372,7 @@ public class TestService extends SelectService {
 		List<Record> records = page.getList();
 		for (Record record : records) {
 			int type = record.get("operationType");
-			Boolean result = record.get("result");
+			result = record.get("result");
 			if (type == 0){
 				record.set("operationType","新增");
 			}else if (type == 1){
@@ -377,4 +386,326 @@ public class TestService extends SelectService {
 		}
 		return page;
 	}
+	
+	
+	
+	public void uploadGuideFile(File file, String id, Integer type) {
+		String fileName = file.getName();
+		String path = null;
+		String oldPath = null;
+		if (type == null) {
+			throw new OperationException("上传失败，仅研发测试可以上传");
+		}
+		switch (type) {
+		case 3:
+			TestSystemSettingFunc functionTestSetTing = TestSystemSettingFunc.dao.use("db3").findById(id);
+			if (functionTestSetTing == null) {
+				throw new OperationException("上传失败， 组装研发配置表不存在该记录");
+			}
+			oldPath = functionTestSetTing.getFileLink();
+			path = saveGuideFile(file, fileName);
+			functionTestSetTing.setFileName(fileName);
+			functionTestSetTing.setFileLink(path);
+			functionTestSetTing.update();
+			if (oldPath != null && !oldPath.trim().equals("")) {
+				File oldFile = new File(oldPath);
+				if (oldFile.exists()) {
+					oldFile.delete();
+				}
+			}
+			break;
+		case 4:
+			TestSystemSetting coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(id);
+			if (coupleTestSetTing == null) {
+				throw new OperationException("上传失败，耦合研发配置表不存在该记录");
+			}
+			oldPath = coupleTestSetTing.getFileLink();
+			path = saveGuideFile(file, fileName);
+			coupleTestSetTing.setFileName(fileName);
+			coupleTestSetTing.setFileLink(path);
+			coupleTestSetTing.update();
+			if (oldPath != null && !oldPath.trim().equals("")) {
+				File oldFile = new File(oldPath);
+				if (oldFile.exists()) {
+					oldFile.delete();
+				}
+			}
+			break;
+		default:
+			throw new OperationException("上传失败，仅研发测试可以上传");
+		}
+	}
+	
+	
+	public File downloadGuideFile(String id, Integer type) {
+		if (type == null) {
+			throw new OperationException("下载失败，仅研发测试可以下载");
+		}
+		File guideFile = null;
+		switch (type) {
+		case 3:
+			TestSystemSettingFunc functionTestSetTing = TestSystemSettingFunc.dao.use("db3").findById(id);
+			if (functionTestSetTing == null) {
+				throw new OperationException("下载失败， 组装研发配置表不存在该记录");
+			}
+			if (functionTestSetTing.getFileLink() == null || functionTestSetTing.getFileLink().trim().equals("") || functionTestSetTing.getFileName() == null) {
+				throw new OperationException("下载失败，该记录并未绑定文件");
+			}
+			guideFile = new File(functionTestSetTing.getFileLink());
+			if (!guideFile.exists()) {
+				throw new OperationException("下载失败，该记录绑定的文件不存在");
+			}
+			break;
+		case 4:
+			TestSystemSetting coupleTestSetTing = TestSystemSetting.dao.use("db3").findById(id);
+			if (coupleTestSetTing == null) {
+				throw new OperationException("下载失败，耦合研发配置表不存在该记录");
+			}
+			if (coupleTestSetTing.getFileLink() == null || coupleTestSetTing.getFileLink().trim().equals("") || coupleTestSetTing.getFileName() == null) {
+				throw new OperationException("下载失败，该记录并未绑定文件");
+			}
+			guideFile = new File(coupleTestSetTing.getFileLink());
+			if (!guideFile.exists()) {
+				throw new OperationException("下载失败，该记录绑定的文件不存在");
+			}
+			break;
+		default:
+			throw new OperationException("下载失败，仅研发测试可以下载");
+		}
+		return guideFile;
+	}
+	
+	
+	private String saveGuideFile(File oldFile, String newFileName) {
+		if (!oldFile.exists()) {
+			throw new OperationException("文件不存在，无法生成生产指导指南");
+		}
+		File newFile = new File(GuideFileLink + File.separator + System.currentTimeMillis() + File.separator + newFileName);
+		try {
+			FileUtils.copyFile(oldFile, newFile);
+			return newFile.getAbsolutePath();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new OperationException("无法生成生产指导指南");
+		}
+	}
+
+
+	/**
+	 * <p>Description: <p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年7月21日
+	 */
+	public void initSBData() {
+		
+		List<TestSystemSettingFunc> functionTestSetTing1s = TestSystemSettingFunc.dao.use("db1").find(SELECT_TEST_SYSTEM_SETTING_FUNC_SQL);
+		List<TestSystemSettingFunc> functionTestSetTing2s = TestSystemSettingFunc.dao.use("db2").find(SELECT_TEST_SYSTEM_SETTING_FUNC_SQL);
+		List<TestSystemSetting> functionTestSet2s = TestSystemSetting.dao.use("db2").find(SELECT_TEST_SYSTEM_SETTING_SQL);
+		List<TestSystemSettingFunc> functionTestSetTing3s = TestSystemSettingFunc.dao.use("db3").find(SELECT_TEST_SYSTEM_SETTING_FUNC_SQL);
+		List<TestSystemSetting> functionTestSet3s = TestSystemSetting.dao.use("db3").find(SELECT_TEST_SYSTEM_SETTING_SQL);
+		List<TestSystemSettingOqc> testSystemSettingOqcs = TestSystemSettingOqc.dao.use("db2").find(SELECT_TEST_SYSTEM_SETTING_OQC_SQL);
+
+		String[] a = new String[68];
+		for (int i = 0; i < 68; i++) {
+			a[i] = "Setting" + i;
+		}
+		int j = 0;
+		//********************************功能测试***************************************
+		for (TestSystemSettingFunc testSystemSettingFunc : functionTestSetTing1s) {
+			
+			int i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("SMT");
+			if (i != -1) {
+				testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+				testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+				testSystemSettingFunc.use("db1").update();
+				j++;
+				continue;
+			}
+			i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("CPX");
+			if (i != -1) {
+				testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+				testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+				testSystemSettingFunc.use("db1").update();
+				j++;
+				continue;
+			}
+		}
+		System.out.println("NetMarkIMEI | TestSystemSettingFunc TOTAL: " + j);
+		j = 0;
+		for (TestSystemSettingFunc testSystemSettingFunc : functionTestSetTing2s) {
+			int i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("CPX");
+			if (i != -1) {
+				testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+				testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+				testSystemSettingFunc.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("WPX");
+			if (i != -1) {
+				testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+				testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+				testSystemSettingFunc.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("JIMI");
+			if (i != -1) {
+				testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+				testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+				testSystemSettingFunc.use("db2").update();
+				j++;
+				continue;
+			}
+			
+		}
+		System.out.println("NetMarkIMEI2 | TestSystemSettingFunc TOTAL: " + j);
+		
+		j = 0;
+		for (TestSystemSetting testSystemSet : functionTestSet2s) {
+			int i = testSystemSet.getSoftWare().toUpperCase().indexOf("CPX");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSet.getSoftWare().toUpperCase().indexOf("WPX");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSet.getSoftWare().toUpperCase().indexOf("JIMI");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db2").update();
+				j++;
+				continue;
+			}
+			
+		}
+		System.out.println("NetMarkIMEI2 | TestSystemSetting TOTAL: " + j);
+		
+		// **************************OQC测试*****************************
+		j = 0;
+		for (TestSystemSettingOqc testSystemSettingOqc : testSystemSettingOqcs) {
+			
+			int i = testSystemSettingOqc.getSoftWare().toUpperCase().indexOf("CPX");
+			if (i != -1) {
+				testSystemSettingOqc.setSoftVersion(testSystemSettingOqc.getSoftWare().substring(0, i));
+				testSystemSettingOqc.setOrderName(testSystemSettingOqc.getSoftWare().substring(i, testSystemSettingOqc.getSoftWare().length()));
+				testSystemSettingOqc.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSettingOqc.getSoftWare().toUpperCase().indexOf("WPX");
+			if (i != -1) {
+				testSystemSettingOqc.setSoftVersion(testSystemSettingOqc.getSoftWare().substring(0, i));
+				testSystemSettingOqc.setOrderName(testSystemSettingOqc.getSoftWare().substring(i, testSystemSettingOqc.getSoftWare().length()));
+				testSystemSettingOqc.use("db2").update();
+				j++;
+				continue;
+			}
+			i = testSystemSettingOqc.getSoftWare().toUpperCase().indexOf("JIMI");
+			if (i != -1) {
+				testSystemSettingOqc.setSoftVersion(testSystemSettingOqc.getSoftWare().substring(0, i));
+				testSystemSettingOqc.setOrderName(testSystemSettingOqc.getSoftWare().substring(i, testSystemSettingOqc.getSoftWare().length()));
+				testSystemSettingOqc.use("db2").update();
+				j++;
+				continue;
+			}
+		}
+		System.out.println("NetMarkIMEI2 | testSystemSettingOqc TOTAL: " + j);
+		
+		//***************************研发测试*****************************
+		
+		j = 0;
+		for (TestSystemSettingFunc testSystemSettingFunc : functionTestSetTing3s) {
+			boolean flag = true;
+			for (String string : a) {
+				String value = testSystemSettingFunc.getStr(string);
+				if (value != null && !value.equals("") && value.startsWith("功能测试软件版本")) {
+					String[] b = value.split("@@");
+					if (b[1] != null && !b[1].trim().equals("")) {
+						if (testSystemSettingFunc.getSoftWare().toUpperCase().startsWith(b[1].toUpperCase())) {
+							testSystemSettingFunc.setSoftVersion(b[1]);
+							testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(b[1].length(), testSystemSettingFunc.getSoftWare().length()));
+							testSystemSettingFunc.use("db3").update();
+							j ++;
+							flag = false;
+						}
+					}
+					break;
+				}
+			}
+			if (flag) {
+				int i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("SMT");
+				if (i != -1) {
+					testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+					testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+					testSystemSettingFunc.use("db3").update();
+					j++;
+					continue;
+				}
+				i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("CPX");
+				if (i != -1) {
+					testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+					testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+					testSystemSettingFunc.use("db3").update();
+					j++;
+					continue;
+				}
+				i = testSystemSettingFunc.getSoftWare().toUpperCase().indexOf("XZX");
+				if (i != -1) {
+					testSystemSettingFunc.setSoftVersion(testSystemSettingFunc.getSoftWare().substring(0, i));
+					testSystemSettingFunc.setOrderName(testSystemSettingFunc.getSoftWare().substring(i, testSystemSettingFunc.getSoftWare().length()));
+					testSystemSettingFunc.use("db3").update();
+					j++;
+					continue;
+				}
+			}
+		}
+		System.out.println("NetMarkIMEI3 | TestSystemSettingFunc TOTAL: " + j);
+
+		j = 0;
+		for (TestSystemSetting testSystemSet : functionTestSet3s) {
+			int i = testSystemSet.getSoftWare().toUpperCase().indexOf("SMT");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db3").update();
+				j++;
+				continue;
+			}
+			i = testSystemSet.getSoftWare().toUpperCase().indexOf("CPX");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db3").update();
+				j++;
+				continue;
+			}
+			i = testSystemSet.getSoftWare().toUpperCase().indexOf("XZX");
+			if (i != -1) {
+				testSystemSet.setSoftVersion(testSystemSet.getSoftWare().substring(0, i));
+				testSystemSet.setOrderName(testSystemSet.getSoftWare().substring(i, testSystemSet.getSoftWare().length()));
+				testSystemSet.use("db3").update();
+				j++;
+				continue;
+			}
+			
+		}
+		System.out.println("NetMarkIMEI3 | TestSystemSetting TOTAL: " + j);
+	}
+	
+	
+	
+	
 }

@@ -674,5 +674,24 @@ public abstract class BaseTestSystemSettingFunc<M extends BaseTestSystemSettingF
 	public java.lang.String getSoftVersion() {
 		return getStr("soft_version");
 	}
+	
+	public M setFileLink(java.lang.String FileLink) {
+		set("file_link", FileLink);
+		return (M)this;
+	}
+	
+	public java.lang.String getFileLink() {
+		return getStr("file_link");
+	}
+	
+	
+	public M setFileName(java.lang.String FileName) {
+		set("file_name", FileName);
+		return (M)this;
+	}
+	
+	public java.lang.String getFileName() {
+		return getStr("file_name");
+	}
 
 }

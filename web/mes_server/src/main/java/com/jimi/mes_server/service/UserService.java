@@ -86,6 +86,7 @@ public class UserService extends SelectService {
 			throw new OperationException("用户名已存在");
 		}
 		user.setLoginTime(new Date());
+        user.setUserType("&0301");
 		Role role = Role.dao.findById(user.getRole());
 		if (role == null) {
 			throw new OperationException("用户角色不存在");

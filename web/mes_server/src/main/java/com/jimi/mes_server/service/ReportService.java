@@ -84,49 +84,49 @@ public class ReportService extends SelectService {
 		String[] head = null;
 		if (table.equals("Gps_AutoTest_Result") || table.equals("Gps_AutoTest_Result2") || table.equals("Gps_AutoTest_Result3") || table.equals("Gps_CoupleTest_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
-			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "订单号", "机型", "软件版本", "结果", "测试员", "地址", "测试配置", "测试时间", "备注" };
 		} else if (table.equals("Gps_CartonBoxTwenty_Result")) {
 			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
-			head = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
+			head = new String[] { "序号", "箱号", "IMEI号", "订单", "机型", "软件版本", "产品编码", "颜色", "数量", "重量", "日期", "IMEI前缀", "公司名称", "测试员", "测试时间", "备注信息", "ID号", "卡通箱二维码信息", "备注信息4", "备注信息5", "地址" };
 		} else if (table.equals("Gps_ManuLdParam")) {
 			field = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime" };
-			head = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime" };
+			head = new String[] { "序号", "镭雕时间", "地址", "订单号", "IMEI号", "SN号", "ICCID号", "SIM号", "VIP号", "BAT号", "设备号", "MAC号", "机型", "软件版本", "备注", "结果", "重测次数", "重测时间" };
 		} else if (table.equals("Gps_ManuPrintParam")) {
-			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
-			head = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
+			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment","RFID","IMEI2","JSUserName","CHUserName","IMEI2Start","IMEI2End","JSUserDes","CHUserDes","CH_RePrintState","JS_RePrintState" };
+			head = new String[] { "序号", "订单", "IMEI号", "IMEI起始位", "IMEI结束位", "递增SN号", "IMEI绑定关系", "SIM卡号", "VIP号", "BAT号", "机型", "软件版本", "备注", "机身打印时间", "彩盒打印时间", "机身重打次数", "机身首次重打时间", "机身贴末次重打时间", "测试员", "彩盒打印时间", "彩盒模板路径1", "彩盒模板路径2", "彩盒贴重打次数", "彩盒贴首次重打时间", "彩盒贴末次重打时间", "ICCID号", "MAC号", "设备号","RFID","第二个IMEI号","机身贴打印测试人名字","彩盒贴打印测试人名字","第二个IMEI起始位","第二个IMEI结束位","彩盒可重打标志位","机身可重打标志位" };
 		} else if (table.equals("Gps_TestResult")) {
-			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
-			head = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
+			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version","FunctionResult", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "ZhiDan", "RecordTime", "CPResult","WeightResult","OQCResult01","OQCResult02","NBCalResult","NBCouResult" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "机型", "软件版本","SMT标志位", "老化后标志位", "耦合标志位", "写IMEI号标志位", "写参数标志位", "组装标志位", "总标志位", "订单号", "测试时间", "IMEI对比标志位","称重标志位","OQC工厂标志位","OQC客户标志位","NB校准标志位","NB耦合标志位"};
 		} else if (table.equals("DataRelativeSheet")) {
-			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
-			head = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
+			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "RFID","ZhiDan", "TestTime", "SimEffectiveDate","NetMark","IMEI14","IMEI15" };
+			head = new String[] { "SN", "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号","RFID", "订单号", "测试时间", "SIM卡激活日期","网标号","第二个IMEI号","SIM卡流量" };
 		} else if (table.equals("DataRelativeUpdate")) {
 			field = new String[] { "RelativeNum", "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "IMEI13", "ZhiDan", "TestTime", "SimEffectiveDate", "NetMark" };
-			head = new String[] { "RelativeNum", "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "IMEI13", "ZhiDan", "TestTime", "SimEffectiveDate", "NetMark" };
+			head = new String[] { "关联序号", "SN", "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号", "RFID", "订单号", "测试时间", "SIM卡激活日期", "网标号" };
 		} else if (table.equals("GpsSMT_TcData") || table.equals("GpsTcData")) {
 			field = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
-			head = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
+			head = new String[] { "序号", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
 		} else if (table.equals("Gps_OperRecord")) {
 			field = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo" };
-			head = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo" };
+			head = new String[] { "序号", "OperName", "OperContent", "OperTime", "OperDemo" };
 		} else if (table.equals("DataRelativeUnique")) {
 			field = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
-			head = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
+			head = new String[] { "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号", "订单号", "测试时间" };
 		} else if (table.equals("Gps_ManuCpParam")) {
 			field = new String[] { "ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR" };
-			head = new String[] { "ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR" };
+			head = new String[] { "序号", "地址", "订单号", "IMEI号1", "IMEI号2", "IMEI号3", "号码1", "号码2", "测试结果", "测试时间", "类型", "错误次数", "重测时间", "错误日志" };
 		} else if (table.equals("NetMarkIMEI")) {
 			field = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
-			head = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
+			head = new String[] { "序号", "NetMark号", "IMEI号", "打印次数", "SN号" };
 		} else if (table.equals("Gps_ManuSimDataParam")) {
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
-			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
+			head = new String[] { "序号", "地址", "芯片ID", "IMEI号", "CID号", "ICCID号", "测试员", "测试时间", "结果", "重测时间", "重新测试次数" };
 		} else if (table.equals("GPSOQC_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
-			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "订单号", "机型", "软件版本", "结果", "测试员", "权限", "地址", "测试项", "测试时间", "备注", "配置员" };
 		} else if (table.equals("LTestLogMessage")) {
-			field = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "TestTime"};
-			head = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "TestTime"};
+			field = new String[] {"SN", "IMEI", "SoftModel", "Version", "ZhiDan", "ErrorMessage1", "CategoryNum1", "ErrorMessage2", "CategoryNum2", "ErrorMessage3", "CategoryNum3", "ErrorMessage4", "CategoryNum4", "ErrorMessage5", "CategoryNum5", "ErrorMessage6", "CategoryNum6","Computer", "Computer2", "Computer3", "Computer4", "Computer5", "Computer5", "TestTime"};
+			head = new String[] {"芯片ID", "IMEI", "机型", "软件版本", "订单号", "组装错误信息", "组装错误类型", "耦合错误信息", "耦合错误类型", "SMT错误信息", "SMT错误类型", "卡通箱错误信息", "卡通箱错误类型", "老化后错误信息", "老化后错误类型", "QOC错误信息", "OQC错误类","组装主机IP", "耦合主机IP", "SMT主机IP", "卡通箱主机IP", "老化后主机IP", "OQC主机IP", "上传时间"};
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);
@@ -179,46 +179,46 @@ public class ReportService extends SelectService {
 		String[] head = null;
 		if (table.equals("Gps_AutoTest_Result") || table.equals("Gps_AutoTest_Result2") || table.equals("Gps_AutoTest_Result3") || table.equals("Gps_CoupleTest_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
-			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TesterId", "Computer", "TestSetting", "TestTime", "Remark" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "订单号", "机型", "软件版本", "结果", "测试员", "地址", "测试配置", "测试时间", "备注" };
 		} else if (table.equals("Gps_CartonBoxTwenty_Result")) {
 			field = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
-			head = new String[] { "Id", "BoxNo", "IMEI", "ZhiDan", "SoftModel", "Version", "ProductCode", "Color", "Qty", "Weight", "Date", "TACInfo", "CompanyName", "TesterId", "TestTime", "Remark1", "Remark2", "Remark3", "Remark4", "Remark5", "Computer" };
+			head = new String[] { "序号", "箱号", "IMEI号", "订单", "机型", "软件版本", "产品编码", "颜色", "数量", "重量", "日期", "IMEI前缀", "公司名称", "测试员", "测试时间", "备注信息", "ID号", "卡通箱二维码信息", "备注信息4", "备注信息5", "地址" };
 		} else if (table.equals("Gps_ManuLdParam")) {
 			field = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime" };
-			head = new String[] { "ID", "LDTime", "LDIP", "ZhiDan", "IMEI", "SN", "ICCID", "SIM", "VIP", "BAT", "EquipmentNumber", "MAC", "SoftModel", "Version", "Remark", "LDRESULT", "ReLdImeiNum", "ReLdImeiTime" };
+			head = new String[] { "序号", "镭雕时间", "地址", "订单号", "IMEI号", "SN号", "ICCID号", "SIM号", "VIP号", "BAT号", "设备号", "MAC号", "机型", "软件版本", "备注", "结果", "重测次数", "重测时间" };
 		} else if (table.equals("Gps_ManuPrintParam")) {
-			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
-			head = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment" };
+			field = new String[] { "ID", "ZhiDan", "IMEI", "IMEIStart", "IMEIEnd", "SN", "IMEIRel", "SIM", "VIP", "BAT", "SoftModel", "Version", "Remark", "JS_PrintTime", "JS_TemplatePath", "JS_RePrintNum", "JS_ReFirstPrintTime", "JS_ReEndPrintTime", "UserName", "CH_PrintTime", "CH_TemplatePath1", "CH_TemplatePath2", "CH_RePrintNum", "CH_ReFirstPrintTime", "CH_ReEndPrintTime", "ICCID", "MAC", "Equipment","RFID","IMEI2","JSUserName","CHUserName","IMEI2Start","IMEI2End","JSUserDes","CHUserDes","CH_RePrintState","JS_RePrintState" };
+			head = new String[] { "序号", "订单", "IMEI号", "IMEI起始位", "IMEI结束位", "递增SN号", "IMEI绑定关系", "SIM卡号", "VIP号", "BAT号", "机型", "软件版本", "备注", "机身打印时间", "彩盒打印时间", "机身重打次数", "机身首次重打时间", "机身贴末次重打时间", "测试员", "彩盒打印时间", "彩盒模板路径1", "彩盒模板路径2", "彩盒贴重打次数", "彩盒贴首次重打时间", "彩盒贴末次重打时间", "ICCID号", "MAC号", "设备号","RFID","第二个IMEI号","机身贴打印测试人名字","彩盒贴打印测试人名字","第二个IMEI起始位","第二个IMEI结束位","彩盒可重打标志位","机身可重打标志位" };
 		} else if (table.equals("Gps_TestResult")) {
-			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
-			head = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "AutoTestSMTResult", "ZhiDan", "RecordTime", "CPResult" };
+			field = new String[] { "Id", "SN", "IMEI", "SoftModel", "Version","FunctionResult", "GPSResult", "CoupleResult", "WriteImeiResult", "ParamDownloadResult", "AutoTestResult", "Result", "ZhiDan", "RecordTime", "CPResult","WeightResult","OQCResult01","OQCResult02","NBCalResult","NBCouResult" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "机型", "软件版本","SMT标志位", "老化后标志位", "耦合标志位", "写IMEI号标志位", "写参数标志位", "组装标志位", "总标志位", "订单号", "测试时间", "IMEI对比标志位","称重标志位","OQC工厂标志位","OQC客户标志位","NB校准标志位","NB耦合标志位"};
 		} else if (table.equals("DataRelativeSheet")) {
-			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
-			head = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "ZhiDan", "TestTime", "SimEffectiveDate" };
+			field = new String[] { "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "RFID","ZhiDan", "TestTime", "SimEffectiveDate","NetMark","IMEI14","IMEI15" };
+			head = new String[] { "SN", "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号","RFID", "订单号", "测试时间", "SIM卡激活日期","网标号","第二个IMEI号","SIM卡流量" };
 		} else if (table.equals("DataRelativeUpdate")) {
 			field = new String[] { "RelativeNum", "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "IMEI13", "ZhiDan", "TestTime", "SimEffectiveDate", "NetMark" };
-			head = new String[] { "RelativeNum", "SN", "IMEI1", "IMEI2", "IMEI3", "IMEI4", "IMEI5", "IMEI6", "IMEI7", "IMEI8", "IMEI9", "IMEI10", "IMEI11", "IMEI12", "IMEI13", "ZhiDan", "TestTime", "SimEffectiveDate", "NetMark" };
+			head = new String[] { "关联序号", "SN", "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号", "RFID", "订单号", "测试时间", "SIM卡激活日期", "网标号" };
 		} else if (table.equals("GpsSMT_TcData") || table.equals("GpsTcData")) {
 			field = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
-			head = new String[] { "Id", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
+			head = new String[] { "序号", "SN", "FixMode", "gpsdb0", "gpsdb1", "gpsdb2", "gpsdb3", "gpsdb4", "gpsdb5", "gpsdb6", "gpsdb7", "gpsdb8", "gpsdb9", "gpsdb10", "gpsdb11" };
 		} else if (table.equals("Gps_OperRecord")) {
 			field = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo" };
-			head = new String[] { "id", "OperName", "OperContent", "OperTime", "OperDemo" };
+			head = new String[] { "序号", "OperName", "OperContent", "OperTime", "OperDemo" };
 		} else if (table.equals("DataRelativeUnique")) {
 			field = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
-			head = new String[] { "DATA1", "DATA2", "DATA3", "DATA4", "DATA5", "DATA6", "DATA7", "DATA8", "DATA9", "DATA10", "DATA11", "DATA12", "ZhiDan", "TestTime" };
+			head = new String[] { "IMEI号", "SN号", "SIM卡号", "ICCID号", "密码", "MAC号", "设备号", "服务卡(VIP)号", "电池序列(BAT)号", "第二个锁ID", "机器代码", "IMSI号", "订单号", "测试时间" };
 		} else if (table.equals("Gps_ManuCpParam")) {
 			field = new String[] { "ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR" };
-			head = new String[] { "ID", "CPIP", "ZhiDan", "IMEI1", "IMEI2", "IMEI3", "SECTIONNO1", "SECTIONNO2", "CPRESULT", "CPTIME", "CPTYPE", "CPFalseCount", "RECPTIME", "CPERROR" };
+			head = new String[] { "序号", "地址", "订单号", "IMEI号1", "IMEI号2", "IMEI号3", "号码1", "号码2", "测试结果", "测试时间", "类型", "错误次数", "重测时间", "错误日志" };
 		} else if (table.equals("NetMarkIMEI")) {
 			field = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
-			head = new String[] { "Id", "NetMark", "IMEI", "PrintCount", "SN" };
+			head = new String[] { "序号", "NetMark号", "IMEI号", "打印次数", "SN号" };
 		} else if (table.equals("Gps_ManuSimDataParam")) {
 			field = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
-			head = new String[] { "ID", "SDIP", "RID", "IMEI", "CID", "ICCID", "SDOperator", "SDTime", "SDRESULT", "ReSDTime", "ReSDCount" };
+			head = new String[] { "序号", "地址", "芯片ID", "IMEI号", "CID号", "ICCID号", "测试员", "测试时间", "结果", "重测时间", "重新测试次数" };
 		} else if (table.equals("GPSOQC_Result")) {
 			field = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
-			head = new String[] { "Id", "SN", "IMEI", "ZhiDan", "SoftModel", "Version", "Result", "TestId", "TestGrade", "Computer", "TestSetting", "TestTime", "Remark", "ConfigId" };
+			head = new String[] { "序号", "芯片ID", "IMEI号", "订单号", "机型", "软件版本", "结果", "测试员", "权限", "地址", "测试项", "测试时间", "备注", "配置员" };
 		}
 		helper.fill(records.getList(), fileName, field, head);
 		helper.write(output, true);

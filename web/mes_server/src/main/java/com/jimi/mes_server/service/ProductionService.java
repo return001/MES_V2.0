@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
@@ -65,7 +64,6 @@ import com.jimi.mes_server.model.OrderFile;
 import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
-import com.jimi.mes_server.model.Role;
 import com.jimi.mes_server.model.SchedulingPlan;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopSite;
@@ -576,13 +574,20 @@ public class ProductionService {
 		List<ModelCapacity> modelCapacities = ModelCapacityInfo.fill(modelCapacityInfos);
 		if (modelCapacities != null && !modelCapacities.isEmpty()) {
 			for (ModelCapacity modelCapacity : modelCapacities) {
-				ModelCapacity capacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, modelCapacity.getSoftModel(), modelCapacity.getProcessGroup(), modelCapacity.getCustomerName(), modelCapacity.getCustomerNumber());
-				if (capacity != null && !capacity.getId().equals(modelCapacity.getId())) {
-					throw new OperationException("当前客户机型产能已存在");
+				if (modelCapacity.getId() != null) {
+					ModelCapacity capacity = ModelCapacity.dao.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, modelCapacity.getSoftModel(), modelCapacity.getProcessGroup(), modelCapacity.getCustomerName(), modelCapacity.getCustomerNumber());
+					if (capacity != null && !capacity.getId().equals(modelCapacity.getId())) {
+						throw new OperationException("当前客户机型产能已存在");
+					}
+					modelCapacity.setModelCapacityStatus(Constant.TO_BE_CONFIRMED_MODELCAPACITY_STATUS);
+					modelCapacity.setReviewer(null).setReviewRemark(null).setReviewTime(null);
+					modelCapacity.update();
+				}else {
+					modelCapacity.setModelCapacityStatus(Constant.TO_BE_CONFIRMED_MODELCAPACITY_STATUS);
+					modelCapacity.setReviewer(null).setReviewRemark(null).setReviewTime(null);
+					modelCapacity.save();
 				}
-				modelCapacity.setModelCapacityStatus(Constant.TO_BE_CONFIRMED_MODELCAPACITY_STATUS);
 			}
-			Db.batchUpdate(modelCapacities, modelCapacities.size());
 		}
 		return true;
 	}
@@ -1153,6 +1158,7 @@ public class ProductionService {
 
 
 	public boolean addPlan(List<AddPlanInfo> addPlanInfos, LUserAccountVO userVO) {
+		List<SchedulingPlan> waitSchedulingPlans = new ArrayList<>(addPlanInfos.size());
 		for (AddPlanInfo addPlanInfo : addPlanInfos) {
 			Integer quantity = addPlanInfo.getSchedulingQuantity();
 			Integer line = addPlanInfo.getLine();
@@ -1175,6 +1181,24 @@ public class ProductionService {
 			if (orderRecord.getQuantity() < quantity) {
 				throw new OperationException("排产数量不能大于订单数量");
 			}
+			List<SchedulingPlan> groupSchedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS, addPlanInfo.getLine(), addPlanInfo.getProcessGroup(), Constant.SCHEDULED_PLANSTATUS, Constant.WORKING_PLANSTATUS);
+			if (groupSchedulingPlans != null && !groupSchedulingPlans.isEmpty()) {
+				for (SchedulingPlan workingPlan : groupSchedulingPlans) {
+					System.out.println(groupSchedulingPlans.size());
+					System.out.println(workingPlan.getPlanStartTime());
+					System.out.println(workingPlan.getPlanCompleteTime());
+					
+					System.out.println(addPlanInfo.getPlanStartTime());
+					System.out.println(addPlanInfo.getPlanCompleteTime());
+					if (workingPlan.getPlanStartTime() != null && (workingPlan.getPlanStartTime().after(addPlanInfo.getPlanCompleteTime()) || workingPlan.getPlanStartTime().equals(addPlanInfo.getPlanCompleteTime()))) {
+						//正常
+					}else if (workingPlan.getPlanCompleteTime() != null && workingPlan.getPlanCompleteTime().before(addPlanInfo.getPlanStartTime()) || workingPlan.getPlanCompleteTime().equals(addPlanInfo.getPlanStartTime())) {
+						//正常
+					}else {
+						throw new OperationException("时间与已排产或者进行中的计划冲突，请检查！");
+					}
+				}
+			}
 			SchedulingPlan schedulingPlan = new SchedulingPlan();
 			if (!StrKit.isBlank(addPlanInfo.getRemark())) {
 				schedulingPlan.setRemark(addPlanInfo.getRemark());
@@ -1184,13 +1208,14 @@ public class ProductionService {
 			schedulingPlan.setScheduler(userVO.getId()).setSchedulingTime(new Date());
 			schedulingPlan.setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime);
 			schedulingPlan.setPersonNumber(personNumber).setRhythm(BigDecimal.valueOf(rhythm)).setIsUrgent(isUrgent);
-			schedulingPlan.save();
+			waitSchedulingPlans.add(schedulingPlan);
 
 			if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
 				orderRecord.setOrderStatus(Constant.SCHEDULED_ORDERSTATUS);
 				orderRecord.update();
 			}
 		}
+		Db.batchSave(waitSchedulingPlans, 1500);
 		return true;
 	}
 
@@ -1459,7 +1484,7 @@ public class ProductionService {
 				throw new OperationException("转线时间格式出错");
 			}
 			if (changeLineTime <= Constant.INTEGER_ZERO) {
-				throw new OperationException("转线时间格式出错");
+				throw new OperationException("转线时间需大于0");
 			}
 			schedulingPlan.setLineChangeTime(lineChangeTime);
 		}
@@ -2237,26 +2262,6 @@ public class ProductionService {
 			}
 		}
 		return orderVO;
-	}
-
-
-	/**@author HCJ
-	 * 检查操作订单的用户类型
-	 * @param userVO TOKEN内的用户信息
-	 * @param order 订单
-	 * @date 2019年8月16日 下午12:02:06
-	 */
-	private void checkOrderUserType(LUserAccountVO userVO, Orders order) {
-		LUserAccount user = LUserAccount.dao.findById(order.getOrderCreator());
-		if (user.getRole() == null || userVO == null || userVO.getRoleVO() == null) {
-			throw new OperationException("当前角色无法操作此订单");
-		}
-		Role role = Role.dao.findById(user.getRole());
-		if (user != null && role != null) {
-			if (!role.getName().equals(userVO.getRoleVO().getName())) {
-				throw new OperationException("当前角色无法操作此订单");
-			}
-		}
 	}
 
 

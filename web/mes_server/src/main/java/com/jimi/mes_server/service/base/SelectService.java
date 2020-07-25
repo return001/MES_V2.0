@@ -18,7 +18,7 @@ import com.jimi.mes_server.exception.ParameterException;
  */
 public class SelectService {
 
-	private final static String[] OPERATORS = { "#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#" };
+	private final static String[] OPERATORS = { "#rightLike#", "#in#", "#like#", "#=#", "#<#", "#>#", "#>=#", "#<=#", "#!=#" };
 
 
 	/**
@@ -88,7 +88,13 @@ public class SelectService {
 					operatorStartIndex = whereUnit.indexOf(OPERATORS[i]);
 					if (operatorStartIndex != -1) {
 						operationLength = OPERATORS[i].length();
-						operator.append(OPERATORS[i].substring(1, operationLength - 1));
+						String string = OPERATORS[i].substring(1, operationLength - 1);
+						if (string.equals("rightLike")) {
+							operator.append("like");
+
+						}else {
+							operator.append(string);
+						}
 						break;
 					}
 				}
@@ -101,9 +107,11 @@ public class SelectService {
 				}
 				if (OPERATORS[i].equals("#like#")) {
 					questionValues.add("%" + value + "%");
+				} else if (OPERATORS[i].equals("#rightLike#")) {
+					questionValues.add(value + "%");
 				} else if (!OPERATORS[i].equals("#in#")) {
 					questionValues.add(value);
-				}
+				} 
 				if (index == whereUnits.length - 1) {
 					sql.delete(sql.lastIndexOf("AND"), sql.length());
 				}

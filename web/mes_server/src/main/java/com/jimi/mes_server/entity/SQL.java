@@ -311,4 +311,6 @@ public class SQL {
 	public final static String DELETE_USER_BY_ID = "update LUserAccount set [Delete] = 'TRUE',InService = 'FALSE' WHERE Id = ?";
 
 	public final static String SELECT_TEST_SYSTeM_SETTING_LOG ="select id,setting_type as settingType,operation_type as operationType,soft_version as softVersion,order_name as orderName,model,operator,time,result,station from test_system_setting_log";
+
+	public final static String SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS = "SELECT * FROM scheduling_plan WHERE line = ? AND process_group = ? AND (scheduling_plan_status = ? OR scheduling_plan_status = ?)";
 }

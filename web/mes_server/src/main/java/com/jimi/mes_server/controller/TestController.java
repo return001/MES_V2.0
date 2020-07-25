@@ -1,10 +1,17 @@
 package com.jimi.mes_server.controller;
 
+import java.io.File;
+
+import javax.servlet.http.HttpServletResponse;
+
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jfinal.upload.UploadFile;
+import com.jimi.mes_server.annotation.PermissionPass;
 import com.jimi.mes_server.annotation.TestLog;
 import com.jimi.mes_server.entity.vo.LUserAccountVO;
+import com.jimi.mes_server.exception.OperationException;
 import com.jimi.mes_server.exception.ParameterException;
 import com.jimi.mes_server.model.TestSystemSetting;
 import com.jimi.mes_server.model.TestSystemSettingFunc;
@@ -96,14 +103,57 @@ public class TestController extends Controller {
 	 * @param settingType
 	 * @param softVersion
 	 */
-	public void getLog(Integer pageNo, Integer pageSize,String startTime, String endTime,String operator,String model,Integer settingType,String softVersion){
+	public void getLog(Integer pageNo, Integer pageSize,String startTime, String endTime,String operator,String model,Integer settingType,String softVersion,Boolean result){
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(testService.getLogs(pageNo,pageSize,startTime,endTime,operator,model,settingType,softVersion)));
+		renderJson(ResultUtil.succeed(testService.getLogs(pageNo,pageSize,startTime,endTime,operator,model,settingType,softVersion,result)));
+	}
+	
+	
+	
+	public void uploadGuideFile(UploadFile uploadFile, String id, Integer type) {
+		try {
+			if (uploadFile == null || uploadFile.getFile() == null) {
+				throw new ParameterException("文件上传失败，文件不存在");
+			}
+			if (id == null || type == null) {
+				throw new ParameterException("文件上传失败，参数不能为空");
+			}
+			testService.uploadGuideFile(uploadFile.getFile(), id, type);
+			renderJson(ResultUtil.succeed());
+		} finally {
+			if (uploadFile != null && uploadFile.getFile() != null) {
+				uploadFile.getFile().delete();
+			}
+		}
+	}
+	
+	
+	public void downloadGuideFile(String id, Integer type) {
+		if (id == null || type == null) {
+			throw new OperationException("文件下载失败，参数不能为空");
+		}
+		try {
+			HttpServletResponse response = getResponse();
+			File guideFile = testService.downloadGuideFile(id, type);
+			response.addHeader("Access-Control-Expose-Headers", "Content-disposition");
+			renderFile(guideFile, guideFile.getName());
+		} catch (Exception e) {
+			e.printStackTrace();
+			renderNull();
+		}
+	}
+	
+	
+	@PermissionPass
+	public void initSBData() {
+		
+		testService.initSBData();
+		renderJson(ResultUtil.succeed());
 	}
 
 }

@@ -31,7 +31,7 @@ public class MesConfig extends JFinalConfig {
 
 	@Override
 	public void configConstant(Constants me) {
-		me.setDevMode(true);
+		me.setDevMode(false);
 		// 设置默认上传文件保存路径 getFile等使用
 		me.setBaseUploadPath("upload/temp/");
 		// 设置上传最大限制尺寸
