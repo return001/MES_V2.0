@@ -55,4 +55,6 @@ public class SendDailyEmailTask implements Runnable {
 			ErrorLogWritter.save("前一天不存在配置的工单和版本");
 		}
 	}
+	
+	
 }

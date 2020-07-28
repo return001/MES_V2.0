@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.jsoup.select.Elements;
 
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
@@ -24,6 +26,7 @@ import com.jimi.mes_report.model.entity.DailyProductionReport;
 import com.jimi.mes_report.model.entity.DailyProductionReportItem;
 import com.jimi.mes_report.model.entity.HourStatisticsItem;
 import com.jimi.mes_report.util.CommonUtil;
+import com.jimi.mes_report.util.DateFormat;
 import com.jimi.mes_report.util.ErrorLogWritter;
 
 /**邮件服务类
@@ -397,7 +400,7 @@ public class EmailDocService {
 		String dateString = dateFormat.format(date);
 		// 根据时间获取每日报表信息dailyProductionReport
 		DailyProductionReport dailyProductionReport = DailyReportItemService.getDailyProductionReport(dateString);
-
+		DateFormat dateFomatUtil = new DateFormat(dateString);
 		int output = dailyProductionReport.getOutput();
 		if (output <= 0) {
 			return EMPTY_DOCUMENT_ARRAY;
@@ -472,6 +475,7 @@ public class EmailDocService {
 			// 填充详情表格内容
 			for (int j = 0; j < 8; j++) {
 				List<HourStatisticsItem> hourStatisticsItems = item.getHourStatisticsItems(j);
+				int lineNum = 0;
 				for (HourStatisticsItem hourStatisticsItem : hourStatisticsItems) {
 					if (hourStatisticsItem.getOutput() < 1 && hourStatisticsItem.getHour() >= 0) {
 						detailsTable.select("#" + j + "-time-" + hourStatisticsItem.getHour()).first().empty();
@@ -486,7 +490,22 @@ public class EmailDocService {
 					int minutes = hourStatisticsItem.getConsumingTime() / 60;
 					int remainingSeconds = hourStatisticsItem.getConsumingTime() % 60;
 					detailsTable.select("#" + j + "-actual-used-time-" + hourStatisticsItem.getHour()).first().text(String.valueOf(minutes + "分" + remainingSeconds + "秒"));
+					if (hourStatisticsItem.getHour() < 0) {
+						continue;
+					}
+					try {
+						Object[] column = dateFomatUtil.getSingleTimeColumn(j, item.getOrderNo(), hourStatisticsItem.getHour());
+						List<Record> records = HourlyProductionCounter.countStation(j, column);
+						lineNum += addStationDailyProductionHtml(detailsTable.select("#" + j + "-time-" + hourStatisticsItem.getHour()), j, hourStatisticsItem.getHour(), records, j);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
 				}
+				if (detailsTable.select("#" + j + "-name").select("td.tg-uzvj").attr("rowspan").equals("")) {
+					System.out.println("j:" + j);
+				}
+				detailsTable.select("#" + j + "-name").select("td.tg-uzvj").attr("rowspan", String.valueOf(lineNum + Integer.valueOf(detailsTable.select("#" + j + "-name").select("td.tg-uzvj").attr("rowspan").equals("") ? "25" : detailsTable.select("#" + j + "-name").select("td.tg-uzvj").attr("rowspan"))));
 			}
 		}
 		// 去除分单的订单
@@ -573,5 +592,41 @@ public class EmailDocService {
 				}
 			}
 		}
+	}
+	
+	
+	
+	private int addStationDailyProductionHtml(Elements node, int firstIndex, int hour, List<Record> records, int type) {
+		if (records == null || records.isEmpty()) {
+			return 0;
+		}
+		StringBuilder sb = new StringBuilder();
+		int x = 0;
+		for (int i = 0; i < records.size(); i++) {
+			int cusumeTime = 0;
+			try {
+				cusumeTime = DailyReportItemService.getDateDiff(records.get(i).getStr("startTime"), records.get(i).getStr("endTime"), type);
+			} catch (Exception e) {
+			}
+			int minutes = cusumeTime / 60;
+			int remainingSeconds = cusumeTime % 60;
+			if (records.get(i).getInt("output") == null) {
+				System.err.println(records.get(i).toJson());
+				continue;
+			}
+			splicingStationDailyProductionHtml(sb, firstIndex, hour, i, records.get(i).getStr("computer"), records.get(i).getInt("output"), String.valueOf(minutes + "分" + remainingSeconds + "秒"));
+			x++;
+		}
+		node.after(sb.toString());
+		return x;
+	}
+	
+	
+	private void splicingStationDailyProductionHtml(StringBuilder sb, int firstIndex, int hour, Integer secondIndex, String computer, Integer quantity, String time) {
+		sb.append("<tr id=\"" + firstIndex + "-time-" + hour + "-" + secondIndex + "\">");
+		sb.append("<td style=\"padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;\" class=\"tg-9wq8\" id=\"time-range-" + hour + "-" + secondIndex +"\">" + computer +"</td>");
+		sb.append("<td style=\"padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;\" class=\"tg-9wq8\" id=\"" + firstIndex + "-finished-count-" + hour + "-" + secondIndex + "\">" + quantity +"</td>");
+		sb.append("<td style=\"padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:inherit;text-align:center;vertical-align:middle;\" class=\"tg-9wq8\" id=\"" + firstIndex + "-actual-used-time-" + hour + "-" + secondIndex + "\">" + time +"</td>");
+		sb.append("</tr>");
 	}
 }

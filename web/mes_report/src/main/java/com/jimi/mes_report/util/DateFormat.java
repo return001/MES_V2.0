@@ -166,6 +166,36 @@ public class DateFormat {
 		String[] strs = column.toArray(new String[column.size()]);
 		return strs;
 	}
+	
+	
+	public String[] getSingleTimeColumn(int type, String zhidan, int hour) {
+		List<String> column = new ArrayList<>();
+		String startTime;
+		String endTime;
+		if (type == WorkstationType.COLOR_BOX_STICKING || type == WorkstationType.BODY_STICKING) {
+				startTime = this.printDate + transHour(hour) + ":00:00:000";
+				endTime = this.printDate + transHour(hour) + ":59:59:999";
+				column.add(zhidan);
+				column.add(startTime);
+				column.add(endTime);
+			
+		} else {
+			String date;
+			if (type == WorkstationType.IMEI_COMPARISON) {
+				date = this.imeiDate;
+				column.add(zhidan);
+			} else {
+				date = this.testDate;
+				column.add(zhidan);
+			}
+			startTime = date + transHour(hour) + ":00:00:00";
+			endTime = date + transHour(hour) + ":59:59:99";
+			column.add(startTime);
+			column.add(endTime);
+		}
+		String[] strs = column.toArray(new String[column.size()]);
+		return strs;
+	}
 
 
 	private static String transHour(int hour) {

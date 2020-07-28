@@ -14,5 +14,12 @@ public class ErrorLogWritter {
 		System.out.println("record: " + errorLog);
 		return errorLog.set("message", message).set("time", new Date()).save();
 	}
+	
+	
+	public static void record(String message) {
+		LogManager.getRootLogger().error(message);
+		ErrorLog errorLog = new ErrorLog();
+		System.out.println("record: " + errorLog);
+	}
 
 }

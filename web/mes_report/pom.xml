@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi</groupId>
 	<artifactId>mes_report</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<packaging>war</packaging>
 
 	<name>mes_report</name>
@@ -44,7 +44,7 @@
 			<!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id 就会覆盖中央仓库的配置 -->
 			<id>nexus</id>
 			<name>nexus</name>
-			<url>http://10.10.11.90:8081/repository/maven-releases/</url>
+			<url>http://172.26.132.9:8081/repository/maven-releases/</url>
 		</repository>
 	</repositories>
 

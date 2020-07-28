@@ -2,6 +2,9 @@ package com.jimi.mes_report.service;
 
 import cc.darhao.dautils.api.DateUtil;
 
+import com.alibaba.druid.sql.visitor.functions.If;
+import com.jfinal.json.Jackson;
+import com.jfinal.json.Json;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
@@ -16,8 +19,10 @@ import com.jimi.mes_report.util.ErrorLogWritter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class DailyReportItemService {
@@ -36,12 +41,14 @@ public class DailyReportItemService {
 		list.add(orders.get(67));
 		list.add(orders.get(15));
 		list.add(orders.get(34));*/
+		System.out.println(orders.size());
 		List<DailyProductionReportItem> itemList = new ArrayList<>();
 		DailyProductionReportItem item;
 		// 日可出货量
 		int production = 0;
 		// 日可出货量花费时间
 		int dailyProductionTime = 0;
+		int flag = 1;
 		for (Record order : orders) {
 			String zhidan = order.getStr("ZhiDan");
 			Record record = Db.use("db1").findFirst(DailyProductionSql.SELECT_ALL_ORDER_BY_ZHIDAN, zhidan);
@@ -168,21 +175,37 @@ public class DailyReportItemService {
 
 			}
 			itemList.add(item);
+			System.out.println( "flag =" + flag);
+			flag ++;
 		}
+		ErrorLogWritter.record(Json.getJson().toJson(itemList));
 		Collections.sort(itemList, new Comparator<DailyProductionReportItem>() {
 
 			@Override
 			public int compare(DailyProductionReportItem o1, DailyProductionReportItem o2) {
-				return o2.getPlanProductionQuantity() - o1.getPlanProductionQuantity();
+				long time2 = (o2.getStartDate() == null ? 0 : o2.getStartDate().getTime());
+				long time1 = (o1.getStartDate() == null ? 0 : o1.getStartDate().getTime());
+
+				long flag =  (time2 - time1);
+				if (flag == 0) {
+					//起始时间相同，对比完成率
+					return ((int) (o1.getCompletionRate() * 100) - (int) (o2.getCompletionRate() *100));
+				}
+				if (flag > 0) {
+					return 1;
+				}else {
+					return -1;
+				}
 			}
 		});
+		ErrorLogWritter.record(Json.getJson().toJson(itemList));
 		DailyProductionReport dailyProductionReport = new DailyProductionReport(production, 0, dailyProductionTime, 0);
 		dailyProductionReport.setItems(itemList);
 		return dailyProductionReport;
 	}
 
 
-	private static int getDateDiff(String startTime, String endTime, int type) throws Exception {
+	public static int getDateDiff(String startTime, String endTime, int type) throws Exception {
 		String format = "yyyy-MM-dd HH:mm:ss";
 		if (type == WorkstationType.COLOR_BOX_STICKING || type == WorkstationType.BODY_STICKING) {
 			format = "yyyy.MM.dd HH:mm:ss:SSS";
@@ -191,5 +214,4 @@ public class DailyReportItemService {
 		}
 		return CommonUtil.dateDiff(startTime, endTime, format);
 	}
-
 }

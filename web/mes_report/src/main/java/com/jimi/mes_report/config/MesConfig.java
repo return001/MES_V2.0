@@ -2,6 +2,8 @@ package com.jimi.mes_report.config;
 
 import java.io.File;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import com.jfinal.config.Constants;
 import com.jfinal.config.Handlers;
 import com.jfinal.config.Interceptors;
@@ -17,6 +19,7 @@ import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
 import com.jfplugin.mail.MailPlugin;
 import com.jimi.mes_report.model.MappingKit;
+import com.jimi.mes_report.task.SendDailyProductionEmailTask;
 import com.jimi.mes_report.util.VisualSerializer;
 
 /**全局配置
@@ -84,8 +87,8 @@ public class MesConfig extends JFinalConfig {
 		MappingKit.mapping(arp);
 		me.add(arp);
 		me.add(arp1);
-		Cron4jPlugin cron = new Cron4jPlugin(PropKit.use("taskConfig.txt"), "cron4j");
-		me.add(cron);
+		//Cron4jPlugin cron = new Cron4jPlugin(PropKit.use("taskConfig.txt"), "cron4j");
+		//me.add(cron);
 		me.add(new MailPlugin(PropKit.use("mail.properties").getProperties()));
 	}
 
@@ -98,11 +101,17 @@ public class MesConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		System.out.println("Mes Server is Running now...");
+		SendDailyProductionEmailTask task = new SendDailyProductionEmailTask();
+		Thread thread = new Thread(task);
+		thread.setName("AAAA");
+		thread.start();
+
 	}
 
 
 	@Override
 	public void beforeJFinalStop() {
+		
 	}
 
 
