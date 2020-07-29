@@ -739,7 +739,7 @@
       },
       /*显示该订单的排产参数设置界面*/
       setOrderImportOptions: function () {
-        if (this.importingOrderSelection.length > 0) {
+        if (this.importingOrderSelection.length && this.importingOrderSelection.length > 0) {
           let noEmptyArray = this.importingOrderSelection.filter(item => {
             return item.unscheduledQuantity === 0
           });
@@ -747,6 +747,7 @@
             this.$alertInfo('存在未排产数量为0的订单');
             return;
           }
+
           let noCapacityArray = this.importingOrderSelection.filter(item => {
             return item.capacity === 0
           });
@@ -768,7 +769,7 @@
         this.importingOrderDataTemp = [];
         this.reImportingOrderData = [];
         this.isReImport = false;
-        this.importingOrderSelection = null;
+        this.importingOrderSelection = [];
       },
 
       editData: function (val) {

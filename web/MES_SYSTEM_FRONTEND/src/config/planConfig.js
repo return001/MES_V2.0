@@ -227,9 +227,9 @@ export const orderEditOptionsRules = {
     'orderDate': [
         { required: true, message: '请输入订单日期', trigger: 'blur' }
     ],
-    'deliveryDate': [
-        { required: true, message: '请输入交货日期', trigger: 'blur' }
-    ],
+    // 'deliveryDate': [
+    //     { required: true, message: '请输入交货日期', trigger: 'blur' }
+    // ],
     'reworkZhidan': [
         { required: true, message: '请输入返工单号', trigger: 'blur' },
     ],

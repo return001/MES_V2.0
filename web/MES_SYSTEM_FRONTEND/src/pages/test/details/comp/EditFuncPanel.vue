@@ -308,10 +308,10 @@
       },
 
       //导入文件
-      importData() {
+      importData(e) {
         const selectedFile = this.$refs.refFile.files[0];
         if(selectedFile.type !== 'text/plain'){
-          this.$alertWarning('请选择.tRxt文件')
+          this.$alertWarning('请选择.txt文件')
           return
         }
         let modelName
@@ -337,6 +337,7 @@
         }
         if(selectedFile.name.indexOf(modelName) === -1){
           this.$alertWarning('请选择当前模块所对应的.txt文件')
+          e.target.value = ''
           return
         }
         this.fileName = this.$refs.refFile.files[0].name
@@ -361,16 +362,28 @@
                   "1": "共有指令",
                   "2": "",
                   "3": "",
-                  "4": ""
+                  "4": "",
+                  "5": ""
                 });
                 tempData = this.sourceData[item].replace('共有指令', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('功能测试') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "功能测试",
+                  "2": "",
+                  "3": "",
+                  "4": "",
+                  "5": ""
+                });
+                tempData = this.sourceData[item].replace('功能测试', '').replace('}}', '');
               } else if (this.sourceData[item].indexOf('IMEI域名') >= 0) {
                 no = Number(item.replace('Setting', ''));
                 this.$set(this.formData.SettingList, no, {
                   "1": "IMEI域名",
                   "2": "",
                   "3": "",
-                  "4": ""
+                  "4": "",
+                  "5": ""
                 });
                 tempData = this.sourceData[item].replace('IMEI域名', '').replace('}}', '');
               } else if (this.sourceData[item].indexOf('白卡测试') >= 0) {
@@ -379,7 +392,8 @@
                   "1": "白卡测试",
                   "2": "",
                   "3": "",
-                  "4": ""
+                  "4": "",
+                  "5": ""
                 });
                 tempData = this.sourceData[item].replace('白卡测试', '').replace('}}', '');
               }
@@ -388,7 +402,8 @@
                 let dataArray = tempData.split('@@');
                 this.formData.SettingList[no]["2"] = dataArray[0];
                 this.formData.SettingList[no]["3"] = dataArray[1];
-                this.formData.SettingList[no]["4"] = dataArray[2]
+                this.formData.SettingList[no]["4"] = dataArray[2];
+                this.formData.SettingList[no]["5"] = dataArray[3];
               }
             }
           })

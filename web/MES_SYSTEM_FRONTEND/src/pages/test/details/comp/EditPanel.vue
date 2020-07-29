@@ -350,7 +350,7 @@
       //     console.log(e.target.result)
       //   }
       // },
-      importData() {
+      importData(e) {
         const selectedFile = this.$refs.refFile.files[0];
         if(selectedFile.type !== 'text/plain'){
           this.$alertWarning('请选择.txt文件')
@@ -379,6 +379,7 @@
         }
         if(selectedFile.name.indexOf(modelName) === -1){
           this.$alertWarning('请选择当前模块所对应的.txt文件')
+          e.target.value = ''
           return
         }
         this.fileName = this.$refs.refFile.files[0].name
@@ -437,6 +438,7 @@
         };
       },
       clickLoad() {
+        console.log(123)
         this.$refs.refFile.dispatchEvent(new MouseEvent("click"));
       },
 

@@ -70,6 +70,7 @@
           :data="tableData"
           max-height="560"
           ref="tablecomponent"
+          highlight-current-row
           stripe>
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
@@ -158,7 +159,8 @@
           <el-select v-model="orderEditOptionsData['factory']" class="line-edit-form-comp-text"
                       placeholder="请选择工厂"
                       size="small"
-                     :disabled="isDisabled === false"
+                      :disabled="isDisabled === false"
+                      @change="handleChoiceFactory"
                       clearable>
             <el-option v-for="listItem in factoryList"
                        :key="listItem.id"
@@ -192,6 +194,7 @@
               v-model="orderEditOptionsData[item.key]"
               :fetch-suggestions="querySearch"
               clearable
+              :disabled="!inputCustomer"
               placeholder="请输入客户编号"
               @select="handleSelect"
             ></el-autocomplete>
@@ -200,7 +203,7 @@
           <div class="order-edit-form-comp-text" v-if="item.type === 'default'">
             <el-input
               type="text"
-              :disabled = "customerDatas.length > 0"
+              disabled
               :id="'edit' + item.key + index"
               :placeholder="'请填写' + item.label"
               clearable
@@ -601,6 +604,7 @@
         /*新增 编辑 复制订单*/
         orderEditOptions: orderEditOptions,
         orderEditOptionsRules: orderEditOptionsRules,
+        inputCustomer:true,
         isReworkEdit: false,
         isOrderEditing: false,
         orderEditType: '',
@@ -877,10 +881,12 @@
       fetchCustomer() {
         return new Promise(resolve => {
           this.$openLoading();
+          let factoryId
+          factoryId= this.sessionFactory === '1' ? this.orderEditOptionsData.factory : this.sessionFactory
           let options = {
             url: eSopCustomerSelectUrl,
             data: {
-              factoryId: this.sessionFactory === '1' ? '0' : this.sessionFactory,
+              factoryId:factoryId === 1 ? '0' : factoryId,
               pageNo: this.paginationOptions.currentPage,
               pageSize: 1000,
             }
@@ -983,7 +989,12 @@
           this.$set(this.orderEditOptionsData,'factory',val.factoryId)
         }
         this.fetchFactory()
-        this.fetchCustomer();
+        if(this.sessionFactory !== '1'){
+          this.fetchCustomer();
+        }
+        if(this.sessionFactory === '1'){
+          this.inputCustomer = false;
+        }
         this.orderEditOptions.forEach(item => {
           this.$set(this.orderEditOptionsData, item.key, '')
         });
@@ -1065,6 +1076,14 @@
         }
       },
 
+      handleChoiceFactory(){
+        this.customerDatas = []
+        this.fetchCustomer()
+        if(this.orderEditOptionsData.factory){
+          this.inputCustomer = true
+        }
+      },
+
       //选择客户编号
       choicedCustomerNumber(val){
         this.customerDatas.forEach(item=>{
@@ -1078,7 +1097,12 @@
         this.customerDatas = this.customerDatas.map(item=>{
           return {...item,value:item.customerNumber}
         })
-        var results = queryString ? this.customerDatas.filter(this.createFilter(queryString)) : this.customerDatas;
+        let results = queryString ? this.customerDatas.filter(this.createFilter(queryString)) : this.customerDatas;
+        if(results.length <= 0){
+          this.orderEditOptionsData.customerName = ''
+          this.orderEditOptionsData.customerNumber = ''
+          this.$alertWarning('请输入现有客户编号')
+        }
         // 调用 callback 返回建议列表的数据
         cb(results);
       },
@@ -1121,6 +1145,13 @@
                 return
               }
             }
+            console.log(this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate)
+            if(this.orderEditOptionsData.deliveryDate && this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate){
+              this.$alertWarning('交货日期不得小于订单日期')
+              this.$closeLoading();
+              return
+            }
+
             if (this.orderEditType === 'edit') {
               options.url = planOrderEditUrl
             } else if (this.orderEditType === 'add' || this.orderEditType === 'rework' || this.orderEditType === 'copy') {

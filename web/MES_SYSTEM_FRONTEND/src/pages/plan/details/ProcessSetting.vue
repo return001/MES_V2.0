@@ -267,7 +267,7 @@
       },
 
       queryData: function () {
-        this.paginationOptions.pageNo = 1;
+        this.paginationOptions.currentPage = 1;
         this.paginationOptions.total = 0;
         this.fetchData();
       },

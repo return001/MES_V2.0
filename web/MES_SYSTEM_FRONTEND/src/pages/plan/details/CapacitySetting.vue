@@ -45,7 +45,7 @@
           <el-button type="info" @click="initQueryOptions" size="small">重置条件</el-button>
         </div>
         <div class="query-comp-container">
-          <el-button type="primary" size="small" @click="queryData">查询</el-button>
+          <el-button type="primary" size="small" @click="queryData()">查询</el-button>
         </div>
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="addCapacity('add')">新增</el-button>
@@ -210,11 +210,11 @@
             :data="sameGroupDatas"
             class="capacity-edit-table"
             max-height="480"
-            :cell-style="{'width':'1000px','padding':'0px','text-align':'center'}"
             :header-cell-style="{'text-align':'center'}"
             border
             ref="tablecomponent">
             <el-table-column
+              label="序号"
               type="index"
               fixed="left"
               width="60">
@@ -229,6 +229,7 @@
                   <div class="copy-capacity-data">
                     <el-select v-model="scope.row[item.key]"
                                v-if="scope.column.property === 'groupName'"
+                               @visible-change="replaceProcessGroup($event,scope.row)"
                                @change="choiceGroup(scope.row,$event)"
                                placeholder="选择工序组">
                       <el-option v-for="item in processGroupChoice"
@@ -335,6 +336,7 @@
         processSelectSrc: [], //工序信息 源
         processGroupSelect: [], //工序组信息
         processGroupChoice: [], //新增编辑时选工序组信息
+        choicedGroup:{},        //新增、复制时 当前选择的工序组
         processGroupSelectWait:[], // factory=0的情况下 新增页面必须选择工厂才能显示工序组，先存到这
         customerDatas:[], //客户信息
         customerNames:"",
@@ -474,7 +476,7 @@
           url: eSopCustomerSelectUrl,
           data: {
             factoryId:factoryId,
-            pageNo: this.paginationOptions.currentPage,
+            pageNo: 1,
             pageSize: this.paginationOptions.pageSize
           }
         };
@@ -560,7 +562,7 @@
           axiosFetch({
             url: eSopFactorySelectUrl,
             data: {
-              pageNo: this.paginationOptions.currentPage,
+              pageNo: 1,
               pageSize: this.paginationOptions.pageSize,
               // factory:sessionFactory
             }
@@ -626,7 +628,7 @@
       },
 
       queryData: function () {
-        this.paginationOptions.pageNo = 1;
+        this.paginationOptions.currentPage = 1;
         this.paginationOptions.total = 0;
         this.fetchData();
       },
@@ -644,6 +646,8 @@
           this.mergeData = {};
           this.mergePos = {};
           // this.fetchProcessGroup()
+          // console.log(this.paginationOptions.currentPage)
+          // console.log(this.paginationOptions.pageSize)
           let options = {
             url: planCapacitySelectUrl,
             data: {
@@ -779,7 +783,7 @@
       //编辑、复制产能信息
       editCapacity(type,row){
 
-        this.fetchCustomer();
+        this.fetchCustomer(row.factoryId);
         if(type === 'edit'){
           this.capacityEditType = 'edit';
           if(this.$store.state.limits.update !== true){
@@ -844,6 +848,17 @@
         }
       },
 
+      //获取当前的工序组，更改时加回到列表中
+      replaceProcessGroup(val,row){
+        if(val){
+          this.processGroupSelect.forEach((item,index)=>{
+            if(row.processGroup === item.id){
+              this.choicedGroup=item;
+            }
+          })
+        }
+      },
+
 
       choiceGroup(row,val){
         this.processGroupChoice.forEach((item,i)=>{
@@ -853,6 +868,7 @@
             this.processGroupChoice.splice(i,1)
           }
         })
+        this.processGroupChoice.push(this.choicedGroup)
       },
 
       handleDeleteCapacity(row,index){
@@ -1082,7 +1098,7 @@
             this.$set(this.capacityEditOptionsData, item.key, '')
           });
           Object.keys(val.row).forEach(item => {
-            this.capacityEditOptions.forEach(option => {f
+            this.capacityEditOptions.forEach(option => {
               if (item === option.key && val.row[item] !== null) {
                 this.$set(this.capacityEditOptionsData, item, val.row[item])
               }
