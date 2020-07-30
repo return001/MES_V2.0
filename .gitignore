@@ -41,3 +41,6 @@ web/mes_server/bin/src/main/webapp/WEB-INF/web.xml
 web/mes_server/bin/target/m2e-wtp/web-resources/META-INF/maven/com.jimi/mes_server/pom.xml
 web/mes_server/bin/pom.xml
 web/mes_server/.settings/
+web/mes_report/.settings/
+web/mes_report/target/
+web/mes_report/.project

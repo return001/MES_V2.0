@@ -23,10 +23,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.DateFormatter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
@@ -668,11 +670,11 @@ public class ProductionService {
 		Orders zhidan = null;
 		Orders alias = null;
 		if (order.getIsRework()) {
-			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN, order.getZhidan(), order.getReworkZhidan());
-			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ALIAS, order.getReworkZhidan(), order.getAlias());
+			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN, order.getZhidan(), order.getReworkZhidan(), order.getFactory());
+			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ALIAS, order.getReworkZhidan(), order.getAlias(), order.getFactory());
 		} else {
-			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, order.getZhidan());
-			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ALIAS_ISREWORK, order.getAlias());
+			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, order.getZhidan(), order.getFactory());
+			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ALIAS_ISREWORK, order.getAlias(), order.getFactory());
 		}
 		if (zhidan != null) {
 			throw new OperationException("订单号已存在");
@@ -712,61 +714,77 @@ public class ProductionService {
 	 */
 	public Page<Record> selectOrder(Integer pageNo, Integer pageSize, Integer factoryId, Integer status, String zhidan, String alias, String softModel, String productNo, String customerNumber, String customerName, String orderDateFrom, String orderDateTo, String deliveryDateFrom, String deliveryDateTo, Boolean isRework, String customerMaterialNo, String reworkZhidan, LUserAccountVO userVO) {
 
-		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SQL.SELECT_ORDER);
+		StringBuilder totalRowSqlSb = new StringBuilder(SQL.SELECT_ORDER_ROW_SQL);
 		if (factoryId != null) {
 			sql.append(" and factory = " + factoryId);
+			totalRowSqlSb.append(" and factory = " + factoryId);
 		}
 		if (status != null) {
 			sql.append(" and order_status = " + status);
+			totalRowSqlSb.append(" and order_status = " + status);
 		}
 		if (isRework) {
 			sql.append(" and is_rework = 1 ");
+			totalRowSqlSb.append(" and is_rework = 1 ");
 		}
 		if (!StrKit.isBlank(zhidan)) {
 			sql.append(" and zhidan like '" + zhidan + "%'");
+			totalRowSqlSb.append(" and zhidan like '" + zhidan + "%'");
 		}
 		if (!StrKit.isBlank(alias)) {
 			sql.append(" and alias like '" + alias + "%'");
+			totalRowSqlSb.append(" and alias like '" + alias + "%'");
 		}
 		if (!StrKit.isBlank(softModel)) {
 			sql.append(" and soft_model like '" + softModel + "%'");
+			totalRowSqlSb.append(" and soft_model like '" + softModel + "%'");
 		}
 		if (!StrKit.isBlank(productNo)) {
 			sql.append(" and product_no like '" + productNo + "%'");
+			totalRowSqlSb.append(" and product_no like '" + productNo + "%'");
 		}
 		if (!StrKit.isBlank(customerNumber)) {
 			sql.append(" and customer_number like '" + customerNumber + "%'");
+			totalRowSqlSb.append(" and customer_number like '" + customerNumber + "%'");
 		}
 		if (!StrKit.isBlank(customerName)) {
 			sql.append(" and customer_name like '" + customerName + "%'");
+			totalRowSqlSb.append(" and customer_name like '" + customerName + "%'");
 		}
 		if (!StrKit.isBlank(customerMaterialNo)) {
 			sql.append(" and customer_material_no like '" + customerMaterialNo + "%'");
+			totalRowSqlSb.append(" and customer_material_no like '" + customerMaterialNo + "%'");
 		}
 		if (!StrKit.isBlank(reworkZhidan)) {
 			sql.append(" and rework_zhidan like '" + reworkZhidan + "%'");
+			totalRowSqlSb.append(" and rework_zhidan like '" + reworkZhidan + "%'");
 		}
 		if (!StrKit.isBlank(orderDateFrom)) {
 			sql.append(" and order_date >= '" + orderDateFrom + "'");
+			totalRowSqlSb.append(" and order_date >= '" + orderDateFrom + "'");
 		}
 		if (!StrKit.isBlank(orderDateTo)) {
 			sql.append(" and order_date <= '" + orderDateTo + "'");
+			totalRowSqlSb.append(" and order_date <= '" + orderDateTo + "'");
 		}
 		if (!StrKit.isBlank(deliveryDateFrom)) {
 			sql.append(" and delivery_date >= '" + deliveryDateFrom + "'");
+			totalRowSqlSb.append(" and delivery_date >= '" + deliveryDateFrom + "'");
 		}
 		if (!StrKit.isBlank(deliveryDateTo)) {
 			sql.append(" and delivery_date <= '" + deliveryDateTo + "'");
+			totalRowSqlSb.append(" and delivery_date <= '" + deliveryDateTo + "'");
 		}
-		sql.append(" ORDER BY order_status ASC,delivery_date ASC");
-		sqlPara.setSql(sql.toString());
+		sql.append(" ORDER BY orders.order_status ASC, order_create_time DESC, case when orders.delivery_date is null then 1 else 0 end asc, orders.delivery_date ASC");
+		System.out.println(sql);
+		System.out.println(totalRowSqlSb);
 		for (AuthorityVO authorityVO : userVO.getWebAuthorities()) {
 			if (authorityVO.getUrls().contains("/production/selectOrder:withCustomer")) {
-				return formatOrderDateAndCustomer(Db.paginate(pageNo, pageSize, sqlPara), false);
-			}
+				return formatOrderDateAndCustomer(Db.paginateByFullSql(pageNo, pageSize,  totalRowSqlSb.toString(), sql.toString()), false);
+			} 
 		}
-		return formatOrderDateAndCustomer(Db.paginate(pageNo, pageSize, sqlPara), true);
+		return formatOrderDateAndCustomer(Db.paginateByFullSql(pageNo, pageSize, totalRowSqlSb.toString(), sql.toString()), true);
 	}
 
 
@@ -828,11 +846,11 @@ public class ProductionService {
 		Orders zhidan = null;
 		Orders alias = null;
 		if (order.getIsRework()) {
-			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN, order.getZhidan(), order.getReworkZhidan());
-			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ALIAS, order.getZhidan(), order.getAlias());
+			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN, order.getZhidan(), order.getReworkZhidan(), order.getFactory());
+			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ALIAS, order.getZhidan(), order.getAlias(), order.getFactory());
 		} else {
-			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, order.getZhidan());
-			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ALIAS_ISREWORK, order.getAlias());
+			zhidan = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, order.getZhidan(), order.getFactory());
+			alias = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ALIAS_ISREWORK, order.getAlias(), order.getFactory());
 		}
 		if (zhidan != null && !zhidan.getId().equals(order.getId())) {
 			throw new OperationException("订单号已存在");
@@ -927,7 +945,7 @@ public class ProductionService {
 					}
 				}
 				if (!isRework) {
-					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, orderItem.getZhidan());
+					Orders temp = Orders.dao.findFirst(SQL.SELECT_ORDER_BY_ZHIDAN_ISREWORK, orderItem.getZhidan(), order.getFactory());
 					if (temp != null) {
 						resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号已存在！";
 						return resultString;
@@ -1093,9 +1111,9 @@ public class ProductionService {
 		// 测试段
 		case 2:
 			if (factory > 0) {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			} else {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.ASSEMBLING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			}
 			if (orderRecords == null || orderRecords.isEmpty()) {
 				throw new OperationException("不存在前置工序组已排产的订单");
@@ -1104,9 +1122,9 @@ public class ProductionService {
 		// 包装段
 		case 3:
 			if (factory > 0) {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			} else {
-				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orderRecords = Db.find(SQL.SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS, Constant.TESTING_PROCESS_GROUP, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			}
 			if (orderRecords == null || orderRecords.isEmpty()) {
 				throw new OperationException("不存在前置工序组已排产的订单");
@@ -1115,9 +1133,9 @@ public class ProductionService {
 		default:
 			List<Orders> orders;
 			if (factory > 0) {
-				orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			} else {
-				orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+				orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 			}
 			if (orders == null || orders.isEmpty()) {
 				throw new OperationException("不存在可排产的订单");
@@ -1143,9 +1161,9 @@ public class ProductionService {
 		Integer rework = 1;
 		List<Orders> orders = null;
 		if (factory > 0) {
-			orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK, rework, factory, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 		} else {
-			orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS);
+			orders = Orders.dao.find(SQL.SELECT_ORDER_BY_STATUS_ISREWORK, rework, Constant.UNSCHEDULED_ORDERSTATUS, Constant.SCHEDULED_ORDERSTATUS, Constant.ONGOING_ORDERSTATUS, Constant.WAIT_NOTICE__ORDERSTATUS);
 		}
 		if (orders == null || orders.isEmpty()) {
 			throw new OperationException("不存在返工订单");
@@ -1589,6 +1607,7 @@ public class ProductionService {
 		/*if (Constant.WAIT_NOTIFICATION_PLANSTATUS.equals(planStatus) && !type.equals(Constant.WORKING_PLANSTATUS - 1)) {
 			throw new OperationException("待通知的排产计划只能修改为进行中");
 		}*/
+		Orders orders = Orders.dao.findById(schedulingPlan.getOrders());
 		switch (type) {
 		case 0:
 			schedulingPlan.setSchedulingPlanStatus(Constant.SCHEDULED_PLANSTATUS);
@@ -1600,25 +1619,37 @@ public class ProductionService {
 			schedulingPlan.setSchedulingPlanStatus(Constant.WORKING_PLANSTATUS);
 			schedulingPlan.setProductionConfirmer(userVO.getId());
 			schedulingPlan.setStartTime(new Date());
+			orders.setOrderStatus(Constant.ONGOING_ORDERSTATUS);
+			orders.update();
 			break;
 		case 2:
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+			orders.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+			orders.update();
 			break;
 		case 3:
 			// 将排产计划拆分为已完成的和未完成的
 			if (schedulingPlan.getProducedQuantity() > 0 && schedulingPlan.getProducedQuantity() < schedulingPlan.getSchedulingQuantity()) {
-				SchedulingPlan producedPlan = new SchedulingPlan();
+				/*SchedulingPlan producedPlan = new SchedulingPlan();
 				producedPlan._setAttrs(schedulingPlan);
 				producedPlan.setCompleteTime(new Date());
 				producedPlan.setSchedulingQuantity(schedulingPlan.getProducedQuantity());
 				producedPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 				producedPlan.setRemainingQuantity(0);
-				producedPlan.remove("id");
+				producedPlan.remove("id");*/
 
-				schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
-				return producedPlan.save() && schedulingPlan.update();
+				schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+				schedulingPlan.setSchedulingQuantity(schedulingPlan.getProducedQuantity());
+				schedulingPlan.setCompleteTime(new Date());
+				orders.setOrderStatus(Constant.WAIT_NOTICE__ORDERSTATUS);
+				orders.update();
+				return schedulingPlan.update();
 			} else {
-				schedulingPlan.setSchedulingPlanStatus(Constant.WAIT_NOTIFICATION_PLANSTATUS);
+				schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+				schedulingPlan.setSchedulingQuantity(schedulingPlan.getProducedQuantity());
+				schedulingPlan.setCompleteTime(new Date());
+				orders.setOrderStatus(Constant.WAIT_NOTICE__ORDERSTATUS);
+				orders.update();
 			}
 			break;
 		default:
@@ -2156,14 +2187,38 @@ public class ProductionService {
 				record.set("customerNumber", "***");
 				record.set("customerName", "***");
 			}
-			if (!StringUtils.isAnyBlank(record.getStr("orderDate"), record.getStr("deliveryDate"))) {
+			if (record.getStr("orderDate") != null) {
 				record.set("orderDate", record.getStr("orderDate").replace(" 00:00:00", ""));
+			}
+			if (record.getStr("deliveryDate") != null) {
 				record.set("deliveryDate", record.getStr("deliveryDate").replace(" 00:00:00", ""));
 			}
 			if (!StrKit.isBlank(record.getStr("enoughMaterialTime"))) {
 				record.set("enoughMaterialTime", record.getStr("enoughMaterialTime").replace(" 00:00:00", ""));
 			}
 		}
+		/*records.sort((o1, o2) -> {
+			if (o1.getInt("order_status") == o2.getInt("order_status")) {
+				if (o2.getStr("deliveryDate") == null && o1.getStr("deliveryDate") != null) {
+					return -1;
+				}
+				if (o1.getStr("deliveryDate") == null && o2.getStr("deliveryDate") != null) {
+					return 1;
+				}
+				if (o1.getStr("deliveryDate") == null && o2.getStr("deliveryDate") == null) {
+					return 0;
+				}
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				try {
+					return (int) (formatter.parse(o2.getStr("deliveryDate")).getTime() - formatter.parse(o1.getStr("deliveryDate")).getTime());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}else {
+				return o2.getInt("order_status") - o1.getInt("order_status");
+			}
+			return 0;
+		});*/
 		return page;
 	}
 
@@ -2185,6 +2240,10 @@ public class ProductionService {
 				record.set("producedQuantity", planProducedQuantity.getInt("planProducedQuantity"));
 				if (planProducedQuantity.getInt("schedulingPlanStatus") != null) {
 					record.set("schedulingPlanStatus", planProducedQuantity.getInt("schedulingPlanStatus"));
+					
+				}
+				if (planProducedQuantity.getInt("planProducedQuantity") > 0 && planProducedQuantity.getInt("schedulingQuantity") != null) {
+					record.set("remainingQuantity",planProducedQuantity.getInt("schedulingQuantity") - planProducedQuantity.getInt("planProducedQuantity"));
 				}
 			}
 			

@@ -106,9 +106,9 @@ public class SQL {
 
 	public final static String SELECT_CARTONNUM_BY_TESTTIME = "SELECT count(*) FROM Gps_CartonBoxTwenty_Result WHERE TestTime > ? AND TestTime < ?";
 
-	public final static String SELECT_ORDER_BY_STATUS_ISREWORK = "SELECT * FROM orders WHERE is_rework = ? and (order_status = ? or order_status = ? or order_status = ? ) ";
+	public final static String SELECT_ORDER_BY_STATUS_ISREWORK = "SELECT * FROM orders WHERE is_rework = ? and (order_status = ? or order_status = ? or order_status = ? or order_status = ?) ";
 
-	public final static String SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK = "SELECT * FROM orders WHERE is_rework = ? and factory = ? and (order_status = ? or order_status = ? or order_status = ? ) ";
+	public final static String SELECT_ORDER_BY_STATUS_FACTORY_ISREWORK = "SELECT * FROM orders WHERE is_rework = ? and factory = ? and (order_status = ? or order_status = ? or order_status = ? or order_status = ?) ";
 
 	public final static String SELECT_PROCESS_PROCESSGROUP = "SELECT process.id,process_no as processNo,process_name as processName,process_remark as processRemark,process_group as processGroup,process_group.group_no as groupNo,process_group.group_name as groupName from process, process_group where process.process_group = process_group.id ";
 
@@ -141,6 +141,8 @@ public class SQL {
 	public final static String SELECT_SCHEDULINGPLANSTATUS_NAME_ID = "SELECT id, status_name as statusName from scheduling_plan_status";
 
 	public final static String SELECT_ORDER = " SELECT orders.id, zhidan, alias, soft_model AS softModel, version, product_no AS productNo, customer_name AS customerName, customer_number AS customerNumber, order_date AS orderDate, quantity, delivery_date AS deliveryDate, order_status AS orderStatus, order_status.status_name AS statusName, sop_factory.abbreviation,sop_factory.id as factoryId, customer_material_no as customerMaterialNo, rework_quantity as reworkQuantity, rework_zhidan as reworkZhidan, scheduled_quantity as scheduledQuantity, produced_quantity as producedQuantity, unfinished_reason as unfinishedReason,is_rework as isRework, material_state AS materialState, enough_material_time AS enoughMaterialTime, pcba FROM orders LEFT JOIN order_status ON orders.order_status = order_status.id LEFT JOIN sop_factory ON sop_factory.id = orders.factory WHERE 1 = 1 ";
+
+	public final static String SELECT_ORDER_ROW_SQL = "SELECT count(orders.zhidan)  FROM orders LEFT JOIN order_status ON orders.order_status = order_status.id LEFT JOIN sop_factory ON sop_factory.id = orders.factory WHERE 1 = 1 ";
 
 	public final static String SELECT_PROCESSGROUP = "SELECT process_group.id, process_group.group_no AS groupNo, process_group.group_name AS groupName, process_group.group_remark AS groupRemark, abbreviation, sop_factory.id AS factoryId, process_group.parent_group AS parentGroup, a.group_name AS parentGroupName FROM process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id LEFT JOIN process_group a ON a.id = process_group.parent_group WHERE 1 = 1 ";
 
@@ -236,9 +238,9 @@ public class SQL {
 
 	public final static String SELECT_SCHEDULED_ORDER_QUANTITY = "SELECT SUM (scheduling_quantity) AS scheduled_quantity FROM scheduling_plan WHERE process_group = ? AND orders = ? AND scheduling_plan_status != ?";
 
-	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and is_rework = 0 and (order_status = ? or order_status = ? or order_status = ? ) GROUP BY orders";
+	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and is_rework = 0 and (order_status = ? or order_status = ? or order_status = ? or order_status = ?) GROUP BY orders";
 
-	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.factory = ? and is_rework = 0 and (order_status = ? or order_status = ? or order_status = ? ) GROUP BY orders";
+	public final static String SELECT_DISTINCT_ORDER_BY_PROCESSGROUP__FACTORY_ORDERSTATUS = "SELECT scheduling_plan.orders FROM scheduling_plan INNER JOIN orders on scheduling_plan.orders = orders.id WHERE process_group = ? and orders.factory = ? and is_rework = 0 and (order_status = ? or order_status = ? or order_status = ? or order_status = ? ) GROUP BY orders";
 
 	public final static String UPDATE_PROCESSGROUP_POSITION = "UPDATE process_group SET [position] = ? where id = ?";
 
@@ -258,13 +260,13 @@ public class SQL {
 
 	public final static String SELECT_FILETYPE = "SELECT id,type_name as typeName,type_remarks as typeRemarks  FROM file_type ";
 
-	public final static String SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN = "SELECT * from orders WHERE zhidan = ? and rework_zhidan = ?";
+	public final static String SELECT_ORDER_BY_ZHIDAN_REWORKZHIDAN = "SELECT * from orders WHERE zhidan = ? and rework_zhidan = ? and factory = ?";
 
-	public final static String SELECT_ORDER_BY_ZHIDAN_ALIAS = "SELECT * from orders WHERE rework_zhidan = ? and alias = ?";
+	public final static String SELECT_ORDER_BY_ZHIDAN_ALIAS = "SELECT * from orders WHERE rework_zhidan = ? and alias = ? and factory = ?";
 
-	public final static String SELECT_ORDER_BY_ZHIDAN_ISREWORK = "SELECT * from orders WHERE zhidan = ? and is_rework = 0";
+	public final static String SELECT_ORDER_BY_ZHIDAN_ISREWORK = "SELECT * from orders WHERE zhidan = ? and is_rework = 0 and factory = ?";
 
-	public final static String SELECT_ORDER_BY_ALIAS_ISREWORK = "SELECT * from orders WHERE alias = ? and is_rework = 0";
+	public final static String SELECT_ORDER_BY_ALIAS_ISREWORK = "SELECT * from orders WHERE alias = ? and is_rework = 0 and factory = ?";
 
 	public final static String SELECT_ORDER_FILE_BY_ORDER = "SELECT * FROM order_file WHERE orders = ?";
 
