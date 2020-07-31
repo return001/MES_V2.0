@@ -1514,7 +1514,7 @@
           trueTime = planDataEndtime.indexOf('超出预期') === -1;
         })
         if(trueTime === false){
-          this.$alertDanger('排产时间冲突,请设置正确排产计划')
+          this.$alertDanger('排产时间冲突')
           return;
         }
         MessageBox.confirm('请确认是否按此配置导入排产(请留意页面中可能存在的错误提示)', '提示', {
