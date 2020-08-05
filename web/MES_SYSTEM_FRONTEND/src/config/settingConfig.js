@@ -247,7 +247,7 @@ export const CustomerTableColumns = [
 export const FactoryFormItems = [
   {
     'type': 'text',
-    'label': '别名',
+    'label': '厂别',
     'prop': 'factoryAlias',
     'limit': [0, 8],
   },
@@ -259,7 +259,7 @@ export const FactoryFormItems = [
   },
   {
     'type': 'text',
-    'label': '全名',
+    'label': '全称',
     'prop': 'fullName',
     'limit': [0, 32],
   },

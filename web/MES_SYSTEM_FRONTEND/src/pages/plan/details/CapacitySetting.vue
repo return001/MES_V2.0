@@ -45,7 +45,7 @@
           <el-button type="info" @click="initQueryOptions" size="small">重置条件</el-button>
         </div>
         <div class="query-comp-container">
-          <el-button type="primary" size="small" @click="queryData">查询</el-button>
+          <el-button type="primary" size="small" @click="queryData()">查询</el-button>
         </div>
         <div class="query-comp-container">
           <el-button type="primary" size="small" @click="addCapacity('add')">新增</el-button>
@@ -205,19 +205,20 @@
         </el-form-item>
 
 <!--        <el-form-item>-->
-        <div>
+        <div style="width: 100% !important;">
           <el-table
             :data="sameGroupDatas"
             class="capacity-edit-table"
-            max-height="400"
+            max-height="480"
+            :header-cell-style="{'text-align':'center'}"
             border
             ref="tablecomponent">
             <el-table-column
+              label="序号"
               type="index"
               fixed="left"
               width="60">
             </el-table-column>
-
               <el-table-column v-for="(item, index) in capacityEditTableColumns"
                                :key="index"
                                :prop="item.key"
@@ -228,6 +229,7 @@
                   <div class="copy-capacity-data">
                     <el-select v-model="scope.row[item.key]"
                                v-if="scope.column.property === 'groupName'"
+                               @visible-change="replaceProcessGroup($event,scope.row)"
                                @change="choiceGroup(scope.row,$event)"
                                placeholder="选择工序组">
                       <el-option v-for="item in processGroupChoice"
@@ -242,17 +244,18 @@
 <!--                                v-else-if="scope.column.property === 'processPeopleQuantity'">-->
 <!--                      </el-input>-->
 
-                      <el-input v-model="scope.row[item.key]"
-                                type="text"
-                                v-else-if="scope.column.property === 'remark'">
-                      </el-input>
+                    <el-input v-model="scope.row[item.key]"
+                              type="text"
+                              :width="capacityEditType === 'edit' ? '600' : '550'"
+                              v-else-if="scope.column.property === 'remark'">
+                    </el-input>
 
-                      <el-input v-model.number="scope.row[item.key]"
-                                type="number"
-                                @keydown.native="inputLimit(scope,$event)"
-                                @change="compareZero(scope,$event)"
-                                v-else>
-                      </el-input>
+                    <el-input v-model.number="scope.row[item.key]"
+                              type="number"
+                              @keydown.native="inputLimit(scope,$event)"
+                              @change="compareZero(scope,$event)"
+                              v-else>
+                    </el-input>
                   </div>
                 </template>
               </el-table-column>
@@ -260,6 +263,7 @@
                 label="操作"
                 float="right"
                 width="80"
+                v-if="capacityEditType !== 'edit'"
               >
                 <template slot-scope="scope">
                   <el-tooltip content="删除" placement="top">
@@ -267,16 +271,13 @@
                   </el-tooltip>
                 </template>
               </el-table-column>
-
-
-
           </el-table>
         </div>
-          <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
-            <el-tooltip content="添加" placement="top">
-              <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
-            </el-tooltip>
-          </div>
+        <div style="margin-top: 20px" v-if="processGroupSelect.length > sameGroupDatas.length">
+          <el-tooltip content="添加" placement="top">
+            <el-button size="small" type="primary" circle icon="el-icon-plus" @click="handleAddCapacity"></el-button>
+          </el-tooltip>
+        </div>
 <!--        </el-form-item>-->
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -335,6 +336,7 @@
         processSelectSrc: [], //工序信息 源
         processGroupSelect: [], //工序组信息
         processGroupChoice: [], //新增编辑时选工序组信息
+        choicedGroup:{},        //新增、复制时 当前选择的工序组
         processGroupSelectWait:[], // factory=0的情况下 新增页面必须选择工厂才能显示工序组，先存到这
         customerDatas:[], //客户信息
         customerNames:"",
@@ -407,14 +409,13 @@
         return iList
       },
     },
-    async created() {
+    created() {    //async
+      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.capacity)
       this.initQueryOptions();
-      await this.dataPreload();
+      this.dataPreload();   //await
     },
     mounted() {
       this.fetchData();
-      //传入当前是哪个页面，this.$store.state.limits 就会有相应页面的权限配置情况
-      this.$store.commit('pageActionLimits',this.$store.state.charactersFuncMap.map.basic.basic.capacity)
     },
     methods: {
       /*局部刷新*/
@@ -475,7 +476,7 @@
           url: eSopCustomerSelectUrl,
           data: {
             factoryId:factoryId,
-            pageNo: this.paginationOptions.currentPage,
+            pageNo: 1,
             pageSize: this.paginationOptions.pageSize
           }
         };
@@ -561,7 +562,7 @@
           axiosFetch({
             url: eSopFactorySelectUrl,
             data: {
-              pageNo: this.paginationOptions.currentPage,
+              pageNo: 1,
               pageSize: this.paginationOptions.pageSize,
               // factory:sessionFactory
             }
@@ -588,6 +589,11 @@
       //工厂更改  工序组即更改
       changeGroupList(val){
         this.fetchCustomer(val)
+        this.customerNames="";
+        this.capacityEditOptionsData={
+          process: '',
+          customerNumber:"",
+        },
         this.processGroupSelect = []
         this.sameGroupDatas = []
           this.processGroupSelectWait.forEach(item=>{
@@ -622,7 +628,7 @@
       },
 
       queryData: function () {
-        this.paginationOptions.pageNo = 1;
+        this.paginationOptions.currentPage = 1;
         this.paginationOptions.total = 0;
         this.fetchData();
       },
@@ -640,6 +646,8 @@
           this.mergeData = {};
           this.mergePos = {};
           // this.fetchProcessGroup()
+          // console.log(this.paginationOptions.currentPage)
+          // console.log(this.paginationOptions.pageSize)
           let options = {
             url: planCapacitySelectUrl,
             data: {
@@ -774,13 +782,14 @@
 
       //编辑、复制产能信息
       editCapacity(type,row){
-        this.fetchCustomer();
+
+        this.fetchCustomer(row.factoryId);
         if(type === 'edit'){
+          this.capacityEditType = 'edit';
           if(this.$store.state.limits.update !== true){
             this.$alertWarning('暂无编辑权限');
             return
           }
-          this.capacityEditType = 'edit';
           this.isCapacityAdd = true;
         }else if(type === 'copy'){
           if(this.$store.state.limits.add !== true){
@@ -812,6 +821,7 @@
         }else{
           this.$alertWarning('没有可用工序组')
         }
+        console.log(this.capacityEditType)
       },
 
       inputLimit(scope,val){
@@ -838,6 +848,17 @@
         }
       },
 
+      //获取当前的工序组，更改时加回到列表中
+      replaceProcessGroup(val,row){
+        if(val){
+          this.processGroupSelect.forEach((item,index)=>{
+            if(row.processGroup === item.id){
+              this.choicedGroup=item;
+            }
+          })
+        }
+      },
+
 
       choiceGroup(row,val){
         this.processGroupChoice.forEach((item,i)=>{
@@ -847,6 +868,7 @@
             this.processGroupChoice.splice(i,1)
           }
         })
+        this.processGroupChoice.push(this.choicedGroup)
       },
 
       handleDeleteCapacity(row,index){
@@ -862,7 +884,20 @@
         this.sameGroupDatas.splice(index,1)
       },
       handleAddCapacity(){
-        this.sameGroupDatas.push({})
+        this.sameGroupDatas.push(
+          {
+            factoryId:this.sameGroupDatas[0].factoryId,
+            remark:"",
+            abbreviation:this.sameGroupDatas[0].abbreviation,
+            statusId:this.sameGroupDatas[0].statusId,
+            tempcolumn:this.sameGroupDatas[0].tempcolumn,
+            reviewRemark:this.sameGroupDatas[0].reviewRemark,
+            reviewerName:this.sameGroupDatas[0].reviewerName,
+            statusName:this.sameGroupDatas[0].statusName,
+            temprownumber:this.sameGroupDatas[0].temprownumber,
+            reviewTime:this.sameGroupDatas[0].reviewTime,
+          }
+          )
       },
 
 
@@ -877,13 +912,13 @@
           this.$alertWarning('该工厂不存在可用工序组')
           return
         }
-          this.sameGroupDatas.forEach(item=>{
-            item.customerNumber= this.capacityEditOptionsData.customerNumber;
-            item.customerName= this.customerNames;
-            item.softModel= this.capacityEditOptionsData.softModel;
-            item.customerModel= this.capacityEditOptionsData.customerModel;
-            !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
-          })
+        this.sameGroupDatas.forEach(item=>{
+          item.customerNumber= this.capacityEditOptionsData.customerNumber;
+          item.customerName= this.customerNames;
+          item.softModel= this.capacityEditOptionsData.softModel;
+          item.customerModel= this.capacityEditOptionsData.customerModel;
+          !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
+        })
         if(!this.Parameter){
           this.$alertWarning('工序组、人数和产能为必填项')
           this.$closeLoading()
@@ -924,6 +959,7 @@
                 this.resetEditCapacityForm();
                 this.closeEditCapacityPanel();
                 this.$alertSuccess('操作成功');
+                this.sameGroupDatas =[];
                 this.partlyReload();
               }
               else {
@@ -934,7 +970,6 @@
             }).finally(() => {
               this.isPending = false;
               this.$closeLoading();
-              this.sameGroupDatas =[];
             })
           } else {
             this.$alertInfo('请完善表单信息')
@@ -1028,9 +1063,8 @@
         //     }
         //   }
         // }
-        if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' || column.label === '备注' ||
+        if (column.label === '状态' || column.label === '审核人' || column.label === '审核时间' || column.label === '审核说明' ||
             column.label === '机型' || column.label === '客户编号' || column.label === '客户名称' || column.label === '所属工厂' || column.label === '客户型号/料号' || column.label === '操作') {
-          // console.log('oneList',row, column, rowIndex, columnIndex,this.oneList)
           let iIndex = this.oneList.findIndex(e => { return e.index === rowIndex});
           if (iIndex !== -1) {
             return [this.oneList[iIndex].length, 1];
@@ -1158,6 +1192,7 @@
 
   .copy-capacity-data /deep/ input{
     border: 0;
+    text-align: center;
     outline: none;
     background:rgba(0,0,0,0);
   }

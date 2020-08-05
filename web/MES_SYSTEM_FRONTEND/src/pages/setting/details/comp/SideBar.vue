@@ -42,10 +42,10 @@
                 type: 'process_group',
                 name: '工序组设置'
               },
-              {
-                type: 'process',
-                name: '工序设置'
-              },
+              // {
+              //   type: 'process',
+              //   name: '工序设置'
+              // },
               {
                 type: 'line',
                 name: '产线设置'

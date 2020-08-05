@@ -175,9 +175,6 @@
               this.getSpanArr(response.data.data, this.mergeKeys);
             }
             this.tableData = response.data.data
-            console.log(this.tableData)
-            console.log(this.mergeData)
-            console.log(this.mergePos)
           } else {
             this.$alertWarning(response.data.data)
           }

@@ -175,7 +175,6 @@
           type: 'primary',
           callback: this._addData
         });
-
       this._queryData();
     },
     methods: {

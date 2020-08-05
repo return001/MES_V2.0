@@ -50,7 +50,7 @@
                 <span class="info-item-content"></span>
               </div>
               <div class="info-item">
-                <span class="info-item-title">工程: 何斌</span>
+                <span class="info-item-title">工程: 汤中虎</span>
                 <span class="info-item-content"></span>
               </div>
               <div class="info-item">
@@ -107,7 +107,7 @@
                 <span class="info-item-content">测试</span>
               </div>
               <div class="info-item">
-                <span class="info-item-title">生产: 谢仁露</span>
+                <span class="info-item-title">生产: 李源飞</span>
                 <span class="info-item-content"></span>
               </div>
               <div class="info-item">
@@ -172,7 +172,7 @@
                 <span class="info-item-content"></span>
               </div>
               <div class="info-item">
-                <span class="info-item-title">工程: 何斌</span>
+                <span class="info-item-title">工程: 汤中虎</span>
                 <span class="info-item-content"></span>
               </div>
               <div class="info-item">

@@ -29,14 +29,14 @@
             <label :for="item.key + index">{{item.label}}</label>
             <el-date-picker
               :id="item.key + index"
-              v-model="thisQueryOptions[item.key]"
+              v-model="times"
               type="datetimerange"
               :picker-options="timePickerOptions"
               prefix-icon="el-icon-date"
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              value-format="yyyy-MM-dd hh:mm:ss"
+              value-format="yyyy-MM-dd HH:mm:ss"
               autocomplete="off"
               size="small"
               clearable>
@@ -128,32 +128,32 @@
           isPending: false,
           queryOptions:testLogQueryOptions,
           tableColumns:testLogTableOptions,
+          times:[],
           tableData:[
-            {
-              softVersion: "PB88-V_11_S2_SC2",
-              zhidan:'JIMI-1020-2010',
-              configType:"组装功能测试",
-              typeId:2,
-              model: "PB76-V",
-              operationType: "新增",
-              operator: "张三",
-              time:'2020-05-06 20:31:00',
-              result:'成功',
-              station: 'S340}}17功能测试软件版本@@[VERSION]@@@@AT^GT_CM=VERSION}}功能测试芯片ID@@CHIPID:@@@@AT^GT_CM=CHIPID}}功能测试读IMEI@@OK,@@@@AT^GT_CM=IMEI,READ}}功能测试VIBRATOR人工判断DL10000@@OK@@@@AT^GT_CM=VIBRATOR}}功能测试校准查询DL2000@@RF_BAR:OK@@@@AT^GT_CM=RF_BAR}}功能测试电压测试@@Charging,@@3.8,5@@AT^GT_CM=BMT}}功能测试BT测试DL8000@@BT:BT TESTING!Wait 20s to get bluetooth info...@@@@AT^GT_CM=BT}}功能测试震动测试@@GSENSOR:GSENSOR OK!@@@@AT^GT_CM=GSENSOR}}功能测试LED人工判断测试DL8000@@LED:OK@@@@AT^GT_CM=LED}}功能测试WIFI测试DL10000@@WIFITC:OK!Wait 5s to get wifi info...@@@@AT^GT_CM=WIFITC}}功能测试CSQ测试@@+CESQ:@@5,100@@AT+CESQ}}功能测试按键测试DL10000@@KEY@@4@@AT^GT_CM=KEY}}功能测试sim卡测试@@OK@@@@AT^GT_CM=SIM}}功能测试喇叭人工判断DL10000@@OK@@@@AT^GT_CM=SPEAKER}}功能测试MIC人工判断DL10000@@MIC:The machine begins to record and then it will be played!@@@@AT^GT_CM=MIC}}功能测试拨号人工判断DL20000@@TESTING@@@@AT^GT_CM=CALLTC}}功能测试GPS测试DL25000@@GPSTC:OK@@@@AT^GT_CM=GPSTC}}'
-            },
-            {
-              softVersion: "PB88-V_11_S2_SC33",
-              zhidan:'JIMI-2020-2010',
-              configType:"SMT功能测试",
-              typeId:3,
-              model: "PB88-V",
-              operationType: "新增",
-              operator: "李四",
-              time:'2020-05-06 20:32:00',
-              result:'失败',
-              station: 'NT912_R0_V01@@@@}}}}11共有指令切换为NB@@AT+MSMODE=2,0@@OK}}共有指令芯片ID@@AT^GT_CM=ID,1@@RID}}共有指令软件版本@@AT^GT_CM=VERSION@@[VERSION]}}IMEI域名IMEI写号@@AT^GT_CM=IMEI,1,@@OK!}}IMEI域名测试项@@AT^GT_CM=ESDS@@NVRAM执行成功！}}IMEI域名RFID@@AT^GT_CM=RF_BAR@@PASS}}IMEI域名IMEI检查@@AT+EGMR=0,7@@OK}}IMEI域名恢复出厂@@AT^GT_CM=FACTORYALL@@OK}}IMEI域名查IP及端口@@AT^GT_CM=SCXSZ@@112.35.78.50,7100}}共有指令清除参数@@AT^GT_CM=CLEAR@@OK}}共有指令耦合测试@@@@}}'
-
-            }
+            // {
+            //   softVersion: "PB88-V_11_S2_SC2",
+            //   orderName:'JIMI-1020-2010',
+            //   settingType:"组装功能测试",
+            //   typeId:2,
+            //   model: "PB76-V",
+            //   operationType: "新增",
+            //   operator: "张三",
+            //   time:'2020-05-06 20:31:00',
+            //   result:'成功',
+            //   station: 'S340}}17功能测试软件版本@@[VERSION]@@@@AT^GT_CM=VERSION}}功能测试芯片ID@@CHIPID:@@@@AT^GT_CM=CHIPID}}功能测试读IMEI@@OK,@@@@AT^GT_CM=IMEI,READ}}功能测试VIBRATOR人工判断DL10000@@OK@@@@AT^GT_CM=VIBRATOR}}功能测试校准查询DL2000@@RF_BAR:OK@@@@AT^GT_CM=RF_BAR}}功能测试电压测试@@Charging,@@3.8,5@@AT^GT_CM=BMT}}功能测试BT测试DL8000@@BT:BT TESTING!Wait 20s to get bluetooth info...@@@@AT^GT_CM=BT}}功能测试震动测试@@GSENSOR:GSENSOR OK!@@@@AT^GT_CM=GSENSOR}}功能测试LED人工判断测试DL8000@@LED:OK@@@@AT^GT_CM=LED}}功能测试WIFI测试DL10000@@WIFITC:OK!Wait 5s to get wifi info...@@@@AT^GT_CM=WIFITC}}功能测试CSQ测试@@+CESQ:@@5,100@@AT+CESQ}}功能测试按键测试DL10000@@KEY@@4@@AT^GT_CM=KEY}}功能测试sim卡测试@@OK@@@@AT^GT_CM=SIM}}功能测试喇叭人工判断DL10000@@OK@@@@AT^GT_CM=SPEAKER}}功能测试MIC人工判断DL10000@@MIC:The machine begins to record and then it will be played!@@@@AT^GT_CM=MIC}}功能测试拨号人工判断DL20000@@TESTING@@@@AT^GT_CM=CALLTC}}功能测试GPS测试DL25000@@GPSTC:OK@@@@AT^GT_CM=GPSTC}}'
+            // },
+            // {
+            //   softVersion: "PB88-V_11_S2_SC33",
+            //   orderName:'JIMI-2020-2010',
+            //   settingType:"SMT功能测试",
+            //   typeId:3,
+            //   model: "PB88-V",
+            //   operationType: "新增",
+            //   operator: "李四",
+            //   time:'2020-05-06 20:32:00',
+            //   result:'失败',
+            //   station: 'NT912_R0_V01@@@@}}}}11共有指令切换为NB@@AT+MSMODE=2,0@@OK}}共有指令芯片ID@@AT^GT_CM=ID,1@@RID}}共有指令软件版本@@AT^GT_CM=VERSION@@[VERSION]}}IMEI域名IMEI写号@@AT^GT_CM=IMEI,1,@@OK!}}IMEI域名测试项@@AT^GT_CM=ESDS@@NVRAM执行成功！}}IMEI域名RFID@@AT^GT_CM=RF_BAR@@PASS}}IMEI域名IMEI检查@@AT+EGMR=0,7@@OK}}IMEI域名恢复出厂@@AT^GT_CM=FACTORYALL@@OK}}IMEI域名查IP及端口@@AT^GT_CM=SCXSZ@@112.35.78.50,7100}}共有指令清除参数@@AT^GT_CM=CLEAR@@OK}}共有指令耦合测试@@@@}}'
+            // }
           ],
           thisQueryOptions:{},  //查询条件存储
           isDetail:false,
@@ -212,16 +212,44 @@
               data:{
                 pageNo:this.paginationOptions.currentPage,
                 pageSize:this.paginationOptions.pageSize,
-                descBy: 'RecordTime',
-                type: 3
               }
             }
+            console.log(this.times)
+            if(this.times.length > 0){
+              this.thisQueryOptions.startTime = this.times[0]
+              this.thisQueryOptions.endTime = this.times[1]
+            }
+            console.log(this.thisQueryOptions)
             Object.keys(this.thisQueryOptions).forEach(item=>{
               options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item]))
             })
             axiosFetch(options).then(response=>{
               if(response.data.result === 200 ){
-                // this.tableData = response.data.data.list
+                console.log(response)
+                response.data.data.list.forEach(item=>{
+                  item.model = item.model.split("@@")[0]
+                  switch (item.settingType) {
+                    case 0:
+                      item.settingTypeName = 'SMT功能测试'
+                      break
+                    case 1:
+                      item.settingTypeName = '组装功能测试'
+                      break
+                    case 2:
+                      item.settingTypeName = '组装耦合测试'
+                      break
+                    case 3:
+                      item.settingTypeName = '研发功能测试'
+                      break
+                    case 4:
+                      item.settingTypeName = '研发耦合测试'
+                      break
+                    case 5:
+                      item.settingTypeName = 'OQC'
+                      break
+                  }
+                })
+                this.tableData = response.data.data.list
                 this.paginationOptions.currentPage = response.data.data['pageNumber'];
                 this.paginationOptions.total = response.data.data['totalRow'];
               }else{

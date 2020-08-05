@@ -8,28 +8,49 @@
       :close-on-press-escape="false"
       @close="initData"
       width="90%">
+      <div class="title-button" v-if="editType === 'add'">
+        <div class="import-data">
+          <span>{{fileName}}</span>&nbsp;&nbsp;
+          <el-button  size="small" type="primary" @click="clickLoad">导入配置</el-button>
+        </div>
+        <input name="file" type="file" id="files" ref="refFile" style="display: none"  @change="importData">
+      </div>
       <div class="setting-header">
         <div class="form-group">
           <label for="edit-software">软件版本:</label>
-          <el-input size="medium" type="text" id="edit-software" placeholder="请填写软件版本" clearable autocomplete="off"
-                    v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
+          <el-input size="medium" type="text" id="edit-software"
+                    :placeholder="editType === 'edit' ? '' : '请填写软件版本'"
+                    clearable
+                    autocomplete="off"
+                    v-model.trim="formData.soft_version.value"
+                    :disabled="editType === 'edit'"></el-input>
+        </div>
+        <div class="form-group">
+          <label for="edit-machinename">订单号:</label>
+          <el-input size="small" type="text" id="edit-zhidan"
+                    :placeholder="editType === 'edit' ? '' : '请填写订单号'"
+                    autocomplete="off"
+                    v-model.trim="formData.order_name.value"
+                    :disabled="editType === 'edit'"
+                    clearable></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">机型名:</label>
           <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.value"></el-input>
         </div>
-        <div class="form-group" v-if="$route.query.type === '2'">
-          <label for="edit-software">IMEI号段 从:</label>
-          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+        <div class="form-group" v-if="$route.query.type === '2' || $route.query.type === '4'">
+          <label for="edit-imeifrom">IMEI号段 从:</label>
+          <el-input size="small" type="text" id="edit-imeifrom" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiFrom"></el-input>
         </div>
-        <div class="form-group" v-if="$route.query.type === '2'">
-          <label for="edit-software">至:</label>
-          <el-input size="small" type="text" id="edit-software" clearable autocomplete="off"
+        <div class="form-group" v-if="$route.query.type === '2' || $route.query.type === '4'">
+          <label for="edit-imeito">至:</label>
+          <el-input size="small" type="text" id="edit-imeito" clearable autocomplete="off"
                     v-model.trim="formData.MachineName.imeiTo"></el-input>
         </div>
-        <div class="setting-operation" style="margin-left: auto">
+
+        <div class="setting-operation" style="margin-left: auto" v-if="deleteHistory.length > 0 && copySrcIndex !== null">
           <div v-if="deleteHistory.length > 0">
             <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back
 " @click="restoreOneSetting">撤销删除
@@ -50,7 +71,6 @@
         <el-col :span="7">AT指令</el-col>
         <el-col :span="4">返回值</el-col>
         <el-col :span="2">操作</el-col>
-
       </el-row>
       <el-row class="setting-row" v-for="(item, index) in formData.SettingList" :key="index"
               :class="setCopyStyle(index)">
@@ -126,13 +146,26 @@
       return {
         isCreate: false,
         isUpdate: false,
+        fileName:'',
         formData: {
-          'SoftWare': {
-            value: ''
+          // 'soft_version': {
+          //   value: ''
+          // },
+          'soft_version':{
+            value:''
+          },
+          'order_name':{
+            value:''
           },
           'MachineName': {
-            value: ''
+            value: '',
           },
+          // 'imeiFrom': {
+          //   value: ''
+          // },
+          // 'imeiTo': {
+          //   value: ''
+          // },
           'SettingList': [
             {
               '1': '共有指令',
@@ -175,8 +208,9 @@
         if (this.editType === 'edit' || this.editType === 'copy') {
           this.isCreate = false;
           this.isUpdate = true;
-          this.formData.SoftWare.value = this.sourceData.SoftWare;
-          if (this.$route.query.type === '2') {
+          this.formData.soft_version.value = this.sourceData.soft_version;
+          this.formData.order_name.value = this.sourceData.order_name;
+          if (this.$route.query.type === '2' || this.$route.query.type === '4') {
             this.$set(this.formData.MachineName, 'imeiFrom', '');
             this.$set(this.formData.MachineName, 'imeiTo', '');
             let array = this.sourceData.MachineName.replace('}}', '').split('@@');
@@ -258,7 +292,7 @@
         /*空值*/
         let emptyMark = true;
         let mark = true;
-        if (this.formData.SoftWare.value === '' || this.formData.MachineName.value === '') {
+        if (this.formData.soft_version.value === '' || this.formData.MachineName.value === '') {
           emptyMark = false;
         }
 
@@ -298,6 +332,116 @@
         return mark && emptyMark;
       },
 
+      // importData(){
+      //   console.log(222)
+      //   const privateKeyFile = this.$refs.uploads.uploadFiles[0].raw
+      //   let reader = new FileReader()
+      //   if (typeof FileReader === 'undefined') {
+      //     this.$message({
+      //       type: 'info',
+      //       message: '您的浏览器不支持FileReader接口'
+      //     })
+      //     return
+      //   }
+      //   reader.readAsText(privateKeyFile)
+      //   var _this = this
+      //   reader.onload = function (e) {
+      //     console.log('密钥文件内容')
+      //     console.log(e.target.result)
+      //   }
+      // },
+      importData(e) {
+        const selectedFile = this.$refs.refFile.files[0];
+        if(selectedFile.type !== 'text/plain'){
+          this.$alertWarning('请选择.txt文件')
+          return
+        }
+        let modelName
+        switch (this.$route.query.type) {
+          case '0':
+            modelName = 'SMT功能测试'
+            break
+          case '1':
+            modelName = '组装功能测试'
+            break
+          case '2':
+            modelName = '组装耦合测试'
+            break
+          case '3':
+            modelName = '研发功能测试'
+            break
+          case '4':
+            modelName = '研发耦合测试'
+            break
+          case '5':
+            modelName = 'OQC'
+            break
+        }
+        if(selectedFile.name.indexOf(modelName) === -1){
+          this.$alertWarning('请选择当前模块所对应的.txt文件')
+          e.target.value = ''
+          return
+        }
+        this.fileName = this.$refs.refFile.files[0].name
+        let reader = new FileReader();
+        reader.readAsText(selectedFile);
+        reader.onload = (e) => {
+          this.sourceData = JSON.parse(e.target.result);
+          Object.keys(this.sourceData).forEach(item => {
+            if (this.sourceData[item] === "") {
+              return;
+            }
+            if (item.indexOf('Setting') >= 0) {
+              let tempData;
+              let no;
+              if (!this.sourceData[item]) {
+                return;
+              }
+              /*测试工位*/
+              if (this.sourceData[item].indexOf('共有指令') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "共有指令",
+                  "2": "",
+                  "3": "",
+                  "4": ""
+                });
+                tempData = this.sourceData[item].replace('共有指令', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('IMEI域名') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "IMEI域名",
+                  "2": "",
+                  "3": "",
+                  "4": ""
+                });
+                tempData = this.sourceData[item].replace('IMEI域名', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('白卡测试') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "白卡测试",
+                  "2": "",
+                  "3": "",
+                  "4": ""
+                });
+                tempData = this.sourceData[item].replace('白卡测试', '').replace('}}', '');
+              }
+
+              if (!!tempData) {
+                let dataArray = tempData.split('@@');
+                this.formData.SettingList[no]["2"] = dataArray[0];
+                this.formData.SettingList[no]["3"] = dataArray[1];
+                this.formData.SettingList[no]["4"] = dataArray[2]
+              }
+            }
+          })
+        };
+      },
+      clickLoad() {
+        console.log(123)
+        this.$refs.refFile.dispatchEvent(new MouseEvent("click"));
+      },
+
       submitEdit: function (submitType) {
         if (this.checkFormat()) {
           this.isPending = true;
@@ -306,7 +450,9 @@
           let options = {
             url: testOperUrl + (this.editType === 'edit' ? '/update' : '/create'),
             data: {
-              softWare: this.formData.SoftWare.value,
+              orderName: this.formData.order_name.value,
+              softVersion: this.formData.soft_version.value,
+              softWare: this.formData.soft_version.value + this.formData.order_name.value,
               machineName: this.formData.MachineName.value,
               recordTime: getTime()
             }
@@ -322,7 +468,7 @@
           options.data.station = station;
 
           /*组装-耦合(type:2)的MachineName需要IMEI号段*/
-          if (this.$route.query.type === '2') {
+          if (this.$route.query.type === '2' || this.$route.query.type === '4') {
             options.data.machineName = this.formData.MachineName.value + '@@' + this.formData.MachineName.imeiFrom + '@@' + this.formData.MachineName.imeiTo + '}}'
           }
 
@@ -337,12 +483,13 @@
           if (submitType === 'saveAs') {
             if (this.pageType !== '') {
               options.data.type = this.pageType;
-              if (this.$route.query.type === '2') {
-                options.data.machineName = this.formData.MachineName.value;
+              if (this.$route.query.type === '2' || this.pageType === '2' && this.$route.query.type === '4') {
+                // options.data.machineName = this.formData.MachineName.value;
+                options.data.machineName = this.formData.MachineName.value + '@@' + this.formData.MachineName.imeiFrom + '@@' + this.formData.MachineName.imeiTo + '}}';
               }
-              if (this.pageType === '2' && this.$route.query.type === '4') {
-                options.data.machineName = this.formData.MachineName.value + '@@@@}}';
-              }
+              // if (this.pageType === '2' && this.$route.query.type === '4') {
+              //   options.data.machineName = this.formData.MachineName.value + '@@@@}}';
+              // }
               if (this.pageType === '5') {
                 options.data.machineName = this.formData.MachineName.value;
 
@@ -479,21 +626,28 @@
   }
 
   .setting-header {
+    margin-top: 10px;
     display: flex;
+    justify-content: space-between;
     align-items: flex-end;
   }
 
   .setting-header label {
     line-height: 24px;
   }
+  .setting-header .form-group{
+    min-width: 260px;
+  }
+  .setting-header .form-group:nth-child(1) {
+    width: 450px;
+  }
+  .setting-header .form-group:nth-child(2) {
+    width: 360px;
+  }
 
-  .setting-header .form-group {
-    width: 800px;
-    margin-right: 10px;
-  }
-  .setting-header .form-group /deep/ .el-input :nth-child(1){
-    width: 300px;
-  }
+
+
+
 
   .setting-header .setting-operation {
     display: flex;
@@ -519,6 +673,23 @@
     .setting-row {
       height: 64px;
     }
+  }
+  .title-button{
+    width: 100%;
+    height: 50px;
+
+  }
+  .title-button input{
+    float: right;
+    margin-right: 10px;
+    z-index:10;
+
+  }
+  .import-data{
+    margin-right: 10px;
+    float: right;
+    z-index: 11;
+
   }
 
   .setting-row .el-col {

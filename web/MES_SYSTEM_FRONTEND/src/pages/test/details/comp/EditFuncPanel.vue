@@ -8,23 +8,35 @@
       :close-on-press-escape="false"
       @close="initData"
       width="90%">
-      <div class="setting-header">
+      <div class="title-button" v-if="editType === 'add'">
+        <div class="import-data">
+          <span>{{fileName}}</span>&nbsp;&nbsp;
+          <el-button  size="small" type="primary" @click="clickLoad">导入配置</el-button>
+        </div>
+        <input name="file" type="file" id="files" ref="refFile" style="display: none"  @change="importData">
+      </div>
+      <div class="setting-header" >
+<!--        <div class="form-group" v-if="formData.SoftWare.value !== ''">-->
+<!--          <label for="edit-software">软件版本:</label>-->
+<!--          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本"  autocomplete="off"-->
+<!--                  v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"  clearable></el-input>-->
+<!--        </div>-->
         <div class="form-group">
-          <label for="edit-software">软件版本 (无需输入订单号，只填软件版本):</label>
-          <el-input size="small" type="text" id="edit-software" placeholder="请填写软件版本"  autocomplete="off"
-                    v-model.trim="formData.SoftWare.value" :disabled="editType === 'edit'"></el-input>
+        <label for="edit-software">软件版本:</label>
+        <el-input size="small" type="text" id="edit-software" :placeholder="editType === 'edit' ? '' : '请填写软件版本'"  autocomplete="off"
+                  v-model.trim="formData.soft_version.value" :disabled="editType === 'edit'"  clearable></el-input>
+      </div>
+        <div class="form-group">
+          <label for="edit-machinename">订单号:</label>
+          <el-input size="small" type="text" id="edit-zhidan" :placeholder="editType === 'edit' ? '' : '请填写订单号'"  autocomplete="off"
+                    v-model.trim="formData.order_name.value" :disabled="editType === 'edit'" clearable></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">机型名:</label>
           <el-input size="small" type="text" id="edit-machinename" placeholder="请填写机型名"  autocomplete="off"
-                    v-model.trim="formData.MachineName.value"></el-input>
+                    v-model.trim="formData.MachineName.value" clearable></el-input>
         </div>
-<!--        <div class="form-group">-->
-<!--          <label for="edit-machinename">订单号:</label>-->
-<!--          <el-input size="small" type="text" id="edit-zhidan" placeholder="请填写订单号"  autocomplete="off"-->
-<!--                    v-model.trim="formData.MachineName.zhidan"></el-input>-->
-<!--        </div>-->
-        <div class="setting-operation" style="margin-left: auto">
+        <div class="setting-operation" style="margin-left: auto" v-if="deleteHistory.length > 0 && copySrcIndex !== null">
           <div v-if="deleteHistory.length > 0">
             <el-button style="width: 100%" type="primary" size="mini" icon="el-icon-back" @click="restoreOneSetting">
               撤销删除
@@ -128,9 +140,16 @@
       return {
         isCreate: false,
         isUpdate: false,
+        fileName:"",
         formData: {
-          'SoftWare': {
-            value: ''
+          // 'SoftWare': {
+          //   value: ''
+          // },
+          'soft_version':{
+            value:''
+          },
+          'order_name':{
+            value:''
           },
           'MachineName': {
             value: ''
@@ -168,7 +187,6 @@
       }
     },
     mounted: function () {
-
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTestFunc');
       eventBus.$on('editTestFunc', data => {
@@ -178,7 +196,8 @@
         if (this.editType === 'edit' || this.editType === 'copy') {
           this.isCreate = false;
           this.isUpdate = true;
-          this.formData.SoftWare.value = this.sourceData.SoftWare;
+          this.formData.soft_version.value = this.sourceData.soft_version;
+          this.formData.order_name.value = this.sourceData.order_name;
           if (this.$route.query.type === '2') {
             let array = this.sourceData.MachineName.replace('}}', '').split('@@');
             this.formData.MachineName.value = array[0];
@@ -267,15 +286,17 @@
         /*空值*/
         let emptyMark = true;
         let mark = true;
-        if (this.formData.SoftWare.value === '' || this.formData.MachineName.value === '') {
+        if (this.formData.order_name.value === '' ||this.formData.soft_version.value === '' || this.formData.MachineName.value === '') {
           emptyMark = false;
         }
-
         this.formData.SettingList.forEach((item, index) => {
           if (item['2'] === '') {
             emptyMark = false;
           }
-          if (item[2].indexOf('@@') >= 0 || item[3].indexOf('@@') >= 0 || item[4].indexOf('@@') >= 0 || item[5].indexOf('@@') >= 0) {
+          if(typeof (item[5]) === 'undefined'){
+            item[5] = ""
+          }
+          if (item[2].indexOf('@@') >= 0 || item[3].indexOf('@@') >= 0 || item[4].indexOf('@@') >= 0 ||item[5].indexOf('@@') >= 0) {
             this.$alertInfo('第' + index + '项存在非法字符"@@"');
             mark = false;
           }
@@ -283,8 +304,113 @@
         if (!emptyMark) {
           this.$alertInfo('存在不能为空项目')
         }
-        console.log(mark,"++",emptyMark)
         return mark && emptyMark;
+      },
+
+      //导入文件
+      importData(e) {
+        const selectedFile = this.$refs.refFile.files[0];
+        if(selectedFile.type !== 'text/plain'){
+          this.$alertWarning('请选择.txt文件')
+          return
+        }
+        let modelName
+        switch (this.$route.query.type) {
+          case '0':
+            modelName = 'SMT功能测试'
+            break
+          case '1':
+            modelName = '组装功能测试'
+            break
+          case '2':
+            modelName = '组装耦合测试'
+            break
+          case '3':
+            modelName = '研发功能测试'
+            break
+          case '4':
+            modelName = '研发耦合测试'
+            break
+          case '5':
+            modelName = 'OQC'
+            break
+        }
+        if(selectedFile.name.indexOf(modelName) === -1){
+          this.$alertWarning('请选择当前模块所对应的.txt文件')
+          e.target.value = ''
+          return
+        }
+        this.fileName = this.$refs.refFile.files[0].name
+        let reader = new FileReader();
+        reader.readAsText(selectedFile);
+        reader.onload = (e) => {
+          this.sourceData = JSON.parse(e.target.result);
+          Object.keys(this.sourceData).forEach(item => {
+            if (this.sourceData[item] === "") {
+              return;
+            }
+            if (item.indexOf('Setting') >= 0) {
+              let tempData;
+              let no;
+              if (!this.sourceData[item]) {
+                return;
+              }
+              /*测试工位*/
+              if (this.sourceData[item].indexOf('共有指令') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "共有指令",
+                  "2": "",
+                  "3": "",
+                  "4": "",
+                  "5": ""
+                });
+                tempData = this.sourceData[item].replace('共有指令', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('功能测试') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "功能测试",
+                  "2": "",
+                  "3": "",
+                  "4": "",
+                  "5": ""
+                });
+                tempData = this.sourceData[item].replace('功能测试', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('IMEI域名') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "IMEI域名",
+                  "2": "",
+                  "3": "",
+                  "4": "",
+                  "5": ""
+                });
+                tempData = this.sourceData[item].replace('IMEI域名', '').replace('}}', '');
+              } else if (this.sourceData[item].indexOf('白卡测试') >= 0) {
+                no = Number(item.replace('Setting', ''));
+                this.$set(this.formData.SettingList, no, {
+                  "1": "白卡测试",
+                  "2": "",
+                  "3": "",
+                  "4": "",
+                  "5": ""
+                });
+                tempData = this.sourceData[item].replace('白卡测试', '').replace('}}', '');
+              }
+
+              if (!!tempData) {
+                let dataArray = tempData.split('@@');
+                this.formData.SettingList[no]["2"] = dataArray[0];
+                this.formData.SettingList[no]["3"] = dataArray[1];
+                this.formData.SettingList[no]["4"] = dataArray[2];
+                this.formData.SettingList[no]["5"] = dataArray[3];
+              }
+            }
+          })
+        };
+      },
+      clickLoad() {
+        this.$refs.refFile.dispatchEvent(new MouseEvent("click"));
       },
 
 
@@ -296,7 +422,9 @@
           let options = {
             url: testOperUrl + (this.editType === 'edit' ? '/update' : '/create'),
             data: {
-              softWare: this.formData.SoftWare.value,
+              softWare: this.formData.soft_version.value + this.formData.order_name.value,
+              softVersion: this.formData.soft_version.value,
+              orderName: this.formData.order_name.value,
               machineName: this.formData.MachineName.value,
               recordTime: getTime()
             }
@@ -446,6 +574,7 @@
 
   .setting-header {
     display: flex;
+    justify-content: space-between;
     align-items: flex-end;
   }
 
@@ -484,6 +613,17 @@
     }
   }
 
+  .title-button{
+    width: 100%;
+    height: 30px;
+
+    margin-bottom: 5px;
+  }
+  .import-data{
+    margin-right: 10px;
+    float: right;
+  }
+
   .setting-row .el-col {
     height: 100%;
   }
@@ -492,16 +632,16 @@
     height: 100%;
   }
 
-  .setting-header .form-group {
-    width: auto;
-    margin-right: 10px;
+  .setting-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
   }
-  .setting-header .form-group /deep/ .el-input #edit-software{
-    width: 550px;
-    margin-right: 20px;
+  .setting-header .form-group{
+    min-width: 260px;
   }
-  .setting-header .form-group /deep/ .el-input #edit-machinename{
-    width: auto;
+  .setting-header .form-group:first-child , .setting-header .form-group:nth-child(2) {
+    width: 450px;
     margin-right: 20px;
   }
   .setting-row /deep/ .el-input__inner {

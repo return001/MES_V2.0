@@ -165,12 +165,45 @@
                         v-model.number="tableEditData[scope.row.id].schedulingQuantity"></el-input>
             </template>
           </el-table-column>
+          <el-table-column
+            label="标准产能"
+            width="100">
+            <template slot-scope="scope">
+
+                <el-select size="small"
+                           :loading = 'capacityList.length <= 0'
+                           loading-text="加载中..."
+                           @focus="softModelCapacity(scope.row)"
+                           @change="insertTransferLineTime(scope.row)"
+                           v-model="tableEditData[scope.row.id].capacity">
+                  <div class="select-capacity">
+                    <el-option v-for="(item,index) in capacityList"
+                               class="select-capacity"
+                               :key="index"
+                               :value="item.capacity">
+                      <div>标准产能：{{item.capacity}}</div>
+                      <div>客户编号：{{item.customerNumber}}</div>
+                      <div>客户料号：{{item.customerModel}}</div>
+                      <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：{{item.softModel}}</div>
+                      <!--                  <span style="margin-right: 50px;">标准产能：{{item.capacity}}</span>-->
+                      <!--                  <span>KKS</span>-->
+                      <!--                  <div>客户料号：K-EL100-M01fsad-f3</div>-->
+                      <!--                  <div>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：K-EL100-M01fsad-f3</div>-->
+                    </el-option>
+                  </div>
+                </el-select>
+
+
+            </template>
+          </el-table-column>
+
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
                            :prop="item.key"
                            :label="item.label"
                            :min-width="item['min-width']">
           </el-table-column>
+
 
           <el-table-column
             label="预计生产时长"
@@ -459,7 +492,7 @@
     planDetailsPlanCalculateUrl,
     planLineTimeSelectUrl,
     planLineTimeSettingUrl,
-    planOrderDetailSelectUrl,
+    planOrderDetailSelectUrl, planCapacitySelectUrl,
   } from "../../../../config/globalUrl";
   import{planOrderDetail} from "../../../../config/planConfig";
   import {axiosFetch} from "../../../../utils/fetchData";
@@ -470,7 +503,7 @@
     data() {
       return {
         choiceLine:'',       //选择产线
-        eqLine:'',           //选择产线(问题)
+        capacityList:[],     //选择产能
         isTimeSetting:false, //设置时间 dialog 显示
         lineDate:'',         //产线日期
         trueTimes:true,      //设置时间时是验证表单（暂时不用）
@@ -536,7 +569,7 @@
           {'label': '订单数量', 'key': 'quantity', 'min-width': '60px'},
           {'label': '未排产数量', 'key': 'unscheduledQuantity', 'min-width': '60px'},
           {'label': '人数', 'key': 'processPeopleQuantity', 'min-width': '50px'},
-          {'label': '标准产能', 'key': 'capacity', 'min-width': '60px'},
+          // {'label': '标准产能', 'key': 'capacity', 'min-width': '180px'},
           {'label': '内部替换号', 'key': 'alias', 'min-width': '60px'},
           {'label': '机型', 'key': 'softModel', 'min-width': '60px'},
           // {'label': '版本号', 'key': '', 'min-width': '100px'},
@@ -674,7 +707,39 @@
           tasks:[],
         };
       },
+      //排产页面标产
+      softModelCapacity(row){
+        let options={
+          url: planCapacitySelectUrl,
+          data:{
+            pageSize:65535,
+            pageNo:1,
+            softModel:row.softModel,
+            processGroup:this.tableEditData[row.id].processGroup,
+            customerNumber:row.customerNumber,
+          }
+        }
+        axiosFetch(options).then(response=>{
+          if(response.data.result === 200){
+            this.capacityList = response.data.data.list
+          }
+        })
+      },
 
+      //选完标产，更改转线时长
+      insertTransferLineTime(row){
+        this.capacityList.forEach(item=>{
+          if(this.tableEditData[row.id].capacity === item.capacity){
+            row.processPeopleQuantity = item.processPeopleQuantity
+            this.tableEditData[row.id].personNumber = item.processPeopleQuantity
+            if(item.transferLineTime === null){
+              this.tableEditData[row.id].lineChangeTime = 0
+            }else{
+              this.tableEditData[row.id].lineChangeTime = item.transferLineTime;
+            }
+          }
+        })
+      },
       //详情
       showDetails(val){
         this.isDetailsShowing= true
@@ -702,11 +767,12 @@
        * 设置产线时间
        */
       handleTimeSetting(){
+        this.cleanOptions()
         this.isTimeSetting = true;
       },
 
       handleAddTime(){
-        if(this.choiceLine === ""){
+        if(!this.choiceLine){
           this.$alertWarning('请选择产线');
           return
         }
@@ -716,7 +782,7 @@
         })
       },
       handleDeleteTime(val){
-        if(this.choiceLine === ""){
+        if(!this.choiceLine){
           this.$alertWarning('请选择产线');
           return
         }
@@ -753,7 +819,7 @@
 
       //关闭/取消页面
       closeTimeSetting(){
-        this.cleanOptions()
+        // this.cleanOptions()
         this.choicedDate = [];
         this.isTimeSetting = false;
       },
@@ -891,8 +957,6 @@
       //删除日期
       handleClose(date){
         delete this.dateToTime[date]
-        console.log(Object.keys(this.dateToTime).length)
-        console.log(this.dateToTime)
         if(Object.keys(this.dateToTime).length > 0){
           this.choicedDate = Object.keys(this.dateToTime).map(item=>item)
           this.clicked = this.choicedDate[0]
@@ -913,7 +977,6 @@
         }else{
           let myDate = new Date();
           let defaultDate = myDate.getFullYear()+"-"+(this.addZero(Number(myDate.getMonth())+1))+"-"+myDate.getDate();
-          console.log(defaultDate)
           this.lineDate = [defaultDate];
           this.choicedDate = [];
           this.workTime = []
@@ -923,13 +986,11 @@
               this.timesAndTasks.workTimes.splice(i,1)
             }
           })
-          console.log(this.timesAndTasks.workTimes)
         }
       },
 
       //提交设置的产线工作时长
       submitLineTimeSetting(){
-        console.log(this.timesAndTasks.workTimes)
         //处理 timesAndTasks的 workTimes
         if(this.choiceLine === ""){
           this.$alertWarning('请选择产线');
@@ -939,27 +1000,6 @@
           this.$alertWarning('请选择日期');
           return
         }
-        //日期下 时间为空，则代表要删除该日期
-        // if(this.workTime.length <= 0) {
-        //   this.lineDate.forEach(dateItem=>{
-        //     if(this.dateToTime[dateItem] === []){
-        //       delete this.dateToTime[dateItem]
-        //     }
-        //   })
-        //   let notEmpty=[]
-        //   this.timesAndTasks.workTimes.forEach(item => {
-        //     item.workTime.forEach(timeItem=> {
-        //       if (this.lineDate.indexOf(timeItem.date) === -1) {
-        //         notEmpty.push(timeItem)
-        //       }
-        //       item.workTime = notEmpty
-        //     })
-        //   })
-        //   this.trueTimes=true
-        // }
-
-
-
 
         if(this.workTime && this.workTime.length > 0){
           this.workTime.forEach((item,i)=>{
@@ -985,7 +1025,7 @@
           ];
         }
         if(this.trueTimes === true){
-          let workTime= [];                  //date and time array
+          let workTime= [];                  //date & time array
           this.lineDate.map(item=>{
             this.workTime.map(ins=>{
               let obj= {
@@ -1047,7 +1087,6 @@
             this.handleChoiceLine(this.choiceLine)
           })
         }
-        this.eqLine = this.choiceLine  //保存起来  因为计算的时候获取不到（暂未找到原因，怀疑是引用类型问题）
       },
 
       //提交数据给后台计算
@@ -1065,38 +1104,29 @@
           }else{
             this.timesAndTasks.tasks[i].orderId = Number(item.id)
           }
-          this.timesAndTasks.tasks[i].executorId = this.tableEditData[item.id].line;
-          this.timesAndTasks.tasks[i].switchConsumingTime = this.isReImport ? this.tableEditData[item.id].transferLineTime : this.tableEditData[item.id].lineChangeTime
-          this.timesAndTasks.tasks[i].planQuantity = this.tableEditData[item.id].schedulingQuantity
-          this.timesAndTasks.tasks[i].standardCapacity = item.capacity
-          this.timesAndTasks.tasks[i].tagId =item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
+          this.$set(this.timesAndTasks.tasks,i,{
+            executorId:this.tableEditData[item.id].line,
+            switchConsumingTime : this.tableEditData[item.id].lineChangeTime,
+            planQuantity : this.tableEditData[item.id].schedulingQuantity,
+            standardCapacity : item.capacity,
+            tagId :item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
+          })
         })
         if(!trueSchedulQun){
           this.$alertWarning('请输入正确的排产数量(存在未排产数小于零)！')
           return
         }
         this.dateSort(this.timesAndTasks.workTimes)
-        // this.timesAndTasks.tasks = []
-        //   Object.keys(this.tableEditData).forEach((key,i)=>{
-        //     this.timesAndTasks.tasks.push({})
-        //     this.timesAndTasks.tasks.forEach((ins,index)=>{
-        //       if(i === index){
-        //         if (key.indexOf('-') !== -1){
-        //           this.timesAndTasks.tasks[index].orderId = Number(key.split('-')[0])
-        //         }else{
-        //           this.timesAndTasks.tasks[index].orderId = Number(key)
-        //         }
-        //         this.timesAndTasks.tasks[index].executorId = this.tableEditData[key].line
-        //         this.timesAndTasks.tasks[index].switchConsumingTime = this.tableEditData[key].lineChangeTime
-        //         this.timesAndTasks.tasks[index].planQuantity = this.tableEditData[key].schedulingQuantity
-        //         this.timesAndTasks.tasks[index].standardCapacity = this.tableEditData[key].capacity
-        //         this.timesAndTasks.tasks[index].tagId =key   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
-        //       }
-        //     })
-        //   })
-
           //处理 timesAndTasks的 tasks
           if(this.timesAndTasks.workTimes.length > 0 && this.timesAndTasks.tasks.length > 0){
+            let isAllLineSetted = true
+            let choicedLine = this.timesAndTasks.workTimes.map(item=>item.executorId)
+            let taskItemLine = this.timesAndTasks.tasks.map(item=>item.executorId)
+            taskItemLine.forEach(item=>{
+              if(choicedLine.indexOf(item) ===-1){
+                isAllLineSetted = false
+              }
+            })
             axiosFetch({
               url: planDetailsPlanCalculateUrl,
               data: {
@@ -1106,40 +1136,41 @@
               if (response.data.result === 200) {
                 Object.keys(this.tableEditData).forEach((item,i)=>{
                   response.data.data.forEach(res=>{
-                    //用来验证，两条相同订单会出现  订单号 - 随机数 的情况↓
-                    // if(Number(item) === res.orderId){
+                    //用来验证，两条相同订单会出现  订单号 - 随机数 的情况↓ tagId
                     if(item === res.tagId){
                       this.$set(this.tableEditData[item], 'planStartTime', res.estimatedStartTime);
                       this.$set(this.tableEditData[item], 'planCompleteTime', res.estimatedEndTime);
+
+                      //把 百进制时换算成 _分_秒
                       let pInterval = ''
                       if(res.estimatedProductionTime < 1){
                         pInterval = Math.floor(res.estimatedProductionTime*60)+'分';
                       }else {
                         let houMin = res.estimatedProductionTime.toString().split('.')
-                        console.log(houMin)
                         if (typeof (houMin[1]) === 'undefined') {
                           houMin[1] = '0'
                         }
-                        console.log(houMin[1])
-                        // if((parseFloat('0.'+houMin[1])*60).toString().indexOf('.') !== -1 ){
-                          pInterval = parseInt(houMin[0])+'小时'+(Math.floor(parseFloat('0.'+houMin[1])*60))+"分"
-                        // }else{
-                        //   pInterval = parseInt(houMin[0])+'小时'+(parseFloat('0.'+houMin[1])*60)+"分"
-                        // }
+                        pInterval = parseInt(houMin[0])+'小时'+(Math.floor(parseFloat('0.'+houMin[1])*60))+"分"
                       }
-                      this.$set(this.tableEditData[item], 'planInterval', pInterval);}
+                      this.$set(this.tableEditData[item], 'planInterval', pInterval);
+                    }
                   })
                 })
-                this.isImportable = true;
+                if(isAllLineSetted){
+                  this.isImportable = true;
+                  this.$alertSuccess('计算成功！')
+                }else{
+                  this.$alertWarning('存在未设置时间的产线')
+                }
               } else {
-                this.$alertWarning(response.data)
+                this.$alertWarning(response.data.data);
               }
             }).catch(err => {
               this.$alertDanger('计算有误,请刷新重试');
             }).finally(() => {
             })
           }else{
-            this.$alertWarning('缺少参数')
+            this.$alertWarning('请设置产线工作时间和其他排产信息')
           }
       },
 
@@ -1480,14 +1511,10 @@
         let planDataEndtime =[];
           Object.keys(this.tableEditData).forEach(item=>{
           planDataEndtime.push(this.tableEditData[item].planCompleteTime)
-          if(planDataEndtime.indexOf('超出预期') !== -1){
-            trueTime = false;
-          }else{
-            trueTime = true
-          }
+          trueTime = planDataEndtime.indexOf('超出预期') === -1;
         })
         if(trueTime === false){
-          this.$alertDanger('请设置正确排产计划')
+          this.$alertDanger('排产时间冲突')
           return;
         }
         MessageBox.confirm('请确认是否按此配置导入排产(请留意页面中可能存在的错误提示)', '提示', {
@@ -1741,6 +1768,7 @@
     min-height: 30px;
     max-width: 800px;
     margin-top: 20px;
+
   }
   .allreday-choice-date /deep/ .el-tag{
     margin-top: 5px;
@@ -1748,6 +1776,14 @@
   }
   .allreday-choice-date /deep/ .el-tag:hover{
     cursor: pointer;
+  }
+  .select-capacity /deep/ .el-select-dropdown__item{
+    min-height: 107px;
+    padding-top: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  .select-capacity /deep/ .el-select-dropdown__item >div{
+    margin: -10px 0;
   }
 
 </style>

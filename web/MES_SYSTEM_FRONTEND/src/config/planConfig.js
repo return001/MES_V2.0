@@ -10,7 +10,8 @@ export const orderQueryOptions = [
         type: 'select',
         label: '状态',
         key: 'status',
-        list: [{
+        list: [
+            {
                 value: 1,
                 label: '待确认'
             },
@@ -34,14 +35,14 @@ export const orderQueryOptions = [
                 value: 6,
                 label: '已完成'
             },
-            // {
-            //     value: 7,
-            //     label: '已作废'
-            // },
             {
-              value: 7,
-              label: '异常结单'
+                value: 7,
+                label: '异常结单'
             },
+            // {
+            //   value: 7,
+            //   label: '已作废'
+            // },
         ]
     },
 
@@ -226,9 +227,9 @@ export const orderEditOptionsRules = {
     'orderDate': [
         { required: true, message: '请输入订单日期', trigger: 'blur' }
     ],
-    'deliveryDate': [
-        { required: true, message: '请输入交货日期', trigger: 'blur' }
-    ],
+    // 'deliveryDate': [
+    //     { required: true, message: '请输入交货日期', trigger: 'blur' }
+    // ],
     'reworkZhidan': [
         { required: true, message: '请输入返工单号', trigger: 'blur' },
     ],
@@ -623,8 +624,8 @@ export const lineEditOptionsRules = {
     'workshopId': [{ required: true, message: '请选择所属车间', trigger: 'change' }],
     'lineNo': [{ required: true, message: '请输入线别', trigger: 'blur' }],
     'lineName': [{ required: true, message: '请输入产线名称', trigger: 'blur' }],
-    'lineDirector': [{ required: true, message: '请输入并选择负责人', trigger: 'blur' }],
-    'lineEngineer': [{ required: true, message: '请输入并选择产线工程', trigger: 'blur' }],
+    'lineDirector': [{ required: true, message: '请输入并选择负责人', trigger: 'change' }],
+    'lineEngineer': [{ required: true, message: '请输入并选择产线工程', trigger: 'change' }],
     'lineQc': [{ required: true, message: '请输入并选择产线品质', trigger: 'blur' }],
     'timeLength': [
         { required: true, message: '请输入时长', trigger: 'blur' },
@@ -1046,11 +1047,11 @@ export const planQueryOptions = [
       },
       {
         value: 3,
-        label: '已完成'
+        label: '待通知'
       },
       {
         value: 4,
-        label: '待通知'
+        label: '已完成'
       },
       {
         value: 5,

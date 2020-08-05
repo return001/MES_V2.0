@@ -70,6 +70,7 @@
           :data="tableData"
           max-height="560"
           ref="tablecomponent"
+          highlight-current-row
           stripe>
           <el-table-column v-for="(item, index) in tableColumns"
                            :key="index"
@@ -158,7 +159,8 @@
           <el-select v-model="orderEditOptionsData['factory']" class="line-edit-form-comp-text"
                       placeholder="请选择工厂"
                       size="small"
-                     :disabled="isDisabled === false"
+                      :disabled="isDisabled === false"
+                      @change="handleChoiceFactory"
                       clearable>
             <el-option v-for="listItem in factoryList"
                        :key="listItem.id"
@@ -192,6 +194,7 @@
               v-model="orderEditOptionsData[item.key]"
               :fetch-suggestions="querySearch"
               clearable
+              :disabled="!inputCustomer"
               placeholder="请输入客户编号"
               @select="handleSelect"
             ></el-autocomplete>
@@ -200,7 +203,7 @@
           <div class="order-edit-form-comp-text" v-if="item.type === 'default'">
             <el-input
               type="text"
-              :disabled = "customerDatas.length > 0"
+              disabled
               :id="'edit' + item.key + index"
               :placeholder="'请填写' + item.label"
               clearable
@@ -358,10 +361,13 @@
         :on-error="onOrderUploadError"-->
       <el-upload
         ref="orderUpload"
+        class="orderUpload"
         :action="planOrderImportUrl"
+        :limit=2
         :auto-upload="false"
         :http-request="uploadFile"
         :before-upload="beforeOrderUpload"
+        :on-change ='handleCheckFile'
         accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       >
         <el-button slot="trigger" size="small" type="info">选取文件</el-button>
@@ -598,6 +604,7 @@
         /*新增 编辑 复制订单*/
         orderEditOptions: orderEditOptions,
         orderEditOptionsRules: orderEditOptionsRules,
+        inputCustomer:true,
         isReworkEdit: false,
         isOrderEditing: false,
         orderEditType: '',
@@ -769,6 +776,7 @@
     },
     mounted() {
       this.fetchData()
+
     },
     methods: {
       /*局部刷新*/
@@ -785,7 +793,7 @@
           this.queryData();
           this.$store.commit('setStashData', {});
         };
-        _partlyReload(['thisQueryOptions'])
+        _partlyReload(['thisQueryOptions','factoryList'])
       },
 
       initQueryOptions: function () {
@@ -873,10 +881,12 @@
       fetchCustomer() {
         return new Promise(resolve => {
           this.$openLoading();
+          let factoryId
+          factoryId= this.sessionFactory === '1' ? this.orderEditOptionsData.factory : this.sessionFactory
           let options = {
             url: eSopCustomerSelectUrl,
             data: {
-              factoryId: this.sessionFactory === '1' ? '0' : this.sessionFactory,
+              factoryId:factoryId === 1 ? '0' : factoryId,
               pageNo: this.paginationOptions.currentPage,
               pageSize: 1000,
             }
@@ -979,7 +989,12 @@
           this.$set(this.orderEditOptionsData,'factory',val.factoryId)
         }
         this.fetchFactory()
-        this.fetchCustomer();
+        if(this.sessionFactory !== '1'){
+          this.fetchCustomer();
+        }
+        if(this.sessionFactory === '1'){
+          this.inputCustomer = false;
+        }
         this.orderEditOptions.forEach(item => {
           this.$set(this.orderEditOptionsData, item.key, '')
         });
@@ -1061,6 +1076,14 @@
         }
       },
 
+      handleChoiceFactory(){
+        this.customerDatas = []
+        this.fetchCustomer()
+        if(this.orderEditOptionsData.factory){
+          this.inputCustomer = true
+        }
+      },
+
       //选择客户编号
       choicedCustomerNumber(val){
         this.customerDatas.forEach(item=>{
@@ -1074,7 +1097,12 @@
         this.customerDatas = this.customerDatas.map(item=>{
           return {...item,value:item.customerNumber}
         })
-        var results = queryString ? this.customerDatas.filter(this.createFilter(queryString)) : this.customerDatas;
+        let results = queryString ? this.customerDatas.filter(this.createFilter(queryString)) : this.customerDatas;
+        if(results.length <= 0){
+          this.orderEditOptionsData.customerName = ''
+          this.orderEditOptionsData.customerNumber = ''
+          this.$alertWarning('请输入现有客户编号')
+        }
         // 调用 callback 返回建议列表的数据
         cb(results);
       },
@@ -1117,13 +1145,20 @@
                 return
               }
             }
+            console.log(this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate)
+            if(this.orderEditOptionsData.deliveryDate && this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate){
+              this.$alertWarning('交货日期不得小于订单日期')
+              this.$closeLoading();
+              return
+            }
+
             if (this.orderEditType === 'edit') {
               options.url = planOrderEditUrl
             } else if (this.orderEditType === 'add' || this.orderEditType === 'rework' || this.orderEditType === 'copy') {
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
-                options.data.factory = this.sessionFactory === '1'?'0':this.sessionFactory;
+                options.data.factory = this.orderEditOptionsData['factory'];
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1274,17 +1309,15 @@
           Object.keys(val).forEach(item => {
             options.data[item] = JSON.parse(JSON.stringify(val[item]))
           });
-          if (val.reworkZhidan || val.reworkQuantity){
-            options.data.isRework = true
-          }else{
-            options.data.isRework = false
-          }
+          val.reworkZhidan || val.reworkQuantity ? options.data.isRework = true : options.data.isRework = false;
           options.data.orderStatus = 2
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
               this.$alertSuccess('确认成功');
               this.partlyReload();
               //this.reload();
+            } else if(response.data.result === 400){
+              this.$alertWarning('请先选取文件')
             } else {
               this.$alertWarning(response.data.data)
             }
@@ -1321,7 +1354,9 @@
             this.$alertSuccess(response.data.data);
             this.partlyReload();
             //this.reload();
-          } else {
+          } else if(response.data.result === 400){
+            this.$alertWarning('请先选取文件');
+          }else {
             this.$alertWarning(response.data.data);
           }
 
@@ -1341,6 +1376,11 @@
       beforeOrderUpload: function () {
         this.isPending = true;
         this.$openLoading();
+      },
+      handleCheckFile(file,fileList){
+        if(fileList && fileList.length >1){
+          fileList.shift()
+        }
       },
 
 
@@ -1623,7 +1663,7 @@
             this.isPending = false;
             this.resetDetailsUploadDialog();
             this.showDetails(this.showingItem);
-          } else {
+          }else{
             this.$alertWarning(response.data.data);
           }
 
@@ -1813,5 +1853,18 @@
     margin: 20px 0;
     padding: 0 20px;
   }
+
+/*  上传订单，取消新的覆盖旧的的动画效果  */
+
+  .orderUpload /deep/ .el-list-enter-active,
+  /deep/ .el-list-leave-active {
+    transition: none;
+  }
+
+  .orderUpload /deep/ .el-list-enter,
+  /deep/ .el-list-leave-active {
+    opacity: 0;
+  }
+
 
 </style>
