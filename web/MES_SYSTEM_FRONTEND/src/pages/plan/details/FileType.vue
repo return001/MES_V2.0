@@ -108,7 +108,7 @@
                 :placeholder="'请填写' + item.label"
                 clearable
                 autocomplete="off"
-                v-model="fileTypeOptionsData[item.key]"></el-input>
+                v-model.trim="fileTypeOptionsData[item.key]"></el-input>
             </div>
           </el-form-item>
 

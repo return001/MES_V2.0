@@ -351,7 +351,6 @@
     data() {
       return {
         jurisdiction:JSON.parse(sessionStorage.getItem('charactersFuncMap')).map.plan.plan.detail,
-        fetchDateAble:true,     //加载时第一个工序组标签是否有二级标签有二级标签就不能获取 产能数据，
         sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: planQueryOptions,
         thisQueryOptions: {},
@@ -585,10 +584,9 @@
             }
           }).then(response => {
             if (response.data.result === 200) {
+              console.log(response.data.data.list)
               //加载时查询工序组
               if(typeof(parentGroup) === "undefined"){             //获取一级工序组标签
-
-              // if(this.activeProcessGroup === ""){               //获取一级工序组标签
                 if(response.data.data.list.length >0){
                   if(this.sessionFactory ==='1'){                  //集团角色  全部都显示
                     this.processGroupSelectGroup = response.data.data.list;
@@ -604,8 +602,10 @@
                 }
               }else{                                              //点击一级工序组标签（传自己的id：就是paretGroup字段）
                 if(response.data.data.list.length >0){            //有二级工序组标签的情况
-                  this.fetchDateAble = false;                     //加载时 如果第一个页签就有二级工序组标签的话  不允许直接获取产能数据
+                  this.activeProcessGroupType=response.data.data.list[0].id -1
+                  this.activeProcessGroup=response.data.data.list[0].id
                   this.viceGroup = response.data.data.list
+                  this.queryData();
                 }else{                                            //没有二级工序组标签的情况：直接获取工序组产能数据
                   this.queryData();
                 }
@@ -632,15 +632,28 @@
         this.fetchData();
       },
 
-      switchTag: function (item) {
+      switchTag: function (val) {
         this.viceGroup = [];
         this.tableData = [];
-        this.groupFactoryId = item.factoryId;
-        this.activeProcessGroup = item.id;
-        this.activeProcessGroupType = item.id - 1;
+        this.groupFactoryId = val.factoryId;
         this.initQueryOptions();
-        this.fetchProcessGroup(item.id)
+        // let parentGroups = this.processGroupSelectGroup.map(pItem=>pItem.parentGroup)
+        // parentGroups = Array.from(new Set(parentGroups)).filter(pItem=>pItem !== null)  //去重，去null
+        // if(parentGroups.includes(val.id)){
+        //   let childrenGroups = this.processGroupSelectGroup.filter(cItem=>cItem.parentGroup === val.id)
+        //   this.activeProcessGroup = childrenGroups[0].id;
+        //   this.activeProcessGroupType = childrenGroups[0].id - 1;
+        //   this.fetchProcessGroup(val.id)
+
+        // }else{
+          this.activeProcessGroup = val.id;
+          this.activeProcessGroupType = val.id - 1;
+          this.fetchProcessGroup(val.id)
+        // }
+
+
       },
+
       viceSwitchTag: function (item) {
         this.activeProcessGroup = item.id;
         this.activeProcessGroupType = item.parentGroup - 1;
