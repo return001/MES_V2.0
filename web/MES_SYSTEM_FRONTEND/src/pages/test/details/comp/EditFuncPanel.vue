@@ -190,6 +190,7 @@
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTestFunc');
       eventBus.$on('editTestFunc', data => {
+        console.log(this.$options.data())
         Object.assign(this.formData, this.$options.data().formData);
         this.editType = data[0];
         this.sourceData = data[1];
@@ -205,7 +206,9 @@
             this.formData.MachineName.value = this.sourceData.MachineName;
           }
           Object.keys(this.sourceData).forEach(item => {
+            // console.log(this.sourceData[item])
             if (this.sourceData[item] === "") {
+              console.log(item)
               return;
             }
             if (item.indexOf('Setting') >= 0) {
@@ -256,13 +259,17 @@
                 });
                 tempData = this.sourceData[item].replace('白卡测试', '').replace('}}', '');
               }
+              // console.log(tempData)
 
               if (!!tempData) {
                 let dataArray = tempData.split('@@');
+                // console.log(dataArray)
+                // console.log(this.formData.SettingList)
                 this.formData.SettingList[no]["2"] = dataArray[0];
                 this.formData.SettingList[no]["3"] = dataArray[1];
                 this.formData.SettingList[no]["4"] = dataArray[2];
                 this.formData.SettingList[no]["5"] = dataArray[3];
+                console.log(this.formData)
               }
             }
           })
@@ -465,7 +472,7 @@
               this.isSaveAs = false;
               this.closePanel();
               this.$alertSuccess('更新成功');
-              this.reload();
+              eventBus.$emit('testQueryData')
             } else {
               this.$alertWarning(response.data.data);
             }

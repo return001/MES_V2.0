@@ -22,7 +22,7 @@
           <el-tooltip content="编辑" placement="top">
             <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
           </el-tooltip>
-          <el-tooltip content="复制" placement="top" v-if="$route.query.type === '3' || $route.query.type === '4'">
+          <el-tooltip content="复制" placement="top">
             <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
           </el-tooltip>
           <span class="file-action-upload"  v-if="$route.query.type === '3' || $route.query.type === '4'">
@@ -267,7 +267,8 @@
               if (response.data.result === 200) {
                 this.$alertSuccess('作废成功');
                 let tempUrl = this.$route.fullPath;
-                this.reload();
+                // this.reload();
+                setTimeout(()=>{this.thisFetch()})
               } else {
                 this.$alertWarning(response.data.data)
               }
@@ -361,8 +362,9 @@
             // this.partlyReload();
             this.isUpload = false;
             setTimeout(()=>{
-              this.reload();
-            },600)
+              // this.reload();
+              this.thisFetch()
+            },1)
           } else {
             this.$alertWarning(response.data.data);
           }
@@ -375,7 +377,6 @@
 
       //下载文件
       downloadFile: function (val) {
-        console.log(123)
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();

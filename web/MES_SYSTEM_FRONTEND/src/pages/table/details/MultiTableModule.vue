@@ -185,11 +185,11 @@
           },
           {
             name: 'DataRelativeUnique',
-            remark: '数据关联表(工厂)'
+            remark: '终端信息附表(工厂)'
           },
           {
             name: 'DataRelativeUpdate',
-            remark: '数据关联表(关联更新)'
+            remark: '终端信息附表(关联更新)'
           },
           {
             name: 'Gps_AutoTest_Result',

@@ -100,7 +100,7 @@ const pageNameMap = {
   'IMEI查询': 'imei',
   'AMS数据关联表': 'DataRelativeSheet',
   '数据关联表(工厂)': 'DataRelativeUnique',
-  '数据关联表(关联更新)': 'DataRelativeUpdate',
+  '数据关联表(关联更新)': 'DataRelativeUpdate',//终端信息附表(关联更新)
   '组装功能表': 'Gps_AutoTest_Result',
   'SMT功能表': 'Gps_AutoTest_Result2',
   '老化后功能表': 'Gps_AutoTest_Result3',

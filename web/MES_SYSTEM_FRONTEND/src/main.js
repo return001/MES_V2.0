@@ -79,9 +79,9 @@ Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(Vuex)
 //关闭 console
-if (!global.consoleSwitch) {
-  console.log = () => {};
-}
+// if (!global.consoleSwitch) {
+//   console.log = () => {};
+// }
 
 
 /* eslint-disable no-new */

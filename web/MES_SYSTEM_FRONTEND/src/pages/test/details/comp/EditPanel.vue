@@ -23,7 +23,7 @@
                     clearable
                     autocomplete="off"
                     v-model.trim="formData.soft_version.value"
-                    :disabled="editType === 'edit'"></el-input>
+                    :disabled="editType === 'edit' || editType === 'copy'"></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">订单号:</label>
@@ -202,10 +202,12 @@
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTest');
       eventBus.$on('editTest', data => {
+        console.log(data)
         Object.assign(this.formData, this.$options.data().formData);
         this.editType = data[0];
         this.sourceData = data[1];
         if (this.editType === 'edit' || this.editType === 'copy') {
+          // console.log(data[2])
           this.isCreate = false;
           this.isUpdate = true;
           this.formData.soft_version.value = this.sourceData.soft_version;
@@ -438,7 +440,6 @@
         };
       },
       clickLoad() {
-        console.log(123)
         this.$refs.refFile.dispatchEvent(new MouseEvent("click"));
       },
 
@@ -509,6 +510,7 @@
             }
           }
 
+
           axiosFetch(options).then(response => {
             this.isPending = false;
             this.$closeLoading();
@@ -516,7 +518,7 @@
               this.isSaveAs = false;
               this.closePanel();
               this.$alertSuccess(response.data.data);
-              this.reload();
+              eventBus.$emit('testQueryData')
             } else {
               this.$alertWarning(response.data.data);
             }

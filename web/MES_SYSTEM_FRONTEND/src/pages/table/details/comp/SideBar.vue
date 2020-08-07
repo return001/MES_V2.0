@@ -36,11 +36,11 @@
               },
               {
                 type: "DataRelativeUnique",
-                name: "数据关联表(工厂)"
+                name: "终端信息附表(工厂)"
               },
               {
                 type: "DataRelativeUpdate",
-                name: "数据关联表(关联更新)"
+                name: "终端信息附表(关联更新)"
               },
               {
                 type: "Gps_AutoTest_Result",

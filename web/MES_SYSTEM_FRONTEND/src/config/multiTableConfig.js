@@ -97,7 +97,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'DataRelativeUpdate',
-    nameCN:'数据关联表(关联更新)',
+    nameCN:'终端信息附表(关联更新)',
     columns: [
       {field: 'RelativeNum', title: '关联码', colStyle: {'width': '120px'}},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '120px'}},
@@ -122,7 +122,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'DataRelativeUnique',
-    nameCN:'数据关联表(工厂)',
+    nameCN:'终端信息附表(工厂)',
     columns: [
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
       {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'}},
