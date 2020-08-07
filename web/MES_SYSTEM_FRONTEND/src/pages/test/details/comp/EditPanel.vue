@@ -202,15 +202,16 @@
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTest');
       eventBus.$on('editTest', data => {
-        console.log(data)
         Object.assign(this.formData, this.$options.data().formData);
         this.editType = data[0];
         this.sourceData = data[1];
         if (this.editType === 'edit' || this.editType === 'copy') {
-          // console.log(data[2])
           this.isCreate = false;
           this.isUpdate = true;
           this.formData.soft_version.value = this.sourceData.soft_version;
+          this.formData.order_name.value = this.sourceData.order_name;
+          this.formData['file_link'] = this.sourceData['file_link'];
+          this.formData['file_name'] = this.sourceData['file_name'];
           this.formData.order_name.value = this.sourceData.order_name;
           if (this.$route.query.type === '2' || this.$route.query.type === '4') {
             this.$set(this.formData.MachineName, 'imeiFrom', '');
@@ -484,6 +485,11 @@
           if (submitType === 'saveAs') {
             if (this.pageType !== '') {
               options.data.type = this.pageType;
+              //复制到当前页的时候 文件也要一起复制
+              if(this.pageType === '3' && this.$route.query.type === '3' || this.pageType === '4' && this.$route.query.type === '4'){
+                this.$set(options.data,'fileLink',this.formData.file_link)
+                this.$set(options.data,'fileName',this.formData.file_name)
+              }
               if (this.$route.query.type === '2' || this.pageType === '2' && this.$route.query.type === '4') {
                 // options.data.machineName = this.formData.MachineName.value;
                 options.data.machineName = this.formData.MachineName.value + '@@' + this.formData.MachineName.imeiFrom + '@@' + this.formData.MachineName.imeiTo + '}}';
@@ -516,9 +522,13 @@
             this.$closeLoading();
             if (response.data.result === 200) {
               this.isSaveAs = false;
+              if(this.editType === 'edit' || this.editType === 'add'){
+                eventBus.$emit('testQueryData')
+              }else{
+                this.reload()
+              }
               this.closePanel();
               this.$alertSuccess(response.data.data);
-              eventBus.$emit('testQueryData')
             } else {
               this.$alertWarning(response.data.data);
             }

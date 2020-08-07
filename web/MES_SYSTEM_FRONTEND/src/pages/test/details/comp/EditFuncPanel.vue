@@ -190,7 +190,6 @@
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTestFunc');
       eventBus.$on('editTestFunc', data => {
-        console.log(this.$options.data())
         Object.assign(this.formData, this.$options.data().formData);
         this.editType = data[0];
         this.sourceData = data[1];
@@ -199,6 +198,8 @@
           this.isUpdate = true;
           this.formData.soft_version.value = this.sourceData.soft_version;
           this.formData.order_name.value = this.sourceData.order_name;
+          this.formData['file_link'] = this.sourceData['file_link'];
+          this.formData['file_name'] = this.sourceData['file_name'];
           if (this.$route.query.type === '2') {
             let array = this.sourceData.MachineName.replace('}}', '').split('@@');
             this.formData.MachineName.value = array[0];
@@ -206,9 +207,7 @@
             this.formData.MachineName.value = this.sourceData.MachineName;
           }
           Object.keys(this.sourceData).forEach(item => {
-            // console.log(this.sourceData[item])
             if (this.sourceData[item] === "") {
-              console.log(item)
               return;
             }
             if (item.indexOf('Setting') >= 0) {
@@ -259,17 +258,13 @@
                 });
                 tempData = this.sourceData[item].replace('白卡测试', '').replace('}}', '');
               }
-              // console.log(tempData)
 
               if (!!tempData) {
                 let dataArray = tempData.split('@@');
-                // console.log(dataArray)
-                // console.log(this.formData.SettingList)
                 this.formData.SettingList[no]["2"] = dataArray[0];
                 this.formData.SettingList[no]["3"] = dataArray[1];
                 this.formData.SettingList[no]["4"] = dataArray[2];
                 this.formData.SettingList[no]["5"] = dataArray[3];
-                console.log(this.formData)
               }
             }
           })
@@ -458,6 +453,11 @@
           if (submitType === 'saveAs') {
             if (this.pageType !== '') {
               options.data.type = this.pageType;
+              //复制到当前页的时候 文件也要一起复制
+              if(this.pageType === '3' && this.$route.query.type === '3' || this.pageType === '4' && this.$route.query.type === '4'){
+                this.$set(options.data,'fileLink',this.formData.file_link)
+                this.$set(options.data,'fileName',this.formData.file_name)
+              }
             } else {
               this.isPending = false;
               this.$closeLoading();
@@ -470,9 +470,13 @@
             this.$closeLoading();
             if (response.data.result === 200) {
               this.isSaveAs = false;
+              if(this.editType === 'edit' || this.editType === 'add'){
+                eventBus.$emit('testQueryData')
+              }else{
+                this.reload()
+              }
               this.closePanel();
               this.$alertSuccess('更新成功');
-              eventBus.$emit('testQueryData')
             } else {
               this.$alertWarning(response.data.data);
             }
