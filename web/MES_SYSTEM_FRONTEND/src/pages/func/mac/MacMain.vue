@@ -70,7 +70,8 @@
     <div class="result-main">
       <div class="result-tag">
         <div class="result-tag-title">
-          <span>Gps_TestResult:</span>
+<!--          <span>Gps_TestResult:</span>-->
+          <span>总表:</span>
         </div>
         <div class="result-tag-details">
           <el-table
@@ -95,7 +96,7 @@
       </div>
       <div class="result-tag">
         <div class="result-tag-title">
-          <span>Gps_AutoTest_Result2:</span>
+          <span>SMT功能表:</span>
         </div>
         <div class="result-tag-details">
           <el-table
@@ -114,7 +115,7 @@
       </div>
       <div class="result-tag">
         <div class="result-tag-title">
-          <span>Gps_AutoTest_AntiDup:</span>
+          <span>数据防重表:</span>
         </div>
         <div class="result-tag-details">
           <el-table
@@ -462,7 +463,7 @@ xxxxx,xxxxx,xxxxxx"
     border-radius: 5px 5px 0 0;
     border: 1px solid #eeeeee;
     border-bottom: none;
-    width: 200px;
+    width: 80px;
     padding: 5px 3px;
     line-height: 15px;
     font-size: 13px;

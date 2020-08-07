@@ -206,7 +206,10 @@
         fetchData(){
           if(!this.isPending){
             this.isPending = true
-            this.$openLoading();
+            this.$nextTick(()=>{
+              this.$openLoading();
+            })
+
             let options = {
               url:testLogGetUrl,
               data:{
@@ -214,18 +217,15 @@
                 pageSize:this.paginationOptions.pageSize,
               }
             }
-            console.log(this.times)
             if(this.times.length > 0){
               this.thisQueryOptions.startTime = this.times[0]
               this.thisQueryOptions.endTime = this.times[1]
             }
-            console.log(this.thisQueryOptions)
             Object.keys(this.thisQueryOptions).forEach(item=>{
               options.data[item] = JSON.parse(JSON.stringify(this.thisQueryOptions[item]))
             })
             axiosFetch(options).then(response=>{
               if(response.data.result === 200 ){
-                console.log(response)
                 response.data.data.list.forEach(item=>{
                   item.model = item.model.split("@@")[0]
                   switch (item.settingType) {

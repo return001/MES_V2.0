@@ -584,7 +584,6 @@
             }
           }).then(response => {
             if (response.data.result === 200) {
-              console.log(response.data.data.list)
               //加载时查询工序组
               if(typeof(parentGroup) === "undefined"){             //获取一级工序组标签
                 if(response.data.data.list.length >0){

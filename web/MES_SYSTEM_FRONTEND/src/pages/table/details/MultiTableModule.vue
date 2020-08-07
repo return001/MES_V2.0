@@ -10,7 +10,7 @@
           </el-select>
           <div>
             <el-radio v-model="queryMode" :label="0" :disabled="isLocked">单项</el-radio>
-            <el-radio v-model="queryMode" :label="1" :disabled="isLocked">散列</el-radio>
+            <el-radio v-model="queryMode" :label="1" :disabled="isLocked">散列1</el-radio>
             <el-radio v-model="queryMode" :label="2" v-if="queryWord === 'imei'" :disabled="isLocked">连续</el-radio>
           </div>
         </div>
@@ -52,7 +52,7 @@
     <div class="result-area">
       <div class="result-tag" v-for="(item, index) in MultiTableConfig">
         <div class="result-tag-title">
-          <span>{{item.title}}</span>
+          <span>{{item.nameCN}}</span>
         </div>
         <div class="result-tag-details" v-if="tableData[item.title].length > 0">
           <el-table

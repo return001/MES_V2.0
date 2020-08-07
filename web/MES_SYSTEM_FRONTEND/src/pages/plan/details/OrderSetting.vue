@@ -507,6 +507,7 @@
           action="#"
           :auto-upload="false"
           :http-request="uploadFile"
+
           multiple
           :before-upload="beforeOrderUpload"
           accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -1145,7 +1146,6 @@
                 return
               }
             }
-            console.log(this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate)
             if(this.orderEditOptionsData.deliveryDate && this.orderEditOptionsData.orderDate >= this.orderEditOptionsData.deliveryDate){
               this.$alertWarning('交货日期不得小于订单日期')
               this.$closeLoading();
@@ -1158,7 +1158,7 @@
               if(!options.data.reworkQuantity || Number(options.data.reworkQuantity) <= options.data.quantity){
                 options.url = planOrderAddUrl;
                 options.data.isRework = this.isReworkEdit;
-                options.data.factory = this.orderEditOptionsData['factory'];
+                options.data.factory = this.sessionFactory === '1' ?  this.orderEditOptionsData['factory'] : this.sessionFactory;
               }else{
                 this.$alertWarning('请输入正确的返工单数');
                 this.$closeLoading();
@@ -1354,7 +1354,7 @@
             this.$alertSuccess(response.data.data);
             this.partlyReload();
             //this.reload();
-          } else if(response.data.result === 400){
+          } else if(response.data.data === '参数不能为空'){
             this.$alertWarning('请先选取文件');
           }else {
             this.$alertWarning(response.data.data);

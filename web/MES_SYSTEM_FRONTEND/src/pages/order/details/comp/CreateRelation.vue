@@ -141,7 +141,6 @@
       },
       inputHandler: function (index) {
         //用于回车自动跳转光标
-        console.log(index + '.' + this.chosenKey.length)
         if (index < this.chosenKey.length) {
           document.getElementById('input-item-' + (index + 1)).focus();
         } else if (index === this.chosenKey.length) {

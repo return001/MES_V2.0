@@ -39,6 +39,12 @@ const ROUTER_CONFIG = {
         type: 'text'
       },
       {
+        id: 'order_name',
+        name: '订单号',
+        model: '',
+        type: 'text'
+      },
+      {
         id: 'RecordTime',
         name: '记录时间',
         timeRange: '',
@@ -51,6 +57,7 @@ const ROUTER_CONFIG = {
       {field: 'MachineName', title: '机型名', colStyle: {'width': '100px'}, notNull: true, formatter(row, column, cellValue, index) {
             return cellValue.split("@@")[0]
         }},
+      {field: 'order_name', title: '订单号', colStyle: {'width': '120px'}},
       {field: 'RecordTime', title: '记录时间', colStyle: {'width': '120px'}},
       // {field: 'Station', title: '配置', colStyle: {'width': '300px'}, notNull: true},
     ]
@@ -71,22 +78,16 @@ export const testLogQueryOptions = [
     ]
   },
 
-  // {
-  //   type:'select',
-  //   label:'操作类型',
-  //   key:'operationType',
-  //   list:[
-  //     {value:'0',label:'新增'},
-  //     {value:'1',label:'修改'},
-  //     {value:'2',label:'删除'},
-  //   ]
-  // },
-
   {
     type:'text',
     label:'软件版本',
     key:'softVersion'
   },
+  // {
+  //   type:'text',
+  //   label:'订单号',
+  //   key:'orderName'
+  // },
   {
     type:'text',
     label:'机型',
@@ -116,7 +117,7 @@ export const testLogTableOptions =[
   {
     'label':'版本号',
     'key':'softVersion',
-    'min-width':'200'
+    'min-width':'230'
   },
   {
     'label':'订单号',

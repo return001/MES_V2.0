@@ -492,7 +492,6 @@
       },
 
       linkageSelect(val,prop){
-        console.log(prop)
         if(prop === 'company'){
           delete this.queryCompData.department
           delete this.queryCompData.roleName

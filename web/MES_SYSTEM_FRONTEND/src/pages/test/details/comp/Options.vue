@@ -11,7 +11,7 @@
         <el-button size="small" type="primary" @click="thisFetch">查询</el-button>
       </div>
       <div class="form-group-btn">
-        <el-button size="small" type="primary" @click="addOrder">新增</el-button>
+        <el-button size="small" type="primary" @click="addOrder"  v-if="$route.query.type === '3' || $route.query.type === '4'">新增</el-button>
       </div>
     </div>
   </div>
@@ -123,9 +123,9 @@
                   }
                 }else{
                   if (index === 0) {
-                    this.queryString += (item.id + "#=#" + item.model) //like
+                    this.queryString += (item.id + "#rightLike#" + item.model) //like
                   } else {
-                    this.queryString += ("#&#" + item.id + "#=#" + item.model) //like
+                    this.queryString += ("#&#" + item.id + "#rightLike#" + item.model) //like
                   }
                 }
 

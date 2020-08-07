@@ -1,6 +1,7 @@
 export const MultiTableConfig = [
   {
     title: 'Gps_AutoTest_Result',
+    nameCN:'组装功能表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'IMEI', title: 'IMEI号', colStyle: {'width': '135px'}},
@@ -25,6 +26,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_AutoTest_Result2',
+    nameCN:'SMT功能表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'IMEI', title: 'IMEI号', colStyle: {'width': '135px'}},
@@ -49,6 +51,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_AutoTest_Result3',
+    nameCN:'老化后功能表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'IMEI', title: 'IMEI号', colStyle: {'width': '135px'}},
@@ -73,6 +76,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'DataRelativeSheet',
+    nameCN:'AMS数据关联表',
     columns: [
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '120px'}},
       // {field: 'SN', title: 'SN', colStyle: {'width': '120px'}},
@@ -93,6 +97,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'DataRelativeUpdate',
+    nameCN:'数据关联表(关联更新)',
     columns: [
       {field: 'RelativeNum', title: '关联码', colStyle: {'width': '120px'}},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '120px'}},
@@ -117,6 +122,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'DataRelativeUnique',
+    nameCN:'数据关联表(工厂)',
     columns: [
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
       {field: 'TestTime', title: '测试时间', colStyle: {'width': '100px'}},
@@ -136,6 +142,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_TestResult',
+    nameCN:'总表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '100px'}},
       {field: 'SN', title: 'SN', colStyle: {'width': '100px'}},
@@ -174,6 +181,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_CoupleTest_Result',
+    nameCN:'耦合表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'IMEI', title: 'IMEI号', colStyle: {'width': '135px'}},
@@ -198,6 +206,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_ManuSimDataParam',
+    nameCN:'种子物联网卡表',
     columns: [
       {field: 'ID', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'SDIP', title: '主机IP', colStyle: {'width': '100px'}},
@@ -226,6 +235,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_ManuPrintParam',
+    nameCN:'机身彩盒打印记录表',
     columns: [
       {field: 'ID', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
@@ -260,6 +270,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_ManuCpParam',
+    nameCN:'比对表',
     columns: [
       {field: 'ID', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'ZhiDan', title: '制单号', colStyle: {'width': '100px'}},
@@ -308,6 +319,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'Gps_CartonBoxTwenty_Result',
+    nameCN:'卡通箱表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'}},
       {field: 'BoxNo', title: '箱号', colStyle: {'width': '90px'}},
@@ -334,6 +346,7 @@ export const MultiTableConfig = [
   },
   {
     title: 'NetMarkIMEI',
+    nameCN:'网标与IMEI绑定表',
     columns: [
       {field: 'Id', title: 'ID', colStyle: {'width': '70px'},},
       {field: 'NetMark', title: '网标', colStyle: {'width': '100px'}},

@@ -6,6 +6,36 @@
       max-height="560"
       ref="tablecomponent"
       stripe>
+      <el-table-column
+        type="index"
+        :index="indexMethod"
+        fixed="left"
+        width="60">
+      </el-table-column>
+
+      <el-table-column
+        label="操作"
+        width="180"
+        fixed="left"
+      >
+        <template slot-scope="scope">
+          <el-tooltip content="编辑" placement="top">
+            <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
+          </el-tooltip>
+          <el-tooltip content="复制" placement="top" v-if="$route.query.type === '3' || $route.query.type === '4'">
+            <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
+          </el-tooltip>
+          <span class="file-action-upload"  v-if="$route.query.type === '3' || $route.query.type === '4'">
+            <el-tooltip content="导出配置" placement="top">
+              <el-button type="text" @click="exportTest(scope.row)" icon="el-icon-folder"></el-button>
+            </el-tooltip>
+          </span>
+          <el-tooltip content="删除" placement="top">
+            <el-button type="text" @click="delData(scope.row)" icon="el-icon-t-delete"></el-button>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+
       <el-table-column v-for="(item, index) in tableColumns"
                        :key="index"
                        :prop=item.field
@@ -21,12 +51,6 @@
       </el-table-column>
 
 
-      <el-table-column
-        type="index"
-        :index="indexMethod"
-        fixed="left"
-        width="60">
-      </el-table-column>
 
       <el-table-column
         label="文件操作"
@@ -47,29 +71,6 @@
           </span>
         </template>
       </el-table-column>
-
-      <el-table-column
-        label="操作"
-        width="180"
-        fixed="left"
-      >
-        <template slot-scope="scope">
-          <el-tooltip content="编辑" placement="top">
-            <el-button type="text" @click="editData('edit', scope.row)" icon="el-icon-t-edit"></el-button>
-          </el-tooltip>
-          <el-tooltip content="复制" placement="top">
-            <el-button type="text" @click="editData('copy', scope.row)" icon="el-icon-t-copy"></el-button>
-          </el-tooltip>
-          <span class="file-action-upload">
-            <el-tooltip content="导出配置" placement="top">
-              <el-button type="text" @click="exportTest(scope.row)" icon="el-icon-upload"></el-button>
-            </el-tooltip>
-          </span>
-          <el-tooltip content="删除" placement="top">
-            <el-button type="text" @click="delData(scope.row)" icon="el-icon-t-delete"></el-button>
-          </el-tooltip>
-        </template>
-      </el-table-column>
     </el-table>
 
     <!--上传框-->
@@ -80,17 +81,20 @@
       :close-on-press-escape="false"
       @closed="clearOrderUploadFile"
       width="400px">
+      <div class="upload"></div>
       <el-upload
         ref="fileUpload"
+        class="fileUpload"
         :action="uploadGuideFile"
         :auto-upload="false"
         :http-request="uploadFile"
         :before-upload="beforeOrderUpload"
-        accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        :on-change ='handleCheckFile'
+        accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,	application/pdf,application/msword"
       >
         <el-button slot="trigger" size="small" type="info">选取文件</el-button>
         <el-button style="margin-left: 10px;" size="small" type="primary" @click="submitOrderUpload">上传</el-button>
-<!--        <div slot="tip" class="upload-tip">请选择xls、xlsx文件</div>-->
+        <div slot="tip" class="upload-tip">请选择xls、xlsx、doc、docx、pdf文件</div>
       </el-upload>
     </el-dialog>
 
@@ -124,6 +128,7 @@
       return {
         uploadGuideFile:uploadGuideFile,
         uploadFileData:null,
+        fileInfo:{},
         tableData: [],
         tableColumns: [],
         //srcData: [],
@@ -141,8 +146,11 @@
     computed: {},
     watch: {
       $route: function (route) {
+        this.$nextTick(()=>{
+          this.$openLoading();
+        })
         this.init();
-        this.$openLoading();
+
         let options = {
           url: testSelectUrl,
           data: {
@@ -188,13 +196,14 @@
         this.fetchData(options)
       },
       fetchData: function (options) {
+        this.$openLoading();
         if (this.queryString !== '') {
           options.data.filter = this.queryString
         }
         let routerConfig = getTestConfig();
         this.tableColumns = routerConfig.data.dataColumns;
         if (!this.isPending) {
-          this.$openLoading();
+
           this.isPending = true;
           axiosFetch(options).then(response => {
             if (response.data.result === 200) {
@@ -212,7 +221,7 @@
             console.log(err);
             this.$alertDanger('请求超时，清刷新重试')
           }).finally(() => {
-            this.$closeLoading();
+              this.$closeLoading();
             this.isPending = false;
           })
         } else {
@@ -306,22 +315,41 @@
       uploadFile: function (params) {
         // this.uploadFileData.append(Math.floor(Math.random() * 1000), params.file)
         this.uploadFileData.append('uploadFile', params.file)
+        this.fileInfo = params
+
       },
       clearOrderUploadFile: function () {
         this.$refs.fileUpload.clearFiles();
       },
-      beforeOrderUpload: function () {
+      beforeOrderUpload: function (val) {
         this.isPending = true;
         this.$openLoading();
       },
+      handleCheckFile(file,fileList){
+        if(fileList && fileList.length >1){
+          fileList.shift()
+        }
+      },
 
       submitOrderUpload: function () {
+        let nameList
         this.uploadFileData = new FormData();
         this.$refs.fileUpload.submit();
         this.uploadFileData.append('#TOKEN#', this.$store.state.token);
         // this.uploadFileData.append('uploadFile', this.$store.state.token);
         this.uploadFileData.append('id', this.testIngeId);
         this.uploadFileData.append('type', this.$route.query.type);
+        if(this.uploadFileData.getAll('uploadFile') && this.uploadFileData.getAll('uploadFile').length > 0){
+          nameList = this.uploadFileData.getAll('uploadFile').map(item=>item.name)
+        }
+        for(let i= 0;i<nameList.length;i++){
+          if(!nameList[i].includes('.xlsx') && !nameList[i].includes('.xls') &&
+              !nameList[i].includes('.pdf') && !nameList[i].includes('.doc') && !nameList[i].includes('.docx')){
+            this.$alertWarning('请上传规定格式的文件')
+            this.$closeLoading();
+            return
+          }
+        }
         let config = {
           header: {
             'Content-Type': 'multipart/form-data'
@@ -347,6 +375,7 @@
 
       //下载文件
       downloadFile: function (val) {
+        console.log(123)
         if (!this.isPending) {
           this.isPending = true;
           this.$openLoading();
@@ -357,16 +386,17 @@
               id: val.SoftWare,
             }
           }).then(response => {
+
             let contentType = response.request.getResponseHeader('content-type');
-            if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === 'application/octet-stream') {
+            if (contentType === 'application/vnd.ms-excel' || contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||  contentType === 'application/octet-stream' || contentType === 'application/msword' || contentType === 'application/pdf') {
               let name = decodeURIComponent(escape(response.request.getResponseHeader('Content-disposition').split('=')[1]));
               let fileName = name.substring(1,name.length-1);
-
               saveAs(response.data, fileName)
             } else {
               let reader = new FileReader();
               reader.readAsText(response.data);
               reader.addEventListener('loadend', () => {
+                console.log(reader.result)
                 this.$alertWarning(JSON.parse(reader.result).data)
               })
             }
@@ -401,7 +431,7 @@
 
   .file-action-upload /deep/ .el-button{
     display: inline-block;
-    font-size: 20px;
+    font-size: 18px;
     margin: 0 8px;
   }
   .file-action-download /deep/ .el-button{
@@ -409,5 +439,17 @@
     font-size: 20px;
     margin-right: 5px;
   }
+  /*  上传订单，取消新的覆盖旧的的动画效果  */
+
+  .fileUpload /deep/ .el-list-enter-active,
+  /deep/ .el-list-leave-active {
+    transition: none;
+  }
+
+  .fileUpload /deep/ .el-list-enter,
+  /deep/ .el-list-leave-active {
+    opacity: 0;
+  }
+
 
 </style>

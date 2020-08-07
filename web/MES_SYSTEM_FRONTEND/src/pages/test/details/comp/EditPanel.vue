@@ -18,7 +18,7 @@
       <div class="setting-header">
         <div class="form-group">
           <label for="edit-software">软件版本:</label>
-          <el-input size="medium" type="text" id="edit-software"
+          <el-input size="small" type="text" id="edit-software"
                     :placeholder="editType === 'edit' ? '' : '请填写软件版本'"
                     clearable
                     autocomplete="off"
