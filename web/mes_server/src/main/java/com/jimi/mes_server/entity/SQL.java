@@ -132,7 +132,7 @@ public class SQL {
 
 	public final static String SELECT_PROCESS_NAME_ID = "SELECT id, process_name as processName, process_group as processGroup from process";
 
-	public final static String SELECT_PROCESSGROUP_NAME_ID = "SELECT process_group.id, group_name as groupName,sop_factory.id as factoryId ,abbreviation,position from process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id order by position";
+	public final static String SELECT_PROCESSGROUP_NAME_ID = "SELECT process_group.id, group_name as groupName,sop_factory.id as factoryId ,abbreviation,position, parent_group AS parentGroup from process_group LEFT JOIN sop_factory ON process_group.factory = sop_factory.id order by position";
 
 	public final static String SELECT_LINE_NAME_ID = "SELECT id, line_name as lineName, process_group as processGroup FROM line";
 
@@ -315,4 +315,6 @@ public class SQL {
 	public final static String SELECT_TEST_SYSTeM_SETTING_LOG ="select id,setting_type as settingType,operation_type as operationType,soft_version as softVersion,order_name as orderName,model,operator,time,result,station from test_system_setting_log";
 
 	public final static String SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS = "SELECT * FROM scheduling_plan WHERE line = ? AND process_group = ? AND (scheduling_plan_status = ? OR scheduling_plan_status = ?)";
+
+	public final static String SELECT_PROCESS_GROUP_BY_FACTORY = "SELECT id, group_name FROM process_group WHERE factory = ?";
 }

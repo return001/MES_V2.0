@@ -103,14 +103,14 @@ public class TestController extends Controller {
 	 * @param settingType
 	 * @param softVersion
 	 */
-	public void getLog(Integer pageNo, Integer pageSize,String startTime, String endTime,String operator,String model,Integer settingType,String softVersion,Boolean result){
+	public void getLog(Integer pageNo, Integer pageSize,String startTime, String endTime, String operator, String model, Integer settingType, String softVersion, String orderName, Boolean result){
 		if (pageNo == null || pageSize == null) {
 			throw new ParameterException("页码和页大小不能为空");
 		}
 		if (pageNo <= 0 || pageSize <= 0) {
 			throw new ParameterException("页码与页大小均需要大于0");
 		}
-		renderJson(ResultUtil.succeed(testService.getLogs(pageNo,pageSize,startTime,endTime,operator,model,settingType,softVersion,result)));
+		renderJson(ResultUtil.succeed(testService.getLogs(pageNo, pageSize, startTime, endTime, operator, model, settingType, softVersion, orderName, result)));
 	}
 	
 	

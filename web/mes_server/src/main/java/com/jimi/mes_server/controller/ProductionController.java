@@ -445,7 +445,46 @@ public class ProductionController extends Controller {
 		}
 
 	}
+	
+	
+	/**
+	 * 
+	 * <p>Description: 导入标准产能表 <p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年8月12日
+	 */
+	public void importCapacity(UploadFile uploadFile, Integer factory) {
+		
+		uploadFile = getFile();
+		if (uploadFile == null || factory == null) {
+			throw new ParameterException("参数不能为空");
+		}
+		if (!uploadFile.getOriginalFileName().endsWith(".xls") && !uploadFile.getOriginalFileName().endsWith(".xlsx")) {
+			throw new ParameterException("只能上传Excel文件");
+		}
+		try {
+			productionService.importCapacity(uploadFile.getFile(), factory);
+		} finally {
+			if (uploadFile.getFile() != null && uploadFile.getFile().exists()) {
+				uploadFile.getFile().delete();
+			}
+		}
+		renderJson(ResultUtil.succeed());
+	}
 
+	
+	public void exportCapacity( String softModel, String customerModel, Integer processGroup, Integer factory, Integer statusId) {
+		List<Record> records = (List<Record>) productionService.selectCapacity(null, null, softModel, customerModel, processGroup, factory, statusId);
+		HttpServletResponse response = getResponse();
+		try(OutputStream output = response.getOutputStream();){
+			productionService.exportCapacity(records, response, output);
+		} catch (Exception e) {
+			renderJson(ResultUtil.failed());
+		}
+		renderNull();
+	}
 
 	/**@author HCJ
 	 * 删除机型产能

@@ -341,7 +341,7 @@ public class TestService extends SelectService {
 		}
 	}
 
-	public Page<Record> getLogs(Integer pageNo, Integer pageSize,String startTime, String endTime, String operator, String model, Integer settingType, String softVersion, Boolean result) {
+	public Page<Record> getLogs(Integer pageNo, Integer pageSize,String startTime, String endTime, String operator, String model, Integer settingType, String softVersion, String orderName, Boolean result) {
 		SqlPara sqlPara = new SqlPara();
 		StringBuilder sql = new StringBuilder(SQL.SELECT_TEST_SYSTeM_SETTING_LOG);
 		sql.append(" WHERE 1 = 1 ");
@@ -356,6 +356,9 @@ public class TestService extends SelectService {
 		}
 		if (!StrKit.isBlank(softVersion)) {
 			sql.append(" AND soft_version ='").append(softVersion).append("'");
+		}
+		if (!StrKit.isBlank(orderName)) {
+			sql.append(" AND order_name ='").append(orderName).append("'");
 		}
 		if (!StrKit.isBlank(startTime)) {
 			sql.append(" AND time >= '").append(startTime).append("'");

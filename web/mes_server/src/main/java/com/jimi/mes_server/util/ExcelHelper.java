@@ -465,6 +465,7 @@ public class ExcelHelper {
 				e2.printStackTrace();
 			}
 			Field[] fields = clazz.getDeclaredFields();
+			Boolean emptyFlag = true;
 			for (Field field : fields) {
 				Excel e = field.getAnnotation(Excel.class);
 				if (e == null) {
@@ -485,21 +486,36 @@ public class ExcelHelper {
 					switch (type) {
 					case "java.util.Date":
 						value = get(i + 1, e.col(), RequireType.DATE);
+						if (value != null) {
+							emptyFlag = false;
+						}
 						break;
 					case "double":
 					case "java.lang.Double":
 						value = get(i + 1, e.col(), RequireType.DOUBLE);
+						if (value != null) {
+							emptyFlag = false;
+						}
 						break;
 					case "int":
 					case "java.lang.Integer":
 						value = get(i + 1, e.col(), RequireType.INT);
+						if (value != null) {
+							emptyFlag = false;
+						}
 						break;
 					case "boolean":
 					case "java.lang.Boolean":
 						value = get(i + 1, e.col(), RequireType.BOOLEAN);
+						if (value != null) {
+							emptyFlag = false;
+						}
 						break;
 					case "java.lang.String":
 						value = get(i + 1, e.col(), RequireType.STRING);
+						if (value != null && !((String) value).trim().equals("")) {
+							emptyFlag = false;
+						}
 						break;
 					default:
 						break;
@@ -509,6 +525,9 @@ public class ExcelHelper {
 					logger.error("调用ExcelHelper.unfill()中field.set()方法时出错");
 					e1.printStackTrace();
 				}
+			}
+			if (emptyFlag) {
+				continue;
 			}
 			entities.add(entity);
 		}

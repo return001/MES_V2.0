@@ -14,11 +14,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,6 +51,7 @@ import com.jimi.mes_server.entity.CalculatePlanResultParam;
 import com.jimi.mes_server.entity.SQL;
 import com.jimi.mes_server.entity.SchedulingProgress;
 import com.jimi.mes_server.entity.SopSQL;
+import com.jimi.mes_server.entity.StandardCapacityItem;
 import com.jimi.mes_server.entity.Task;
 import com.jimi.mes_server.entity.WorkTime;
 import com.jimi.mes_server.entity.WorkTimes;
@@ -67,6 +70,7 @@ import com.jimi.mes_server.model.Orders;
 import com.jimi.mes_server.model.Process;
 import com.jimi.mes_server.model.ProcessGroup;
 import com.jimi.mes_server.model.SchedulingPlan;
+import com.jimi.mes_server.model.SopCustomer;
 import com.jimi.mes_server.model.SopFactory;
 import com.jimi.mes_server.model.SopSite;
 import com.jimi.mes_server.model.SopWorkshop;
@@ -534,7 +538,125 @@ public class ProductionService {
 		}
 		return true;
 	}
-
+	
+	
+	/**
+	 * 
+	 * <p>Description: 导入标准产能表<p>
+	 * @return
+	 * @exception
+	 * @author trjie
+	 * @Time 2020年8月12日
+	 */
+	public void importCapacity(File file, Integer factoryId) {
+		
+		try {
+			ExcelHelper helper = ExcelHelper.from(file);
+			List<StandardCapacityItem> standardCapacityItems = helper.unfill(StandardCapacityItem.class, 0);
+			
+			if (standardCapacityItems == null || standardCapacityItems.isEmpty()) {
+				throw new OperationException("表格无有效数据或者表格格式不正确！");
+			}
+			List<ProcessGroup> processGroups = ProcessGroup.dao.find(SQL.SELECT_PROCESS_GROUP_BY_FACTORY, factoryId);
+			if (processGroups == null || processGroups.isEmpty()) {
+				throw new OperationException("工厂下无有效工序组数据，请自行添加！");
+			}
+			Map<String, Integer> processGroupMap = new HashMap<>(processGroups.size());
+			for (ProcessGroup processGroup : processGroups) {
+				processGroupMap.put(processGroup.getGroupName(), processGroup.getId());
+			}
+			
+			List<SopCustomer> sopCustomers = SopCustomer.dao.find(SopSQL.SELECT_CUSTOMER_BY_FACTORY, factoryId);
+			Map<String, String> customerMap = new HashMap<>();
+			if (sopCustomers != null && !sopCustomers.isEmpty()) {
+				for (SopCustomer sopCustomer : sopCustomers) {
+					customerMap.put(sopCustomer.getCustomerNumber(), sopCustomer.getCustomerName());
+				}
+			}
+			List<ModelCapacity> modelCapacities = new ArrayList<>(standardCapacityItems.size());
+			Set<String> indexRepeatSet = new HashSet<>();
+			int i = 1;
+			for (StandardCapacityItem standardCapacityItem : standardCapacityItems) {
+				if (standardCapacityItem.getProcessGroupName() == null || standardCapacityItem.getProcessGroupName().trim().equals("")) {
+					throw new OperationException("第 " + i + " 行的工序组名称为空，请检查！");
+				}
+				if (standardCapacityItem.getSoftModel() == null || standardCapacityItem.getSoftModel().trim().equals("")) {
+					throw new OperationException("第 " + i + " 行的机型为空，请检查！");
+				}
+				if (standardCapacityItem.getCapacity() == null || standardCapacityItem.getCapacity().trim().equals("")) {
+				}
+				if (!isInt(standardCapacityItem.getCapacity().trim()) || Integer.valueOf(standardCapacityItem.getCapacity().trim()) <= 0) {
+					throw new OperationException("第 " + i + " 行的产能为仅能为正整数，请检查！");
+				}
+				if (standardCapacityItem.getNumberOfPeople() == null || standardCapacityItem.getNumberOfPeople().trim().equals("")) {
+					throw new OperationException("第 " + i + " 行的人数为空，请检查！");
+				}
+				if (!isInt(standardCapacityItem.getNumberOfPeople().trim()) || Integer.valueOf(standardCapacityItem.getNumberOfPeople().trim()) <= 0) {
+					throw new OperationException("第 " + i + " 行的人数为仅能为正整数，请检查！");
+				}
+				if (standardCapacityItem.getRhythm() != null && !standardCapacityItem.getRhythm().trim().equals("")) {
+					if (!isDouble(standardCapacityItem.getRhythm())) {
+						throw new OperationException("第 " + i + " 行的节拍/时长为仅能为正小数或者为空，请检查！");
+					}
+				}
+				if (standardCapacityItem.getTransferLineTime() != null && !standardCapacityItem.getTransferLineTime().trim().equals("")) {
+					if (!isDouble(standardCapacityItem.getTransferLineTime())) {
+						throw new OperationException("第 " + i + " 行的转线时长为仅能为正整数或者为空，请检查！");
+					}
+				}
+				if (processGroupMap.get(standardCapacityItem.getProcessGroupName().trim()) == null) {
+					throw new OperationException("第 " + i + " 行的工序组不存在，请检查！");
+				}
+				Integer groupId = processGroupMap.get(standardCapacityItem.getProcessGroupName().trim());
+				String customerName = "";
+				String customerNumber = "";
+				if (standardCapacityItem.getCustomerNumber() != null && !standardCapacityItem.getCustomerNumber().trim().equals("")) {
+					customerNumber = standardCapacityItem.getCustomerNumber().trim();
+					customerName = customerMap.get(standardCapacityItem.getCustomerNumber());
+					if (customerName == null) {
+						throw new OperationException("第 " + i + " 行的客户编号不存在，请检查！");
+					}
+				}
+				Record record = Db.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, standardCapacityItem.getSoftModel().trim(), processGroupMap.get(standardCapacityItem.getProcessGroupName().trim()), customerName, customerNumber);
+				if (record != null) {
+					throw new OperationException("第 " + i + " 行的客户机型产能已存在于系统中，请检查！");
+				}
+				String index = "#S#" + standardCapacityItem.getSoftModel().trim() + "#N#" +  processGroupMap.get(standardCapacityItem.getProcessGroupName().trim()) + "#CN#" +  customerName + "#CM#" + customerNumber;
+				if (indexRepeatSet.contains(index)) {
+					throw new OperationException("第 " + i + " 行的客户机型产能在表格内存在重复，请检查！");
+				}
+				indexRepeatSet.add(index);
+				ModelCapacity modelCapacity = StandardCapacityItem.cloneCapacity(standardCapacityItem, customerNumber, customerName, groupId);
+				modelCapacities.add(modelCapacity);
+				i ++;
+			}
+			if (!modelCapacities.isEmpty()) {
+				Db.batchSave(modelCapacities, modelCapacities.size());
+			}
+		}catch (OperationException e) {
+			e.printStackTrace();
+			throw new OperationException(e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new OperationException("文件解析出错，请检查文件内容和格式");
+		} 
+	}
+	
+	
+	public void exportCapacity(List<Record> records, HttpServletResponse response, OutputStream output) throws Exception {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		String fileName = "标准产能导出表_" + simpleDateFormat.format(new Date()) + ".xlsx";
+		String title = "标准产能";
+		response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, "utf-8"));
+		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+		ExcelHelper helper = ExcelHelper.create(true);
+		String[] field = new String[] { "abbreviation", "softModel", "groupName", "processPeopleQuantity", "capacity", "customerNumber", "customerName", "customerModel", "remark", "statusName", "reviewerName", "reviewTime", "reviewRemark"};
+		String[] head = new String[] {"所属工厂", "机型", "工序组", "人数（个）", "产能（PCS/H）", "客户编号", "客户名称", "客户料号", "备注", "状态", "审核人", "审核时间", "审核说明"};
+		helper.fill(records, title, field, head);
+		helper.write(output, true);
+	}
+	
 
 	public boolean deleteCapacity(Integer id) {
 		ModelCapacity modelCapacity = ModelCapacity.dao.findById(id);
@@ -545,7 +667,7 @@ public class ProductionService {
 	}
 
 
-	public Page<Record> selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory, Integer statusId) {
+	public Object selectCapacity(Integer pageNo, Integer pageSize, String softModel, String customerModel, Integer processGroup, Integer factory, Integer statusId) {
 		StringBuilder filter = new StringBuilder();
 		if (processGroup != null) {
 			if (ProcessGroup.dao.findById(processGroup) == null) {
@@ -568,6 +690,9 @@ public class ProductionService {
 		String orderBy = "ORDER BY soft_model";
 		SqlPara sqlPara = new SqlPara();
 		sqlPara.setSql(SQL.SELECT_MODELCAPACITY + filter + orderBy);
+		if (pageNo == null && pageSize == null) {
+			return Db.find(sqlPara);
+		}
 		return Db.paginate(pageNo, pageSize, sqlPara);
 	}
 
@@ -921,12 +1046,12 @@ public class ProductionService {
 			for (OrderItem orderItem : orderItems) {
 				String zhidan = orderItem.getZhidan();
 				String softModel = orderItem.getSoftModel();
-				boolean isDateExist = orderItem.getOrderDate() != null && orderItem.getDeliveryDate() != null;
+				boolean isDateExist =  orderItem.getOrderDate() != null;
 				boolean isQuantityExist = orderItem.getQuantity() != null;
 				String abbreviation = orderItem.getAbbreviation();
 				Orders order = new Orders();
 				if (StringUtils.isAnyBlank(zhidan, softModel, abbreviation) || !isDateExist || !isQuantityExist) {
-					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号和机型和生产部门为空或者订单日期、交货日期和订单数量格式错误！";
+					resultString = "导入失败，表格第" + indexOfOrderItem + "行的订单号和机型和生产部门为空或者订单日期和订单数量格式错误！";
 					return resultString;
 				}
 				if (factories != null && !factories.isEmpty()) {
@@ -2342,4 +2467,22 @@ public class ProductionService {
 		return orderVOs;
 	}
 
+	
+	private boolean isInt(String value) {
+		try {
+			Integer.valueOf(value);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+	
+	private boolean isDouble(String value) {
+		try {
+			Double.valueOf(value);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
 }
