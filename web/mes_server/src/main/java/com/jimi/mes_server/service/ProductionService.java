@@ -1324,7 +1324,7 @@ public class ProductionService {
 			if (orderRecord.getQuantity() < quantity) {
 				throw new OperationException("排产数量不能大于订单数量");
 			}
-			List<SchedulingPlan> groupSchedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS, addPlanInfo.getLine(), addPlanInfo.getProcessGroup(), Constant.SCHEDULED_PLANSTATUS, Constant.WORKING_PLANSTATUS);
+			List<SchedulingPlan> groupSchedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS, addPlanInfo.getLine(), Constant.SCHEDULED_PLANSTATUS, Constant.WORKING_PLANSTATUS);
 			if (groupSchedulingPlans != null && !groupSchedulingPlans.isEmpty()) {
 				for (SchedulingPlan workingPlan : groupSchedulingPlans) {
 					System.out.println(groupSchedulingPlans.size());
@@ -1335,11 +1335,14 @@ public class ProductionService {
 					System.out.println(addPlanInfo.getPlanCompleteTime());
 					if (workingPlan.getPlanStartTime() != null && (workingPlan.getPlanStartTime().after(addPlanInfo.getPlanCompleteTime()) || workingPlan.getPlanStartTime().equals(addPlanInfo.getPlanCompleteTime()))) {
 						//正常
-					}else if (workingPlan.getPlanCompleteTime() != null && workingPlan.getPlanCompleteTime().before(addPlanInfo.getPlanStartTime()) || workingPlan.getPlanCompleteTime().equals(addPlanInfo.getPlanStartTime())) {
-						//正常
-					}else {
-						throw new OperationException("时间与已排产或者进行中的计划冲突，请检查！");
+						continue;
 					}
+					if (workingPlan.getPlanCompleteTime() != null && workingPlan.getPlanCompleteTime().before(addPlanInfo.getPlanStartTime()) || workingPlan.getPlanCompleteTime().equals(addPlanInfo.getPlanStartTime())) {
+						//正常
+						continue;
+					}
+					throw new OperationException("时间与已排产或者进行中的计划冲突，请检查！");
+					
 				}
 			}
 			SchedulingPlan schedulingPlan = new SchedulingPlan();
@@ -1351,6 +1354,7 @@ public class ProductionService {
 			schedulingPlan.setScheduler(userVO.getId()).setSchedulingTime(new Date());
 			schedulingPlan.setPlanStartTime(planStartTime).setPlanCompleteTime(planCompleteTime);
 			schedulingPlan.setPersonNumber(personNumber).setRhythm(BigDecimal.valueOf(rhythm)).setIsUrgent(isUrgent);
+			schedulingPlan.setProducedQuantity(0);
 			waitSchedulingPlans.add(schedulingPlan);
 
 			if (Constant.UNSCHEDULED_ORDERSTATUS.equals(orderRecord.getOrderStatus())) {
@@ -1493,8 +1497,11 @@ public class ProductionService {
 				sql = SQL.SELECT_TESTING_PROCESS_GROUP_PRUDUCEDQUANTITY;
 			} else if (Constant.PACKING_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
 				sql = SQL.SELECT_PACKING_PROCESS_GROUP_PRUDUCEDQUANTITY;
-			} else if (Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
+			} /*else if (Constant.SMT_PROCESS_GROUP.equals(schedulingPlan.getProcessGroup())) {
 				sql = SQL.SELECT_ASSEMBLING_PROCESS_GROUP_PRUDUCEDQUANTITY;
+				}*/
+			else {
+				return 	quantity.set("planProducedQuantity", schedulingPlan.getProducedQuantity());
 			}
 			String planStartTime = dateFormat.format(schedulingPlan.getPlanStartTime());
 			String zhidan;
@@ -1648,6 +1655,9 @@ public class ProductionService {
 		}
 		schedulingPlan.setRemark(remark);
 		if (producedQuantity != null) {
+			if (producedQuantity > schedulingPlan.getSchedulingQuantity()) {
+				throw new OperationException("无法完成该排产计划，已生产数量大于排产数量");
+			}
 			schedulingPlan.setProducedQuantity(producedQuantity);
 		}
 		if (schedulingQuantity != null) {
@@ -1668,19 +1678,19 @@ public class ProductionService {
 			schedulingPlan.setRhythm(BigDecimal.valueOf(rhythm));
 		}
 		schedulingPlan.setPersonNumber(personNumber);
-		if (isCompleted != null && isCompleted) {
-			/*if (schedulingPlan.getProducedQuantity() < schedulingQuantity) {
-				throw new OperationException("无法完成此排产计划，已生产数量未达到排产数量");
-			}*/
+		ProcessGroup group = ProcessGroup.dao.findById(schedulingPlan.getProcessGroup());
+		if (group == null) {
+			throw new OperationException("工序组不存在");
+		}
+		if (schedulingPlan.getProducedQuantity() != null && isCompleted != null && isCompleted && (group.getId().equals(Constant.SMT_PROCESS_GROUP) 
+				|| group.getParentGroup().equals(Constant.SMT_PROCESS_GROUP) || group.getId().equals(Constant.PATCH_PROCESS_GROUP) 
+				|| group.getParentGroup().equals(Constant.PATCH_PROCESS_GROUP))) {
+			
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			schedulingPlan.setCompleteTime(new Date());
-			Integer quantity = 0;
-			if (order.getIsRework()) {
-				quantity = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL, order.getReworkZhidan());
-			} else {
-				quantity = Db.queryInt(SQL.SELECT_CARTONTEST_NUMBER_BY_ZHIDAN_SOFTMODEL, order.getZhidan());
-			}
-			if (quantity >= order.getQuantity()) {
+			Integer finishQuantiy = Db.queryInt(SQL.SELECT_FINISH_QUANTITY_BY_ORDER, order.getId());
+			finishQuantiy = finishQuantiy == null ? schedulingPlan.getProducedQuantity() : finishQuantiy + schedulingPlan.getProducedQuantity();
+			if (finishQuantiy >= order.getQuantity()) {
 				order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
 				return schedulingPlan.update() && order.update();
 			}
@@ -2106,6 +2116,7 @@ public class ProductionService {
 					if (!"超出预期".equals(planEndTime)) {
 						entry.getValue().setPreviousOrderPlanEndTime(dateAndHourFormat.parse(planEndTime));
 					}
+					
 					// 存储上一个订单使用到的时间段对应时间表上的序号
 					entry.getValue().setPreviousOrderPlanEndTimeIndex(index);
 					// 存储订单对应的计算结果
@@ -2113,8 +2124,46 @@ public class ProductionService {
 					planResult.setExecutorId(task.getExecutorId());
 					planResult.setOrderId(task.getOrderId());
 					planResult.setEstimatedProductionTime(planProductionHour);
-					planResult.setEstimatedStartTime(planStartTime);
-					planResult.setEstimatedEndTime(planEndTime);
+					
+					List<SchedulingPlan> groupSchedulingPlans = SchedulingPlan.dao.find(SQL.SELECT_SCHEDULED_PLAN_BY_LINE_AND_GROUP_AND_STATUS, task.getExecutorId(), Constant.SCHEDULED_PLANSTATUS, Constant.WORKING_PLANSTATUS);
+					Boolean endTimeExceptionFlag = false;
+					Boolean startTimeExceptionFlag  = false;
+					if (!"超出预期".equals(planStartTime) && !"超出预期".equals(planEndTime)) {
+						if (groupSchedulingPlans != null && !groupSchedulingPlans.isEmpty()) {
+							for (SchedulingPlan workingPlan : groupSchedulingPlans) {
+								System.out.println(groupSchedulingPlans.size());
+								System.out.println(workingPlan.getPlanStartTime());
+								System.out.println(workingPlan.getPlanCompleteTime());
+								
+								System.out.println(planStartTime);
+								System.out.println(planEndTime);
+								if (workingPlan.getPlanStartTime() != null && (workingPlan.getPlanStartTime().after(dateAndHourFormat.parse(planEndTime)) || workingPlan.getPlanStartTime().equals(dateAndHourFormat.parse(planEndTime)))) {
+									//正常
+									endTimeExceptionFlag = false;
+									continue;
+								}else {
+									endTimeExceptionFlag = true;
+								}
+								if (workingPlan.getPlanCompleteTime() != null && workingPlan.getPlanCompleteTime().before(dateAndHourFormat.parse(planStartTime)) || workingPlan.getPlanCompleteTime().equals(dateAndHourFormat.parse(planStartTime))) {
+									//正常
+									endTimeExceptionFlag = false;
+									continue;
+								}else {
+									startTimeExceptionFlag = true;
+								}
+							}
+						}
+					}
+					if (startTimeExceptionFlag) {
+						planResult.setEstimatedStartTime("时间冲突");
+					}else {
+						planResult.setEstimatedStartTime(planStartTime);
+					}
+					if (endTimeExceptionFlag) {
+						planResult.setEstimatedEndTime("时间冲突");
+					}else {
+						planResult.setEstimatedEndTime(planEndTime);
+					}
 					planResult.setTagId(task.getTagId());
 					planResults.add(planResult);
 				}
@@ -2361,21 +2410,23 @@ public class ProductionService {
 				continue;
 			}
 			Record planProducedQuantity = selectPlanProducedQuantityAndUpdate(record.getInt("id"), record, dateFormat);
-			if (planProducedQuantity != null) {
-				record.set("producedQuantity", planProducedQuantity.getInt("planProducedQuantity"));
-				if (planProducedQuantity.getInt("schedulingPlanStatus") != null) {
-					record.set("schedulingPlanStatus", planProducedQuantity.getInt("schedulingPlanStatus"));
-					
-				}
-				if (planProducedQuantity.getInt("planProducedQuantity") > 0 && planProducedQuantity.getInt("schedulingQuantity") != null) {
-					record.set("remainingQuantity",planProducedQuantity.getInt("schedulingQuantity") - planProducedQuantity.getInt("planProducedQuantity"));
-				}
+			Integer planQuantity = ((planProducedQuantity != null && planProducedQuantity.getInt("planProducedQuantity") != null) ? planProducedQuantity.getInt("planProducedQuantity") : 0);
+			record.set("producedQuantity", planQuantity);
+			if (planProducedQuantity != null && planProducedQuantity.getInt("schedulingPlanStatus") != null) {
+				record.set("schedulingPlanStatus", planProducedQuantity.getInt("schedulingPlanStatus"));	
 			}
-			
+			record.set("remainingQuantity",record.getInt("schedulingQuantity") - planQuantity);
 			if (new Date().after(record.getDate("planCompleteTime"))) {
-				if (planProducedQuantity.getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
-					record.set("isTimeout", true);
+				if (planProducedQuantity != null) {
+					if (planProducedQuantity.getInt("planProducedQuantity") < record.getInt("schedulingQuantity")) {
+						record.set("isTimeout", true);
+					}
+				}else {
+					if (record.getInt("producedQuantity") < record.getInt("schedulingQuantity")) {
+						record.set("isTimeout", true);
+					}
 				}
+				
 			}
 		}
 		return page;
