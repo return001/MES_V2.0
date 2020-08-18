@@ -166,6 +166,7 @@
             this.setLoginToken('');
             sessionStorage.removeItem('token');
             sessionStorage.removeItem('factory');
+            sessionStorage.removeItem('UserRole');
             window.location.href = '/mes_system/#/login';
             this.$alertSuccess("登出成功");
           } else {

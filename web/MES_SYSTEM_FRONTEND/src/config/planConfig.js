@@ -1427,11 +1427,11 @@ export const planOrderDetail = [
     'key': 'schedulingQuantity',
     'min-width': '100px'
   },
-  {
-    'label': '未排产数量',
-    'key': 'unSchedulingQuantity',
-    'min-width': '100px'
-  },
+  // {
+  //   'label': '未排产数量',
+  //   'key': 'unSchedulingQuantity',
+  //   'min-width': '100px'
+  // },
   {
     'label': '预计开始时间',
     'key': 'planStartTime',

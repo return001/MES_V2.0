@@ -174,7 +174,7 @@ const getCharactersFuncList = function() {
         'customer': generateArray(4, false, [0, 1, 2, 3]),
         'model': generateArray(4, false, [0, 1, 2, 3]),
         'product': generateArray(4, false, [0, 1, 2, 3]),
-        'capacity': generateArray(4, false, [0, 1, 2, 3, 6]),
+        'capacity': generateArray(4, false, [0, 1, 2, 3, 4, 5, 6]),
         'file_type': generateArray(4, false, [0, 1, 2, 3]),
       },
     },

@@ -23,8 +23,12 @@
 <!--        </div>-->
         <div class="form-group">
         <label for="edit-software">软件版本:</label>
-        <el-input size="small" type="text" id="edit-software" :placeholder="editType === 'edit' ? '' : '请填写软件版本'"  autocomplete="off"
-                  v-model.trim="formData.soft_version.value" :disabled="editType === 'edit'"  clearable></el-input>
+        <el-input size="small" type="text" id="edit-software"
+                  :placeholder="editType === 'edit' ? '' : '请填写软件版本'"
+                  autocomplete="off"
+                  v-model.trim="formData.soft_version.value"
+                  :disabled="editType === 'edit' || editType !== 'add' && userRole.department !== 38"
+                  clearable></el-input>
       </div>
         <div class="form-group">
           <label for="edit-machinename">订单号:</label>
@@ -138,6 +142,8 @@
     inject: ['reload'],
     data() {
       return {
+        userRole:JSON.parse(sessionStorage.getItem('UserRole')),
+        // revisability:true,   //订单号是否可以修改
         isCreate: false,
         isUpdate: false,
         fileName:"",
@@ -187,6 +193,9 @@
       }
     },
     mounted: function () {
+      // this.$nextTick(()=>{
+      //   this.revisability = !!this.userRole.roleName.includes('研发测试');
+      // })
       /*edit data $emit at @/pages/test/details/comp/TableDetails*/
       eventBus.$off('editTestFunc');
       eventBus.$on('editTestFunc', data => {

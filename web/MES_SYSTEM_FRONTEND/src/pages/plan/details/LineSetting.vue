@@ -613,16 +613,17 @@
             url: planProcessGroupGetUrl
           }).then(response => {
             if (response.data.result === 200) {
+              //给主要工序设置产线即可
+              let primaryGroups= response.data.data.list.filter(item=>!item.parentGroup);
               if(this.sessionFactory === '1'){
-                this.asyncSelectGroup.processGroup.list = response.data.data.list;
+                this.asyncSelectGroup.processGroup.list =primaryGroups
               }else{
-                response.data.data.list.forEach(item=>{
+                primaryGroups.forEach(item=>{
                   if(item.factoryId ===Number(this.sessionFactory)){
                     this.asyncSelectGroup.processGroup.list.push(item)
                   }
                 })
               }
-
             } else {
               this.$alertWarning(response.data.data)
             }

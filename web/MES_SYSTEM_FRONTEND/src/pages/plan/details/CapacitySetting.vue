@@ -51,6 +51,12 @@
           <el-button type="primary" size="small" @click="addCapacity('add')">新增</el-button>
 <!--          <el-button type="primary" size="small" @click="editCapacity('add')">新增</el-button>-->
         </div>
+        <div class="query-comp-container">
+          <el-button type="primary" size="small" @click="importCapacity">导入</el-button>
+        </div>
+        <div class="query-comp-container">
+          <el-button type="primary" size="small" @click="exportCapacity">导出</el-button>
+        </div>
       </div>
       <div class="content-comp">
 <!--        :span-method="detailsTableSpanMethod"-->
@@ -106,6 +112,43 @@
         </el-table>
       </div>
     </div>
+
+    <!--导入产能 上传框-->
+    <el-dialog
+      title="导入产能"
+      :visible.sync="isCapacityImport"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @closed="clearCapacityFile"
+      width="400px">
+      <div class="factory-select" v-if="sessionFactory === '1'">
+        <el-select v-model="getGroupInfoFactoryId"
+                   autocomplete="off"
+                   @change="changeGroupList"
+                   :placeholder="'请选择工厂'"
+                   size="small">
+          <el-option v-for="listItem in factoryList"
+                     :key="listItem.id"
+                     :value="listItem.id"
+                     :label="listItem.abbreviation"></el-option>
+        </el-select>
+      </div>
+      <el-upload
+        ref="importCapacity"
+        class="importCapacity"
+        :action="planCapacityImportUrl"
+        :limit=2
+        :auto-upload="false"
+        :http-request="uploadFile"
+        :before-upload="beforeImportFile"
+        :on-change ='handleCheckFile'
+        accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      >
+        <el-button slot="trigger" size="small" type="info">选取文件</el-button>
+        <el-button style="margin-left: 10px;" size="small" type="primary" @click="submitCapacityUpload">上传</el-button>
+        <div slot="tip" class="upload-tip">请选择xls、xlsx文件</div>
+      </el-upload>
+    </el-dialog>
 
     <!-- 审核 -->
     <el-dialog
@@ -320,18 +363,23 @@
     eSopFactorySelectUrl,
     planOrderTableDeleteUrl,
     planCapacityCheckUrl,
+    planCapacityImportUrl,
+    planCapacityExportUrl, planOrderImportUrl
   } from "../../../config/globalUrl";
-  import {axiosFetch} from "../../../utils/fetchData";
+  import {axiosDownload, axiosFetch} from "../../../utils/fetchData";
   import {MessageBox} from "element-ui"
   import {closeLoading} from "../../../utils/loading";
+  import {saveAs} from 'file-saver';
 
   export default {
     name: "CapacitySetting",
     inject: ['reload'],
     data() {
       return {
+        ispending:false,
         sessionFactory:sessionStorage.getItem('factory'),
         queryOptions: capacityQueryOptions,
+        planCapacityImportUrl:planCapacityImportUrl,
         thisQueryOptions: {},
         processSelectSrc: [], //工序信息 源
         processGroupSelect: [], //工序组信息
@@ -348,6 +396,9 @@
           pageSize: 18,
           total: 0
         },
+        /*导入产能*/
+        isCapacityImport:false,
+        uploadFileData:null,
         /*审核产能*/
         checkItem:[],  //点击审核的行信息
         isCapacityCheck:false,
@@ -533,8 +584,14 @@
             url: planProcessGroupGetUrl,
           }).then(response => {
             if (response.data.result === 200) {
+              let noParentGroupList
+              if(response.data.data.list.length > 0){
+                let parentsList = response.data.data.list.map(item=>item.parentGroup)
+                parentsList = parentsList.filter(item=>item !== null)
+                noParentGroupList = response.data.data.list.filter(fitem=>!parentsList.includes(fitem.id))
+              }
               if(this.sessionFactory === '1'){
-                this.processGroupSelectWait = response.data.data.list
+                this.processGroupSelectWait = noParentGroupList
               }else {
                 this.processGroupSelectWait =[];
                 this.processGroupSelect =[];
@@ -645,9 +702,6 @@
           this.tableData = [];
           this.mergeData = {};
           this.mergePos = {};
-          // this.fetchProcessGroup()
-          // console.log(this.paginationOptions.currentPage)
-          // console.log(this.paginationOptions.pageSize)
           let options = {
             url: planCapacitySelectUrl,
             data: {
@@ -721,6 +775,111 @@
 
         this.capacityEditType = 'add';
         this.isCapacityAdd = true;
+      },
+
+      importCapacity(){
+        this.isCapacityImport = true;
+        this.getGroupInfoFactoryId = "";
+        this.fetchFactory()
+      },
+
+      uploadFile: function (params) {
+        this.uploadFileData.append(Math.floor(Math.random() * 1000), params.file)
+      },
+      clearCapacityFile: function () {
+        this.$refs.importCapacity.clearFiles();
+        this.getGroupInfoFactoryId = "";
+      },
+      beforeImportFile: function () {
+        this.isPending = true;
+        this.$openLoading();
+      },
+      handleCheckFile(file,fileList){
+        if(fileList && fileList.length >1){
+          fileList.shift()
+        }
+      },
+
+      /**
+       **@description: 导入产能
+       **@date: 2020/8/12 10:17
+       **@author: Wang-Vei
+       **@method:
+       **@params: mod
+       */
+      submitCapacityUpload: function () {
+        this.uploadFileData = new FormData();
+        this.$refs.importCapacity.submit();
+        this.uploadFileData.append('#TOKEN#', this.$store.state.token);
+        let importFactory = this.sessionFactory === '1' ? this.getGroupInfoFactoryId : this.sessionFactory
+        this.uploadFileData.append('factory', importFactory);
+        let config = {
+          header: {
+            'Content-Type': 'multipart/form-data'
+          },
+        };
+        this.$axios.post(planCapacityImportUrl, this.uploadFileData, config).then(response => {
+          if (response.data.result === 200) {
+            this.$alertSuccess(response.data.data);
+            this.partlyReload();
+            //this.reload();
+          } else if(response.data.data === '参数不能为空'){
+            this.$alertWarning('请先选取文件');
+          }else {
+            this.$alertWarning(response.data.data);
+          }
+
+        }).catch(err => {
+        }).finally(() => {
+          this.isPending = false;
+          this.$closeLoading();
+        });
+
+      },
+
+      //导出产能
+      exportCapacity() {
+        if (!this.isPending) {
+          this.isPending = true;
+          this.$openLoading();
+          let options = {
+            url: planCapacityExportUrl,
+            data: {
+              pageNo: 1,
+              pageSize: 10
+            }
+          };
+          Object.keys(this.thisQueryOptions).forEach(item => {
+            if (this.thisQueryOptions[item].value !== "") {
+              if (this.thisQueryOptions[item].type === 'timeRange') {
+                options.data[item + 'From'] = this.thisQueryOptions[item].value[0];
+                options.data[item + 'To'] = this.thisQueryOptions[item].value[1]
+              } else {
+                options.data[item] = this.thisQueryOptions[item].value
+              }
+            }
+          });
+          options.data.processGroup = this.activeProcessGroup;
+          axiosDownload(options).then(response => {
+            let contentType = response.request.getResponseHeader('content-type');
+            if (contentType === 'application/vnd.ms-excel') {
+              let name = response.request.getResponseHeader('Content-Disposition').split('=')[1];
+              saveAs(response.data, decodeURIComponent(name))
+            } else {
+              let reader = new FileReader();
+              reader.readAsText(response.data);
+              reader.addEventListener('loadend', () => {
+                this.$alertWarning(JSON.parse(reader.result).data)
+              })
+            }
+          }).catch(err => {
+            console.log(err)
+            this.$alertDanger('请求超时，请刷新重试')
+          }).finally(() => {
+            this.isPending = false;
+            this.$closeLoading();
+          })
+        }
       },
 
       //审核产能
@@ -821,7 +980,6 @@
         }else{
           this.$alertWarning('没有可用工序组')
         }
-        console.log(this.capacityEditType)
       },
 
       inputLimit(scope,val){
@@ -912,18 +1070,34 @@
           this.$alertWarning('该工厂不存在可用工序组')
           return
         }
-        this.sameGroupDatas.forEach(item=>{
-          item.customerNumber= this.capacityEditOptionsData.customerNumber;
-          item.customerName= this.customerNames;
-          item.softModel= this.capacityEditOptionsData.softModel;
-          item.customerModel= this.capacityEditOptionsData.customerModel;
-          !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
-        })
-        if(!this.Parameter){
-          this.$alertWarning('工序组、人数和产能为必填项')
-          this.$closeLoading()
-          return
+        // this.sameGroupDatas.forEach(item=>{
+        //   item.customerNumber= this.capacityEditOptionsData.customerNumber;
+        //   item.customerName= this.customerNames;
+        //   item.softModel= this.capacityEditOptionsData.softModel;
+        //   item.customerModel= this.capacityEditOptionsData.customerModel;
+        //   !item.processGroup || !item.processPeopleQuantity || !item.capacity ? this.Parameter = false : this.Parameter = true
+        // })
+        //贴片 不可设置产能（存在子工序组，就只能给子工序组设置产能）
+        for(let i = 0; i<this.sameGroupDatas.length;i++){
+          this.sameGroupDatas[i].customerNumber= this.capacityEditOptionsData.customerNumber;
+          this.sameGroupDatas[i].customerName= this.customerNames;
+          this.sameGroupDatas[i].softModel= this.capacityEditOptionsData.softModel;
+          this.sameGroupDatas[i].customerModel= this.capacityEditOptionsData.customerModel;
+          if(this.sameGroupDatas[i].processGroup === 4 || this.sameGroupDatas[i].groupName ==='贴片'){
+            this.$alertWarning("“贴片”工序组不可设置产能")
+            return;
+          }
+          if(!this.sameGroupDatas[i].processGroup || !this.sameGroupDatas[i].processPeopleQuantity || !this.sameGroupDatas[i].capacity){
+            this.$alertWarning('工序组、人数和产能为必填项')
+            this.$closeLoading()
+            return
+          }
         }
+        // if(!this.Parameter){
+        //   this.$alertWarning('工序组、人数和产能为必填项')
+        //   this.$closeLoading()
+        //   return
+        // }
         this.$refs['capacityEditForm'].validate((isValid) => {
           if (isValid) {
             this.isPending = true;
@@ -1247,6 +1421,24 @@
   }
   .capacity-edit-table{
     max-width: 1000px;
+  }
+  /*  上传订单，取消新的覆盖旧的的动画效果  */
+
+  .importCapacity /deep/ .el-list-enter-active,
+  /deep/ .el-list-leave-active {
+    transition: none;
+  }
+
+  .importCapacity /deep/ .el-list-enter,
+  /deep/ .el-list-leave-active {
+    opacity: 0;
+  }
+
+  .factory-select{
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction:column;
+    align-items: flex-start;
   }
 
 </style>

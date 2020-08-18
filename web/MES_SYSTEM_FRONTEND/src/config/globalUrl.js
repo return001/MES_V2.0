@@ -121,6 +121,8 @@ export const planCapacityDeleteUrl = url + '/production/deleteCapacity';//删除
 export const planCapacityEditUrl = url + '/production/editCapacity';//修改
 export const planCapacityAddUrl = url + '/production/addCapacity';//新增
 export const planCapacityCheckUrl = url + '/production/reviewCapacity';//新增
+export const planCapacityExportUrl = url + '/production/exportCapacity';//导出
+export const planCapacityImportUrl = url + '/production/importCapacity';//导入
 
 /*计划管理*/
 export const planDetailsSelectUrl = url + '/production/selectPlan'; //查询

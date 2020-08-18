@@ -25,8 +25,8 @@
                      @change="linkageSelect($event,item.prop)"
                      clearable
                      >
-            <el-option v-for="listItem in item.selectList"
-                       :key="listItem.key"
+            <el-option v-for="(listItem,lIndex) in item.selectList"
+                       :key="item.label + lIndex"
                        :value="listItem.key"
                        :label="listItem.label"></el-option>
           </el-select>

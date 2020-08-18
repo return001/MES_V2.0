@@ -201,6 +201,7 @@
       methods:{
         clearOptions(){
           this.thisQueryOptions = {};
+          this.times = [];
         },
 
         fetchData(){

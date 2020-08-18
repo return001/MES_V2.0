@@ -393,7 +393,7 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button size="small" type="success" @click="submitLineTimeSetting">确定</el-button>
-        <el-button size="small" type="primary" @click="closeTimeSetting">完成</el-button>
+<!--        <el-button size="small" type="primary" @click="closeTimeSetting">完成</el-button>-->
       </span>
     </el-dialog>
 
@@ -1108,10 +1108,11 @@
             executorId:this.tableEditData[item.id].line,
             switchConsumingTime : this.tableEditData[item.id].lineChangeTime,
             planQuantity : this.tableEditData[item.id].schedulingQuantity,
-            standardCapacity : item.capacity,
+            standardCapacity : this.tableEditData[item.id].capacity,
             tagId :item.id   //用来验证，两条相同订单会出现  订单号 - 随机数 的情况
           })
         })
+        // return;
         if(!trueSchedulQun){
           this.$alertWarning('请输入正确的排产数量(存在未排产数小于零)！')
           return
@@ -1508,13 +1509,17 @@
           return
         }
         let trueTime = false;
-        let planDataEndtime =[];
+        let planDataEndtimes =[];
           Object.keys(this.tableEditData).forEach(item=>{
-          planDataEndtime.push(this.tableEditData[item].planCompleteTime)
-          trueTime = planDataEndtime.indexOf('超出预期') === -1;
+          planDataEndtimes.push(this.tableEditData[item].planCompleteTime)
+            if(planDataEndtimes.indexOf('超出预期') === -1 && planDataEndtimes.indexOf('时间冲突') === -1){
+              trueTime = true;
+            }else{
+              trueTime = false;
+            }
         })
         if(trueTime === false){
-          this.$alertDanger('排产时间冲突')
+          this.$alertDanger('排产时间冲突，请重新设置排产时间')
           return;
         }
         MessageBox.confirm('请确认是否按此配置导入排产(请留意页面中可能存在的错误提示)', '提示', {
@@ -1558,7 +1563,7 @@
         /*数量异常高亮
         row.unscheduledQuantity < this.currentOrderQuantity[row.id]
         */
-        if(this.tableEditData[row.id].planCompleteTime === "超出预期" || this.tableEditData[row.id].planStartTime === "超出预期"){
+        if(this.tableEditData[row.id].planCompleteTime === "超出预期" || this.tableEditData[row.id].planStartTime === "超出预期" || this.tableEditData[row.id].planCompleteTime === "时间冲突" || this.tableEditData[row.id].planStartTime === "时间冲突"){
           return 'timeout-highlight'                   //字变色 (预计时间异常)
           // return 'quantity-out-highlight'           //行边框变色 (排产数量超额)
           // return 'quantity-out-timeout-highlight'   //行边框+文字都变色 (预计时间异常,排产数量异常)
@@ -1566,7 +1571,7 @@
         if(this.tableEditData[row.id].schedulingQuantity > row.quantity){
           return 'quantity-out-highlight'           //行边框变色 (排产数量超额)
         }
-        if(this.tableEditData[row.id].planCompleteTime === "超出预期" || this.tableEditData[row.id].planStartTime === "超出预期" && this.tableEditData[row.id].schedulingQuantity > row.quantity){
+        if(this.tableEditData[row.id].planCompleteTime === "超出预期" || this.tableEditData[row.id].planStartTime === "超出预期" || this.tableEditData[row.id].planCompleteTime === "时间冲突" || this.tableEditData[row.id].planStartTime === "时间冲突"&& this.tableEditData[row.id].schedulingQuantity > row.quantity){
           return 'quantity-out-timeout-highlight'   //行边框+文字都变色 (预计时间异常,排产数量异常)
         }
         // let isReImportRow = Boolean(this.tableEditData[row.id].id !== undefined);

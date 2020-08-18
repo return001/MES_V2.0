@@ -73,15 +73,20 @@ Vue.prototype.$message = Message;
 
 Vue.prototype.$openLoading = openLoading;
 Vue.prototype.$closeLoading = closeLoading;
+// Vue.prototype.$ELEMENT = { size: 'small', zIndex: 3000 };
 
 
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(Vuex)
-//关闭 console
-if (!global.consoleSwitch) {
-  console.log = () => {};
+//生产环境关闭 console
+if (process.env.NODE_ENV === 'production') {
+
+  if (!global.consoleSwitch) {
+    console.log = () => {};
+  }
 }
+
 
 
 /* eslint-disable no-new */

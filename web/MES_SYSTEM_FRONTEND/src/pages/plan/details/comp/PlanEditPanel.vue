@@ -120,6 +120,7 @@
           size="small"
           class="plan-edit-form-comp"
           label="是否完成"
+          v-if="planEditOptionsData.activeProcessGroup !== 1 && planEditOptionsData.activeProcessGroup !== 2 && planEditOptionsData.activeProcessGroup !== 3"
           prop="isCompleted">
           <el-select
             v-model="planEditOptionsData.isCompleted"
@@ -141,15 +142,28 @@
             placeholder="请填写单号"
             v-model="planEditOptionsData.productionPlanningNumber"></el-input>
         </el-form-item>
+<!--        <el-form-item-->
+<!--          size="small"-->
+<!--          class="plan-edit-form-comp plan-edit-form-comp-text"-->
+<!--          label="已完成数量"-->
+<!--          prop="producedQuantity">-->
+<!--          <el-input-->
+<!--            type="text"-->
+<!--            clearable-->
+<!--            :disabled="planEditOptionsData.activeProcessGroup === 1 || planEditOptionsData.activeProcessGroup === 2 || planEditOptionsData.activeProcessGroup === 3"-->
+<!--            autocomplete="off"-->
+<!--            placeholder="请填写已完成数量"-->
+<!--            v-model.number="planEditOptionsData.producedQuantity"></el-input>-->
+<!--        </el-form-item>-->
         <el-form-item
           size="small"
           class="plan-edit-form-comp plan-edit-form-comp-text"
           label="已完成数量"
+          v-if="planEditOptionsData.activeProcessGroup !== 1 && planEditOptionsData.activeProcessGroup !== 2 && planEditOptionsData.activeProcessGroup !== 3"
           prop="producedQuantity">
           <el-input
             type="text"
             clearable
-            :disabled="planEditOptionsData.activeProcessGroup === 1 || planEditOptionsData.activeProcessGroup === 2 || planEditOptionsData.activeProcessGroup === 3"
             autocomplete="off"
             placeholder="请填写已完成数量"
             v-model.number="planEditOptionsData.producedQuantity"></el-input>
@@ -204,6 +218,7 @@
           shortcuts: [{
             text: '最近一周',
             onClick(picker) {
+              console.log(picker)
               const end = new Date();
               const start = new Date();
               start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
@@ -265,8 +280,8 @@
           isCompleted: false,
           productionPlanningNumber: null,
           capacity: null,
-          producedQuantity: null,
-          remainingReason: null
+          producedQuantity: undefined,
+          remainingReason: undefined
         },
         planEngineerEditOptionsRules: {
           // 'isCompleted': [
@@ -280,7 +295,7 @@
           // ],
           // 'producedQuantity': [
           //   {required: true, message: '请填写已完成数量', trigger: 'blur'}
-          // ],
+          // ]
         },
 
         isEditing: false,
@@ -293,17 +308,17 @@
     },
     computed: {},
     watch: {
-      pmcEditing(val) {
-        this.pmcEdit = val;
-        this.engineerEdit = false;
-        this.isEditing = val;
-      },
-      engineerEditing(val) {
-        this.pmcEdit = false;
-        this.engineerEdit = val;
-        this.isEditing = val;
-      },
-
+      // pmcEditing(val) {
+      //   this.pmcEdit = val;
+      //   this.engineerEdit = false;
+      //   this.isEditing = val;
+      // },
+      // engineerEditing(val) {
+      //   this.pmcEdit = false;
+      //   this.engineerEdit = val;
+      //   this.isEditing = val;
+      // },
+      //
       totallyEditing(val) {
         this.pmcEdit = false;
         this.engineerEdit = false;
@@ -386,6 +401,14 @@
       },
 
       submitEdit() {
+        console.log(this.row)
+        if(this.planEditOptionsData.isCompleted === true && this.row.statusName !== '进行中'){
+          this.$alertWarning('“进行中”订单才可以“完成”')
+          return;
+        }
+        if(this.planEditOptionsData.isCompleted === true && this.planEditOptionsData.producedQuantity < this.row.schedulingQuantity){
+          this.$alertWarning('该订单还未全部完成')
+        }
         this.$refs['planEditForm'].validate((valid) => {
           if (valid && !this.isPending) {
             this.isPending = true;
@@ -397,9 +420,7 @@
               }
             };
             Object.keys(this.planEditOptionsData).forEach(item => {
-              // if (this.planEditOptionsData[item] !== null || this.planEditOptionsData[item] !== '') {
               options.data[item] = this.planEditOptionsData[item]
-              // }
             });
             axiosFetch(options).then(response => {
               if (response.data.result === 200) {

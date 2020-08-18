@@ -87,8 +87,12 @@
           };
           axiosFetch(options).then(res => {
             if (res.data.result === 200) {
-              sessionStorage.setItem('factory', res.data.data['roleVO']['company']);//人员的所属工厂
-              // this.setSessionFactory(sessionStorage.getItem('factory'));
+              // if(res.data.data['roleVO']['name'] === '超级管理员' && res.data.data['roleVO']['company'] === 28){   //测试环境 超级管理员 的company会变成28
+              //   sessionStorage.setItem('factory', 1);//人员的所属工厂
+              // }else{
+                sessionStorage.setItem('factory', res.data.data['roleVO']['company']);//人员的所属工厂
+              // }
+              sessionStorage.setItem('UserRole',JSON.stringify({'roleName':res.data.data['roleVO'].name,'roleNo':res.data.data['roleVO'].no,"department":res.data.data['roleVO'].department}));
               sessionStorage.setItem('token', res.data.data["token"]);
               this.setLoginToken(sessionStorage.getItem('token'));
               sessionStorage.setItem('UserName', res.data.data['name']);

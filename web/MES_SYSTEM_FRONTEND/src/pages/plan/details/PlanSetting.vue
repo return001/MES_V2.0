@@ -352,6 +352,7 @@
       return {
         jurisdiction:JSON.parse(sessionStorage.getItem('charactersFuncMap')).map.plan.plan.detail,
         sessionFactory:sessionStorage.getItem('factory'),
+        isPending: false,
         queryOptions: planQueryOptions,
         thisQueryOptions: {},
         //预加载信息
@@ -785,6 +786,7 @@
       },
 
       editData: function (val) {
+        console.log(val)
         this.totallyEditing = true;
         this.planEditRow = val
         this.planEditRow.activeProcessGroup = this.activeProcessGroup

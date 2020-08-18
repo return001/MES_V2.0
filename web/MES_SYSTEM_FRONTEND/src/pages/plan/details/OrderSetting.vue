@@ -1239,7 +1239,6 @@
         this.deletingItem = {};
         this.deleteReason = "";
         this.uploadAble = true;
-
       },
 
       /*异常结单*/

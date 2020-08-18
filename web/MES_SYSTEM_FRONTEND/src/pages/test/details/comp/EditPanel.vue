@@ -23,7 +23,7 @@
                     clearable
                     autocomplete="off"
                     v-model.trim="formData.soft_version.value"
-                    :disabled="editType === 'edit' || editType === 'copy'"></el-input>
+                    :disabled="editType === 'edit' || editType !== 'add' && userRole.department !== 38"></el-input>
         </div>
         <div class="form-group">
           <label for="edit-machinename">订单号:</label>
@@ -144,6 +144,7 @@
     inject: ['reload'],
     data() {
       return {
+        userRole:JSON.parse(sessionStorage.getItem('UserRole')),
         isCreate: false,
         isUpdate: false,
         fileName:'',
