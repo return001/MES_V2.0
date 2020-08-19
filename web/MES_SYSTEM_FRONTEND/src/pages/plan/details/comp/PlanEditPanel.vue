@@ -125,6 +125,7 @@
           <el-select
             v-model="planEditOptionsData.isCompleted"
             class="plan-edit-form-comp-text"
+            :disabled="row.statusName !== '进行中'"
             autocomplete="off">
             <el-option :value="false" label="否"></el-option>
             <el-option :value="true" label="是"></el-option>
@@ -166,6 +167,7 @@
             clearable
             autocomplete="off"
             placeholder="请填写已完成数量"
+            :disabled="row.statusName !== '进行中'"
             v-model.number="planEditOptionsData.producedQuantity"></el-input>
         </el-form-item>
         <el-form-item
@@ -301,8 +303,6 @@
         isEditing: false,
         planEditOptionsData: {},
         planEditOptionsRules: {},
-
-
         isPending: false
       }
     },
@@ -402,8 +402,8 @@
 
       submitEdit() {
         console.log(this.row)
-        if(this.planEditOptionsData.isCompleted === true && this.row.statusName !== '进行中'){
-          this.$alertWarning('“进行中”订单才可以“完成”')
+        if(this.planEditOptionsData.isCompleted === true && this.row.statusName !== '进行中' || this.planEditOptionsData.producedQuantity && this.row.statusName !== '进行中'){
+          this.$alertWarning('“进行中”订单才可以编辑')
           return;
         }
         if(this.planEditOptionsData.isCompleted === true && this.planEditOptionsData.producedQuantity < this.row.schedulingQuantity){
