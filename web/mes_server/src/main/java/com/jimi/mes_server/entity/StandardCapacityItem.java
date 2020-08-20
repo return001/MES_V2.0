@@ -38,7 +38,7 @@ public class StandardCapacityItem {
 	private String customerModel;
 	
 	@Excel(col = 6, head = "节拍/用时（S）")
-	private String rhythm;
+	private Double rhythm;
 	
 	@Excel(col = 7, head = "转线时长（分钟）")
 	private String transferLineTime;
@@ -94,11 +94,11 @@ public class StandardCapacityItem {
 		this.customerModel = customerModel;
 	}
 
-	public String getRhythm() {
+	public Double getRhythm() {
 		return rhythm;
 	}
 
-	public void setRhythm(String rhythm) {
+	public void setRhythm(Double rhythm) {
 		this.rhythm = rhythm;
 	}
 
@@ -136,7 +136,7 @@ public class StandardCapacityItem {
 			modelCapacity.setRemark(item.getRemarks());
 		}
 		if (item.getRhythm() != null) {
-			modelCapacity.setRhythm(BigDecimal.valueOf(Double.valueOf(item.getRhythm())).setScale(2));
+			modelCapacity.setRhythm(BigDecimal.valueOf(item.getRhythm()));
 		}
 		if (item.getSoftModel() != null) {
 			modelCapacity.setSoftModel(item.getSoftModel());

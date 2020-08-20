@@ -308,8 +308,6 @@ public class SQL {
 
 	public final static String SELECT_PLAN_INFO_BY_ORDER = "SELECT scheduling_plan_status AS statusId, scheduling_plan_status.status_name AS statusName, soft_model as softModel, zhidan, quantity, rework_zhidan as reworkZhidan, rework_quantity AS reworkQuantity, line.id as lineId, line.line_name as lineName, scheduling_plan.scheduling_quantity as schedulingQuantity, scheduling_plan.plan_start_time as planStartTime, scheduling_plan.plan_complete_time as planCompleteTime, scheduling_plan.produced_quantity as producedQuantity, scheduling_plan.start_time as startTime, scheduling_plan.complete_time as completeTime FROM orders INNER JOIN scheduling_plan ON orders.id = scheduling_plan.orders INNER JOIN scheduling_plan_status ON scheduling_plan.scheduling_plan_status = scheduling_plan_status.id LEFT JOIN line ON line.id = scheduling_plan.line WHERE orders.id = ?";
 
-	public final static String SELECT_FINISH_QUANTITY_BY_ORDER = "SELECT SUM(produced_quantity) AS finishQuantity FROM scheduling_plan WHERE scheduling_plan.orders = ?";
-
 	public final static String SELECT_PROCESSGROUP_BY_PARENGROUP = "select id from process_group where parent_group = ?";
 
 	public final static String DELETE_USER_BY_ID = "update LUserAccount set [Delete] = 'TRUE',InService = 'FALSE' WHERE Id = ?";

@@ -527,7 +527,15 @@ public class ProductionService {
 		List<ModelCapacity> modelCapacities = ModelCapacityInfo.fill(modelCapacityInfos);
 		if (modelCapacities != null && !modelCapacities.isEmpty()) {
 			for (ModelCapacity modelCapacity : modelCapacities) {
-				Record record = Db.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, modelCapacity.getSoftModel(), modelCapacity.getProcessGroup(), modelCapacity.getCustomerName(), modelCapacity.getCustomerNumber());
+				String customerName = "";
+				String customerNumber = "";
+				if (!StringUtils.isBlank(modelCapacity.getCustomerName())) {
+					customerName = modelCapacity.getCustomerName().trim();
+				}
+				if (!StringUtils.isBlank(modelCapacity.getCustomerNumber())) {
+					customerNumber = modelCapacity.getCustomerNumber().trim();
+				}
+				Record record = Db.findFirst(SQL.SELECT_MODELCAPACITY_BY_MODEL_PROCESS, modelCapacity.getSoftModel(), modelCapacity.getProcessGroup(), customerName, customerNumber);
 				if (record != null) {
 					throw new OperationException("当前客户机型产能已存在");
 				}
@@ -575,7 +583,7 @@ public class ProductionService {
 			}
 			List<ModelCapacity> modelCapacities = new ArrayList<>(standardCapacityItems.size());
 			Set<String> indexRepeatSet = new HashSet<>();
-			int i = 1;
+			int i = 2;
 			for (StandardCapacityItem standardCapacityItem : standardCapacityItems) {
 				if (standardCapacityItem.getProcessGroupName() == null || standardCapacityItem.getProcessGroupName().trim().equals("")) {
 					throw new OperationException("第 " + i + " 行的工序组名称为空，请检查！");
@@ -594,8 +602,8 @@ public class ProductionService {
 				if (!isInt(standardCapacityItem.getNumberOfPeople().trim()) || Integer.valueOf(standardCapacityItem.getNumberOfPeople().trim()) <= 0) {
 					throw new OperationException("第 " + i + " 行的人数为仅能为正整数，请检查！");
 				}
-				if (standardCapacityItem.getRhythm() != null && !standardCapacityItem.getRhythm().trim().equals("")) {
-					if (!isDouble(standardCapacityItem.getRhythm())) {
+				if (standardCapacityItem.getRhythm() != null) {
+					if (((int)(standardCapacityItem.getRhythm() * 100)) <= 0) {
 						throw new OperationException("第 " + i + " 行的节拍/时长为仅能为正小数或者为空，请检查！");
 					}
 				}
@@ -603,6 +611,9 @@ public class ProductionService {
 					if (!isDouble(standardCapacityItem.getTransferLineTime())) {
 						throw new OperationException("第 " + i + " 行的转线时长为仅能为正整数或者为空，请检查！");
 					}
+				}
+				if ("贴片".equals(standardCapacityItem.getProcessGroupName().trim())) {
+					throw new OperationException("第 " + i + " 行的工序组不存在，请检查！");
 				}
 				if (processGroupMap.get(standardCapacityItem.getProcessGroupName().trim()) == null) {
 					throw new OperationException("第 " + i + " 行的工序组不存在，请检查！");
@@ -1654,10 +1665,12 @@ public class ProductionService {
 			schedulingPlan.setCapacity(capacity);
 		}
 		schedulingPlan.setRemark(remark);
+		Integer diffQuantity = 0;
 		if (producedQuantity != null) {
 			if (producedQuantity > schedulingPlan.getSchedulingQuantity()) {
 				throw new OperationException("无法完成该排产计划，已生产数量大于排产数量");
 			}
+			diffQuantity = producedQuantity - (schedulingPlan.getProducedQuantity() == null ? 0 : schedulingPlan.getProducedQuantity()) ;
 			schedulingPlan.setProducedQuantity(producedQuantity);
 		}
 		if (schedulingQuantity != null) {
@@ -1682,18 +1695,24 @@ public class ProductionService {
 		if (group == null) {
 			throw new OperationException("工序组不存在");
 		}
-		if (schedulingPlan.getProducedQuantity() != null && isCompleted != null && isCompleted && (group.getId().equals(Constant.SMT_PROCESS_GROUP) 
-				|| group.getParentGroup().equals(Constant.SMT_PROCESS_GROUP) || group.getId().equals(Constant.PATCH_PROCESS_GROUP) 
-				|| group.getParentGroup().equals(Constant.PATCH_PROCESS_GROUP))) {
-			
+		if (isCompleted != null && isCompleted && (group.getId().equals(Constant.PATCH_PROCESS_GROUP) 
+				|| (group.getParentGroup() != null && group.getParentGroup().equals(Constant.PATCH_PROCESS_GROUP)))) {
 			schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
 			schedulingPlan.setCompleteTime(new Date());
-			Integer finishQuantiy = Db.queryInt(SQL.SELECT_FINISH_QUANTITY_BY_ORDER, order.getId());
-			finishQuantiy = finishQuantiy == null ? schedulingPlan.getProducedQuantity() : finishQuantiy + schedulingPlan.getProducedQuantity();
-			if (finishQuantiy >= order.getQuantity()) {
-				order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
-				return schedulingPlan.update() && order.update();
+		}
+		if((group.getId().equals(Constant.SMT_PROCESS_GROUP) 
+				|| (group.getParentGroup() != null && group.getParentGroup().equals(Constant.SMT_PROCESS_GROUP)))) {
+			Integer finishQuantiy = order.getProducedQuantity();
+			finishQuantiy = finishQuantiy == null ? diffQuantity : finishQuantiy + diffQuantity;
+			order.setProducedQuantity(finishQuantiy);
+			if (isCompleted != null && isCompleted ) {
+				schedulingPlan.setSchedulingPlanStatus(Constant.COMPLETED_PLANSTATUS);
+				schedulingPlan.setCompleteTime(new Date());
+				if (finishQuantiy >= order.getQuantity()) {
+					order.setOrderStatus(Constant.COMPLETED_ORDERSTATUS);
+				}
 			}
+			return schedulingPlan.update() && order.update();
 		}
 		return schedulingPlan.update();
 	}

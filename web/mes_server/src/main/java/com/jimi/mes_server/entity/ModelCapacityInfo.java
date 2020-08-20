@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jimi.mes_server.model.ModelCapacity;
 
 public class ModelCapacityInfo {
@@ -152,10 +154,10 @@ public class ModelCapacityInfo {
 				modelCapacity.setCustomerModel(info.getCustomerModel());
 			}
 			if (info.getCustomerName() != null) {
-				modelCapacity.setCustomerName(info.getCustomerName());
+				modelCapacity.setCustomerName(StringUtils.isBlank(info.getCustomerName()) ? "" : info.getCustomerName().trim());
 			}
 			if (info.getCustomerNumber() != null) {
-				modelCapacity.setCustomerNumber(info.getCustomerNumber());
+				modelCapacity.setCustomerNumber(StringUtils.isBlank(info.getCustomerNumber()) ? "" : info.getCustomerNumber().trim());
 			}
 			if (info.getProcessGroup() != null) {
 				modelCapacity.setProcessGroup(info.getProcessGroup());
